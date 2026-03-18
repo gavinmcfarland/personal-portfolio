@@ -18,7 +18,15 @@
       "Bash(node scripts/generate-illustration.mjs code)",
       "Bash(node scripts/generate-illustration.mjs network --seed 7 --name NetworkViz)",
       "Bash(node scripts/generate-illustration.mjs --seed 123)",
-      "Bash(chmod +x /Users/gavinmcfarland/Developer/repos/vibe-code-portfolio/portfolio/scripts/generate-illustration.mjs)"
+      "Bash(chmod +x /Users/gavinmcfarland/Developer/repos/vibe-code-portfolio/portfolio/scripts/generate-illustration.mjs)",
+      "Bash(pnpm --version)",
+      "Bash(git mv:*)",
+      "Bash(git rm:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm generate:*)",
+      "Bash(node bin/generate-illustration.mjs code --seed 42)",
+      "Bash(chmod +x /Users/gavinmcfarland/Developer/repos/vibe-code-portfolio/packages/abstract-illustrations/bin/preview.mjs)"
     ],
     "deny": [],
     "ask": []

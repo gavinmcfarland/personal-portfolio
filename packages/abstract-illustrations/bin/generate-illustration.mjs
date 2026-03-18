@@ -66,7 +66,7 @@ for (let i = 0; i < args.length; i++) {
 }
 
 if (seed === null) {
-  seed = keywords.length > 0 ? hashString(keywords.join(',')) : Date.now() % 2147483647;
+  seed = Date.now() % 2147483647;
 }
 
 const rand = seededRandom(seed);

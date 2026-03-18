@@ -1,0 +1,16 @@
+{
+  "name": "abstract-illustrations",
+  "version": "1.0.0",
+  "description": "CLI tool for generating monochrome abstract JSX illustrations",
+  "type": "module",
+  "bin": {
+    "abstract-illustrations": "./bin/generate-illustration.mjs"
+  },
+  "scripts": {
+    "generate": "node bin/generate-illustration.mjs",
+    "preview": "node bin/preview.mjs"
+  },
+  "files": [
+    "bin"
+  ]
+}
