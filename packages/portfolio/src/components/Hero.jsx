@@ -1,7 +1,7 @@
 const Hero = () => {
   return (
-    <section className="min-h-screen flex items-center pt-20 px-8">
-      <div className="w-full max-w-7xl mx-auto py-20">
+    <section className="min-h-screen flex items-center pt-20">
+      <div className="w-full max-w-7xl mx-auto px-8 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left content */}
           <div>
