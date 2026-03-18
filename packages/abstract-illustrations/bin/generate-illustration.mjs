@@ -19,6 +19,14 @@
  *   network    — connected node diagram
  *   grid       — dot or square grid pattern
  *   text       — paragraph-like block lines
+ *   kanban     — board with columns and cards
+ *   timeline   — vertical timeline with events
+ *   form       — input fields and controls
+ *   music      — player with track list
+ *   calendar   — month grid with highlighted days
+ *   mail       — inbox message list
+ *   files      — file tree with folders
+ *   dashboard  — widget grid with mini charts
  *
  * If no keywords are given a random mix is chosen.
  *
@@ -208,9 +216,116 @@ function genTextBlock() {
   return lines;
 }
 
+function genKanbanBoard() {
+  const colCount = randInt(3, 4);
+  const cols = [];
+  for (let i = 0; i < colCount; i++) {
+    const cardCount = randInt(1, 4);
+    const cards = [];
+    for (let j = 0; j < cardCount; j++) {
+      cards.push({ lines: randInt(1, 3) });
+    }
+    cols.push({ cards });
+  }
+  return cols;
+}
+
+function genTimeline() {
+  const count = randInt(4, 7);
+  const items = [];
+  for (let i = 0; i < count; i++) {
+    items.push({
+      labelWidth: pick(widthClasses.slice(1, 5)),
+      contentWidth: pick(widthClasses.slice(3)),
+      hasSecondLine: randBool(0.4),
+    });
+  }
+  return items;
+}
+
+function genFormFields() {
+  const count = randInt(4, 7);
+  const fields = [];
+  for (let i = 0; i < count; i++) {
+    const type = pick(['input', 'input', 'input', 'textarea', 'toggle', 'select']);
+    fields.push({ type, labelWidth: pick(widthClasses.slice(1, 4)) });
+  }
+  return fields;
+}
+
+function genMusicPlayer() {
+  const trackCount = randInt(3, 6);
+  const tracks = [];
+  for (let i = 0; i < trackCount; i++) {
+    tracks.push({
+      titleWidth: pick(widthClasses.slice(2, 6)),
+      artistWidth: pick(widthClasses.slice(1, 4)),
+      duration: pick(widthClasses.slice(0, 3)),
+    });
+  }
+  return tracks;
+}
+
+function genCalendar() {
+  const filledDays = new Set();
+  const total = randInt(4, 10);
+  while (filledDays.size < total) {
+    filledDays.add(randInt(0, 34));
+  }
+  return { filledDays };
+}
+
+function genMail() {
+  const count = randInt(4, 7);
+  const items = [];
+  for (let i = 0; i < count; i++) {
+    items.push({
+      fromWidth: pick(widthClasses.slice(1, 4)),
+      subjectWidth: pick(widthClasses.slice(3, 7)),
+      previewWidth: pick(widthClasses.slice(2, 5)),
+      unread: randBool(0.3),
+    });
+  }
+  return items;
+}
+
+function genFileTree() {
+  const items = [];
+  const depths = [0];
+  const count = randInt(6, 12);
+  for (let i = 0; i < count; i++) {
+    const depth = pick(depths);
+    const isFolder = randBool(0.35);
+    items.push({
+      depth,
+      isFolder,
+      nameWidth: pick(widthClasses.slice(1, 5)),
+    });
+    if (isFolder && depth < 3 && !depths.includes(depth + 1)) {
+      depths.push(depth + 1);
+    }
+  }
+  return items;
+}
+
+function genDashboard() {
+  // A grid of small widget panels
+  const widgets = [];
+  const count = randInt(4, 6);
+  for (let i = 0; i < count; i++) {
+    widgets.push({
+      type: pick(['number', 'minibar', 'line', 'list']),
+    });
+  }
+  return widgets;
+}
+
 // ─── choose composition ───────────────────────────────────────────────────────
 
-const ALL_TYPES = ['code', 'terminal', 'data', 'chart', 'layers', 'network', 'grid', 'text'];
+const ALL_TYPES = [
+  'code', 'terminal', 'data', 'chart', 'layers', 'network', 'grid', 'text',
+  'kanban', 'timeline', 'form', 'music', 'calendar', 'mail', 'files', 'dashboard',
+];
 
 let mainType;
 let secondaryElements = [];
@@ -430,6 +545,279 @@ function renderMainElement(type, level) {
           lines.push(`${indent(l + 1)}<div className="${tl.width} h-2.5 ${fgSubtle}" />`);
         }
       }
+      lines.push(`${indent(l)}</div>`);
+      break;
+    }
+    case 'kanban': {
+      const cols = genKanbanBoard();
+      lines.push(`${indent(l)}<div className="${bg} border ${border} shadow-2xl shadow-black/[0.04] overflow-hidden">`);
+      lines.push(`${indent(l + 1)}<div className="p-6">`);
+      lines.push(`${indent(l + 2)}<div className="flex gap-4">`);
+      for (const col of cols) {
+        lines.push(`${indent(l + 3)}<div className="flex-1">`);
+        // column header
+        lines.push(`${indent(l + 4)}<div className="${pick(widthClasses.slice(1, 4))} h-2.5 ${fg} mb-4" />`);
+        // cards
+        lines.push(`${indent(l + 4)}<div className="space-y-3">`);
+        for (const card of col.cards) {
+          lines.push(`${indent(l + 5)}<div className="border ${border} p-3 space-y-2">`);
+          for (let li = 0; li < card.lines; li++) {
+            const w = li === 0 ? pick(widthClasses.slice(2, 6)) : pick(widthClasses.slice(0, 4));
+            const c = li === 0 ? fg : fgSubtle;
+            lines.push(`${indent(l + 6)}<div className="${w} h-2 ${c}" />`);
+          }
+          lines.push(`${indent(l + 5)}</div>`);
+        }
+        lines.push(`${indent(l + 4)}</div>`);
+        lines.push(`${indent(l + 3)}</div>`);
+      }
+      lines.push(`${indent(l + 2)}</div>`);
+      lines.push(`${indent(l + 1)}</div>`);
+      lines.push(`${indent(l)}</div>`);
+      break;
+    }
+    case 'timeline': {
+      const items = genTimeline();
+      lines.push(`${indent(l)}<div className="${bg} border ${border} shadow-2xl shadow-black/[0.04] overflow-hidden">`);
+      lines.push(`${indent(l + 1)}<div className="p-6">`);
+      lines.push(`${indent(l + 2)}<div className="space-y-0">`);
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const isLast = i === items.length - 1;
+        lines.push(`${indent(l + 3)}<div className="flex gap-4">`);
+        // timeline track
+        lines.push(`${indent(l + 4)}<div className="flex flex-col items-center">`);
+        lines.push(`${indent(l + 5)}<div className="w-2 h-2 ${fg}" />`);
+        if (!isLast) {
+          lines.push(`${indent(l + 5)}<div className="w-px flex-1 ${fgSubtle}" />`);
+        }
+        lines.push(`${indent(l + 4)}</div>`);
+        // content
+        lines.push(`${indent(l + 4)}<div className="pb-6 flex-1">`);
+        lines.push(`${indent(l + 5)}<div className="${item.labelWidth} h-2.5 ${fg} mb-2" />`);
+        lines.push(`${indent(l + 5)}<div className="${item.contentWidth} h-2.5 ${fgSubtle}" />`);
+        if (item.hasSecondLine) {
+          lines.push(`${indent(l + 5)}<div className="${pick(widthClasses.slice(2, 5))} h-2.5 ${fgSubtle} mt-2" />`);
+        }
+        lines.push(`${indent(l + 4)}</div>`);
+        lines.push(`${indent(l + 3)}</div>`);
+      }
+      lines.push(`${indent(l + 2)}</div>`);
+      lines.push(`${indent(l + 1)}</div>`);
+      lines.push(`${indent(l)}</div>`);
+      break;
+    }
+    case 'form': {
+      const fields = genFormFields();
+      lines.push(`${indent(l)}<div className="${bg} border ${border} shadow-2xl shadow-black/[0.04] overflow-hidden">`);
+      lines.push(`${indent(l + 1)}<div className="p-6 space-y-5">`);
+      // form title
+      lines.push(`${indent(l + 2)}<div className="${pick(widthClasses.slice(3, 6))} h-3 ${fg} mb-2" />`);
+      for (const field of fields) {
+        lines.push(`${indent(l + 2)}<div>`);
+        lines.push(`${indent(l + 3)}<div className="${field.labelWidth} h-2 ${fg} mb-2" />`);
+        if (field.type === 'textarea') {
+          lines.push(`${indent(l + 3)}<div className="w-full h-16 border ${border}" />`);
+        } else if (field.type === 'toggle') {
+          lines.push(`${indent(l + 3)}<div className="flex items-center gap-2">`);
+          lines.push(`${indent(l + 4)}<div className="w-8 h-4 ${fgSubtle}" />`);
+          lines.push(`${indent(l + 4)}<div className="${pick(widthClasses.slice(1, 4))} h-2.5 ${fgSubtle}" />`);
+          lines.push(`${indent(l + 3)}</div>`);
+        } else if (field.type === 'select') {
+          lines.push(`${indent(l + 3)}<div className="w-full h-8 border ${border} flex items-center px-2">`);
+          lines.push(`${indent(l + 4)}<div className="${pick(widthClasses.slice(1, 4))} h-2.5 ${fgSubtle}" />`);
+          lines.push(`${indent(l + 3)}</div>`);
+        } else {
+          lines.push(`${indent(l + 3)}<div className="w-full h-8 border ${border}" />`);
+        }
+        lines.push(`${indent(l + 2)}</div>`);
+      }
+      // submit button
+      lines.push(`${indent(l + 2)}<div className="w-20 h-8 ${fg}" />`);
+      lines.push(`${indent(l + 1)}</div>`);
+      lines.push(`${indent(l)}</div>`);
+      break;
+    }
+    case 'music': {
+      const tracks = genMusicPlayer();
+      lines.push(`${indent(l)}<div className="${bg} border ${border} shadow-2xl shadow-black/[0.04] overflow-hidden">`);
+      lines.push(`${indent(l + 1)}<div className="p-6">`);
+      // now playing
+      lines.push(`${indent(l + 2)}<div className="mb-6">`);
+      lines.push(`${indent(l + 3)}<div className="w-full aspect-square ${fgSubtle} mb-4" />`);
+      lines.push(`${indent(l + 3)}<div className="${pick(widthClasses.slice(3, 6))} h-3 ${fg} mb-1" />`);
+      lines.push(`${indent(l + 3)}<div className="${pick(widthClasses.slice(1, 4))} h-2.5 ${fgSubtle} mb-3" />`);
+      // progress bar
+      lines.push(`${indent(l + 3)}<div className="w-full h-1 ${fgSubtle}">`);
+      lines.push(`${indent(l + 4)}<div className="h-full ${fg}" style={{ width: '${randInt(20, 80)}%' }} />`);
+      lines.push(`${indent(l + 3)}</div>`);
+      // controls
+      lines.push(`${indent(l + 3)}<div className="flex justify-center gap-4 mt-4">`);
+      lines.push(`${indent(l + 4)}<div className="w-4 h-4 ${fgSubtle}" />`);
+      lines.push(`${indent(l + 4)}<div className="w-5 h-5 ${fg}" />`);
+      lines.push(`${indent(l + 4)}<div className="w-4 h-4 ${fgSubtle}" />`);
+      lines.push(`${indent(l + 3)}</div>`);
+      lines.push(`${indent(l + 2)}</div>`);
+      // track list
+      lines.push(`${indent(l + 2)}<div className="space-y-0">`);
+      for (const track of tracks) {
+        lines.push(`${indent(l + 3)}<div className="flex items-center gap-3 py-2 border-b ${border}">`);
+        lines.push(`${indent(l + 4)}<div className="w-3 h-3 ${fgSubtle}" />`);
+        lines.push(`${indent(l + 4)}<div className="flex-1 flex flex-col gap-1">`);
+        lines.push(`${indent(l + 5)}<div className="${track.titleWidth} h-2.5 ${fg}" />`);
+        lines.push(`${indent(l + 5)}<div className="${track.artistWidth} h-2 ${fgSubtle}" />`);
+        lines.push(`${indent(l + 4)}</div>`);
+        lines.push(`${indent(l + 4)}<div className="${track.duration} h-2 ${fgSubtle}" />`);
+        lines.push(`${indent(l + 3)}</div>`);
+      }
+      lines.push(`${indent(l + 2)}</div>`);
+      lines.push(`${indent(l + 1)}</div>`);
+      lines.push(`${indent(l)}</div>`);
+      break;
+    }
+    case 'calendar': {
+      const { filledDays } = genCalendar();
+      lines.push(`${indent(l)}<div className="${bg} border ${border} shadow-2xl shadow-black/[0.04] overflow-hidden">`);
+      lines.push(`${indent(l + 1)}<div className="p-6">`);
+      // month header
+      lines.push(`${indent(l + 2)}<div className="flex items-center justify-between mb-4">`);
+      lines.push(`${indent(l + 3)}<div className="w-4 h-4 ${fgSubtle}" />`);
+      lines.push(`${indent(l + 3)}<div className="w-20 h-3 ${fg}" />`);
+      lines.push(`${indent(l + 3)}<div className="w-4 h-4 ${fgSubtle}" />`);
+      lines.push(`${indent(l + 2)}</div>`);
+      // day headers
+      lines.push(`${indent(l + 2)}<div className="grid grid-cols-7 gap-2 mb-2">`);
+      for (let d = 0; d < 7; d++) {
+        lines.push(`${indent(l + 3)}<div className="h-2 ${fgSubtle} mx-auto w-4" />`);
+      }
+      lines.push(`${indent(l + 2)}</div>`);
+      // day grid
+      lines.push(`${indent(l + 2)}<div className="grid grid-cols-7 gap-2">`);
+      for (let d = 0; d < 35; d++) {
+        const filled = filledDays.has(d);
+        const color = filled ? fg : fgSubtle;
+        lines.push(`${indent(l + 3)}<div className="aspect-square ${color} flex items-center justify-center">`);
+        lines.push(`${indent(l + 4)}<div className="w-1.5 h-1.5 ${filled ? bg : ''}" />`);
+        lines.push(`${indent(l + 3)}</div>`);
+      }
+      lines.push(`${indent(l + 2)}</div>`);
+      lines.push(`${indent(l + 1)}</div>`);
+      lines.push(`${indent(l)}</div>`);
+      break;
+    }
+    case 'mail': {
+      const items = genMail();
+      lines.push(`${indent(l)}<div className="${bg} border ${border} shadow-2xl shadow-black/[0.04] overflow-hidden">`);
+      lines.push(`${indent(l + 1)}<div className="p-6">`);
+      // toolbar
+      lines.push(`${indent(l + 2)}<div className="flex items-center gap-3 mb-5 pb-4 border-b ${border}">`);
+      lines.push(`${indent(l + 3)}<div className="w-4 h-4 ${fgSubtle}" />`);
+      lines.push(`${indent(l + 3)}<div className="flex-1" />`);
+      lines.push(`${indent(l + 3)}<div className="w-32 h-7 border ${border}" />`);
+      lines.push(`${indent(l + 2)}</div>`);
+      // mail items
+      lines.push(`${indent(l + 2)}<div className="space-y-0">`);
+      for (const item of items) {
+        lines.push(`${indent(l + 3)}<div className="flex items-start gap-3 py-3 border-b ${border}">`);
+        // unread indicator
+        if (item.unread) {
+          lines.push(`${indent(l + 4)}<div className="w-1.5 h-1.5 ${fg} mt-1.5 shrink-0" />`);
+        } else {
+          lines.push(`${indent(l + 4)}<div className="w-1.5 h-1.5 mt-1.5 shrink-0" />`);
+        }
+        lines.push(`${indent(l + 4)}<div className="flex-1 space-y-1.5">`);
+        lines.push(`${indent(l + 5)}<div className="flex items-center gap-2">`);
+        lines.push(`${indent(l + 6)}<div className="${item.fromWidth} h-2.5 ${item.unread ? fg : fgSoft}" />`);
+        lines.push(`${indent(l + 6)}<div className="flex-1" />`);
+        lines.push(`${indent(l + 6)}<div className="w-8 h-2 ${fgSubtle}" />`);
+        lines.push(`${indent(l + 5)}</div>`);
+        lines.push(`${indent(l + 5)}<div className="${item.subjectWidth} h-2.5 ${fgSubtle}" />`);
+        lines.push(`${indent(l + 5)}<div className="${item.previewWidth} h-2 ${fgSubtle}" />`);
+        lines.push(`${indent(l + 4)}</div>`);
+        lines.push(`${indent(l + 3)}</div>`);
+      }
+      lines.push(`${indent(l + 2)}</div>`);
+      lines.push(`${indent(l + 1)}</div>`);
+      lines.push(`${indent(l)}</div>`);
+      break;
+    }
+    case 'files': {
+      const items = genFileTree();
+      lines.push(`${indent(l)}<div className="${bg} border ${border} shadow-2xl shadow-black/[0.04] overflow-hidden">`);
+      lines.push(`${indent(l + 1)}<div className="p-6">`);
+      // header
+      lines.push(`${indent(l + 2)}<div className="flex items-center gap-2 mb-5 pb-4 border-b ${border}">`);
+      lines.push(`${indent(l + 3)}<div className="w-4 h-4 ${fg}" />`);
+      lines.push(`${indent(l + 3)}<div className="${pick(widthClasses.slice(2, 5))} h-2.5 ${fg}" />`);
+      lines.push(`${indent(l + 2)}</div>`);
+      // tree
+      lines.push(`${indent(l + 2)}<div className="space-y-2">`);
+      for (const item of items) {
+        const ml = item.depth > 0 ? ` ml-${item.depth * 4}` : '';
+        lines.push(`${indent(l + 3)}<div className="flex items-center gap-2${ml}">`);
+        if (item.isFolder) {
+          lines.push(`${indent(l + 4)}<div className="w-3 h-2.5 ${fg}" />`);
+        } else {
+          lines.push(`${indent(l + 4)}<div className="w-3 h-3 ${fgSubtle}" />`);
+        }
+        lines.push(`${indent(l + 4)}<div className="${item.nameWidth} h-2.5 ${item.isFolder ? fg : fgSubtle}" />`);
+        lines.push(`${indent(l + 3)}</div>`);
+      }
+      lines.push(`${indent(l + 2)}</div>`);
+      lines.push(`${indent(l + 1)}</div>`);
+      lines.push(`${indent(l)}</div>`);
+      break;
+    }
+    case 'dashboard': {
+      const widgets = genDashboard();
+      const colCount = widgets.length <= 4 ? 2 : 3;
+      lines.push(`${indent(l)}<div className="${bg} border ${border} shadow-2xl shadow-black/[0.04] overflow-hidden">`);
+      lines.push(`${indent(l + 1)}<div className="p-6">`);
+      // header
+      lines.push(`${indent(l + 2)}<div className="flex items-center gap-2 mb-5">`);
+      lines.push(`${indent(l + 3)}<div className="${pick(widthClasses.slice(3, 6))} h-3 ${fg}" />`);
+      lines.push(`${indent(l + 3)}<div className="flex-1" />`);
+      lines.push(`${indent(l + 3)}<div className="w-8 h-2.5 ${fgSubtle}" />`);
+      lines.push(`${indent(l + 2)}</div>`);
+      // widget grid
+      lines.push(`${indent(l + 2)}<div className="grid grid-cols-${colCount} gap-4">`);
+      for (const widget of widgets) {
+        lines.push(`${indent(l + 3)}<div className="border ${border} p-3">`);
+        lines.push(`${indent(l + 4)}<div className="${pick(widthClasses.slice(1, 3))} h-2 ${fgSubtle} mb-3" />`);
+        switch (widget.type) {
+          case 'number':
+            lines.push(`${indent(l + 4)}<div className="${pick(widthClasses.slice(3, 6))} h-5 ${fg} mb-1" />`);
+            lines.push(`${indent(l + 4)}<div className="${pick(widthClasses.slice(1, 3))} h-2 ${fgSubtle}" />`);
+            break;
+          case 'minibar': {
+            lines.push(`${indent(l + 4)}<div className="flex items-end gap-1 h-10">`);
+            for (let b = 0; b < randInt(4, 6); b++) {
+              lines.push(`${indent(l + 5)}<div className="flex-1 ${randBool(0.4) ? fg : fgSubtle}" style={{ height: '${randInt(20, 100)}%' }} />`);
+            }
+            lines.push(`${indent(l + 4)}</div>`);
+            break;
+          }
+          case 'line':
+            // fake sparkline with stacked bars
+            lines.push(`${indent(l + 4)}<div className="flex items-end gap-px h-10">`);
+            for (let b = 0; b < randInt(8, 14); b++) {
+              lines.push(`${indent(l + 5)}<div className="flex-1 ${fgSubtle}" style={{ height: '${randInt(15, 95)}%' }} />`);
+            }
+            lines.push(`${indent(l + 4)}</div>`);
+            break;
+          case 'list':
+            for (let li = 0; li < randInt(2, 3); li++) {
+              lines.push(`${indent(l + 4)}<div className="flex items-center gap-2 ${li > 0 ? 'mt-2' : ''}">`);
+              lines.push(`${indent(l + 5)}<div className="w-1.5 h-1.5 ${fg}" />`);
+              lines.push(`${indent(l + 5)}<div className="${pick(widthClasses.slice(2, 5))} h-2 ${fgSubtle}" />`);
+              lines.push(`${indent(l + 4)}</div>`);
+            }
+            break;
+        }
+        lines.push(`${indent(l + 3)}</div>`);
+      }
+      lines.push(`${indent(l + 2)}</div>`);
+      lines.push(`${indent(l + 1)}</div>`);
       lines.push(`${indent(l)}</div>`);
       break;
     }

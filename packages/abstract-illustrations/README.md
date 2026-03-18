@@ -14,16 +14,24 @@ node bin/generate-illustration.mjs [keywords...] [options]
 
 Keywords control the type of composition generated. The first keyword becomes the main element; additional keywords are added as secondary decorations.
 
-| Keyword    | Description                          |
-|------------|--------------------------------------|
-| `code`     | Editor window with code-like lines   |
-| `terminal` | Command prompt with output lines     |
-| `data`     | Table / spreadsheet grid             |
-| `chart`    | Abstract bar chart                   |
-| `layers`   | Stacked offset rectangles            |
-| `network`  | Connected node diagram (SVG)         |
-| `grid`     | Dot or square grid pattern           |
-| `text`     | Paragraph-like block lines           |
+| Keyword     | Description                          |
+|-------------|--------------------------------------|
+| `code`      | Editor window with code-like lines   |
+| `terminal`  | Command prompt with output lines     |
+| `data`      | Table / spreadsheet grid             |
+| `chart`     | Abstract bar chart                   |
+| `layers`    | Stacked offset rectangles            |
+| `network`   | Connected node diagram (SVG)         |
+| `grid`      | Dot or square grid pattern           |
+| `text`      | Paragraph-like block lines           |
+| `kanban`    | Board with columns and cards         |
+| `timeline`  | Vertical timeline with events        |
+| `form`      | Input fields and controls            |
+| `music`     | Player with album art and track list |
+| `calendar`  | Month grid with highlighted days     |
+| `mail`      | Inbox message list                   |
+| `files`     | File tree with folders               |
+| `dashboard` | Widget grid with mini charts         |
 
 If no keywords are given, a random type is chosen.
 
