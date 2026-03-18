@@ -8,7 +8,7 @@ import Contact from './components/Contact';
 function App() {
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-white dark:bg-black">
+      <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
         <Navigation />
         <Hero />
         <Projects />

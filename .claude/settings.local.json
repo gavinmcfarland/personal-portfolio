@@ -14,7 +14,11 @@
       "Bash(npm install -D tailwindcss@latest postcss autoprefixer)",
       "Bash(npm uninstall tailwindcss postcss autoprefixer)",
       "Bash(npm install -D vite@^5.2.0)",
-      "Bash(cat package.json)"
+      "Bash(cat package.json)",
+      "Bash(node scripts/generate-illustration.mjs code)",
+      "Bash(node scripts/generate-illustration.mjs network --seed 7 --name NetworkViz)",
+      "Bash(node scripts/generate-illustration.mjs --seed 123)",
+      "Bash(chmod +x /Users/gavinmcfarland/Developer/repos/vibe-code-portfolio/portfolio/scripts/generate-illustration.mjs)"
     ],
     "deny": [],
     "ask": []

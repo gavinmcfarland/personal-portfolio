@@ -14,30 +14,36 @@ const Navigation = () => {
   }, []);
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? 'bg-white/90 dark:bg-black/90 backdrop-blur-md' : ''
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      scrolled
+        ? 'bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800/50'
+        : ''
     }`}>
-      <div className="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
-        <a href="#" className="text-sm font-bold tracking-wider text-black dark:text-white">
-          GAVIN MCFARLAND
+      <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
+        <a href="#" className="text-black dark:text-white group" aria-label="Home">
+          <svg className="w-8 h-8 transition-transform duration-300 group-hover:scale-105" viewBox="0 0 32 32" fill="currentColor">
+            <path d="M8 8h8v8H8zM16 16h8v8h-8z" />
+            <path d="M8 16h8v8H8z" opacity="0.2" />
+            <path d="M16 8h8v8h-8z" opacity="0.5" />
+          </svg>
         </a>
 
         <div className="flex items-center gap-8">
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#work" className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
-              Work
-            </a>
-            <a href="#about" className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
-              About
-            </a>
-            <a href="#contact" className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
-              Contact
-            </a>
+            {['Work', 'About', 'Contact'].map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="relative text-sm font-medium text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white transition-colors duration-300"
+              >
+                {item}
+              </a>
+            ))}
           </nav>
 
           <button
             onClick={toggleTheme}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+            className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-300"
             aria-label="Toggle theme"
           >
             {theme === 'light' ? (
