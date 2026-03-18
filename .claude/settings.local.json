@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(npm create vite@latest portfolio -- --template react)",
+      "Bash(npm install)",
+      "Bash(npm install -D tailwindcss postcss autoprefixer)",
+      "Bash(npx tailwindcss init -p)",
+      "Bash(npm run dev)",
+      "Bash(npm run build)",
+      "Bash(npm install -D tailwindcss@next @tailwindcss/vite@next)",
+      "Bash(npm install -D @vitejs/plugin-react@^4.0.0)",
+      "Bash(npm uninstall tailwindcss @tailwindcss/vite)",
+      "Bash(npm install -D tailwindcss@latest postcss autoprefixer)",
+      "Bash(npm uninstall tailwindcss postcss autoprefixer)",
+      "Bash(npm install -D vite@^5.2.0)",
+      "Bash(cat package.json)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

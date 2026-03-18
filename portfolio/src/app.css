@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --font-family-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  --font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  margin: 0;
+}
+
+::selection {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dark ::selection {
+  background: rgba(255, 255, 255, 0.1);
+}
