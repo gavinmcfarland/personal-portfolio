@@ -8,7 +8,7 @@
  * the portfolio hero section.
  *
  * Usage:
- *   node scripts/generate-illustration.mjs [keywords...] [--seed N] [--name ComponentName] [--dark]
+ *   node bin/generate-illustration.mjs [keywords...] [--seed N] [--name ComponentName] [--dark] [--colors "#hex1,#hex2,#hex3"]
  *
  * Keywords influence the composition:
  *   code       — editor window with code-like lines
@@ -27,6 +27,10 @@
  *   mail       — inbox message list
  *   files      — file tree with folders
  *   dashboard  — widget grid with mini charts
+ *   wave       — sine wave curves made of dots
+ *   orbit      — concentric arc paths of dots
+ *   spiral     — spiral pattern of dots
+ *   scatter    — clustered dots along a curved path
  *
  * If no keywords are given a random mix is chosen.
  *
@@ -57,7 +61,17 @@ const args = process.argv.slice(2);
 let seed = null;
 let componentName = 'Illustration';
 let dark = false;
+let customColors = null;     // [c1, c2, c3] — light mode: strongest, medium, lightest
+let customColorsDark = null;  // [c1, c2, c3] — dark mode: strongest, medium, lightest
 const keywords = [];
+
+function parseColorArg(value) {
+  const parts = value.split(',').map((c) => c.trim());
+  if (parts.length === 3 && parts.every((c) => /^#[0-9a-fA-F]{3,8}$/.test(c))) {
+    return parts;
+  }
+  return null;
+}
 
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--seed' && args[i + 1]) {
@@ -65,6 +79,12 @@ for (let i = 0; i < args.length; i++) {
     i++;
   } else if (args[i] === '--name' && args[i + 1]) {
     componentName = args[i + 1];
+    i++;
+  } else if (args[i] === '--colors' && args[i + 1]) {
+    customColors = parseColorArg(args[i + 1]);
+    i++;
+  } else if (args[i] === '--colors-dark' && args[i + 1]) {
+    customColorsDark = parseColorArg(args[i + 1]);
     i++;
   } else if (args[i] === '--dark') {
     dark = true;
@@ -82,22 +102,73 @@ const pick = (arr) => arr[Math.floor(rand() * arr.length)];
 const randInt = (min, max) => Math.floor(rand() * (max - min + 1)) + min;
 const randBool = (p = 0.5) => rand() < p;
 
-// ─── palette (monochrome, matches portfolio aesthetic) ────────────────────────
+// ─── palette ─────────────────────────────────────────────────────────────────
+// Always outputs dual light/dark classes so components work in both modes.
+// Three roles: c1 (strongest), c2 (medium), c3 (lightest/background)
 
-const fg = dark ? 'bg-gray-700' : 'bg-gray-200';
-const fgSoft = dark ? 'bg-gray-700/60' : 'bg-gray-200/60';
-const fgSubtle = dark ? 'bg-gray-800' : 'bg-gray-100';
-const border = dark ? 'border-gray-800' : 'border-gray-100';
-const borderStrong = dark ? 'border-gray-700' : 'border-gray-200';
-const bg = dark ? 'bg-gray-900' : 'bg-white';
-const dotBg = dark ? 'bg-gray-700' : 'bg-gray-300';
+// Light defaults
+const lightC1 = customColors ? customColors[0] : null;
+const lightC2 = customColors ? customColors[1] : null;
+const lightC3 = customColors ? customColors[2] : null;
+
+// Dark defaults
+const darkC1 = customColorsDark ? customColorsDark[0] : null;
+const darkC2 = customColorsDark ? customColorsDark[1] : null;
+const darkC3 = customColorsDark ? customColorsDark[2] : null;
+
+const hasCustomLight = !!customColors;
+const hasCustomDark = !!customColorsDark;
+
+function dual(lightClass, darkClass) {
+  return `${lightClass} dark:${darkClass}`;
+}
+
+const fg = dual(
+  hasCustomLight ? `bg-[${lightC1}]` : 'bg-gray-200',
+  hasCustomDark ? `bg-[${darkC1}]` : 'bg-gray-700'
+);
+const fgSoft = dual(
+  hasCustomLight ? `bg-[${lightC2}]` : 'bg-gray-200/60',
+  hasCustomDark ? `bg-[${darkC2}]` : 'bg-gray-700/60'
+);
+const fgSubtle = dual(
+  hasCustomLight ? `bg-[${lightC3}]` : 'bg-gray-100',
+  hasCustomDark ? `bg-[${darkC3}]` : 'bg-gray-800'
+);
+const border = dual(
+  hasCustomLight ? `border-[${lightC3}]` : 'border-gray-100',
+  hasCustomDark ? `border-[${darkC3}]` : 'border-gray-800'
+);
+const borderStrong = dual(
+  hasCustomLight ? `border-[${lightC2}]` : 'border-gray-200',
+  hasCustomDark ? `border-[${darkC2}]` : 'border-gray-700'
+);
+const bg = 'bg-white dark:bg-gray-900';
+const dotBg = dual(
+  hasCustomLight ? `bg-[${lightC2}]` : 'bg-gray-300',
+  hasCustomDark ? `bg-[${darkC2}]` : 'bg-gray-700'
+);
+
+// SVG fills — dual-mode via Tailwind fill-/stroke- classes
+const svgFillClass = dual(
+  hasCustomLight ? `fill-[${lightC2}]` : 'fill-gray-300',
+  hasCustomDark ? `fill-[${darkC2}]` : 'fill-gray-700'
+);
+const svgFillStrongClass = dual(
+  hasCustomLight ? `fill-[${lightC1}]` : 'fill-gray-400',
+  hasCustomDark ? `fill-[${darkC1}]` : 'fill-gray-600'
+);
+const svgStrokeClass = dual(
+  hasCustomLight ? `stroke-[${lightC3}]` : 'stroke-gray-200',
+  hasCustomDark ? `stroke-[${darkC3}]` : 'stroke-gray-800'
+);
 
 // ─── element generators ───────────────────────────────────────────────────────
 
 const widthClasses = ['w-8', 'w-10', 'w-12', 'w-14', 'w-16', 'w-20', 'w-24', 'w-28', 'w-32'];
 
 function genCodeLines() {
-  const lineCount = randInt(6, 12);
+  const lineCount = randInt(8, 12);
   const lines = [];
   let indent = 0;
 
@@ -126,7 +197,7 @@ function genCodeLines() {
 }
 
 function genTerminalLines() {
-  const lineCount = randInt(5, 9);
+  const lineCount = randInt(7, 10);
   const lines = [];
 
   for (let i = 0; i < lineCount; i++) {
@@ -156,12 +227,12 @@ function genTerminalLines() {
 
 function genDataRows() {
   const cols = randInt(3, 5);
-  const rows = randInt(4, 7);
+  const rows = randInt(5, 7);
   return { cols, rows };
 }
 
 function genChartBars() {
-  const count = randInt(5, 8);
+  const count = randInt(6, 10);
   const bars = [];
   for (let i = 0; i < count; i++) {
     bars.push({ height: randInt(20, 100) });
@@ -276,7 +347,7 @@ function genCalendar() {
 }
 
 function genMail() {
-  const count = randInt(4, 7);
+  const count = randInt(5, 7);
   const items = [];
   for (let i = 0; i < count; i++) {
     items.push({
@@ -292,7 +363,7 @@ function genMail() {
 function genFileTree() {
   const items = [];
   const depths = [0];
-  const count = randInt(6, 12);
+  const count = randInt(8, 12);
   for (let i = 0; i < count; i++) {
     const depth = pick(depths);
     const isFolder = randBool(0.35);
@@ -320,11 +391,117 @@ function genDashboard() {
   return widgets;
 }
 
+// ─── curve dot generators ────────────────────────────────────────────────────
+
+function genWaveDots() {
+  const waves = randInt(1, 3);
+  const result = [];
+  for (let w = 0; w < waves; w++) {
+    const amplitude = randInt(10, 25);
+    const frequency = 0.5 + rand() * 1.5;
+    const phase = rand() * Math.PI * 2;
+    const yOffset = 20 + w * (60 / waves);
+    const dotCount = randInt(20, 35);
+    const dots = [];
+    for (let i = 0; i < dotCount; i++) {
+      const t = i / (dotCount - 1);
+      const x = 5 + t * 90;
+      const y = yOffset + Math.sin(t * Math.PI * 2 * frequency + phase) * amplitude;
+      const size = 1.5 + rand() * 1.5;
+      dots.push({ x, y: Math.max(2, Math.min(98, y)), size });
+    }
+    result.push(dots);
+  }
+  return result;
+}
+
+function genOrbitDots() {
+  const rings = randInt(2, 4);
+  const result = [];
+  const cx = 50, cy = 50;
+  for (let r = 0; r < rings; r++) {
+    const rx = 12 + r * (35 / rings);
+    const ry = rx * (0.6 + rand() * 0.4);
+    const dotCount = randInt(12, 24);
+    const startAngle = rand() * Math.PI * 2;
+    const arcSpan = Math.PI * (1.2 + rand() * 0.8); // partial or full arc
+    const dots = [];
+    for (let i = 0; i < dotCount; i++) {
+      const t = i / (dotCount - 1);
+      const angle = startAngle + t * arcSpan;
+      const x = cx + Math.cos(angle) * rx;
+      const y = cy + Math.sin(angle) * ry;
+      if (x >= 1 && x <= 99 && y >= 1 && y <= 99) {
+        const size = 1 + rand() * 2;
+        dots.push({ x, y, size });
+      }
+    }
+    result.push(dots);
+  }
+  return result;
+}
+
+function genSpiralDots() {
+  const dotCount = randInt(30, 60);
+  const cx = 50, cy = 50;
+  const maxRadius = randInt(30, 42);
+  const turns = 1.5 + rand() * 2;
+  const direction = randBool(0.5) ? 1 : -1;
+  const dots = [];
+  for (let i = 0; i < dotCount; i++) {
+    const t = i / (dotCount - 1);
+    const angle = t * Math.PI * 2 * turns * direction;
+    const radius = t * maxRadius;
+    const x = cx + Math.cos(angle) * radius;
+    const y = cy + Math.sin(angle) * radius;
+    if (x >= 1 && x <= 99 && y >= 1 && y <= 99) {
+      const size = 1 + t * 2;
+      dots.push({ x, y, size });
+    }
+  }
+  return dots;
+}
+
+function genScatterDots() {
+  // clustered scatter — dots grouped along a curved path with jitter
+  const dotCount = randInt(40, 70);
+  const cx = 50, cy = 50;
+  const dots = [];
+  // base curve: a gentle arc
+  const curveType = pick(['arc', 'diagonal', 'bloom']);
+  for (let i = 0; i < dotCount; i++) {
+    let x, y;
+    const t = i / (dotCount - 1);
+    const jitterX = (rand() - 0.5) * 16;
+    const jitterY = (rand() - 0.5) * 16;
+    if (curveType === 'arc') {
+      const angle = -0.8 + t * (Math.PI + 0.6);
+      x = cx + Math.cos(angle) * 35 + jitterX;
+      y = cy + Math.sin(angle) * 25 + jitterY;
+    } else if (curveType === 'diagonal') {
+      x = 10 + t * 80 + jitterX;
+      y = 15 + t * 70 + jitterY;
+    } else {
+      // bloom — dots radiating from center with varying angle
+      const angle = rand() * Math.PI * 2;
+      const r = 5 + rand() * 38;
+      x = cx + Math.cos(angle) * r;
+      y = cy + Math.sin(angle) * r;
+    }
+    x = Math.max(2, Math.min(98, x));
+    y = Math.max(2, Math.min(98, y));
+    const size = 1 + rand() * 2;
+    dots.push({ x, y, size });
+  }
+  return dots;
+}
+
 // ─── choose composition ───────────────────────────────────────────────────────
 
 const ALL_TYPES = [
   'code', 'terminal', 'data', 'chart', 'layers', 'network', 'grid', 'text',
   'kanban', 'timeline', 'form', 'music', 'calendar', 'mail', 'files', 'dashboard',
+  'wave', 'orbit', 'spiral', 'scatter',
 ];
 
 let mainType;
@@ -340,27 +517,33 @@ if (keywords.length > 0) {
 }
 
 // always add a secondary decoration if we don't have one
-if (secondaryElements.length === 0 && randBool(0.7)) {
-  const decorations = ['grid', 'layers'];
+if (secondaryElements.length === 0) {
+  const decorations = ['grid', 'layers', 'lines', 'grid'];
   secondaryElements.push(pick(decorations.filter((d) => d !== mainType)));
 }
 
-// floating accent rectangles (0–2)
+// add a second secondary for better balance (50% chance)
+if (secondaryElements.length === 1 && randBool(0.5)) {
+  const extras = ['grid', 'layers', 'lines'].filter((d) => !secondaryElements.includes(d) && d !== mainType);
+  if (extras.length > 0) secondaryElements.push(pick(extras));
+}
+
+// floating accent rectangles (1–3, always at least one for balance)
 const floatingRects = [];
-const floatCount = randInt(0, 2);
+const floatCount = randInt(1, 3);
+// use opposing corner pairs so the composition feels balanced
+const cornerPairs = [
+  [{ top: randInt(4, 12), right: randInt(4, 16) }, { bottom: randInt(8, 16), left: randInt(4, 12) }],
+  [{ top: randInt(8, 20), left: randInt(2, 10) }, { bottom: randInt(4, 12), right: randInt(4, 12) }],
+];
+const chosenPair = pick(cornerPairs);
 for (let i = 0; i < floatCount; i++) {
-  const positions = [
-    { top: randInt(4, 16), right: randInt(4, 20) },
-    { bottom: randInt(8, 24), left: randInt(4, 16) },
-    { top: randInt(20, 40), left: randInt(2, 12) },
-    { bottom: randInt(4, 16), right: randInt(4, 16) },
-  ];
-  const pos = pick(positions);
+  const pos = i < chosenPair.length ? chosenPair[i] : pick(chosenPair);
   floatingRects.push({
     ...pos,
-    w: randInt(16, 44),
-    h: randInt(16, 44),
-    animate: randBool(0.5),
+    w: randInt(24, 48),
+    h: randInt(24, 48),
+    animate: randBool(0.6),
   });
 }
 
@@ -511,15 +694,13 @@ function renderMainElement(type, level) {
           const dy = nodes[i].y - nodes[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 45) {
-            const stroke = dark ? '#374151' : '#e5e7eb';
-            lines.push(`${indent(l + 1)}<line x1="${nodes[i].x}" y1="${nodes[i].y}" x2="${nodes[j].x}" y2="${nodes[j].y}" stroke="${stroke}" strokeWidth="0.5" />`);
+            lines.push(`${indent(l + 1)}<line x1="${nodes[i].x}" y1="${nodes[i].y}" x2="${nodes[j].x}" y2="${nodes[j].y}" className="${svgStrokeClass}" strokeWidth="0.5" />`);
           }
         }
       }
       // nodes
       for (const node of nodes) {
-        const fill = dark ? '#374151' : '#e5e7eb';
-        lines.push(`${indent(l + 1)}<rect x="${node.x - node.size / 2}" y="${node.y - node.size / 2}" width="${node.size}" height="${node.size}" fill="${fill}" />`);
+        lines.push(`${indent(l + 1)}<rect x="${node.x - node.size / 2}" y="${node.y - node.size / 2}" width="${node.size}" height="${node.size}" className="${svgFillClass}" />`);
       }
       lines.push(`${indent(l)}</svg>`);
       break;
@@ -821,6 +1002,53 @@ function renderMainElement(type, level) {
       lines.push(`${indent(l)}</div>`);
       break;
     }
+    case 'wave': {
+      const waves = genWaveDots();
+      lines.push(`${indent(l)}<svg viewBox="0 0 100 100" className="w-full h-full" fill="none">`);
+      for (let w = 0; w < waves.length; w++) {
+        const cls = w === 0 ? svgFillStrongClass : svgFillClass;
+        for (const dot of waves[w]) {
+          lines.push(`${indent(l + 1)}<rect x="${dot.x.toFixed(1)}" y="${dot.y.toFixed(1)}" width="${dot.size.toFixed(1)}" height="${dot.size.toFixed(1)}" className="${cls}" />`);
+        }
+      }
+      lines.push(`${indent(l)}</svg>`);
+      break;
+    }
+    case 'orbit': {
+      const rings = genOrbitDots();
+      lines.push(`${indent(l)}<svg viewBox="0 0 100 100" className="w-full h-full" fill="none">`);
+      // center marker
+      lines.push(`${indent(l + 1)}<rect x="48" y="48" width="4" height="4" className="${svgFillStrongClass}" />`);
+      for (let r = 0; r < rings.length; r++) {
+        const cls = r === 0 ? svgFillStrongClass : svgFillClass;
+        for (const dot of rings[r]) {
+          lines.push(`${indent(l + 1)}<rect x="${dot.x.toFixed(1)}" y="${dot.y.toFixed(1)}" width="${dot.size.toFixed(1)}" height="${dot.size.toFixed(1)}" className="${cls}" />`);
+        }
+      }
+      lines.push(`${indent(l)}</svg>`);
+      break;
+    }
+    case 'spiral': {
+      const dots = genSpiralDots();
+      lines.push(`${indent(l)}<svg viewBox="0 0 100 100" className="w-full h-full" fill="none">`);
+      for (let i = 0; i < dots.length; i++) {
+        const dot = dots[i];
+        const cls = i > dots.length * 0.6 ? svgFillStrongClass : svgFillClass;
+        lines.push(`${indent(l + 1)}<rect x="${dot.x.toFixed(1)}" y="${dot.y.toFixed(1)}" width="${dot.size.toFixed(1)}" height="${dot.size.toFixed(1)}" className="${cls}" />`);
+      }
+      lines.push(`${indent(l)}</svg>`);
+      break;
+    }
+    case 'scatter': {
+      const dots = genScatterDots();
+      lines.push(`${indent(l)}<svg viewBox="0 0 100 100" className="w-full h-full" fill="none">`);
+      for (const dot of dots) {
+        const cls = dot.size > 2 ? svgFillStrongClass : svgFillClass;
+        lines.push(`${indent(l + 1)}<rect x="${dot.x.toFixed(1)}" y="${dot.y.toFixed(1)}" width="${dot.size.toFixed(1)}" height="${dot.size.toFixed(1)}" className="${cls}" />`);
+      }
+      lines.push(`${indent(l)}</svg>`);
+      break;
+    }
   }
 
   return lines.join('\n');
@@ -829,23 +1057,43 @@ function renderMainElement(type, level) {
 function renderSecondary(type, level) {
   switch (type) {
     case 'grid': {
-      const { cols, rows } = genDotGrid();
+      const cols = randInt(5, 8);
+      const rows = randInt(4, 6);
       const lines = [];
-      lines.push(`${indent(level)}<div className="grid grid-cols-${cols} gap-3">`);
+      lines.push(`${indent(level)}<div className="grid grid-cols-${cols} gap-2">`);
       for (let i = 0; i < cols * rows; i++) {
-        lines.push(`${indent(level + 1)}<div className="w-1 h-1 ${dotBg}" />`);
+        // vary dot intensity for visual interest
+        const dotClass = randBool(0.3) ? fg : dotBg;
+        lines.push(`${indent(level + 1)}<div className="w-1 h-1 ${dotClass}" />`);
       }
       lines.push(`${indent(level)}</div>`);
       return lines.join('\n');
     }
     case 'layers': {
-      const count = randInt(2, 3);
+      const count = randInt(2, 4);
       const lines = [];
+      lines.push(`${indent(level)}<div className="relative">`);
       for (let i = 0; i < count; i++) {
-        const w = randInt(16, 40);
-        const h = randInt(16, 40);
-        lines.push(`${indent(level)}<div className="w-${w > 32 ? 40 : w > 20 ? 24 : 16} h-${h > 32 ? 40 : h > 20 ? 24 : 16} border ${border}" />`);
+        const w = pick(['w-20', 'w-24', 'w-28', 'w-32']);
+        const h = pick(['h-16', 'h-20', 'h-24']);
+        const offset = i * 6;
+        lines.push(`${indent(level + 1)}<div className="absolute ${w} ${h} border ${border}" style={{ top: '${offset}px', left: '${offset}px' }} />`);
       }
+      // size the container to fit
+      lines.push(`${indent(level + 1)}<div className="w-40 h-32" />`);
+      lines.push(`${indent(level)}</div>`);
+      return lines.join('\n');
+    }
+    case 'lines': {
+      // horizontal ruled lines — like a subtle notepad or separator
+      const count = randInt(4, 7);
+      const lines = [];
+      lines.push(`${indent(level)}<div className="space-y-2 w-24">`);
+      for (let i = 0; i < count; i++) {
+        const w = randBool(0.6) ? 'w-full' : pick(['w-16', 'w-20', 'w-12']);
+        lines.push(`${indent(level + 1)}<div className="${w} h-px ${randBool(0.4) ? fg : fgSubtle}" />`);
+      }
+      lines.push(`${indent(level)}</div>`);
       return lines.join('\n');
     }
     default:
@@ -879,17 +1127,18 @@ output.push(`      <div className="absolute inset-0 m-auto w-[320px] flex items-
 output.push(renderMainElement(mainType, 4));
 output.push(`      </div>`);
 
-// secondary elements — positioned at edges
+// secondary elements — positioned in opposing corners for balance
 if (secondaryElements.length > 0) {
-  const positions = [
-    'absolute bottom-8 left-8',
-    'absolute top-8 right-8',
-    'absolute bottom-12 right-12',
+  const cornerSets = [
+    ['absolute bottom-6 left-6', 'absolute top-6 right-6'],
+    ['absolute bottom-6 right-6', 'absolute top-6 left-6'],
+    ['absolute bottom-8 left-8', 'absolute top-10 right-10'],
   ];
+  const corners = pick(cornerSets);
   for (let i = 0; i < secondaryElements.length; i++) {
     output.push('');
     output.push(`      {/* Secondary: ${secondaryElements[i]} */}`);
-    output.push(`      <div className="${positions[i % positions.length]}">`);
+    output.push(`      <div className="${corners[i % corners.length]}">`);
     output.push(renderSecondary(secondaryElements[i], 4));
     output.push(`      </div>`);
   }
@@ -906,7 +1155,7 @@ output.push(`export default ${componentName};`);
 const metadata = [
   `// Generated by generate-illustration.mjs`,
   `// Seed: ${seed} | Keywords: ${keywords.length > 0 ? keywords.join(', ') : '(random)'} | Main: ${mainType}`,
-  `// Dark mode: ${dark}`,
+  `// Dark mode: ${dark}${customColors ? ' | Colors (light): ' + customColors.join(', ') : ''}${customColorsDark ? ' | Colors (dark): ' + customColorsDark.join(', ') : ''}`,
   `//`,
   `// Drop this component into your project and render it inside a container`,
   `// with a defined height (e.g. h-[400px] or h-full).`,

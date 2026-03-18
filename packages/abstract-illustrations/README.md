@@ -14,24 +14,35 @@ node bin/generate-illustration.mjs [keywords...] [options]
 
 Keywords control the type of composition generated. The first keyword becomes the main element; additional keywords are added as secondary decorations.
 
+**UI elements**
+
 | Keyword     | Description                          |
 |-------------|--------------------------------------|
 | `code`      | Editor window with code-like lines   |
 | `terminal`  | Command prompt with output lines     |
 | `data`      | Table / spreadsheet grid             |
 | `chart`     | Abstract bar chart                   |
-| `layers`    | Stacked offset rectangles            |
-| `network`   | Connected node diagram (SVG)         |
-| `grid`      | Dot or square grid pattern           |
-| `text`      | Paragraph-like block lines           |
+| `form`      | Input fields and controls            |
 | `kanban`    | Board with columns and cards         |
 | `timeline`  | Vertical timeline with events        |
-| `form`      | Input fields and controls            |
 | `music`     | Player with album art and track list |
 | `calendar`  | Month grid with highlighted days     |
 | `mail`      | Inbox message list                   |
 | `files`     | File tree with folders               |
 | `dashboard` | Widget grid with mini charts         |
+
+**Geometric / abstract**
+
+| Keyword     | Description                                     |
+|-------------|-------------------------------------------------|
+| `layers`    | Stacked offset rectangles                       |
+| `network`   | Connected node diagram (SVG)                    |
+| `grid`      | Dot or square grid pattern                      |
+| `text`      | Paragraph-like block lines                      |
+| `wave`      | Sine wave curves made of dots                   |
+| `orbit`     | Concentric elliptical arc paths of dots         |
+| `spiral`    | Spiral pattern of dots expanding from centre    |
+| `scatter`   | Clustered dots along a curved path with jitter  |
 
 If no keywords are given, a random type is chosen.
 
@@ -42,6 +53,14 @@ If no keywords are given, a random type is chosen.
 | `--seed N`        | Set a specific seed for deterministic output      |
 | `--name Name`     | Set the exported component name (default: `Illustration`) |
 | `--dark`          | Use dark mode colour tokens                      |
+| `--colors "#c1,#c2,#c3"` | Custom three-colour palette (strong, medium, subtle) |
+
+The three colours map to:
+- **Strong** (`c1`) — primary elements, window chrome dots, chart bars, SVG dot emphasis
+- **Medium** (`c2`) — secondary elements, softer fills, SVG dot base colour
+- **Subtle** (`c3`) — backgrounds, borders, lightest fills
+
+When `--colors` is omitted the default monochrome gray palette is used.
 
 ### Examples
 
@@ -57,10 +76,22 @@ Generate a dark mode chart with a dot grid, saved to a file:
 node bin/generate-illustration.mjs chart grid --dark > ChartVisual.jsx
 ```
 
+Generate with a custom colour palette:
+
+```bash
+node bin/generate-illustration.mjs code --colors "#e63946,#a8dadc,#1d3557"
+```
+
 Generate a deterministic terminal illustration with a custom component name:
 
 ```bash
 node bin/generate-illustration.mjs terminal --seed 42 --name TerminalVisual
+```
+
+Generate a spiral pattern:
+
+```bash
+node bin/generate-illustration.mjs spiral
 ```
 
 Generate a random illustration (different each time):
@@ -108,7 +139,7 @@ const CodeVisual = () => {
 
       {/* Secondary: grid */}
       <div className="absolute bottom-8 left-8">
-        <div className="grid grid-cols-7 gap-3">
+        <div className="grid grid-cols-7 gap-2">
           <div className="w-1 h-1 bg-gray-300" />
           <!-- ... dots ... -->
         </div>
@@ -130,7 +161,7 @@ Render the component inside a container with a defined height:
 
 ## Preview server
 
-Launch a local server to preview illustrations in the browser without setting up a React project.
+Launch a local server to preview illustrations in the browser without setting up a React project. The UI includes controls for all generator options — changing any dropdown, checkbox, or colour picker regenerates the illustration immediately.
 
 ```bash
 node bin/preview.mjs [keywords...] [options]
@@ -179,6 +210,7 @@ pnpm preview -- terminal --dark
 ## Design notes
 
 - **Monochrome palette** — light mode uses `gray-100`/`gray-200`/`gray-300`, dark mode uses `gray-700`/`gray-800`/`gray-900`
-- **No border radius** — all shapes are sharp rectangles
+- **No border radius** — all shapes are sharp rectangles (including dots in curve types, which use square SVG `<rect>` elements)
+- **Balanced compositions** — every illustration includes at least one floating accent rectangle and one or two secondary decorations positioned in opposing corners
 - **Tailwind CSS** — output uses Tailwind utility classes; the preview server loads Tailwind via CDN
 - **Zero dependencies** — both the generator and preview server use only Node.js built-ins

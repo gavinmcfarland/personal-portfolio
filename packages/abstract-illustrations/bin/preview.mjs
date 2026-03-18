@@ -11,6 +11,7 @@ const generatorPath = join(__dirname, 'generate-illustration.mjs');
 const ALL_KEYWORDS = [
   'code', 'terminal', 'data', 'chart', 'layers', 'network', 'grid', 'text',
   'kanban', 'timeline', 'form', 'music', 'calendar', 'mail', 'files', 'dashboard',
+  'wave', 'orbit', 'spiral', 'scatter',
 ];
 
 // ─── parse CLI args (used as initial defaults) ───────────────────────────────
@@ -63,13 +64,27 @@ function queryToArgs(query) {
     args.push('--name', name);
   }
 
+  const c1 = params.get('c1') || '';
+  const c2 = params.get('c2') || '';
+  const c3 = params.get('c3') || '';
+  if (c1 && c2 && c3) {
+    args.push('--colors', `${c1},${c2},${c3}`);
+  }
+
+  const d1 = params.get('d1') || '';
+  const d2 = params.get('d2') || '';
+  const d3 = params.get('d3') || '';
+  if (d1 && d2 && d3) {
+    args.push('--colors-dark', `${d1},${d2},${d3}`);
+  }
+
   return args;
 }
 
 // ─── parse generator args back into form state ───────────────────────────────
 
 function argsToState(args) {
-  const state = { keyword: 'random', secondary: 'none', dark: false, seed: '', name: '' };
+  const state = { keyword: 'random', secondary: 'none', dark: false, seed: '', name: '', c1: '', c2: '', c3: '', d1: '', d2: '', d3: '' };
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--dark') {
@@ -79,6 +94,22 @@ function argsToState(args) {
       i++;
     } else if (args[i] === '--name' && args[i + 1]) {
       state.name = args[i + 1];
+      i++;
+    } else if (args[i] === '--colors' && args[i + 1]) {
+      const parts = args[i + 1].split(',');
+      if (parts.length === 3) {
+        state.c1 = parts[0].trim();
+        state.c2 = parts[1].trim();
+        state.c3 = parts[2].trim();
+      }
+      i++;
+    } else if (args[i] === '--colors-dark' && args[i + 1]) {
+      const parts = args[i + 1].split(',');
+      if (parts.length === 3) {
+        state.d1 = parts[0].trim();
+        state.d2 = parts[1].trim();
+        state.d3 = parts[2].trim();
+      }
       i++;
     } else if (!args[i].startsWith('--') && args[i] !== '--') {
       if (state.keyword === 'random') {
@@ -102,6 +133,12 @@ function queryToUiState(query) {
     dark: params.get('dark') === 'true',
     seed: params.get('seed') || '',
     name: params.get('name') || '',
+    c1: params.get('c1') || '',
+    c2: params.get('c2') || '',
+    c3: params.get('c3') || '',
+    d1: params.get('d1') || '',
+    d2: params.get('d2') || '',
+    d3: params.get('d3') || '',
   };
 }
 
@@ -262,6 +299,15 @@ function buildPage(generatorArgs, uiState) {
       width: 80px;
     }
 
+    .controls input[type="color"] {
+      width: 32px;
+      height: 32px;
+      padding: 1px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
     .controls input[type="text"].wide {
       width: 120px;
     }
@@ -353,6 +399,38 @@ function buildPage(generatorArgs, uiState) {
       </label>
     </div>
 
+    <div style="width: 1px; height: 28px; background: #e5e7eb; margin: 0 4px; align-self: end;"></div>
+
+    <div class="field">
+      <label>Light</label>
+      <div style="display: flex; gap: 4px;">
+        <input type="color" ${state.c1 ? 'name="c1" ' : ''}id="c1" value="${state.c1 || '#9ca3af'}" data-color="c1" title="Strong" />
+        <input type="color" ${state.c2 ? 'name="c2" ' : ''}id="c2" value="${state.c2 || '#d1d5db'}" data-color="c2" title="Medium" />
+        <input type="color" ${state.c3 ? 'name="c3" ' : ''}id="c3" value="${state.c3 || '#f3f4f6'}" data-color="c3" title="Subtle" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Dark</label>
+      <div style="display: flex; gap: 4px;">
+        <input type="color" ${state.d1 ? 'name="d1" ' : ''}id="d1" value="${state.d1 || '#4b5563'}" data-color="d1" title="Strong" />
+        <input type="color" ${state.d2 ? 'name="d2" ' : ''}id="d2" value="${state.d2 || '#374151'}" data-color="d2" title="Medium" />
+        <input type="color" ${state.d3 ? 'name="d3" ' : ''}id="d3" value="${state.d3 || '#1f2937'}" data-color="d3" title="Subtle" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>&nbsp;</label>
+      <div style="display: flex; gap: 4px;">
+        <button type="button" id="randomize-colors" style="font-size: 11px; padding: 4px 8px;">
+          Shuffle
+        </button>
+        <button type="button" id="reset-colors" style="font-size: 11px; padding: 4px 8px;">
+          Reset
+        </button>
+      </div>
+    </div>
+
     <div class="spacer"></div>
 
     <span class="seed-display">seed: ${seedMatch}</span>
@@ -368,6 +446,102 @@ function buildPage(generatorArgs, uiState) {
   <script>
     document.querySelectorAll('.controls select, .controls input[type="checkbox"]').forEach(function(el) {
       el.addEventListener('change', function() { this.form.submit(); });
+    });
+    document.querySelectorAll('.controls input[type="color"]').forEach(function(el) {
+      el.addEventListener('change', function() {
+        document.querySelectorAll('input[data-color]').forEach(function(c) {
+          c.setAttribute('name', c.dataset.color);
+        });
+        this.form.submit();
+      });
+    });
+
+    function activateAllColors() {
+      document.querySelectorAll('input[data-color]').forEach(function(el) {
+        el.setAttribute('name', el.dataset.color);
+      });
+    }
+
+    // harmonious colour generation
+    function hslToHex(h, s, l) {
+      h = ((h % 360) + 360) % 360;
+      s = Math.max(0, Math.min(100, s)) / 100;
+      l = Math.max(0, Math.min(100, l)) / 100;
+      var a = s * Math.min(l, 1 - l);
+      function f(n) {
+        var k = (n + h / 30) % 12;
+        var color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+      }
+      return '#' + f(0) + f(8) + f(4);
+    }
+
+    function generateHarmony() {
+      var baseHue = Math.floor(Math.random() * 360);
+      var strategies = ['mono', 'analogous', 'complementary', 'triadic', 'split'];
+      var strategy = strategies[Math.floor(Math.random() * strategies.length)];
+
+      var h1 = baseHue, h2 = baseHue, h3 = baseHue;
+      switch (strategy) {
+        case 'mono':
+          h2 = baseHue;
+          h3 = baseHue;
+          break;
+        case 'analogous':
+          h2 = baseHue + 25 + Math.floor(Math.random() * 15);
+          h3 = baseHue - 25 - Math.floor(Math.random() * 15);
+          break;
+        case 'complementary':
+          h2 = baseHue + 180;
+          h3 = baseHue + 180 + (Math.random() > 0.5 ? 15 : -15);
+          break;
+        case 'triadic':
+          h2 = baseHue + 120;
+          h3 = baseHue + 240;
+          break;
+        case 'split':
+          h2 = baseHue + 150;
+          h3 = baseHue + 210;
+          break;
+      }
+
+      return {
+        light: {
+          c1: hslToHex(h1, 30 + Math.random() * 35, 55 + Math.random() * 15),
+          c2: hslToHex(h2, 20 + Math.random() * 25, 75 + Math.random() * 10),
+          c3: hslToHex(h3, 15 + Math.random() * 20, 92 + Math.random() * 5),
+        },
+        dark: {
+          c1: hslToHex(h1, 40 + Math.random() * 30, 45 + Math.random() * 15),
+          c2: hslToHex(h2, 25 + Math.random() * 20, 30 + Math.random() * 10),
+          c3: hslToHex(h3, 15 + Math.random() * 15, 15 + Math.random() * 8),
+        }
+      };
+    }
+
+    document.getElementById('randomize-colors').addEventListener('click', function() {
+      var palette = generateHarmony();
+      document.getElementById('c1').value = palette.light.c1;
+      document.getElementById('c2').value = palette.light.c2;
+      document.getElementById('c3').value = palette.light.c3;
+      document.getElementById('d1').value = palette.dark.c1;
+      document.getElementById('d2').value = palette.dark.c2;
+      document.getElementById('d3').value = palette.dark.c3;
+      activateAllColors();
+      this.form.submit();
+    });
+
+    document.getElementById('reset-colors').addEventListener('click', function() {
+      document.getElementById('c1').value = '#9ca3af';
+      document.getElementById('c2').value = '#d1d5db';
+      document.getElementById('c3').value = '#f3f4f6';
+      document.getElementById('d1').value = '#4b5563';
+      document.getElementById('d2').value = '#374151';
+      document.getElementById('d3').value = '#1f2937';
+      document.querySelectorAll('input[data-color]').forEach(function(el) {
+        el.removeAttribute('name');
+      });
+      this.form.submit();
     });
   </script>
 </body>
