@@ -1,13 +1,13 @@
 const About = () => {
   const skills = [
     'TypeScript / JavaScript',
-    'React / Next.js',
-    'Node.js / Python',
-    'System Architecture',
+    'Svelte / React',
+    'Figma Plugin & Widget API',
+    'CLI Tools (Ink / Node.js)',
+    'Vite / Rollup',
     'API Design',
     'Developer Tools',
-    'Cloud Infrastructure',
-    'Database Design'
+    'npm Package Publishing'
   ];
 
   const stats = [
@@ -29,18 +29,18 @@ const About = () => {
 
             <div className="space-y-6 text-gray-500 dark:text-gray-400 leading-relaxed">
               <p>
-                I'm a full-stack engineer and maker who builds digital products that solve real problems.
-                From developer tools to web platforms, I focus on creating software that empowers teams and
-                individuals to work more efficiently.
+                I build developer tools and design tooling — CLIs, Figma plugins, and npm packages used by
+                thousands of developers and designers. My focus is on making workflows faster and removing friction
+                from creative and development processes.
               </p>
               <p>
-                My work spans the entire stack — from system architecture and APIs to intuitive user interfaces.
-                Projects like Plugma showcase my approach to developer experience, featuring hot module reloading
-                and zero-config setup that makes building easier for thousands of developers.
+                Plugma, my most popular project, gives Figma plugin developers hot module reloading, in-browser
+                previews, and zero-config setup. I've also published several Figma plugins including Table Creator and Figlet, and open-source
+                libraries like Askeroo for building interactive CLI experiences.
               </p>
               <p>
-                I believe in open source, clean code, and building tools that are not just functional, but
-                delightful to use. Every project is an opportunity to push boundaries and create something meaningful.
+                I care about developer experience and ship tools that are simple to use but powerful underneath.
+                Most of my work is open source and published on npm.
               </p>
             </div>
           </div>

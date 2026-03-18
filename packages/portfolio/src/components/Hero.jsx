@@ -1,6 +1,6 @@
 const Hero = () => {
   return (
-    <section className="min-h-screen flex items-center pt-20">
+    <section className="pt-20">
       <div className="w-full max-w-7xl mx-auto px-8 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left content */}
@@ -8,7 +8,7 @@ const Hero = () => {
             <div className="animate-fade-up">
               <span className="inline-flex items-center gap-3 text-sm font-medium text-gray-400 dark:text-gray-500 mb-6 tracking-wide">
                 <span className="w-8 h-px bg-gray-300 dark:bg-gray-700" />
-                FULL-STACK ENGINEER & MAKER
+                DEVELOPER TOOLS & DESIGN TOOLING
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white mb-6 leading-tight animate-fade-up-delay-1">
@@ -16,7 +16,7 @@ const Hero = () => {
               <span className="block text-gray-400 dark:text-gray-500">products that matter</span>
             </h2>
             <p className="text-lg text-gray-500 dark:text-gray-400 mb-10 max-w-md animate-fade-up-delay-2 leading-relaxed">
-              Design engineer crafting tools, applications, and experiences. From developer tools to web platforms, I build products that solve real problems.
+              I build developer tools and Figma plugins used by thousands. From CLIs to design tooling, I create products that make workflows faster and simpler.
             </p>
             <div className="flex gap-4 animate-fade-up-delay-3">
               <a
