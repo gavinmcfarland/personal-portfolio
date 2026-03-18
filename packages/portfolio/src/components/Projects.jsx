@@ -68,12 +68,14 @@ const Projects = () => {
                       href={project.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-medium text-black dark:text-white hover:opacity-60 transition-opacity flex items-center gap-2 group/link"
+                      className="group/link px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-sm font-medium transition-opacity duration-300 hover:opacity-80"
                     >
-                      View Project
-                      <svg className="w-4 h-4 transition-transform group-hover/link:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
+                      <span className="flex items-center gap-2">
+                        View Project
+                        <svg className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </span>
                     </a>
                   )}
                   {project.github && (
@@ -81,7 +83,7 @@ const Projects = () => {
                       href={project.github}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-medium text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white transition-colors"
+                      className="px-4 py-2 border border-gray-200 dark:border-gray-800 text-black dark:text-white text-sm font-medium hover:border-gray-400 dark:hover:border-gray-600 transition-colors duration-300"
                     >
                       Source
                     </a>
