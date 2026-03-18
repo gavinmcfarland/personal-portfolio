@@ -19,7 +19,7 @@ const Navigation = () => {
         ? 'bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800/50'
         : ''
     }`}>
-      <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
+      <div className="w-full max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
         <a href="#" className="text-black dark:text-white group" aria-label="Home">
           <svg className="w-8 h-8 transition-transform duration-300 group-hover:scale-105" viewBox="0 0 32 32" fill="currentColor">
             <path d="M8 8h8v8H8zM16 16h8v8h-8z" />

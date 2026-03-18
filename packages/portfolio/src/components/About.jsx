@@ -22,7 +22,7 @@ const About = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Left column */}
           <div>
-            <span className="inline-flex items-center gap-3 text-sm font-medium text-gray-400 dark:text-gray-500 mb-8 tracking-wide">
+            <span className="inline-flex items-center gap-3 text-sm font-medium text-gray-400 dark:text-gray-500 mb-4 tracking-wide">
               <span className="w-8 h-px bg-gray-300 dark:bg-gray-700" />
               ABOUT
             </span>
@@ -65,7 +65,7 @@ const About = () => {
             <h3 className="text-sm font-medium text-gray-400 dark:text-gray-500 mb-6 tracking-wide">
               EXPERTISE
             </h3>
-            <div className="space-y-0">
+            <div className="space-y-0 border-t border-gray-100 dark:border-gray-800/50">
               {skills.map((skill, i) => (
                 <div
                   key={skill}

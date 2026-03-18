@@ -65,7 +65,7 @@ const Contact = () => {
         <div className="mt-32 pt-8 border-t border-gray-100 dark:border-gray-800/50">
           <div className="flex justify-between items-center">
             <p className="text-sm text-gray-400 dark:text-gray-600">
-              &copy; 2024 Gavin McFarland
+              &copy; 2026 Gavin McFarland
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-600">
               Built with React & Tailwind CSS
