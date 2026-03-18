@@ -148,12 +148,20 @@ function jsxToHtml(jsx) {
   let html = jsx;
 
   html = html.replace(/^\/\/.*\n/gm, '');
+  html = html.replace(/^import .*;\s*$/gm, '');
   html = html.replace(/const \w+ = \(\) => \{/, '');
+  // strip React hooks (useRef, useState, useEffect blocks)
+  html = html.replace(/^\s*const \w+Ref = useRef.*$/gm, '');
+  html = html.replace(/^\s*const \[.*\] = useState.*$/gm, '');
+  html = html.replace(/^\s*useEffect\(\(\) => \{[\s\S]*?\}, \[.*?\]\);\s*/gm, '');
   html = html.replace(/^\s*return \(\s*$/m, '');
   html = html.replace(/^\s*\);\s*$/m, '');
   html = html.replace(/^\s*\};\s*$/m, '');
   html = html.replace(/^export default \w+;\s*$/m, '');
   html = html.replace(/\{\/\*.*?\*\/\}/g, '');
+  // strip React ref attributes and template literal styles
+  html = html.replace(/\s*ref=\{[^}]+\}/g, '');
+  html = html.replace(/style=\{\{ transform: `scale\(\$\{scale\}\)` \}\}/g, 'id="illustration-inner"');
   html = html.replace(/className=/g, 'class=');
 
   html = html.replace(/style=\{\{(.*?)\}\}/g, (_, inner) => {
@@ -360,11 +368,24 @@ function buildPage(generatorArgs, uiState) {
   </style>
 </head>
 <body>
-  <div style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 56px); padding: 2rem;">
-    <div style="width: 480px; height: 480px; position: relative;">
-      ${body}
-    </div>
+  <div id="illustration-container" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 56px); padding: 2rem;">
+    ${body}
   </div>
+  <script>
+    (function() {
+      var inner = document.getElementById('illustration-inner');
+      var container = document.getElementById('illustration-container');
+      if (!inner || !container) return;
+      function resize() {
+        var w = container.clientWidth - 64;
+        var h = container.clientHeight - 64;
+        var s = Math.min(w / 480, h / 480, 1);
+        inner.style.transform = 'scale(' + s + ')';
+      }
+      resize();
+      new ResizeObserver(resize).observe(container);
+    })();
+  </script>
 
   <form class="controls" method="GET" action="/">
     <div class="field">

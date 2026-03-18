@@ -1105,9 +1105,26 @@ function renderSecondary(type, level) {
 
 const output = [];
 
+output.push(`import { useRef, useEffect, useState } from 'react';`);
+output.push('');
 output.push(`const ${componentName} = () => {`);
+output.push(`  const containerRef = useRef(null);`);
+output.push(`  const [scale, setScale] = useState(1);`);
+output.push('');
+output.push(`  useEffect(() => {`);
+output.push(`    const el = containerRef.current;`);
+output.push(`    if (!el) return;`);
+output.push(`    const observer = new ResizeObserver(([entry]) => {`);
+output.push(`      const { width, height } = entry.contentRect;`);
+output.push(`      setScale(Math.min(width / 480, height / 480));`);
+output.push(`    });`);
+output.push(`    observer.observe(el);`);
+output.push(`    return () => observer.disconnect();`);
+output.push(`  }, []);`);
+output.push('');
 output.push(`  return (`);
-output.push(`    <div className="relative w-full h-full">`);
+output.push(`    <div ref={containerRef} className="w-full h-full flex items-center justify-center overflow-hidden">`);
+output.push(`      <div className="relative w-[480px] h-[480px] shrink-0 origin-center" style={{ transform: \`scale(\${scale})\` }}>`);
 
 // floating accent rectangles
 for (const rect of floatingRects) {
@@ -1117,15 +1134,15 @@ for (const rect of floatingRects) {
   if (rect.left !== undefined) posClasses.push(`left-${rect.left}`);
   if (rect.right !== undefined) posClasses.push(`right-${rect.right}`);
   const animClass = rect.animate ? ' animate-float' : '';
-  output.push(`      <div className="absolute ${posClasses.join(' ')} w-${rect.w > 32 ? 44 : rect.w > 20 ? 32 : 20} h-${rect.h > 32 ? 44 : rect.h > 20 ? 32 : 20} border ${border}${animClass}" />`);
+  output.push(`        <div className="absolute ${posClasses.join(' ')} w-${rect.w > 32 ? 44 : rect.w > 20 ? 32 : 20} h-${rect.h > 32 ? 44 : rect.h > 20 ? 32 : 20} border ${border}${animClass}" />`);
 }
 
 // main element — centered
 output.push('');
-output.push(`      {/* Main element: ${mainType} */}`);
-output.push(`      <div className="absolute inset-0 m-auto w-[320px] flex items-center justify-center">`);
-output.push(renderMainElement(mainType, 4));
-output.push(`      </div>`);
+output.push(`        {/* Main element: ${mainType} */}`);
+output.push(`        <div className="absolute inset-0 m-auto w-[320px] flex items-center justify-center">`);
+output.push(renderMainElement(mainType, 5));
+output.push(`        </div>`);
 
 // secondary elements — positioned in opposing corners for balance
 if (secondaryElements.length > 0) {
@@ -1137,13 +1154,14 @@ if (secondaryElements.length > 0) {
   const corners = pick(cornerSets);
   for (let i = 0; i < secondaryElements.length; i++) {
     output.push('');
-    output.push(`      {/* Secondary: ${secondaryElements[i]} */}`);
-    output.push(`      <div className="${corners[i % corners.length]}">`);
-    output.push(renderSecondary(secondaryElements[i], 4));
-    output.push(`      </div>`);
+    output.push(`        {/* Secondary: ${secondaryElements[i]} */}`);
+    output.push(`        <div className="${corners[i % corners.length]}">`);
+    output.push(renderSecondary(secondaryElements[i], 5));
+    output.push(`        </div>`);
   }
 }
 
+output.push(`      </div>`);
 output.push(`    </div>`);
 output.push(`  );`);
 output.push(`};`);
@@ -1157,8 +1175,8 @@ const metadata = [
   `// Seed: ${seed} | Keywords: ${keywords.length > 0 ? keywords.join(', ') : '(random)'} | Main: ${mainType}`,
   `// Dark mode: ${dark}${customColors ? ' | Colors (light): ' + customColors.join(', ') : ''}${customColorsDark ? ' | Colors (dark): ' + customColorsDark.join(', ') : ''}`,
   `//`,
-  `// Drop this component into your project and render it inside a container`,
-  `// with a defined height (e.g. h-[400px] or h-full).`,
+  `// Drop this component into your project. It renders at a fixed 480x480`,
+  `// internal size and scales automatically to fit its container.`,
   ``,
 ];
 
