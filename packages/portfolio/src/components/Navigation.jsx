@@ -43,7 +43,7 @@ const Navigation = () => {
 
           <button
             onClick={toggleTheme}
-            className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-300"
+            className="w-10 h-10 flex items-center justify-center text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-300"
             aria-label="Toggle theme"
           >
             {mode === 'system' ? (
