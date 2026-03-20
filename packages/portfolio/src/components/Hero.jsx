@@ -13,10 +13,14 @@ const Hero = () => {
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white mb-6 leading-tight animate-fade-up-delay-1">
               Building digital
-              <span className="block text-gray-400 dark:text-gray-500">products that matter</span>
+              <span className="block text-gray-400 dark:text-gray-500">
+                products that matter
+              </span>
             </h2>
             <p className="text-lg text-gray-500 dark:text-gray-400 mb-10 max-w-md animate-fade-up-delay-2 leading-relaxed">
-              I build developer tools and Figma plugins used by thousands. From CLIs to design tooling, I create products that make workflows faster and simpler.
+              I build developer tools and Figma plugins used by thousands. From
+              CLIs to design tooling, I create products that make workflows
+              faster and simpler.
             </p>
             <div className="flex gap-4 animate-fade-up-delay-3">
               <a
@@ -25,8 +29,18 @@ const Hero = () => {
               >
                 <span className="flex items-center gap-2">
                   View Work
-                  <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  <svg
+                    className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                    />
                   </svg>
                 </span>
               </a>
@@ -99,10 +113,7 @@ const Hero = () => {
             {/* Dot grid */}
             <div className="absolute bottom-10 left-10 grid grid-cols-5 gap-3">
               {Array.from({ length: 15 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-1 h-1 bg-gray-300 dark:bg-gray-700"
-                />
+                <div key={i} className="w-1 h-1 bg-gray-300 dark:bg-gray-700" />
               ))}
             </div>
           </div>
