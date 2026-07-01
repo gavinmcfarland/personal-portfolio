@@ -13,23 +13,22 @@ export const useTheme = () => {
 const getSystemTheme = () =>
   window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
+/* Dark is the default canvas; the `light` class flips the tokens. */
 const applyTheme = (resolved) => {
   const root = document.documentElement;
   const body = document.body;
-  if (resolved === 'dark') {
-    root.classList.add('dark');
-    body.classList.add('dark');
+  if (resolved === 'light') {
+    root.classList.add('light');
+    body.classList.add('light');
   } else {
-    root.classList.remove('dark');
-    body.classList.remove('dark');
+    root.classList.remove('light');
+    body.classList.remove('light');
   }
 };
 
 export const ThemeProvider = ({ children }) => {
   const [mode, setMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      // Clean up old localStorage key from previous implementation
-      localStorage.removeItem('theme');
       return localStorage.getItem('theme-mode') || 'system';
     }
     return 'system';
@@ -54,7 +53,7 @@ export const ThemeProvider = ({ children }) => {
   }, [mode]);
 
   const toggleTheme = useCallback(() => {
-    setMode(prev => {
+    setMode((prev) => {
       if (prev === 'system') return 'light';
       if (prev === 'light') return 'dark';
       return 'system';

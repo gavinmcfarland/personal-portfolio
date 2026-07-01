@@ -1,96 +1,56 @@
 import { projects } from '../data/projects';
+import { useReveal } from '../hooks/useReveal';
+
+const ArrowUpRight = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M7 17L17 7M17 7H8M17 7v9" />
+  </svg>
+);
 
 const Projects = () => {
+  const ref = useReveal();
+
   return (
-    <section id="work" className="py-32 border-t border-gray-100 dark:border-gray-800/50">
-      <div className="max-w-7xl mx-auto px-8">
-        {/* Header in left column */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20">
-          <div>
-            <span className="inline-flex items-center gap-3 text-sm font-medium text-gray-400 dark:text-gray-500 mb-4 tracking-wide">
-              <span className="w-8 h-px bg-gray-300 dark:bg-gray-700" />
-              SELECTED WORK
-            </span>
-            <p className="text-3xl md:text-4xl font-bold text-black dark:text-white">
-              Tools, platforms, and products
-            </p>
-          </div>
-          <div className="flex items-end">
-            <p className="text-gray-400 dark:text-gray-500 leading-relaxed">
-              Built for developers and teams — from CLI toolkits to collaborative data tools.
-            </p>
-          </div>
+    <section id="work" className="scroll-mt-24 px-4 py-20 sm:px-6 md:py-28" ref={ref}>
+      <div className="mx-auto max-w-[1200px]">
+        {/* Section header */}
+        <div className="reveal">
+          <span className="kicker">Selected work</span>
+          <h2 className="mt-3 font-display text-4xl font-bold tracking-[-0.025em] text-ink md:text-5xl">
+            Tools &amp; plugins
+          </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-20">
+        {/* Grid — all entries equal weight */}
+        <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2">
           {projects.map((project, index) => (
-            <div key={project.id} className="group">
-              {/* Project image area */}
-              <div className="aspect-[4/3] bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800/50 mb-6 overflow-hidden relative">
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-6xl font-bold text-gray-200 dark:text-gray-800 transition-transform duration-500 group-hover:scale-110">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                </div>
-                {/* Hover line */}
-                <div className="absolute bottom-0 left-0 w-0 h-px bg-black dark:bg-white group-hover:w-full transition-all duration-500" />
+            <a
+              key={project.id}
+              href={project.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="reveal group tile flex flex-col p-7 transition-colors duration-300 hover:border-line-strong in rounded-2xl"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-sm text-faint transition-colors duration-300 group-hover:text-accent">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <ArrowUpRight className="h-4 w-4 text-faint transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
               </div>
 
-              {/* Project info */}
-              <div>
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-xl font-bold text-black dark:text-white">
-                    {project.title}
-                  </h3>
-                  <span className="text-xs font-medium text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-800 px-2 py-1">
-                    {project.category}
-                  </span>
-                </div>
+              <h3 className="mt-6 font-display text-2xl font-bold tracking-tight text-ink">
+                {project.title}
+              </h3>
+              <p className="mt-1 font-mono text-[12px] uppercase tracking-[0.1em] text-accent">
+                {project.tagline}
+              </p>
 
-                <p className="text-gray-500 dark:text-gray-400 mb-5 leading-relaxed text-sm">
-                  {project.description}
-                </p>
-
-                <div className="flex flex-wrap gap-3 mb-5">
-                  {project.tech.slice(0, 3).map((tech) => (
-                    <span
-                      key={tech}
-                      className="text-xs text-gray-400 dark:text-gray-500"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="flex gap-4 pt-4 border-t border-gray-100 dark:border-gray-800/50">
-                  {project.link && (
-                    <a
-                      href={project.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group/link px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-sm font-medium transition-opacity duration-300 hover:opacity-80"
-                    >
-                      <span className="flex items-center gap-2">
-                        View Project
-                        <svg className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </span>
-                    </a>
-                  )}
-                  {project.github && (
-                    <a
-                      href={project.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2 border border-gray-200 dark:border-gray-800 text-black dark:text-white text-sm font-medium hover:border-gray-400 dark:hover:border-gray-600 transition-colors duration-300"
-                    >
-                      Source
-                    </a>
-                  )}
-                </div>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {project.tech.map((tech) => (
+                  <span key={tech} className="chip">{tech}</span>
+                ))}
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>

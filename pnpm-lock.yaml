@@ -24,6 +24,9 @@ importers:
       '@babel/preset-typescript':
         specifier: ^7.28.5
         version: 7.28.5(@babel/core@7.29.0)
+      lucide-react:
+        specifier: ^0.288.0
+        version: 0.288.0(react@19.2.4)
       react:
         specifier: ^19.2.4
         version: 19.2.4
@@ -31,6 +34,12 @@ importers:
         specifier: ^19.2.4
         version: 19.2.4(react@19.2.4)
     devDependencies:
+      '@awenate/core':
+        specifier: ^0.1.0
+        version: 0.1.0(vite@5.4.21(lightningcss@1.32.0))
+      '@awenate/react':
+        specifier: ^0.1.0
+        version: 0.1.0(vite@5.4.21(lightningcss@1.32.0))
       '@eslint/js':
         specifier: ^9.39.4
         version: 9.39.4
@@ -69,6 +78,16 @@ importers:
         version: 5.4.21(lightningcss@1.32.0)
 
 packages:
+
+  '@awenate/core@0.1.0':
+    resolution: {integrity: sha512-/OnPoR11TvZQ9yX1gokiBgsLzkPpFmR9pCzkidDtSwB5GMMMaFP3H1+P+tI2RXUodHRPYniR4L5gS6Q8eimqyg==}
+    peerDependencies:
+      vite: ^5.0.0 || ^6.0.0 || ^7.0.0
+
+  '@awenate/react@0.1.0':
+    resolution: {integrity: sha512-lmPYi5Qip8DD8mvzEC42KRb3CiGwOw513omg368kAoOENv++SC9xtPKi23dsNhWKfuxVKtFFVnGCNlWIc6ytuA==}
+    peerDependencies:
+      vite: ^5.0.0 || ^6.0.0 || ^7.0.0
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
@@ -228,6 +247,10 @@ packages:
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0-0
+
+  '@babel/runtime@7.29.7':
+    resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
+    engines: {node: '>=6.9.0'}
 
   '@babel/template@7.28.6':
     resolution: {integrity: sha512-YA6Ma2KsCdGb+WC6UpBVFJGXL58MDA6oyONbjyF/+5sBgxY/dwkhLogbMT2GXXyU84/IhRw/2D1Os1B/giz+BQ==}
@@ -716,6 +739,10 @@ packages:
     peerDependencies:
       vite: ^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
 
+  '@wix/babel-plugin-jsx-source-attrs@1.3.6':
+    resolution: {integrity: sha512-tzZ+p3Y5q5NYvQhEfh61PeuFmD7+HJojZ50v3MbI4+e5/aDtvh1XfqPbuIkfaVUyW67rckcivlGHczOobBqhZQ==}
+    hasBin: true
+
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
@@ -1074,6 +1101,11 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
+  lucide-react@0.288.0:
+    resolution: {integrity: sha512-ikhb/9LOkq9orPoLV9lLC4UYyoXQycBhIgH7H59ahOkk0mkcAqkD52m84RXedE/qVqZHW8rEJquInT4xGmsNqw==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0
+
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
@@ -1259,6 +1291,32 @@ packages:
     resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
 snapshots:
+
+  '@awenate/core@0.1.0(vite@5.4.21(lightningcss@1.32.0))':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.29.0)
+      '@babel/plugin-syntax-typescript': 7.28.6(@babel/core@7.29.0)
+      '@babel/preset-react': 7.28.5(@babel/core@7.29.0)
+      '@babel/preset-typescript': 7.28.5(@babel/core@7.29.0)
+      '@wix/babel-plugin-jsx-source-attrs': 1.3.6
+      magic-string: 0.30.21
+      vite: 5.4.21(lightningcss@1.32.0)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@awenate/react@0.1.0(vite@5.4.21(lightningcss@1.32.0))':
+    dependencies:
+      '@awenate/core': 0.1.0(vite@5.4.21(lightningcss@1.32.0))
+      '@babel/core': 7.29.0
+      '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.29.0)
+      '@babel/plugin-syntax-typescript': 7.28.6(@babel/core@7.29.0)
+      '@babel/preset-react': 7.28.5(@babel/core@7.29.0)
+      '@babel/preset-typescript': 7.28.5(@babel/core@7.29.0)
+      '@wix/babel-plugin-jsx-source-attrs': 1.3.6
+      vite: 5.4.21(lightningcss@1.32.0)
+    transitivePeerDependencies:
+      - supports-color
 
   '@babel/code-frame@7.29.0':
     dependencies:
@@ -1473,6 +1531,8 @@ snapshots:
       '@babel/plugin-transform-typescript': 7.28.6(@babel/core@7.29.0)
     transitivePeerDependencies:
       - supports-color
+
+  '@babel/runtime@7.29.7': {}
 
   '@babel/template@7.28.6':
     dependencies:
@@ -1832,6 +1892,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@wix/babel-plugin-jsx-source-attrs@1.3.6':
+    dependencies:
+      '@babel/runtime': 7.29.7
+
   acorn-jsx@5.3.2(acorn@8.16.0):
     dependencies:
       acorn: 8.16.0
@@ -2170,6 +2234,10 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
+
+  lucide-react@0.288.0(react@19.2.4):
+    dependencies:
+      react: 19.2.4
 
   magic-string@0.30.21:
     dependencies:

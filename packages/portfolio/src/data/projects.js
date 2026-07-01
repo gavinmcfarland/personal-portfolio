@@ -1,4 +1,22 @@
 export const projects = [
+    {
+    id: 'awenate',
+    title: 'Awenate',
+    tagline: 'Visual Code Editor',
+    description: 'A visual code editor that bridges your running app and its source. Framework-agnostic Vite plugins map DOM elements back to source locations, enabling live, in-browser editing of components.',
+    features: [
+      'Element-to-source mapping',
+      'Framework-agnostic Vite plugins',
+      'Live in-browser editing',
+      'Component preview',
+      'Shared bridge runtime'
+    ],
+    tech: ['TypeScript', 'Vite', 'Babel'],
+    link: '', // TODO: add public link
+    github: null, // TODO: add repo URL
+    category: 'Developer Tool',
+    highlight: false
+  },
   {
     id: 'plugma',
     title: 'Plugma',
@@ -58,7 +76,7 @@ export const projects = [
     id: 'figlet',
     title: 'Figlet',
     tagline: 'Figma Plugin IDE',
-    description: 'A browser-based IDE for Figma plugin prototyping. Like CodePen but for Figma — write and execute plugin code instantly without any local setup.',
+    description: 'A browser-based IDE for Figma plugin prototyping. Like CodePen but for Figma: write and execute plugin code instantly without any local setup.',
     features: [
       'Live code execution',
       'Cloud-based workspace',
