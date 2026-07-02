@@ -29,9 +29,9 @@ const applyTheme = (resolved) => {
 export const ThemeProvider = ({ children }) => {
   const [mode, setMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme-mode') || 'system';
+      return localStorage.getItem('theme-mode') || 'dark';
     }
-    return 'system';
+    return 'dark';
   });
 
   const resolved = mode === 'system' ? getSystemTheme() : mode;

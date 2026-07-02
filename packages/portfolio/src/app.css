@@ -22,6 +22,9 @@
   --line-strong: rgba(244, 244, 242, 0.18);
   --accent: #CDF547;      /* electric lime signal */
   --accent-ink: #0A0A0B;
+  --grid-line: rgba(244, 244, 242, 0.035);
+  --glow: rgba(205, 245, 71, 0.10);
+  --term-bg: #0E0E10;     /* terminal chrome fill */
 }
 
 .light {
@@ -35,12 +38,45 @@
   --line-strong: rgba(19, 19, 19, 0.20);
   --accent: #4B7A00;
   --accent-ink: #FFFFFF;
+  --grid-line: rgba(19, 19, 19, 0.045);
+  --glow: rgba(75, 122, 0, 0.08);
+  --term-bg: #14140F;
 }
 
 html {
   scroll-behavior: smooth;
   background: var(--bg);
 }
+
+/* ── Ambient canvas ─────────────────────────────────────────────
+   A faint engineering grid + a single lime glow bleeding down from
+   behind the hero. This is the visual signature — quiet, not slop. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 55% at 50% 0%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(ellipse 90% 55% at 50% 0%, #000 0%, transparent 72%);
+}
+body::after {
+  content: "";
+  position: fixed;
+  top: -30vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 80vh;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 46% 50% at 50% 40%, var(--glow) 0%, transparent 70%);
+}
+#root { position: relative; z-index: 1; }
 
 body {
   margin: 0;
@@ -132,4 +168,106 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; }
+}
+
+/* ── Hero geometric mark (layered "system" planes) ───────────── */
+.hv-glow {
+  position: absolute;
+  inset: 6%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle at 50% 46%,
+    color-mix(in srgb, var(--accent) 24%, transparent) 0%,
+    transparent 62%
+  );
+  filter: blur(34px);
+  animation: hv-breathe 7.5s ease-in-out infinite;
+}
+.hv-float { animation: hv-float 9s ease-in-out infinite; will-change: transform; }
+.hv-pulse { animation: hv-pulse 4.5s ease-in-out infinite; }
+@keyframes hv-breathe {
+  0%, 100% { transform: scale(0.9); opacity: 0.55; }
+  50% { transform: scale(1.05); opacity: 0.95; }
+}
+@keyframes hv-float {
+  0%, 100% { transform: translateY(-7px); }
+  50% { transform: translateY(7px); }
+}
+@keyframes hv-pulse {
+  0%, 100% { fill-opacity: 0.10; }
+  50% { fill-opacity: 0.26; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hv-glow, .hv-float, .hv-pulse { animation: none; }
+}
+
+/* ── Terminal (used in project motifs) ───────────────────────── */
+.terminal {
+  background: var(--term-bg);
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 30px 60px -20px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--term-bg) 100%, #fff 3%);
+}
+.tdot { width: 11px; height: 11px; border-radius: 9999px; }
+.terminal-body {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.85;
+  padding: 1.1rem 1.25rem 1.4rem;
+  color: var(--ink);
+}
+.term-prompt { color: var(--accent); }
+.term-dim { color: var(--faint); }
+.term-ok { color: var(--accent); }
+.caret {
+  display: inline-block;
+  width: 8px;
+  height: 1.05em;
+  vertical-align: text-bottom;
+  background: var(--accent);
+  margin-left: 2px;
+  animation: blink 1.05s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .caret { animation: none; } }
+
+/* ── Accent-glow border on hover (recurring interactive tell) ── */
+.glow-hover {
+  position: relative;
+  transition: border-color 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glow-hover:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line-strong));
+  transform: translateY(-2px);
+}
+
+/* ── Project motif canvas ────────────────────────────────────── */
+.motif {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--accent) 9%, transparent) 0%, transparent 55%),
+    var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.motif-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 30% 20%, #000, transparent 80%);
+  mask-image: radial-gradient(ellipse 80% 80% at 30% 20%, #000, transparent 80%);
 }

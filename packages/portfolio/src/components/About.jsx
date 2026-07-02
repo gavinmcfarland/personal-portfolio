@@ -1,10 +1,24 @@
-import { useReveal } from '../hooks/useReveal';
+import { useReveal } from "../hooks/useReveal";
+
+const stack = [
+  "TypeScript",
+  "React",
+  "Svelte",
+  "Vue",
+  "Node.js",
+  "Vite",
+  "Figma API",
+];
 
 const About = () => {
   const ref = useReveal();
 
   return (
-    <section id="about" className="scroll-mt-24 px-4 py-20 sm:px-6 md:py-28" ref={ref}>
+    <section
+      id="about"
+      className="scroll-mt-24 px-4 py-20 sm:px-6 md:py-28"
+      ref={ref}
+    >
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 md:grid-cols-12 md:gap-x-16">
         {/* Section title */}
         <div className="reveal md:col-span-5">
@@ -13,6 +27,21 @@ const About = () => {
             Removing <span className="text-accent">friction</span> from creative
             workflows
           </h2>
+
+          {/* Currently — a small signature detail */}
+          <div className="mt-10 rounded-2xl border border-line bg-surface/50 p-5">
+            <span className="kicker inline-flex items-center gap-2">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
+              </span>
+              Currently
+            </span>
+            <p className="mt-3 text-pretty leading-relaxed text-muted">
+              Building <span className="text-ink">Awenate</span> — a visual code
+              editor that maps the DOM back to source.
+            </p>
+          </div>
         </div>
 
         {/* Prose, held to a comfortable reading measure */}
@@ -28,6 +57,18 @@ const About = () => {
               gives Figma plugin developers hot module reloading, in-browser
               previews and zero-config setup.
             </p>
+          </div>
+
+          {/* Stack strip */}
+          <div className="mt-10 border-t border-line pt-8">
+            <span className="kicker">Stack</span>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {stack.map((s) => (
+                <span key={s} className="chip">
+                  {s}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
