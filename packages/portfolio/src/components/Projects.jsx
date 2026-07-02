@@ -45,6 +45,12 @@ const Projects = () => {
                 {project.tagline}
               </p>
 
+              {project.description && (
+                <p className="mt-4 text-[15px] leading-relaxed text-faint">
+                  {project.description}
+                </p>
+              )}
+
               <div className="mt-6 flex flex-wrap gap-2">
                 {project.tech.map((tech) => (
                   <span key={tech} className="chip">{tech}</span>

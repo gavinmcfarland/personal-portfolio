@@ -3,6 +3,7 @@ export const projects = [
     id: 'awenate',
     title: 'Awenate',
     tagline: 'Visual Code Editor',
+    summary: 'Edit your running app directly in the browser, mapped back to source.',
     description: 'A visual code editor that bridges your running app and its source. Framework-agnostic Vite plugins map DOM elements back to source locations, enabling live, in-browser editing of components.',
     features: [
       'Element-to-source mapping',
@@ -21,6 +22,7 @@ export const projects = [
     id: 'plugma',
     title: 'Plugma',
     tagline: 'Figma Plugin Development CLI',
+    summary: 'Build Figma plugins with true HMR and zero configuration.',
     description: 'A command-line tool that simplifies Figma plugin development. Features true hot module reloading, in-browser previews, unified bundling, and .env support. Supports React, Svelte, and Vue.',
     features: [
       'True Hot Module Reloading (HMR)',
@@ -40,7 +42,8 @@ export const projects = [
     id: 'table-creator',
     title: 'Table Creator',
     tagline: 'Figma Plugin',
-    description: 'A Figma plugin for creating and managing complex data tables directly on the canvas. Handles dynamic content, custom styling, and bulk operations with an intuitive interface.',
+    summary: 'Create and manage complex data tables directly on the Figma canvas.',
+    description: 'A plugin for creating and maintaining UI table components in Figma. Handles dynamic content, custom styling, and bulk operations with an intuitive interface.',
     features: [
       'Dynamic data handling',
       'Custom styling system',
@@ -58,6 +61,7 @@ export const projects = [
     id: 'askeroo',
     title: 'Askeroo',
     tagline: 'CLI Prompt Library',
+    summary: 'Build interactive CLI flows with back navigation and conditional fields.',
     description: 'A modern CLI prompt library with flow control, back navigation, and conditional fields. Build interactive CLI experiences with text, radio, multi-select prompts, task runners, and markdown notes.',
     features: [
       'Stateful back navigation',
@@ -76,6 +80,7 @@ export const projects = [
     id: 'figlet',
     title: 'Figlet',
     tagline: 'Figma Plugin IDE',
+    summary: 'Write and run Figma plugin code instantly in the browser — no setup.',
     description: 'A browser-based IDE for Figma plugin prototyping. Like CodePen but for Figma: write and execute plugin code instantly without any local setup.',
     features: [
       'Live code execution',
@@ -94,6 +99,7 @@ export const projects = [
     id: 'table-widget',
     title: 'Table Widget',
     tagline: 'Figma Widget',
+    summary: 'Spreadsheet-like data editing on the canvas, synced across your team.',
     description: 'A Figma widget that brings spreadsheet-like data editing to the canvas. Teams can import CSVs, edit cells in real-time, and keep data synchronized across collaborators.',
     features: [
       'Real-time collaboration',
