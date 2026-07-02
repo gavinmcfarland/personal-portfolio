@@ -8,17 +8,11 @@ const links = [
     external: true,
   },
   {
-    name: "Twitter",
-    url: "https://twitter.com/gavinmcfarland",
+    name: "X",
+    url: "https://x.com/gavinmcfarland",
     label: "@gavinmcfarland",
     external: true,
-  },
-  {
-    name: "Email",
-    url: "mailto:contact@gavinmcfarland.com",
-    label: "contact@gavinmcfarland.com",
-    external: false,
-  },
+  }
 ];
 
 const Contact = () => {
