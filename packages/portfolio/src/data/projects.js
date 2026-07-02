@@ -12,7 +12,7 @@ export const projects = [
       'Shared bridge runtime'
     ],
     tech: ['TypeScript', 'Vite', 'Babel'],
-    link: '', // TODO: add public link
+    link: 'https://awenate.com', // TODO: add public link
     github: null, // TODO: add repo URL
     category: 'Developer Tool',
     highlight: false
@@ -67,7 +67,7 @@ export const projects = [
       'Custom prompts via React & Ink'
     ],
     tech: ['TypeScript', 'React', 'Ink'],
-    link: 'https://www.npmjs.com/package/askeroo',
+    link: 'https://github.com/gavinmcfarland/askeroo',
     github: 'https://github.com/gavinmcfarland/askeroo',
     category: 'Developer Tool',
     highlight: true
