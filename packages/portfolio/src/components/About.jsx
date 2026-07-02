@@ -22,26 +22,11 @@ const About = () => {
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 md:grid-cols-12 md:gap-x-16">
         {/* Section title */}
         <div className="reveal md:col-span-5">
-          <span className="kicker">About</span>
           <h2 className="mt-3 text-balance font-display text-4xl font-bold leading-[1.05] tracking-[-0.025em] text-ink md:text-5xl">
             Removing <span className="text-accent">friction</span> from creative
             workflows
           </h2>
-
           {/* Currently — a small signature detail */}
-          <div className="mt-10 rounded-2xl border border-line bg-surface/50 p-5">
-            <span className="kicker inline-flex items-center gap-2">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
-              </span>
-              Currently
-            </span>
-            <p className="mt-3 text-pretty leading-relaxed text-muted">
-              Building <span className="text-ink">Awenate</span> — a visual code
-              editor that maps the DOM back to source.
-            </p>
-          </div>
         </div>
 
         {/* Prose, held to a comfortable reading measure */}
