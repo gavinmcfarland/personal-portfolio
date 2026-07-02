@@ -4,8 +4,8 @@ const stack = [
   "TypeScript",
   "React",
   "Svelte",
-  "Vue",
   "Node.js",
+  "npm",
   "Vite",
   "Figma API",
 ];
