@@ -7,5 +7,6 @@
     "lint": "pnpm --filter portfolio lint",
     "generate": "pnpm --filter abstract-illustrations generate",
     "preview": "pnpm --filter abstract-illustrations preview"
-  }
+  },
+  "packageManager": "pnpm@10.34.2"
 }
