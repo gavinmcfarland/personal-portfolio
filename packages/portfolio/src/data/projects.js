@@ -17,7 +17,7 @@ export const projects = [
   {
     id: 'figlet',
     title: 'Figlet',
-    summary: 'A browser-based IDE for Figma plugins — write and run plugin code instantly, no local setup. Like CodePen for Figma.',
+    summary: 'A browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup. Like CodePen for Figma.',
     tech: ['JavaScript', 'Figma API', 'Svelte'],
     link: 'https://www.figma.com/community/plugin/1215620774867583125/figlet',
   },

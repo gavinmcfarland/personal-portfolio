@@ -1,11 +1,11 @@
-import { ThemeProvider } from './contexts/ThemeContext';
-import ThemeToggle from './components/ThemeToggle';
-import Intro from './components/Intro';
-import Projects from './components/Projects';
-import Experience from './components/Experience';
-import Awards from './components/Awards';
-import Education from './components/Education';
-import Connect from './components/Connect';
+import { ThemeProvider } from "./contexts/ThemeContext";
+import ThemeToggle from "./components/ThemeToggle";
+import Intro from "./components/Intro";
+import Projects from "./components/Projects";
+import Experience from "./components/Experience";
+import Awards from "./components/Awards";
+import Education from "./components/Education";
+import Connect from "./components/Connect";
 
 function App() {
   return (
@@ -15,9 +15,8 @@ function App() {
         <main className="mx-auto w-full max-w-2xl px-5 sm:px-6">
           <Intro />
           <Projects />
-          <Experience />
           <Awards />
-          <Education />
+
           <Connect />
         </main>
       </div>
