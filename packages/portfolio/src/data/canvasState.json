@@ -1,0 +1,156 @@
+{
+  "view": {
+    "x": 127.47914006601536,
+    "y": 168.87405928107617,
+    "scale": 0.7475673547139149
+  },
+  "nodes": [
+    {
+      "id": "hero",
+      "type": "card",
+      "x": -40,
+      "y": -40,
+      "z": 1
+    },
+    {
+      "id": "about",
+      "type": "card",
+      "x": -40,
+      "y": 300,
+      "z": 2
+    },
+    {
+      "id": "p-plugma",
+      "type": "card",
+      "x": 470,
+      "y": -40,
+      "z": 3
+    },
+    {
+      "id": "p-askeroo",
+      "type": "card",
+      "x": 470,
+      "y": 290,
+      "z": 4
+    },
+    {
+      "id": "p-figlet",
+      "type": "card",
+      "x": 850,
+      "y": -40,
+      "z": 5
+    },
+    {
+      "id": "p-table-creator",
+      "type": "card",
+      "x": 850,
+      "y": 290,
+      "z": 6
+    },
+    {
+      "id": "experience",
+      "type": "card",
+      "x": -40,
+      "y": 560,
+      "z": 7
+    },
+    {
+      "id": "education",
+      "type": "card",
+      "x": 470,
+      "y": 560,
+      "z": 8
+    },
+    {
+      "id": "awards",
+      "type": "card",
+      "x": 854.1732468313197,
+      "y": 597.7170598643029,
+      "z": 9
+    },
+    {
+      "id": "connect",
+      "type": "card",
+      "x": 1240,
+      "y": -40,
+      "z": 10
+    },
+    {
+      "id": "seed-note-1",
+      "type": "sticky",
+      "x": 1240,
+      "y": 330,
+      "z": 11,
+      "color": "yellow",
+      "text": "This is a canvas!\nPan, zoom, and\nannotate anything ↓"
+    },
+    {
+      "id": "seed-note-2",
+      "type": "sticky",
+      "x": 470,
+      "y": -330,
+      "z": 12,
+      "color": "blue",
+      "text": "My favourite\nproject — try the\nhot reload 🔥"
+    },
+    {
+      "id": "seed-text-1",
+      "type": "tblock",
+      "x": -40,
+      "y": -140,
+      "z": 13,
+      "text": "↓ drag me around"
+    },
+    {
+      "id": "seed-md-1",
+      "type": "md",
+      "x": 1300,
+      "y": 560,
+      "z": 14,
+      "w": 340,
+      "text": "# Markdown note\n-- Selected Work\nType **markdown** — it *highlights* as you write.\n\n[Node.js] [TypeScript] [Vite]\n\n- lists & `inline code`\n- [links](https://www.plugma.dev/)\n\n> Double-click to edit it again."
+    }
+  ],
+  "shapes": [
+    {
+      "id": "seed-shape-1",
+      "type": "arrow",
+      "stroke": "#7C2D91",
+      "width": 3,
+      "z": 15,
+      "x1": 1300,
+      "y1": 300,
+      "x2": 1150,
+      "y2": 180
+    },
+    {
+      "id": "seed-shape-2",
+      "type": "pen",
+      "stroke": "#F5A524",
+      "width": 4,
+      "z": 16,
+      "points": [
+        [
+          450,
+          100
+        ],
+        [
+          430,
+          150
+        ],
+        [
+          452,
+          205
+        ],
+        [
+          448,
+          260
+        ],
+        [
+          458,
+          300
+        ]
+      ]
+    }
+  ]
+}

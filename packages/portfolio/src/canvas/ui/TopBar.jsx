@@ -4,10 +4,22 @@ import { useTheme } from '../../contexts/ThemeContext';
 const EDIT_ICON = <><path d="M4 20h4L18 10l-4-4L4 16v4z" /><path d="M13.5 6.5l4 4" /></>;
 const VIEW_ICON = <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></>;
 
+const PUBLISH_ICON = <><path d="M12 19V6" /><path d="M6 12l6-6 6 6" /><path d="M5 21h14" /></>;
+const CHECK_ICON = <path d="M5 13l4 4L19 7" />;
+const WARN_ICON = <><path d="M12 9v4m0 4h.01" /><path d="M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /></>;
+
+const PUBLISH = {
+  idle: { icon: PUBLISH_ICON, label: 'Publish', title: 'Bake the current board into canvasState.json' },
+  saving: { icon: PUBLISH_ICON, label: 'Publishing…', title: 'Writing canvasState.json…' },
+  done: { icon: CHECK_ICON, label: 'Published', title: 'Saved — commit & deploy to go live' },
+  error: { icon: WARN_ICON, label: 'Failed', title: 'Publish failed — see console' },
+};
+
 export default function TopBar() {
-  const { brand, readOnly, EDITABLE, eng } = useCanvas();
+  const { brand, readOnly, EDITABLE, publishState, eng } = useCanvas();
   const { theme, toggleTheme } = useTheme();
   const dark = theme === 'dark';
+  const pub = PUBLISH[publishState] || PUBLISH.idle;
 
   return (
     <div className="ui panel" id="topbar">
@@ -37,6 +49,18 @@ export default function TopBar() {
         </svg>
         {dark ? 'Light' : 'Dark'}
       </button>
+
+      {EDITABLE && (
+        <button
+          className={`chip${publishState === 'done' ? ' on' : ''}`}
+          title={pub.title}
+          disabled={publishState === 'saving'}
+          onClick={() => eng.publish()}
+        >
+          <svg viewBox="0 0 24 24">{pub.icon}</svg>
+          {pub.label}
+        </button>
+      )}
 
       {EDITABLE && (
         <button

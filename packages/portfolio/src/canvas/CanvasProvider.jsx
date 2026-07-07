@@ -2,6 +2,7 @@
 import { createContext, useContext, useMemo, useRef, useState, useEffect } from 'react';
 import { STORE, ZOOM, PAN, RASTER, GRID, DRAW_TOOLS, clampScale } from './constants';
 import { buildInitialState } from '../data/canvasLayout';
+import publishedState from '../data/canvasState.json';
 
 export const EDITABLE = import.meta.env.DEV;
 
@@ -21,33 +22,46 @@ function normalizeSaved(n) {
   return { ...base, text: n.text || '' }; // tblock
 }
 
-/* Initial board: fresh from the data files, merged with any dev-time edits. */
+/* Merge a saved snapshot (published file or dev localStorage) over the
+   data-derived base: cards keep their content but take saved position/z/anchor,
+   while free annotations & shapes come straight from the snapshot. */
+function mergeSaved(base, saved) {
+  const savedById = Object.fromEntries(saved.nodes.map((n) => [n.id, n]));
+  const cards = base.nodes
+    .filter((n) => n.type === 'card')
+    .map((c) => {
+      const s = savedById[c.id];
+      return s ? { ...c, x: s.x, y: s.y, z: s.z, anchor: !!s.anchor } : c;
+    });
+  const others = saved.nodes.filter((n) => n.type !== 'card').map(normalizeSaved);
+  return {
+    nodes: [...cards, ...others],
+    shapes: saved.shapes || [],
+    view: saved.view || { x: 0, y: 0, scale: 1 },
+    brand: base.brand,
+    hadSaved: true,
+  };
+}
+
+/* Initial board. Priority: dev-only in-progress edits (localStorage) win, then
+   the committed published snapshot (applies in dev AND production), then the
+   fresh data-file layout with its seed annotations. */
 function loadInitial() {
   const base = buildInitialState();
+
+  // Unpublished dev edits take precedence so you can keep iterating.
   if (EDITABLE) {
     try {
       const saved = JSON.parse(localStorage.getItem(STORE) || 'null');
-      if (saved && Array.isArray(saved.nodes)) {
-        const savedById = Object.fromEntries(saved.nodes.map((n) => [n.id, n]));
-        const cards = base.nodes
-          .filter((n) => n.type === 'card')
-          .map((c) => {
-            const s = savedById[c.id];
-            return s ? { ...c, x: s.x, y: s.y, z: s.z, anchor: !!s.anchor } : c;
-          });
-        const others = saved.nodes.filter((n) => n.type !== 'card').map(normalizeSaved);
-        return {
-          nodes: [...cards, ...others],
-          shapes: saved.shapes || [],
-          view: saved.view || { x: 0, y: 0, scale: 1 },
-          brand: base.brand,
-          hadSaved: true,
-        };
-      }
+      if (saved && Array.isArray(saved.nodes)) return mergeSaved(base, saved);
     } catch {
       /* ignore corrupt storage */
     }
   }
+
+  // The published snapshot ships in the bundle and drives the live site.
+  if (publishedState && Array.isArray(publishedState.nodes)) return mergeSaved(base, publishedState);
+
   return { nodes: base.nodes, shapes: base.shapes, view: { x: 0, y: 0, scale: 1 }, brand: base.brand, hadSaved: false };
 }
 
@@ -66,6 +80,8 @@ export function CanvasProvider({ children }) {
   const [strokeColor, setStrokeColor] = useState('#7C2D91');
   const [hintHidden, setHintHidden] = useState(false);
   const [ctxMenu, setCtxMenu] = useState(null); // {x,y,target:{kind,id}}
+  const [publishState, setPublishState] = useState('idle'); // idle|saving|done|error
+  const publishT = useRef(0);
 
   /* ── Refs (imperative engine state) ─────────────────────────── */
   const viewportRef = useRef(null);
@@ -315,9 +331,9 @@ export function CanvasProvider({ children }) {
     }
 
     /* ── Persistence ──────────────────────────────────────────── */
-    function scheduleSave() { if (!EDITABLE) return; clearTimeout(saveT.current); saveT.current = setTimeout(saveNow, 400); }
-    function saveNow() {
-      if (!EDITABLE) return;
+    /* Serialise the live board into the compact snapshot shape shared by the
+       dev localStorage autosave and the committed canvasState.json. */
+    function serialize() {
       const nodes = S.nodes.map((n) => {
         const o = { id: n.id, type: n.type, x: +n.x, y: +n.y, z: n.z };
         if (n.anchor) o.anchor = 1;
@@ -327,12 +343,38 @@ export function CanvasProvider({ children }) {
         else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
         return o;
       });
-      const sh = S.shapes.map((s) => {
+      const shapes = S.shapes.map((s) => {
         const o = { id: s.id, type: s.type, stroke: s.stroke, width: s.width, z: s.z };
         if (s.type === 'pen') o.points = s.points; else { o.x1 = s.x1; o.y1 = s.y1; o.x2 = s.x2; o.y2 = s.y2; }
         return o;
       });
-      localStorage.setItem(STORE, JSON.stringify({ view: { x: viewRef.x, y: viewRef.y, scale: viewRef.scale }, nodes, shapes: sh }));
+      return { view: { x: viewRef.x, y: viewRef.y, scale: viewRef.scale }, nodes, shapes };
+    }
+    function scheduleSave() { if (!EDITABLE) return; clearTimeout(saveT.current); saveT.current = setTimeout(saveNow, 400); }
+    function saveNow() {
+      if (!EDITABLE) return;
+      localStorage.setItem(STORE, JSON.stringify(serialize()));
+    }
+    /* Bake the current board into the committed data file via the dev-server
+       endpoint, so `git commit` + deploy makes it the live portfolio. */
+    async function publish() {
+      if (!EDITABLE) return;
+      clearTimeout(publishT.current);
+      setPublishState('saving');
+      try {
+        const res = await fetch('/__canvas/save', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(serialize()),
+        });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+        setPublishState('done');
+      } catch (err) {
+        console.error('[canvas] publish failed', err);
+        setPublishState('error');
+      }
+      publishT.current = setTimeout(() => setPublishState('idle'), 2200);
     }
     function resetBoard() {
       if (!EDITABLE) return;
@@ -352,7 +394,7 @@ export function CanvasProvider({ children }) {
       selectNode, selectShape, deselect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape,
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
-      setTool, setMode, fitAll, flyTo, scheduleSave, saveNow, resetBoard,
+      setTool, setMode, fitAll, flyTo, scheduleSave, saveNow, serialize, publish, resetBoard,
       startEditing, stopEditing, setChrome,
       nextZ, backZ,
     };
@@ -391,6 +433,7 @@ export function CanvasProvider({ children }) {
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, hintHidden, ctxMenu,
+    publishState,
     brand: init.brand, EDITABLE,
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setHintHidden, setCtxMenu, setSelectedState,
