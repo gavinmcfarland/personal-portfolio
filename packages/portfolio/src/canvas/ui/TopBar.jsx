@@ -8,6 +8,10 @@ const PUBLISH_ICON = <><path d="M12 19V6" /><path d="M6 12l6-6 6 6" /><path d="M
 const CHECK_ICON = <path d="M5 13l4 4L19 7" />;
 const WARN_ICON = <><path d="M12 9v4m0 4h.01" /><path d="M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /></>;
 
+const SUN_ICON = <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />;
+const MOON_ICON = <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />;
+const SYSTEM_ICON = <><rect x="3" y="4" width="18" height="12" rx="1" /><path d="M8 20h8M12 16v4" /></>;
+
 const PUBLISH = {
   idle: { icon: PUBLISH_ICON, label: 'Publish', title: 'Bake the current board into canvasState.json' },
   saving: { icon: PUBLISH_ICON, label: 'Publishing…', title: 'Writing canvasState.json…' },
@@ -15,11 +19,17 @@ const PUBLISH = {
   error: { icon: WARN_ICON, label: 'Failed', title: 'Publish failed — see console' },
 };
 
+const THEME = {
+  system: { icon: SYSTEM_ICON, label: 'System' },
+  light: { icon: SUN_ICON, label: 'Light' },
+  dark: { icon: MOON_ICON, label: 'Dark' },
+};
+
 export default function TopBar() {
   const { brand, readOnly, EDITABLE, publishState, eng } = useCanvas();
-  const { theme, toggleTheme } = useTheme();
-  const dark = theme === 'dark';
+  const { mode, toggleTheme } = useTheme();
   const pub = PUBLISH[publishState] || PUBLISH.idle;
+  const th = THEME[mode] || THEME.system;
 
   return (
     <div className="ui panel" id="topbar">
@@ -41,13 +51,9 @@ export default function TopBar() {
         Fit
       </button>
 
-      <button className="chip" title="Toggle light / dark" onClick={toggleTheme}>
-        <svg viewBox="0 0 24 24">
-          {dark
-            ? <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            : <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />}
-        </svg>
-        {dark ? 'Light' : 'Dark'}
+      <button className="chip" title="Cycle theme: system / light / dark" onClick={toggleTheme}>
+        <svg viewBox="0 0 24 24">{th.icon}</svg>
+        {th.label}
       </button>
 
       {EDITABLE && (

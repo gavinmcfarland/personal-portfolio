@@ -8,6 +8,8 @@ import Toolbar from './ui/Toolbar';
 import ZoomControls from './ui/ZoomControls';
 import SectionsNav from './ui/SectionsNav';
 import ContextMenu from './ui/ContextMenu';
+import Lightbox from './ui/Lightbox';
+import PageTabs from './ui/PageTabs';
 import Hint from './ui/Hint';
 
 export default function Canvas() {
@@ -24,7 +26,9 @@ export default function Canvas() {
     if (S.readOnly) {
       if (e.target.closest && e.target.closest('a,button')) return;
       eng.freezeView();
-      actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y };
+      // Remember an image under the pointer so a stationary tap opens it full-screen.
+      const imgEl = e.target.closest && e.target.closest('.node.image');
+      actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: imgEl ? imgEl.dataset.id : null };
       document.body.classList.add('panning');
       vp.setPointerCapture(e.pointerId);
       return;
@@ -95,6 +99,24 @@ export default function Canvas() {
     }
   };
 
+  /* Drag-and-drop image files onto the board (dev editing only). */
+  const dropActive = () => EDITABLE && !S.readOnly;
+  const onDragOver = (e) => {
+    if (!dropActive() || !e.dataTransfer) return;
+    if (Array.from(e.dataTransfer.types || []).includes('Files')) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+    }
+  };
+  const onDrop = (e) => {
+    if (!dropActive() || !e.dataTransfer) return;
+    const imgs = Array.from(e.dataTransfer.files || []).filter((f) => f.type.startsWith('image/'));
+    if (!imgs.length) return;
+    e.preventDefault();
+    const w = eng.screenToWorld(e.clientX, e.clientY);
+    imgs.forEach((file, i) => eng.addImageFromFile(file, w.x + i * 24, w.y + i * 24));
+  };
+
   const onContextMenu = (e) => {
     if (S.readOnly) return;
     e.preventDefault();
@@ -119,6 +141,7 @@ export default function Canvas() {
       const a = actionRef.current;
       if (!a) return;
       if (a.type === 'pan') {
+        if (Math.abs(e.clientX - a.sx) + Math.abs(e.clientY - a.sy) > 4) a.moved = 1;
         eng.viewRef.x = a.ox + (e.clientX - a.sx);
         eng.viewRef.y = a.oy + (e.clientY - a.sy);
         eng.targetRef.x = eng.viewRef.x; eng.targetRef.y = eng.viewRef.y;
@@ -149,7 +172,10 @@ export default function Canvas() {
         const minW = a.mdType === 'md' ? 160 : 60;
         const w = Math.max(minW, a.ow + (e.clientX - a.sx) / scale());
         el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
-        if (a.mdType !== 'md') {
+        if (a.mdType === 'image') {
+          const h = Math.max(1, Math.round(w * (a.oh / a.ow))); // lock aspect ratio
+          el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
+        } else if (a.mdType !== 'md') {
           const h = Math.max(40, a.oh + (e.clientY - a.sy) / scale());
           el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
         }
@@ -168,7 +194,10 @@ export default function Canvas() {
     const onUp = () => {
       const a = actionRef.current;
       if (!a) return;
-      if (a.type === 'pan') document.body.classList.remove('panning');
+      if (a.type === 'pan') {
+        document.body.classList.remove('panning');
+        if (a.imgId && !a.moved) eng.openFullscreen(a.imgId); // tap an image → full-screen
+      }
       if (a.type === 'node') {
         const el = a.el || nodeEls.get(a.id);
         if (el) el.classList.remove('dragging');
@@ -206,6 +235,7 @@ export default function Canvas() {
     };
 
     const onWheel = (e) => {
+      if (S.fullscreenId) { e.preventDefault(); return; } // lightbox covers the board
       setCtxMenu(null);
       const zoomKey = e.ctrlKey || e.metaKey;
       if (!zoomKey && e.target.closest && e.target.closest('.ui.panel, textarea')) return;
@@ -220,6 +250,9 @@ export default function Canvas() {
 
     const onKeyDown = (e) => {
       if (S.editingId) return;
+      // Don't hijack keys while typing in a field (e.g. renaming a page/frame).
+      const ae = document.activeElement;
+      if (ae && (ae.isContentEditable || ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
       if (e.code === 'Space') { panKey.current = true; document.body.classList.add('tool-hand'); return; }
       if (e.key === 'Backspace' || e.key === 'Delete') {
         if (S.selected) { e.preventDefault(); eng.deleteSelected(); }
@@ -253,16 +286,18 @@ export default function Canvas() {
 
   return (
     <>
-      <div id="viewport" ref={viewportRef} onPointerDown={onPointerDown} onContextMenu={onContextMenu}>
+      <div id="viewport" ref={viewportRef} onPointerDown={onPointerDown} onContextMenu={onContextMenu} onDragOver={onDragOver} onDrop={onDrop}>
         <World />
       </div>
       <Chrome />
       <TopBar />
+      <PageTabs />
       <Hint />
       <SectionsNav />
       {EDITABLE && <Toolbar />}
       <ZoomControls />
       <ContextMenu />
+      <Lightbox />
     </>
   );
 }

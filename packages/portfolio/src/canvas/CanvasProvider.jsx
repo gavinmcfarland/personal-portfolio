@@ -5,6 +5,7 @@ import { buildInitialState } from '../data/canvasLayout';
 import publishedState from '../data/canvasState.json';
 
 export const EDITABLE = import.meta.env.DEV;
+export const HOME_ID = 'home'; // the first page; carries the data-driven portfolio cards
 
 const CanvasContext = createContext(null);
 export const useCanvas = () => {
@@ -13,33 +14,68 @@ export const useCanvas = () => {
   return c;
 };
 
+const defaultView = () => ({ x: 0, y: 0, scale: 1 });
+
 /* Normalise a persisted (serialised) annotation node back into the live model. */
 function normalizeSaved(n) {
   const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor };
   if (n.type === 'frame') return { ...base, w: n.w || 200, h: n.h || 140, name: n.text || 'Section' };
   if (n.type === 'md') return { ...base, w: n.w || 340, text: n.text || '' };
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
+  if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '' };
   return { ...base, text: n.text || '' }; // tblock
 }
 
-/* Merge a saved snapshot (published file or dev localStorage) over the
-   data-derived base: cards keep their content but take saved position/z/anchor,
-   while free annotations & shapes come straight from the snapshot. */
-function mergeSaved(base, saved) {
-  const savedById = Object.fromEntries(saved.nodes.map((n) => [n.id, n]));
+/* Merge a saved node list over the data-derived base for the HOME page: cards
+   keep their content but take saved position/z/anchor, while free annotations
+   come straight from the snapshot. */
+function mergeHomeNodes(base, savedNodes) {
+  const savedById = Object.fromEntries(savedNodes.map((n) => [n.id, n]));
   const cards = base.nodes
     .filter((n) => n.type === 'card')
     .map((c) => {
       const s = savedById[c.id];
       return s ? { ...c, x: s.x, y: s.y, z: s.z, anchor: !!s.anchor } : c;
     });
-  const others = saved.nodes.filter((n) => n.type !== 'card').map(normalizeSaved);
+  const others = savedNodes.filter((n) => n.type !== 'card').map(normalizeSaved);
+  return [...cards, ...others];
+}
+
+/* Expand one persisted page into live page data. The first (home) page re-merges
+   the portfolio cards; extra pages are free-form annotation boards. */
+function normalizePage(raw, base, isHome) {
+  const view = raw.view || defaultView();
+  if (isHome) {
+    return { name: raw.name || 'Home', view, nodes: mergeHomeNodes(base, raw.nodes || []), shapes: raw.shapes || [] };
+  }
+  return { name: raw.name || 'Page', view, nodes: (raw.nodes || []).map(normalizeSaved), shapes: raw.shapes || [] };
+}
+
+/* Accept either the legacy single-board snapshot ({view,nodes,shapes}) or the
+   multi-page shape ({activePage,pages:[…]}) and expand it into live pages. */
+function buildFromSaved(base, raw) {
+  const rawPages = Array.isArray(raw.pages)
+    ? raw.pages
+    : [{ id: HOME_ID, name: 'Home', view: raw.view, nodes: raw.nodes, shapes: raw.shapes }];
+  const pagesMeta = [];
+  const pagesData = {};
+  rawPages.forEach((rp, i) => {
+    const id = i === 0 ? HOME_ID : rp.id || `pg${i}`;
+    const p = normalizePage(rp, base, i === 0);
+    pagesMeta.push({ id, name: p.name });
+    pagesData[id] = { nodes: p.nodes, shapes: p.shapes, view: p.view };
+  });
+  const activePageId = raw.activePage && pagesData[raw.activePage] ? raw.activePage : pagesMeta[0].id;
+  return { pagesMeta, pagesData, activePageId, brand: base.brand, hadSaved: true };
+}
+
+function freshState(base) {
   return {
-    nodes: [...cards, ...others],
-    shapes: saved.shapes || [],
-    view: saved.view || { x: 0, y: 0, scale: 1 },
+    pagesMeta: [{ id: HOME_ID, name: 'Home' }],
+    pagesData: { [HOME_ID]: { nodes: base.nodes, shapes: base.shapes, view: defaultView() } },
+    activePageId: HOME_ID,
     brand: base.brand,
-    hadSaved: true,
+    hadSaved: false,
   };
 }
 
@@ -48,29 +84,33 @@ function mergeSaved(base, saved) {
    fresh data-file layout with its seed annotations. */
 function loadInitial() {
   const base = buildInitialState();
+  const usable = (s) => s && (Array.isArray(s.nodes) || Array.isArray(s.pages));
 
   // Unpublished dev edits take precedence so you can keep iterating.
   if (EDITABLE) {
     try {
       const saved = JSON.parse(localStorage.getItem(STORE) || 'null');
-      if (saved && Array.isArray(saved.nodes)) return mergeSaved(base, saved);
+      if (usable(saved)) return buildFromSaved(base, saved);
     } catch {
       /* ignore corrupt storage */
     }
   }
 
   // The published snapshot ships in the bundle and drives the live site.
-  if (publishedState && Array.isArray(publishedState.nodes)) return mergeSaved(base, publishedState);
+  if (usable(publishedState)) return buildFromSaved(base, publishedState);
 
-  return { nodes: base.nodes, shapes: base.shapes, view: { x: 0, y: 0, scale: 1 }, brand: base.brand, hadSaved: false };
+  return freshState(base);
 }
 
 export function CanvasProvider({ children }) {
   const init = useMemo(loadInitial, []);
+  const active0 = init.pagesData[init.activePageId];
 
   /* ── React state (discrete data model) ──────────────────────── */
-  const [nodes, setNodes] = useState(init.nodes);
-  const [shapes, setShapes] = useState(init.shapes);
+  const [pages, setPages] = useState(init.pagesMeta);       // [{id,name}] — drives the page switcher
+  const [activePageId, setActivePageId] = useState(init.activePageId);
+  const [nodes, setNodes] = useState(active0.nodes);        // active page's nodes
+  const [shapes, setShapes] = useState(active0.shapes);     // active page's shapes
   const [draft, setDraft] = useState(null); // in-progress drawing
   const [tool, setToolState] = useState('select');
   const [selected, setSelectedState] = useState(null); // {kind:'node'|'shape', id}
@@ -80,6 +120,7 @@ export function CanvasProvider({ children }) {
   const [strokeColor, setStrokeColor] = useState('#7C2D91');
   const [hintHidden, setHintHidden] = useState(false);
   const [ctxMenu, setCtxMenu] = useState(null); // {x,y,target:{kind,id}}
+  const [fullscreenId, setFullscreenId] = useState(null); // image node shown in the lightbox
   const [publishState, setPublishState] = useState('idle'); // idle|saving|done|error
   const publishT = useRef(0);
 
@@ -93,22 +134,34 @@ export function CanvasProvider({ children }) {
   const shapeEls = useRef(new Map()).current; // id → shape svg child (.shape)
   const frameLabelEls = useRef(new Map()).current; // id → label element
 
-  const viewRef = useRef({ ...init.view }).current;
-  const targetRef = useRef({ ...init.view }).current;
+  /* Full per-page data for every board. The active page's live data lives in the
+     React state above; the others are parked here until switched to. */
+  const pageData = useRef(init.pagesData).current;
+
+  const viewRef = useRef({ ...active0.view }).current;
+  const targetRef = useRef({ ...active0.view }).current;
   const actionRef = useRef(null);
   const zoomRAF = useRef(0);
   const waTimer = useRef(0);
   const saveT = useRef(0);
-  const lastRasterScale = useRef(init.view.scale || 1);
+  const lastRasterScale = useRef(active0.view.scale || 1);
   const repromotePending = useRef(false);
   const panKey = useRef(false);
 
-  const seedZ = [...init.nodes, ...init.shapes].map((o) => o.z).filter((v) => typeof v === 'number');
+  const allNodes = Object.values(init.pagesData).flatMap((p) => p.nodes);
+  const allShapes = Object.values(init.pagesData).flatMap((p) => p.shapes);
+  const seedZ = [...active0.nodes, ...active0.shapes].map((o) => o.z).filter((v) => typeof v === 'number');
   const zTop = useRef(seedZ.length ? Math.max(...seedZ) : 0);
   const zBot = useRef(seedZ.length ? Math.min(0, ...seedZ) : 0);
-  const nodeSeq = useRef(0);
+  // Seed id counters across ALL pages so generated ids never collide after reload.
+  const nodeSeq = useRef(
+    Math.max(0, ...allNodes.map((n) => { const m = /^n(\d+)-/.exec(String(n.id)); return m ? +m[1] : 0; }))
+  );
   const shapeSeq = useRef(
-    Math.max(0, ...init.shapes.map((s) => parseInt(String(s.id).replace(/\D/g, ''), 10) || 0))
+    Math.max(0, ...allShapes.map((s) => parseInt(String(s.id).replace(/\D/g, ''), 10) || 0))
+  );
+  const pageSeq = useRef(
+    Math.max(0, ...init.pagesMeta.map((p) => parseInt(String(p.id).replace(/\D/g, ''), 10) || 0))
   );
 
   /* Live snapshot of state for the imperative gesture handlers. Written during
@@ -122,6 +175,9 @@ export function CanvasProvider({ children }) {
   S.strokeColor = strokeColor;
   S.nodes = nodes;
   S.shapes = shapes;
+  S.fullscreenId = fullscreenId;
+  S.pages = pages;
+  S.activePageId = activePageId;
 
   /* ── Engine (defined once; reads fresh state via refs/S) ─────── */
   const eng = useMemo(() => {
@@ -222,7 +278,7 @@ export function CanvasProvider({ children }) {
       if (type === 'md' && !editing) {
         chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11 - 26) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
       } else chrome.edit.style.display = 'none';
-      if ((type === 'frame' || type === 'md') && !editing) {
+      if ((type === 'frame' || type === 'md' || type === 'image') && !editing) {
         chrome.rz.style.display = 'block'; chrome.rz.style.left = (sx + sw - 7) + 'px'; chrome.rz.style.top = (sy + sh - 7) + 'px';
         chrome.rz.style.cursor = type === 'md' ? 'ew-resize' : 'nwse-resize';
       } else chrome.rz.style.display = 'none';
@@ -331,24 +387,44 @@ export function CanvasProvider({ children }) {
     }
 
     /* ── Persistence ──────────────────────────────────────────── */
-    /* Serialise the live board into the compact snapshot shape shared by the
-       dev localStorage autosave and the committed canvasState.json. */
+    function serializeNode(n) {
+      const o = { id: n.id, type: n.type, x: +n.x, y: +n.y, z: n.z };
+      if (n.anchor) o.anchor = 1;
+      if (n.type === 'sticky') { o.color = n.color; o.text = n.text; }
+      else if (n.type === 'tblock') { o.text = n.text; }
+      else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
+      else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
+      else if (n.type === 'image') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; }
+      return o;
+    }
+    function serializeShape(s) {
+      const o = { id: s.id, type: s.type, stroke: s.stroke, width: s.width, z: s.z };
+      if (s.type === 'pen') o.points = s.points; else { o.x1 = s.x1; o.y1 = s.y1; o.x2 = s.x2; o.y2 = s.y2; }
+      return o;
+    }
+    /* Copy the live active-page data back into pageData so a serialise sees it. */
+    function snapshotActive() {
+      pageData[S.activePageId] = {
+        nodes: S.nodes,
+        shapes: S.shapes,
+        view: { x: viewRef.x, y: viewRef.y, scale: viewRef.scale },
+      };
+    }
+    /* Serialise every page into the compact multi-page snapshot shared by the dev
+       localStorage autosave and the committed canvasState.json. */
     function serialize() {
-      const nodes = S.nodes.map((n) => {
-        const o = { id: n.id, type: n.type, x: +n.x, y: +n.y, z: n.z };
-        if (n.anchor) o.anchor = 1;
-        if (n.type === 'sticky') { o.color = n.color; o.text = n.text; }
-        else if (n.type === 'tblock') { o.text = n.text; }
-        else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
-        else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
-        return o;
+      snapshotActive();
+      const out = S.pages.map((meta) => {
+        const d = pageData[meta.id] || { nodes: [], shapes: [], view: defaultView() };
+        return {
+          id: meta.id,
+          name: meta.name,
+          view: d.view,
+          nodes: d.nodes.map(serializeNode),
+          shapes: d.shapes.map(serializeShape),
+        };
       });
-      const shapes = S.shapes.map((s) => {
-        const o = { id: s.id, type: s.type, stroke: s.stroke, width: s.width, z: s.z };
-        if (s.type === 'pen') o.points = s.points; else { o.x1 = s.x1; o.y1 = s.y1; o.x2 = s.x2; o.y2 = s.y2; }
-        return o;
-      });
-      return { view: { x: viewRef.x, y: viewRef.y, scale: viewRef.scale }, nodes, shapes };
+      return { version: 2, activePage: S.activePageId, pages: out };
     }
     function scheduleSave() { if (!EDITABLE) return; clearTimeout(saveT.current); saveT.current = setTimeout(saveNow, 400); }
     function saveNow() {
@@ -381,6 +457,94 @@ export function CanvasProvider({ children }) {
       localStorage.removeItem(STORE); location.reload();
     }
 
+    /* ── Pages (separate boards) ──────────────────────────────── */
+    function reseedZ(page) {
+      const zs = [...page.nodes, ...page.shapes].map((o) => o.z).filter((v) => typeof v === 'number');
+      zTop.current = zs.length ? Math.max(...zs) : 0;
+      zBot.current = zs.length ? Math.min(0, ...zs) : 0;
+    }
+    /* Park the active page, load another one's nodes/shapes/view. Works in view
+       mode too — this is how the reader flips between boards. */
+    function switchPage(id) {
+      if (!pageData[id] || id === S.activePageId) return;
+      freezeView();
+      snapshotActive();
+      const t = pageData[id];
+      deselect(); setEditingId(null); setCtxMenu(null); setFullscreenId(null);
+      setNodes(t.nodes); setShapes(t.shapes);
+      viewRef.x = t.view.x; viewRef.y = t.view.y; viewRef.scale = t.view.scale;
+      targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = viewRef.scale;
+      setActivePageId(id);
+      reseedZ(t);
+      applyView();
+    }
+    function newPageId() { return 'pg' + ++pageSeq.current; }
+    function addPage(name) {
+      if (!EDITABLE) return;
+      const id = newPageId();
+      // A blank board with world-origin roughly centred on screen.
+      const view = { x: Math.round(innerWidth / 2), y: Math.round(innerHeight / 2), scale: 1 };
+      pageData[id] = { nodes: [], shapes: [], view };
+      const label = (name && name.trim()) || `Page ${S.pages.length + 1}`;
+      setPages((ps) => [...ps, { id, name: label }]);
+      switchPage(id);
+    }
+    function renamePage(id, name) {
+      const v = (name || '').trim();
+      if (!v) return;
+      setPages((ps) => ps.map((p) => (p.id === id ? { ...p, name: v } : p)));
+    }
+    function removePage(id) {
+      if (!EDITABLE || id === HOME_ID) return; // the home board (portfolio cards) is permanent
+      const remaining = S.pages.filter((p) => p.id !== id);
+      if (!remaining.length) return;
+      if (S.activePageId === id) switchPage(remaining[0].id);
+      delete pageData[id];
+      setPages((ps) => ps.filter((p) => p.id !== id));
+    }
+
+    /* ── Dropped images ───────────────────────────────────────── */
+    const readDataUrl = (file) => new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = () => reject(r.error);
+      r.readAsDataURL(file);
+    });
+    const measure = (src) => new Promise((resolve, reject) => {
+      const im = new Image();
+      im.onload = () => resolve({ w: im.naturalWidth || 200, h: im.naturalHeight || 150 });
+      im.onerror = () => reject(new Error('could not decode image'));
+      im.src = src;
+    });
+    /* Read the file, persist it as a committed asset via the dev endpoint, then
+       drop an image node (centred on the cursor, scaled to a sane default). */
+    async function addImageFromFile(file, wx, wy) {
+      if (!EDITABLE || !file || !file.type.startsWith('image/')) return;
+      try {
+        const dataUrl = await readDataUrl(file);
+        const nat = await measure(dataUrl);
+        const res = await fetch('/__canvas/asset', {
+          method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ dataUrl }),
+        });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+        const MAX = 360;
+        const k = nat.w > MAX || nat.h > MAX ? MAX / Math.max(nat.w, nat.h) : 1;
+        const w = Math.round(nat.w * k), h = Math.round(nat.h * k);
+        const n = addNode({ id: newId('image'), type: 'image', x: wx - w / 2, y: wy - h / 2, w, h, src: out.url, alt: file.name || '' });
+        setToolState('select'); selectNode(n.id);
+      } catch (err) {
+        console.error('[canvas] image drop failed', err);
+      }
+    }
+
+    /* ── Image lightbox (full-screen viewing) ─────────────────── */
+    function openFullscreen(id) {
+      const n = S.nodes.find((x) => x.id === id);
+      if (n && n.type === 'image') setFullscreenId(id);
+    }
+    function closeFullscreen() { setFullscreenId(null); }
+
     /* ── Editing text nodes ───────────────────────────────────── */
     function startEditing(id) { setEditingId(id); }
     function stopEditing() { setEditingId(null); }
@@ -395,7 +559,8 @@ export function CanvasProvider({ children }) {
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape,
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
       setTool, setMode, fitAll, flyTo, scheduleSave, saveNow, serialize, publish, resetBoard,
-      startEditing, stopEditing, setChrome,
+      switchPage, addPage, renamePage, removePage,
+      addImageFromFile, openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
       nextZ, backZ,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -410,7 +575,7 @@ export function CanvasProvider({ children }) {
   }, [tool, readOnly]);
 
   /* ── Keep chrome + persistence in sync with the model ───────── */
-  useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, eng]);
+  useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, eng]);
 
   /* ── Boot: apply the initial view (fit if nothing was saved) ── */
   useEffect(() => {
@@ -433,7 +598,7 @@ export function CanvasProvider({ children }) {
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, hintHidden, ctxMenu,
-    publishState,
+    publishState, fullscreenId, pages, activePageId,
     brand: init.brand, EDITABLE,
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setHintHidden, setCtxMenu, setSelectedState,

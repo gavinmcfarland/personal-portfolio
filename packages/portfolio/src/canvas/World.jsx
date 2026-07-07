@@ -3,6 +3,7 @@ import Card from './nodes/Card';
 import EditableNode from './nodes/EditableNode';
 import Markdown from './nodes/Markdown';
 import Frame from './nodes/Frame';
+import ImageNode from './nodes/Image';
 import Shape from './Shape';
 
 function NodeView({ node }) {
@@ -16,6 +17,8 @@ function NodeView({ node }) {
       return <Markdown node={node} />;
     case 'frame':
       return <Frame node={node} />;
+    case 'image':
+      return <ImageNode node={node} />;
     default:
       return null;
   }

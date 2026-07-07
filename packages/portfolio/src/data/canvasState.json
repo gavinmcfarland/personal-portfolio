@@ -1,8 +1,8 @@
 {
   "view": {
-    "x": 127.47914006601536,
-    "y": 168.87405928107617,
-    "scale": 0.7475673547139149
+    "x": -1515.6267360958052,
+    "y": -773.7009535614907,
+    "scale": 0.9771952478737065
   },
   "nodes": [
     {
@@ -22,22 +22,22 @@
     {
       "id": "p-plugma",
       "type": "card",
-      "x": 470,
-      "y": -40,
+      "x": 2969.089002535251,
+      "y": 89.35409804409787,
       "z": 3
     },
     {
       "id": "p-askeroo",
       "type": "card",
-      "x": 470,
-      "y": 290,
+      "x": 3156.655487758727,
+      "y": 400.7638361733225,
       "z": 4
     },
     {
       "id": "p-figlet",
       "type": "card",
-      "x": 850,
-      "y": -40,
+      "x": 2568.0188746047365,
+      "y": 85.91446665014844,
       "z": 5
     },
     {
@@ -64,8 +64,8 @@
     {
       "id": "awards",
       "type": "card",
-      "x": 854.1732468313197,
-      "y": 597.7170598643029,
+      "x": 816.3087805078765,
+      "y": 633.8987877777708,
       "z": 9
     },
     {
@@ -109,6 +109,58 @@
       "z": 14,
       "w": 340,
       "text": "# Markdown note\n-- Selected Work\nType **markdown** — it *highlights* as you write.\n\n[Node.js] [TypeScript] [Vite]\n\n- lists & `inline code`\n- [links](https://www.plugma.dev/)\n\n> Double-click to edit it again."
+    },
+    {
+      "id": "n2-image",
+      "type": "image",
+      "x": 1737.8125731397552,
+      "y": 51.17541659824599,
+      "z": 22,
+      "w": 360,
+      "h": 360,
+      "src": "/canvas-assets/4bea837c87f188f3.png",
+      "alt": "Gemini_Generated_Image_xlg908xlg908xlg9.png"
+    },
+    {
+      "id": "n3-image",
+      "type": "image",
+      "x": 1857.3795629716112,
+      "y": 445.30364234029037,
+      "z": 23,
+      "w": 360,
+      "h": 360,
+      "src": "/canvas-assets/0d4f560fc35c7777.png",
+      "alt": "Gemini_Generated_Image_glts5sglts5sglts.png"
+    },
+    {
+      "id": "n1-md",
+      "type": "md",
+      "x": 1259.0472379173814,
+      "y": 874.9764139852056,
+      "z": 24,
+      "w": 340,
+      "text": "## This is a title"
+    },
+    {
+      "id": "n2-frame",
+      "type": "frame",
+      "x": 2514.872061182914,
+      "y": 39.778010393886674,
+      "z": 25,
+      "w": 1127.9138873154138,
+      "h": 940.6051375921684,
+      "text": "Section 1"
+    },
+    {
+      "id": "n6-image",
+      "type": "image",
+      "x": 1860.3788315989195,
+      "y": 1073.8998422533875,
+      "z": 29,
+      "w": 360,
+      "h": 240,
+      "src": "/canvas-assets/edef38d105357e81.jpg",
+      "alt": "BG7A1053.jpg"
     }
   ],
   "shapes": [
