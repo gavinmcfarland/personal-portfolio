@@ -188,6 +188,8 @@ body.tool-select .node{cursor:grab;}
 .md-hl .t-link{color:#1565c0;text-decoration:underline;}
 html.dark .md-hl .t-code-in,html.dark .md-hl .t-code{color:#5ccfe6;}
 html.dark .md-hl .t-link{color:#7cb7ff;}
+.md-hl .t-kicker{color:var(--accent);font-weight:700;}
+.md-hl .t-tag{color:var(--accent);}
 /* rendered markdown */
 .md-render{padding:16px 20px;font-family:var(--serif);color:var(--ink);font-size:1rem;line-height:1.55;}
 .md-render>*:first-child{margin-top:0;}
@@ -206,6 +208,11 @@ html.dark .md-hl .t-link{color:#7cb7ff;}
 .md-render hr{border:0;border-top:1px solid var(--line);margin:1em 0;}
 .md-render img{max-width:100%;border-radius:6px;}
 .md-render .md-empty{color:var(--faint);font-style:italic;}
+.md-render .md-kicker{font-family:var(--sans);font-size:.62rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:.55rem;margin:1.1em 0 .5em;}
+.md-render .md-kicker::before{content:"";width:16px;height:2px;background:var(--accent);border-radius:2px;flex:none;}
+.md-render .md-kicker:first-child{margin-top:0;}
+.md-render .md-tags{display:flex;flex-wrap:wrap;gap:.4rem .5rem;margin:.55em 0;}
+.md-render .md-tags span{font-family:var(--sans);font-size:.62rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:100px;padding:.22rem .6rem;}
 /* editing hint pinned under the source */
 .md-edit::after{
   content:"Esc or click away to render";
@@ -711,12 +718,18 @@ function mdParse(src){
     if(/^\s*$/.test(line)){ i++; continue; }
     const h=line.match(/^(#{1,6})\s+(.*)$/);
     if(h){ const n=h[1].length; html+=`<h${n}>${inline(h[2])}</h${n}>`; i++; continue; }
+    const kick=line.match(/^--(?!-)\s+(.+)$/);           // "-- Subheading" → dash kicker
+    if(kick){ html+=`<div class="md-kicker">${inline(kick[1])}</div>`; i++; continue; }
+    if(/^\s*(\[[^\]]+\]\s*)+$/.test(line)&&line.indexOf("](")<0){   // "[a] [b]" → tag pills
+      const tags=[...line.matchAll(/\[([^\]]+)\]/g)].map(m=>m[1]);
+      html+=`<div class="md-tags">${tags.map(t=>`<span>${inline(t)}</span>`).join("")}</div>`; i++; continue;
+    }
     if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)){ html+="<hr>"; i++; continue; }
     if(/^\s*>\s?/.test(line)){ const bq=[]; while(i<lines.length&&/^\s*>\s?/.test(lines[i])){ bq.push(lines[i].replace(/^\s*>\s?/,"")); i++; } html+=`<blockquote>${inline(bq.join(" "))}</blockquote>`; continue; }
     if(/^\s*[-*+]\s+/.test(line)){ const it=[]; while(i<lines.length&&/^\s*[-*+]\s+/.test(lines[i])){ it.push(inline(lines[i].replace(/^\s*[-*+]\s+/,""))); i++; } html+=`<ul>${it.map(x=>`<li>${x}</li>`).join("")}</ul>`; continue; }
     if(/^\s*\d+\.\s+/.test(line)){ const it=[]; while(i<lines.length&&/^\s*\d+\.\s+/.test(lines[i])){ it.push(inline(lines[i].replace(/^\s*\d+\.\s+/,""))); i++; } html+=`<ol>${it.map(x=>`<li>${x}</li>`).join("")}</ol>`; continue; }
     const para=[line]; i++;
-    while(i<lines.length&&!/^\s*$/.test(lines[i])&&!/^(#{1,6})\s/.test(lines[i])&&!/^\s*[-*+]\s+/.test(lines[i])&&!/^\s*\d+\.\s+/.test(lines[i])&&!/^\s*>\s?/.test(lines[i])&&!/^ \d+ $/.test(lines[i])){ para.push(lines[i]); i++; }
+    while(i<lines.length&&!/^\s*$/.test(lines[i])&&!/^(#{1,6})\s/.test(lines[i])&&!/^\s*[-*+]\s+/.test(lines[i])&&!/^\s*\d+\.\s+/.test(lines[i])&&!/^\s*>\s?/.test(lines[i])&&!/^ \d+ $/.test(lines[i])&&!/^--(?!-)\s+/.test(lines[i])&&!/^\s*(\[[^\]]+\]\s*)+$/.test(lines[i])){ para.push(lines[i]); i++; }
     html+=`<p>${inline(para.join(" "))}</p>`;
   }
   return html;
@@ -729,6 +742,8 @@ function mdHighlight(src){
     if(/^(#{1,6})\s/.test(line)) return `<span class="t-head">${mdEsc(line)}</span>`;
     if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) return `<span class="t-hr">${mdEsc(line)}</span>`;
     if(/^\s*>\s?/.test(line)) return `<span class="t-quote">${mdEsc(line)}</span>`;
+    if(/^--(?!-)\s+\S/.test(line)) return `<span class="t-kicker">${mdEsc(line)}</span>`;
+    if(/^\s*(\[[^\]]+\]\s*)+$/.test(line)&&line.indexOf("](")<0) return mdEsc(line).replace(/(\[[^\]]+\])/g,'<span class="t-tag">$1</span>');
     let l=mdEsc(line);
     l=l.replace(/^(\s*)([-*+])(\s+)/,'$1<span class="t-mark">$2</span>$3');
     l=l.replace(/^(\s*)(\d+\.)(\s+)/,'$1<span class="t-mark">$2</span>$3');
@@ -1087,7 +1102,7 @@ const SEED_NOTES=[
   {type:"sticky",color:"yellow",x:1240,y:330,text:"This is a canvas!\nPan, zoom, and\nannotate anything ↓"},
   {type:"sticky",color:"blue",x:470,y:-330,text:"My favourite\nproject — try the\nhot reload 🔥"},
   {type:"tblock",x:-40,y:-140,text:"↓ drag me around"},
-  {type:"md",x:1300,y:560,text:"# Markdown note\nType **markdown** here — it *highlights* as you\nwrite, then renders when you click away.\n\n- lists & `inline code`\n- [links](https://www.plugma.dev/)\n\n> Double-click to edit it again."},
+  {type:"md",x:1300,y:560,text:"# Markdown note\n-- Selected Work\nType **markdown** — it *highlights* as you write.\n\n[Node.js] [TypeScript] [Vite]\n\n- lists & `inline code`\n- [links](https://www.plugma.dev/)\n\n> Double-click to edit it again."},
 ];
 const SEED_SHAPES=[
   {id:"seed1",type:"arrow",stroke:"#7C2D91",width:3,x1:1300,y1:300,x2:1150,y2:180},
