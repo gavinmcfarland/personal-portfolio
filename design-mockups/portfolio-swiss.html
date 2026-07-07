@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Swiss Editorial Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────────────────────────────────────
+   GAVIN McFARLAND · Swiss editorial redesign
+   Direction: Vignelli / Pentagram lineage. A strict 12-column grid,
+   hairline rules, a big display masthead, tabular alignment. Keeps the
+   existing brand DNA (Tinos serif prose · Inter sans structure · CV purple)
+   but makes the grid itself the subject.
+   ───────────────────────────────────────────────────────────── */
+
+:root{
+  --bg:#FFFFFF;
+  --surface:#F4F3F1;      /* row hover wash */
+  --ink:#141417;          /* primary */
+  --muted:#3C3C42;        /* serif prose */
+  --faint:#8B8B91;        /* meta / captions */
+  --line:rgba(0,0,0,.11); /* row hairlines */
+  --line-strong:rgba(0,0,0,.30);
+  --rule:rgba(0,0,0,.82);  /* the black masthead / section rules */
+  --accent:#7C2D91;        /* CV purple */
+  --accent-soft:rgba(124,45,145,.10);
+
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --serif:'Tinos','Times New Roman',Times,Georgia,serif;
+
+  --gutter:clamp(14px,1.9vw,30px);
+  --margin:clamp(20px,5vw,64px);
+  --maxw:1360px;
+}
+html.dark{
+  --bg:#0B0B0C;
+  --surface:#161619;
+  --ink:#F2F2EF;
+  --muted:#B4B4B9;
+  --faint:#66666B;
+  --line:rgba(242,242,239,.11);
+  --line-strong:rgba(242,242,239,.30);
+  --rule:rgba(242,242,239,.72);
+  --accent:#C88BE8;
+  --accent-soft:rgba(200,139,232,.14);
+}
+
+*{box-sizing:border-box;}
+html{background:var(--bg);-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--serif);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  transition:background-color .4s ease,color .4s ease;
+}
+::selection{background:var(--accent);color:#fff;}
+a{color:inherit;text-decoration:none;}
+
+.page{max-width:var(--maxw);margin:0 auto;padding:0 var(--margin);}
+.g12{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  column-gap:var(--gutter);
+}
+.tnum{font-variant-numeric:tabular-nums;}
+.sans{font-family:var(--sans);}
+.serif{font-family:var(--serif);}
+.pretty{text-wrap:pretty;}
+.balance{text-wrap:balance;}
+
+/* ── Kicker / folio microtype ─────────────────────────────────── */
+.kicker{
+  font-family:var(--sans);
+  font-size:.6875rem;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--faint);
+}
+
+/* ── FOLIO (running header) ───────────────────────────────────── */
+.folio{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  padding:1.25rem 0 .95rem;
+}
+.folio .fl{display:flex;gap:clamp(1rem,4vw,3.5rem);align-items:center;}
+.folio .fl span{color:var(--faint);}
+
+.toggle{
+  font-family:var(--sans);
+  font-size:.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint);
+  background:none;border:1px solid var(--line);
+  border-radius:100px;
+  padding:.4rem .8rem;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.5em;
+  transition:border-color .2s ease,color .2s ease;
+}
+.toggle:hover{border-color:var(--line-strong);color:var(--ink);}
+.toggle .glyph{width:9px;height:9px;border-radius:50%;border:1.5px solid currentColor;}
+html.dark .toggle .glyph{background:currentColor;border-color:currentColor;}
+
+.rule-strong{height:2px;background:var(--rule);border:0;margin:0;}
+.rule-hair{height:1px;background:var(--line);border:0;margin:0;}
+
+/* ── MASTHEAD ─────────────────────────────────────────────────── */
+.masthead{padding:clamp(2.75rem,7vw,6rem) 0 clamp(2rem,4vw,3.25rem);}
+.name{
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:clamp(3.1rem,12.5vw,10rem);
+  line-height:.9;
+  letter-spacing:-.04em;
+  margin:0;
+  color:var(--ink);
+}
+.name .amp{color:var(--faint);}
+.mast-lower{margin-top:clamp(2rem,4vw,3.25rem);align-items:start;}
+.mast-side{grid-column:1 / span 3;}
+.mast-side .role{
+  font-family:var(--sans);font-weight:600;font-size:.9375rem;
+  color:var(--ink);margin:0 0 1.4rem;line-height:1.35;
+}
+.mast-side dl{margin:0;display:grid;gap:.85rem;}
+.mast-side dt{font-family:var(--sans);font-size:.625rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:.15rem;}
+.mast-side dd{margin:0;font-family:var(--sans);font-size:.875rem;color:var(--ink);}
+.mast-lead{grid-column:5 / span 8;}
+.mast-lead p{margin:0;color:var(--muted);}
+.mast-lead .lead{
+  font-size:clamp(1.15rem,2.05vw,1.6rem);
+  line-height:1.45;color:var(--ink);
+  letter-spacing:-.005em;margin-bottom:1.15rem;
+}
+.mast-lead .sub{font-size:1.0625rem;line-height:1.6;max-width:56ch;}
+
+/* Underline link */
+.ulink{
+  color:var(--ink);
+  background-image:linear-gradient(var(--line-strong),var(--line-strong));
+  background-size:100% 1px;background-position:0 100%;background-repeat:no-repeat;
+  transition:background-size .2s ease,color .2s ease,background-image .2s ease;
+  padding-bottom:.02em;
+}
+.ulink:hover{color:var(--accent);background-image:linear-gradient(var(--accent),var(--accent));}
+
+/* ── SECTION HEADER ───────────────────────────────────────────── */
+section{margin-top:clamp(4rem,8vw,7.5rem);}
+.sec-head{
+  display:flex;align-items:baseline;gap:1.25rem;
+  padding-bottom:1.1rem;margin-bottom:.25rem;
+}
+.sec-num{font-family:var(--sans);font-size:.75rem;font-weight:600;color:var(--faint);letter-spacing:.05em;flex:none;}
+.sec-title{
+  font-family:var(--sans);font-weight:700;font-size:.8125rem;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink);flex:none;margin:0;
+}
+.sec-line{flex:1;height:1px;background:var(--rule);align-self:center;opacity:.9;}
+.sec-count{font-family:var(--sans);font-size:.75rem;color:var(--faint);flex:none;letter-spacing:.02em;}
+
+/* ── WORK LIST ────────────────────────────────────────────────── */
+.work-row{
+  align-items:baseline;
+  padding:clamp(1.3rem,2vw,1.9rem) 0;
+  border-top:1px solid var(--line);
+  position:relative;
+  transition:background-color .25s ease;
+}
+.work-list .work-row:last-child{border-bottom:1px solid var(--line);}
+.work-row:hover{background:var(--surface);}
+.work-idx{grid-column:1 / span 1;font-family:var(--sans);font-weight:700;font-size:.9375rem;color:var(--accent);}
+.work-title{grid-column:2 / span 3;font-family:var(--serif);font-size:clamp(1.35rem,2.3vw,1.85rem);line-height:1.05;color:var(--ink);letter-spacing:-.01em;}
+.work-desc{grid-column:5 / span 4;font-size:1.0625rem;line-height:1.5;color:var(--muted);}
+.work-tech{grid-column:9 / span 3;display:flex;flex-wrap:wrap;gap:.35rem .8rem;padding-top:.35rem;}
+.work-tech span{font-family:var(--sans);font-size:.6875rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);}
+.work-arrow{grid-column:12 / span 1;justify-self:end;align-self:start;}
+.work-arrow svg{width:16px;height:16px;stroke:var(--faint);transition:transform .25s ease,stroke .25s ease;}
+.work-row:hover .work-arrow svg{stroke:var(--accent);transform:translate(3px,-3px);}
+.work-row:hover .work-idx{color:var(--accent);}
+
+/* ── INDEX ROWS (recognition) ─────────────────────────────────── */
+.idx-row{
+  align-items:baseline;
+  padding:1.1rem 0;
+  border-top:1px solid var(--line);
+}
+.idx-list .idx-row:last-child{border-bottom:1px solid var(--line);}
+.idx-year{grid-column:1 / span 1;font-family:var(--sans);font-weight:700;font-size:.9375rem;color:var(--faint);}
+.idx-title{grid-column:3 / span 6;font-family:var(--serif);font-size:1.1875rem;color:var(--ink);}
+.idx-place{grid-column:9 / span 4;font-family:var(--sans);font-size:.8125rem;color:var(--faint);text-align:right;letter-spacing:.03em;text-transform:uppercase;align-self:baseline;}
+
+/* ── CONNECT / COLOPHON ───────────────────────────────────────── */
+.connect-body{margin-top:clamp(1.5rem,3vw,2.5rem);align-items:start;}
+.connect-lede{grid-column:1 / span 6;}
+.connect-lede p{margin:0 0 1.5rem;font-size:clamp(1.5rem,3.4vw,2.4rem);line-height:1.2;color:var(--ink);letter-spacing:-.015em;}
+.connect-email{grid-column:8 / span 5;}
+.connect-email .em{font-family:var(--serif);font-size:clamp(1.15rem,2vw,1.5rem);color:var(--ink);word-break:break-word;}
+.connect-social{margin-top:1.6rem;display:flex;gap:1.75rem;}
+.connect-social a{font-family:var(--sans);font-size:.9375rem;font-weight:500;}
+.colophon{
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;
+  padding:1.15rem 0 2.75rem;margin-top:clamp(3.5rem,6vw,5.5rem);
+}
+.colophon span{color:var(--faint);}
+
+/* ── entrance stagger ─────────────────────────────────────────── */
+.rise{opacity:0;transform:translateY(14px);animation:rise .9s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes rise{to{opacity:1;transform:none;}}
+.d1{animation-delay:.04s;}.d2{animation-delay:.11s;}.d3{animation-delay:.2s;}.d4{animation-delay:.29s;}
+.reveal{opacity:0;transform:translateY(20px);}
+.reveal.in{opacity:1;transform:none;transition:opacity .8s ease,transform .8s cubic-bezier(.16,1,.3,1);}
+
+/* ── responsive ───────────────────────────────────────────────── */
+@media(max-width:860px){
+  .mast-side{grid-column:1 / -1;margin-bottom:2rem;}
+  .mast-side dl{grid-template-columns:repeat(3,1fr);gap:1rem;}
+  .mast-lead{grid-column:1 / -1;}
+  .work-idx{grid-column:1 / span 2;}
+  .work-title{grid-column:3 / span 10;margin-bottom:.7rem;}
+  .work-desc{grid-column:3 / span 10;margin-bottom:.7rem;}
+  .work-tech{grid-column:3 / span 9;}
+  .work-arrow{grid-column:12 / span 1;grid-row:1;align-self:start;}
+  .idx-title{grid-column:3 / span 10;}
+  .idx-place{grid-column:1 / -1;text-align:left;margin-top:.35rem;}
+  .connect-lede,.connect-email{grid-column:1 / -1;}
+  .connect-email{margin-top:1.5rem;}
+}
+@media(max-width:560px){
+  .folio .fl{gap:1.1rem;}
+  .folio .fl .hide-sm{display:none;}
+  .idx-year{grid-column:1 / span 2;}
+  .work-title{grid-column:1 / -1;}
+  .work-desc{grid-column:1 / -1;}
+  .work-tech{grid-column:1 / -1;}
+}
+@media(prefers-reduced-motion:reduce){
+  .rise,.reveal{animation:none!important;opacity:1!important;transform:none!important;}
+  .dot{animation:none;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── FOLIO ─────────────────────────────────────────────── -->
+  <header class="folio rise d1">
+    <div class="fl kicker">
+      <span>Portfolio</span>
+      <span class="hide-sm">Developer &amp; Product Designer</span>
+      <span>London · 2026</span>
+    </div>
+    <button class="toggle" id="themeToggle" aria-label="Toggle colour theme">
+      <span class="glyph"></span><span id="themeLabel">Dark</span>
+    </button>
+  </header>
+  <hr class="rule-strong rise d1" />
+
+  <!-- ── MASTHEAD ──────────────────────────────────────────── -->
+  <section class="masthead" style="margin-top:0">
+    <h1 class="name rise d2">Gavin<br>McFarland</h1>
+    <div class="mast-lower g12">
+      <div class="mast-side rise d3">
+        <p class="role">Developer &amp; Product Designer building tools that take the friction out of building things.</p>
+        <dl>
+          <div>
+            <dt>Discipline</dt>
+            <dd>Full-stack · Product</dd>
+          </div>
+          <div>
+            <dt>Based</dt>
+            <dd>London, UK</dd>
+          </div>
+          <div>
+            <dt>Status</dt>
+            <dd>Freelance · Open</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="mast-lead rise d4">
+        <p class="lead pretty">I build developer tooling, Figma plugins and interactive products — full-stack, with a background in product design and user research.</p>
+        <p class="sub pretty">Currently freelancing and building <a class="ulink" href="https://awenate.com" target="_blank" rel="noopener">Awenate</a>. Previously, I worked at <a class="ulink" href="https://lovable.dev" target="_blank" rel="noopener">Lovable</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SELECTED WORK ─────────────────────────────────────── -->
+  <section id="work">
+    <div class="sec-head reveal">
+      <span class="sec-num tnum">01</span>
+      <h2 class="sec-title">Selected Work</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count tnum">Four projects</span>
+    </div>
+    <div class="work-list">
+
+      <a class="work-row g12 reveal" href="https://www.plugma.dev/" target="_blank" rel="noopener">
+        <span class="work-idx tnum">01</span>
+        <span class="work-title">Plugma</span>
+        <span class="work-desc pretty">A zero-config CLI for building Figma plugins with true hot-module reloading. Works with React, Svelte and Vue.</span>
+        <span class="work-tech"><span>Node.js</span><span>TypeScript</span><span>Vite</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+
+      <a class="work-row g12 reveal" href="https://github.com/gavinmcfarland/askeroo" target="_blank" rel="noopener">
+        <span class="work-idx tnum">02</span>
+        <span class="work-title">Askeroo</span>
+        <span class="work-desc pretty">A modern CLI prompt library with stateful back-navigation, conditional fields and task runners. Built on React and Ink.</span>
+        <span class="work-tech"><span>TypeScript</span><span>React</span><span>Ink</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+
+      <a class="work-row g12 reveal" href="https://www.figma.com/community/plugin/1215620774867583125/figlet" target="_blank" rel="noopener">
+        <span class="work-idx tnum">03</span>
+        <span class="work-title">Figlet</span>
+        <span class="work-desc pretty">A browser-based IDE for Figma plugins — write and run plugin code instantly, no local setup. Like CodePen for Figma.</span>
+        <span class="work-tech"><span>JavaScript</span><span>Figma API</span><span>Svelte</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+
+      <a class="work-row g12 reveal" href="https://www.figma.com/community/plugin/885838970710285271/table-creator" target="_blank" rel="noopener">
+        <span class="work-idx tnum">04</span>
+        <span class="work-title">Table Creator</span>
+        <span class="work-desc pretty">A Figma plugin for creating and maintaining complex data tables on the canvas, with dynamic content and bulk edits.</span>
+        <span class="work-tech"><span>TypeScript</span><span>Figma API</span><span>Svelte</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ── RECOGNITION ───────────────────────────────────────── -->
+  <section id="recognition">
+    <div class="sec-head reveal">
+      <span class="sec-num tnum">02</span>
+      <h2 class="sec-title">Recognition</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count tnum">Four</span>
+    </div>
+    <div class="idx-list">
+      <div class="idx-row g12 reveal"><span class="idx-year tnum">2023</span><span class="idx-title">Plugin Exhibition booth</span><span class="idx-place">Figma · Moscone Center</span></div>
+      <div class="idx-row g12 reveal"><span class="idx-year tnum">2021—22</span><span class="idx-title">Freelancer Award finalist</span><span class="idx-place">YunoJuno</span></div>
+      <div class="idx-row g12 reveal"><span class="idx-year tnum">2016</span><span class="idx-title">Best Customer Experience</span><span class="idx-place">John Lewis</span></div>
+      <div class="idx-row g12 reveal"><span class="idx-year tnum">2015</span><span class="idx-title">Most Effective Tablet App</span><span class="idx-place">John Lewis</span></div>
+    </div>
+  </section>
+
+  <!-- ── CONNECT ───────────────────────────────────────────── -->
+  <section id="connect">
+    <div class="sec-head reveal">
+      <span class="sec-num tnum">03</span>
+      <h2 class="sec-title">Connect</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count">Say hello</span>
+    </div>
+    <div class="connect-body g12">
+      <div class="connect-lede reveal">
+        <p class="balance">Open to freelance work and collaborations.</p>
+      </div>
+      <div class="connect-email reveal">
+        <span class="kicker" style="display:block;margin-bottom:.6rem">Email — quickest way to reach me</span>
+        <a class="em ulink" href="mailto:gavin@limitlessloop.com">gavin@limitlessloop.com</a>
+        <div class="connect-social">
+          <a class="ulink" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener">GitHub ↗</a>
+          <a class="ulink" href="https://x.com/gavinmcfarland" target="_blank" rel="noopener">X ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule-hair" style="margin-top:clamp(3.5rem,6vw,5.5rem)" />
+  <footer class="colophon kicker">
+    <span>© 2026 Gavin McFarland</span>
+    <span class="hide-sm">Set in Tinos &amp; Inter</span>
+    <span>London, UK</span>
+  </footer>
+
+</div>
+
+<script>
+/* ── Theme toggle ─────────────────────────────────────────────── */
+const root=document.documentElement,tLabel=document.getElementById('themeLabel');
+const saved=localStorage.getItem('theme');
+if(saved==='dark'||(!saved&&matchMedia('(prefers-color-scheme:dark)').matches)){root.classList.add('dark');}
+function syncLabel(){tLabel.textContent=root.classList.contains('dark')?'Light':'Dark';}
+syncLabel();
+document.getElementById('themeToggle').addEventListener('click',()=>{
+  root.classList.toggle('dark');
+  localStorage.setItem('theme',root.classList.contains('dark')?'dark':'light');
+  syncLabel();
+});
+
+/* ── Reveal on scroll ─────────────────────────────────────────── */
+const io=new IntersectionObserver((es)=>{
+  es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+},{rootMargin:'0px 0px -8% 0px',threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

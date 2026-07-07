@@ -13,25 +13,25 @@ export const useTheme = () => {
 const getSystemTheme = () =>
   window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
-/* Dark is the default canvas; the `light` class flips the tokens. */
+/* Light (paper) is the base canvas; the `dark` class flips the tokens. */
 const applyTheme = (resolved) => {
   const root = document.documentElement;
   const body = document.body;
-  if (resolved === 'light') {
-    root.classList.add('light');
-    body.classList.add('light');
+  if (resolved === 'dark') {
+    root.classList.add('dark');
+    body.classList.add('dark');
   } else {
-    root.classList.remove('light');
-    body.classList.remove('light');
+    root.classList.remove('dark');
+    body.classList.remove('dark');
   }
 };
 
 export const ThemeProvider = ({ children }) => {
   const [mode, setMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme-mode') || 'dark';
+      return localStorage.getItem('theme-mode') || 'system';
     }
-    return 'dark';
+    return 'system';
   });
 
   const resolved = mode === 'system' ? getSystemTheme() : mode;
@@ -52,6 +52,7 @@ export const ThemeProvider = ({ children }) => {
     return () => mq.removeEventListener('change', handler);
   }, [mode]);
 
+  // Cycle: system → light → dark → system
   const toggleTheme = useCallback(() => {
     setMode((prev) => {
       if (prev === 'system') return 'light';

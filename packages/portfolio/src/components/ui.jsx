@@ -1,0 +1,68 @@
+import { useReveal } from '../hooks/useReveal';
+
+/* Section with a ruled header — bold sans title on the left, a near-black
+   hairline filling the rest of the line. Mirrors the CV's section headings. */
+export function Section({ label, children, id }) {
+  const ref = useReveal();
+  return (
+    <section id={id} ref={ref} className="reveal scroll-mt-20 mt-16">
+      <div className="mb-5 flex items-center gap-5">
+        <h2 className="section-label whitespace-nowrap">{label}</h2>
+        <span className="section-rule flex-1" aria-hidden="true" />
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/* A two-column list row: bold sans index token on the left, serif content on
+   the right. Renders as a link when `href` is set (hover wash + arrow). */
+export function ListRow({ index, href, external, children }) {
+  // -mx-3 px-3 on every row so link and non-link rows share the same left edge.
+  const cls =
+    'group relative -mx-3 grid grid-cols-1 gap-y-1 rounded-[0.5rem] px-3 py-3 sm:grid-cols-[8.5rem_1fr] sm:gap-x-6';
+  const left = (
+    <div className="font-sans tnum text-[0.9375rem] font-bold text-ink">{index}</div>
+  );
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        target={external ? '_blank' : undefined}
+        rel={external ? 'noopener noreferrer' : undefined}
+        className={`${cls} transition-colors duration-200 hover:bg-surface`}
+      >
+        {left}
+        <div className="min-w-0">{children}</div>
+      </a>
+    );
+  }
+  return (
+    <div className={cls}>
+      {left}
+      <div className="min-w-0">{children}</div>
+    </div>
+  );
+}
+
+/* Purple sub-heading within a section (e.g. "Freelance" / "Perm"). Bold sans,
+   accent-coloured, lightly tracked — mirrors the CV's group labels. */
+export function SubLabel({ children }) {
+  return (
+    <h3 className="mb-1 mt-8 px-3 font-sans text-[0.8125rem] font-bold tracking-[0.02em] text-accent first:mt-0">
+      {children}
+    </h3>
+  );
+}
+
+/* The bullet separator between a primary and secondary term (neutral, CV-style). */
+export const Sep = () => (
+  <span className="px-[0.45em] text-faint" aria-hidden="true">•</span>
+);
+
+export const ArrowUpRight = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M7 17L17 7M17 7H8M17 7v9" />
+  </svg>
+);

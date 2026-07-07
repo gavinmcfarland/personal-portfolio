@@ -1,117 +1,31 @@
+/* Selected projects, in the order they appear on the page. */
 export const projects = [
-    {
-    id: 'awenate',
-    title: 'Awenate',
-    tagline: 'Visual Code Editor',
-    summary: 'Edit your running app directly in the browser, mapped back to source.',
-    description: 'A visual code editor that bridges your running app and its source. Framework-agnostic Vite plugins map DOM elements back to source locations, enabling live, in-browser editing of components.',
-    features: [
-      'Element-to-source mapping',
-      'Framework-agnostic Vite plugins',
-      'Live in-browser editing',
-      'Component preview',
-      'Shared bridge runtime'
-    ],
-    tech: ['TypeScript', 'Vite', 'Babel'],
-    link: 'https://awenate.com', // TODO: add public link
-    github: null, // TODO: add repo URL
-    category: 'Developer Tool',
-    highlight: false
-  },
   {
     id: 'plugma',
     title: 'Plugma',
-    tagline: 'Figma Plugin Development CLI',
-    summary: 'Build Figma plugins with true HMR and zero configuration.',
-    description: 'A command-line tool that simplifies Figma plugin development. Features true hot module reloading, in-browser previews, unified bundling, and .env support. Supports React, Svelte, and Vue.',
-    features: [
-      'True Hot Module Reloading (HMR)',
-      'Zero-configuration setup',
-      'Multi-framework support (React, Svelte, Vue)',
-      'In-browser previews',
-      'Built-in development server',
-      'Environment variable support'
-    ],
+    summary: 'A zero-config CLI for building Figma plugins with true hot-module reloading. Works with React, Svelte and Vue.',
     tech: ['Node.js', 'TypeScript', 'Vite'],
     link: 'https://www.plugma.dev/',
-    github: 'https://github.com/gavinmcfarland/plugma',
-    category: 'Developer Tool',
-    highlight: true
-  },
-  {
-    id: 'table-creator',
-    title: 'Table Creator',
-    tagline: 'Figma Plugin',
-    summary: 'Create and manage complex data tables directly on the Figma canvas.',
-    description: 'A plugin for creating and maintaining UI table components in Figma. Handles dynamic content, custom styling, and bulk operations with an intuitive interface.',
-    features: [
-      'Dynamic data handling',
-      'Custom styling system',
-      'Bulk operations',
-      'Real-time updates',
-      'Export functionality'
-    ],
-    tech: ['TypeScript', 'Figma Plugin API', 'Svelte'],
-    link: 'https://www.figma.com/community/plugin/885838970710285271/table-creator',
-    github: 'https://github.com/gavinmcfarland/figma-table-creator',
-    category: 'Figma Plugin',
-    highlight: true
   },
   {
     id: 'askeroo',
     title: 'Askeroo',
-    tagline: 'CLI Prompt Library',
-    summary: 'Build interactive CLI flows with back navigation and conditional fields.',
-    description: 'A modern CLI prompt library with flow control, back navigation, and conditional fields. Build interactive CLI experiences with text, radio, multi-select prompts, task runners, and markdown notes.',
-    features: [
-      'Stateful back navigation',
-      'Dynamic branching & conditionals',
-      'Task execution with progress tracking',
-      'Markdown & chalk support',
-      'Custom prompts via React & Ink'
-    ],
+    summary: 'A modern CLI prompt library with stateful back-navigation, conditional fields and task runners. Built on React and Ink.',
     tech: ['TypeScript', 'React', 'Ink'],
     link: 'https://github.com/gavinmcfarland/askeroo',
-    github: 'https://github.com/gavinmcfarland/askeroo',
-    category: 'Developer Tool',
-    highlight: true
   },
   {
     id: 'figlet',
     title: 'Figlet',
-    tagline: 'Figma Plugin IDE',
-    summary: 'Write and run Figma plugin code instantly in the browser — no setup.',
-    description: 'A browser-based IDE for Figma plugin prototyping. Like CodePen but for Figma: write and execute plugin code instantly without any local setup.',
-    features: [
-      'Live code execution',
-      'Cloud-based workspace',
-      'Community sharing',
-      'No setup required',
-      'Syntax highlighting'
-    ],
-    tech: ['JavaScript', 'Figma Plugin API', 'Svelte'],
+    summary: 'A browser-based IDE for Figma plugins — write and run plugin code instantly, no local setup. Like CodePen for Figma.',
+    tech: ['JavaScript', 'Figma API', 'Svelte'],
     link: 'https://www.figma.com/community/plugin/1215620774867583125/figlet',
-    github: null,
-    category: 'Figma Plugin',
-    highlight: true
   },
   {
-    id: 'table-widget',
-    title: 'Table Widget',
-    tagline: 'Figma Widget',
-    summary: 'Spreadsheet-like data editing on the canvas, synced across your team.',
-    description: 'A Figma widget that brings spreadsheet-like data editing to the canvas. Teams can import CSVs, edit cells in real-time, and keep data synchronized across collaborators.',
-    features: [
-      'Real-time collaboration',
-      'CSV/Excel import',
-      'Data synchronization',
-      'Multi-format export',
-      'Performance optimized'
-    ],
-    tech: ['TypeScript', 'Figma Widget API', 'Svelte'],
-    link: 'https://www.figma.com/community/widget/1027585818512741999/table',
-    github: 'https://github.com/gavinmcfarland/figma-widget-table',
-    category: 'Figma Widget',
-    highlight: false
-  }
+    id: 'table-creator',
+    title: 'Table Creator',
+    summary: 'A Figma plugin for creating and maintaining complex data tables on the canvas, with dynamic content and bulk edits.',
+    tech: ['TypeScript', 'Figma API', 'Svelte'],
+    link: 'https://www.figma.com/community/plugin/885838970710285271/table-creator',
+  },
 ];
