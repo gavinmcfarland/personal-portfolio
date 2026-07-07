@@ -291,6 +291,19 @@ html.dark .swatch{border-color:rgba(255,255,255,.18);}
 }
 .chip:hover{color:var(--ink);border-color:var(--line-strong);}
 .chip svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.chip.on:hover{color:#fff;border-color:var(--accent);}
+
+/* Read-only mode: hide authoring chrome; drag-to-pan everywhere */
+body.read-only #toolbar,body.read-only #swatches{display:none;}
+body.read-only #chrome .cbtn,body.read-only #cRz,body.read-only #cSel{display:none!important;}
+body.read-only #viewport{cursor:grab;}
+body.read-only.panning #viewport{cursor:grabbing;}
+body.read-only .frame-label{cursor:default;}
+body.read-only .frame .frame-body{background:transparent;}
+
+/* Objects marked as navigation anchors (author view only) */
+body:not(.read-only) .node[data-anchor="1"]{outline:2px dashed var(--accent);outline-offset:4px;}
 
 /* Zoom cluster */
 #zoom{right:22px;bottom:22px;display:flex;align-items:center;gap:2px;padding:5px;}
@@ -353,6 +366,7 @@ html.dark .swatch{border-color:rgba(255,255,255,.18);}
 <!-- ── Top bar ─────────────────────────────────────────────────── -->
 <div class="ui panel" id="topbar">
   <span class="brand">Gavin McFarland<small>canvas portfolio</small></span>
+  <button class="chip" id="modeBtn" title="Editing — click for read-only"><svg viewBox="0 0 24 24" id="modeIcon"><path d="M4 20h4L18 10l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg><span id="modeLbl">Editing</span></button>
   <button class="chip" id="fitBtn" title="Frame all content"><svg viewBox="0 0 24 24"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4"/></svg>Fit</button>
   <button class="chip" id="themeBtn" title="Toggle light / dark"><svg viewBox="0 0 24 24" id="themeIcon"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span id="themeLbl">Dark</span></button>
   <button class="chip" id="resetBtn" title="Clear notes & drawings, restore layout"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>Reset</button>
@@ -407,6 +421,8 @@ html.dark .swatch{border-color:rgba(255,255,255,.18);}
 <div class="panel" id="ctxmenu">
   <button data-act="front"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a1 1 0 0 1 1-1h9"/></svg>Bring to front</button>
   <button data-act="back"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="11" height="11" rx="2"/><path d="M19 9v9a1 1 0 0 1-1 1H9"/></svg>Send to back</button>
+  <div class="ctxsep"></div>
+  <button data-act="anchor"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><path d="M12 7v13M5 12a7 7 0 0 0 14 0M5 12H3m16 0h2"/></svg><span data-anchor-label>Add anchor</span></button>
   <div class="ctxsep"></div>
   <button data-act="delete" class="danger"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7"/></svg>Delete</button>
 </div>
@@ -539,6 +555,27 @@ function buildSwatches(kind){
 }
 document.querySelectorAll(".tool").forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
 
+/* ── Edit / read-only mode ────────────────────────────────────── */
+let readOnly=false;
+const MODE_ICON={
+  edit:'<path d="M4 20h4L18 10l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>',
+  view:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>'
+};
+function updateModeBtn(){
+  const btn=$("#modeBtn"); if(!btn)return;
+  btn.classList.toggle("on",!readOnly);
+  $("#modeIcon").innerHTML=readOnly?MODE_ICON.view:MODE_ICON.edit;
+  $("#modeLbl").textContent=readOnly?"Viewing":"Editing";
+  btn.title=readOnly?"Read-only — click to edit":"Editing — click for read-only";
+}
+function setMode(ro){
+  readOnly=!!ro; body.classList.toggle("read-only",readOnly);
+  if(readOnly){ deselect(); hideMenu(); if(tool!=="select"&&tool!=="hand")setTool("select"); }
+  updateModeBtn();
+  localStorage.setItem(STORE+"-mode",readOnly?"view":"edit");
+}
+$("#modeBtn").onclick=()=>setMode(!readOnly);
+
 /* ── Selection ────────────────────────────────────────────────── */
 let selected=null;                 // {kind:'node'|'shape', ref}
 function deselect(){
@@ -600,13 +637,13 @@ function createFrameLabel(f){
   go.onpointerdown=e=>e.stopPropagation();
   go.onclick=e=>{ e.stopPropagation(); flyToFrame(f); };
   label.addEventListener("pointerdown",e=>{
-    if(e.button!==0||label.classList.contains("editing"))return;
+    if(readOnly||e.button!==0||label.classList.contains("editing"))return;
     e.stopPropagation(); freezeView(); selectNode(f); f._moved=false;
     action={type:"node",el:f,sx:e.clientX,sy:e.clientY,ox:+f.dataset.x,oy:+f.dataset.y};
     f.classList.add("dragging");
   });
-  label.addEventListener("dblclick",e=>{ e.stopPropagation(); startFrameRename(f,t,label); });
-  label.addEventListener("contextmenu",e=>{ e.preventDefault(); e.stopPropagation();
+  label.addEventListener("dblclick",e=>{ if(readOnly)return; e.stopPropagation(); startFrameRename(f,t,label); });
+  label.addEventListener("contextmenu",e=>{ if(readOnly)return; e.preventDefault(); e.stopPropagation();
     selectNode(f); ctxTarget={kind:"node",ref:f}; showMenu(e.clientX,e.clientY); });
   chromeEl.appendChild(label); f._label=label; label._frame=f;
   return label;
@@ -670,7 +707,7 @@ function makeNode(type,x,y,opts={}){
         el.dataset.md=ta.value; paint(); }
     });
     ta.addEventListener("blur",()=>{ el.dataset.md=ta.value; el.dataset.editing=""; el.classList.remove("md-editing"); renderView(); saveNow(); syncChrome(); });
-    el.addEventListener("dblclick",ev=>{ ev.stopPropagation(); enterMdEdit(el); });
+    el.addEventListener("dblclick",ev=>{ if(readOnly)return; ev.stopPropagation(); enterMdEdit(el); });
     paint(); renderView();
     if(opts.text===undefined) requestAnimationFrame(()=>enterMdEdit(el));
   }
@@ -678,7 +715,7 @@ function makeNode(type,x,y,opts={}){
   return el;
 }
 function wireEditable(node,txt,focusNow){
-  node.addEventListener("dblclick",e=>{ e.stopPropagation(); startEdit(node,txt); });
+  node.addEventListener("dblclick",e=>{ if(readOnly)return; e.stopPropagation(); startEdit(node,txt); });
   if(focusNow) requestAnimationFrame(()=>startEdit(node,txt));
 }
 function startEdit(node,txt){
@@ -811,6 +848,13 @@ const shapes=[];   // live shape objects
 let action=null;   // current gesture
 viewport.addEventListener("pointerdown",e=>{
   if(e.button===2)return;
+  if(readOnly){
+    // Read-only: drag anywhere pans; let links / buttons receive the tap.
+    if(e.target.closest("a,button"))return;
+    freezeView();
+    action={type:"pan",sx:e.clientX,sy:e.clientY,ox:view.x,oy:view.y};
+    body.classList.add("panning"); viewport.setPointerCapture(e.pointerId); return;
+  }
   const editing=document.querySelector('.node[data-editing="1"]');
   if(editing && editing.contains(e.target))return;   // let text editing work
   freezeView();                                       // a manual gesture cancels any zoom glide
@@ -948,7 +992,7 @@ window.addEventListener("keydown",e=>{
   if(e.key==="Backspace"||e.key==="Delete"){
     if(selected){ e.preventDefault(); deleteSelected(); } return;
   }
-  const map={v:"select",h:"hand",n:"note",t:"text",m:"md",p:"pen",l:"line",a:"arrow",r:"rect",o:"ellipse",f:"frame"};
+  const map=readOnly?{v:"select",h:"hand"}:{v:"select",h:"hand",n:"note",t:"text",m:"md",p:"pen",l:"line",a:"arrow",r:"rect",o:"ellipse",f:"frame"};
   if(map[e.key.toLowerCase()]&&!e.metaKey&&!e.ctrlKey)setTool(map[e.key.toLowerCase()]);
   if(e.key==="Escape"){deselect();hideMenu();}
 });
@@ -956,13 +1000,21 @@ window.addEventListener("keyup",e=>{ if(e.code==="Space"){ panKey=false; if(tool
 /* ── Right-click context menu (z-order) ───────────────────────── */
 const ctx=$("#ctxmenu"); let ctxTarget=null,menuOpen=false;
 function showMenu(x,y){
+  // The "anchor" toggle only applies to non-frame nodes (frames are always sections).
+  const aBtn=ctx.querySelector('[data-act="anchor"]');
+  const el=(ctxTarget&&ctxTarget.kind==="node")?ctxTarget.ref:null;
+  const anchorable=el&&el.dataset.type!=="frame";
+  aBtn.style.display=anchorable?"flex":"none";
+  aBtn.previousElementSibling.style.display=anchorable?"block":"none";  // its separator
+  if(anchorable)aBtn.querySelector("[data-anchor-label]").textContent=el.dataset.anchor==="1"?"Remove anchor":"Add anchor";
   ctx.style.left=Math.min(x,innerWidth-190)+"px";
-  ctx.style.top=Math.min(y,innerHeight-140)+"px";
+  ctx.style.top=Math.min(y,innerHeight-190)+"px";
   ctx.classList.add("show"); menuOpen=true;
 }
 function hideMenu(){ ctx.classList.remove("show"); menuOpen=false; ctxTarget=null; }
 function setZ(t,z){ if(t.kind==="node"){t.ref.style.zIndex=z;t.ref.dataset.z=z;} else {t.ref.z=z;t.ref._svg.style.zIndex=z;} }
 viewport.addEventListener("contextmenu",e=>{
+  if(readOnly)return;
   e.preventDefault();
   const nodeEl=e.target.closest(".node"), shapeEl=e.target.closest(".shape");
   if(nodeEl){ selectNode(nodeEl); ctxTarget={kind:"node",ref:nodeEl}; showMenu(e.clientX,e.clientY); }
@@ -975,6 +1027,9 @@ ctx.addEventListener("click",e=>{
   const t=ctxTarget;
   if(b.dataset.act==="front")setZ(t,nextZ());
   else if(b.dataset.act==="back")setZ(t,backZ());
+  else if(b.dataset.act==="anchor"){
+    if(t.kind==="node"){ const el=t.ref; el.dataset.anchor=el.dataset.anchor==="1"?"":"1"; }
+  }
   else if(b.dataset.act==="delete"){
     if(t.kind==="node")removeNode(t.ref);
     else{ t.ref._svg.remove(); shapes.splice(shapes.indexOf(t.ref),1); }
@@ -1012,24 +1067,38 @@ $("#hintX").onclick=()=>$("#hint").classList.add("hide");
 $("#resetBtn").onclick=()=>{ if(confirm("Clear all notes & drawings and restore the original layout?")){
   localStorage.removeItem(STORE); location.reload(); } };
 
-/* ── Anchor navigation (frames → sections) ────────────────────── */
-function flyToFrame(el){
-  const x=+el.dataset.x,y=+el.dataset.y,w=+el.dataset.w,h=+el.dataset.h;
+/* ── Anchor navigation (frames + anchored objects → sections) ──── */
+// Fit any node to the viewport using its rendered box (works for frames,
+// cards, notes, text & markdown alike).
+function flyTo(el){
+  const x=+el.dataset.x,y=+el.dataset.y,w=el.offsetWidth,h=el.offsetHeight;
   const pad=90,vw=innerWidth,vh=innerHeight;
   const s=clampScale(Math.min(vw/(w+pad*2),vh/(h+pad*2)));
   target.scale=s; target.x=vw/2-(x+w/2)*s; target.y=vh/2-(y+h/2)*s;
   startZoomLoop();
 }
+const flyToFrame=flyTo;   // legacy alias (frame "→" button)
+// A readable label for any anchored object.
+function anchorName(el){
+  const t=el.dataset.type;
+  if(t==="frame")return (el.dataset.name||"").trim()||"Untitled";
+  if(t==="md"){
+    const first=(el.dataset.md||"").split("\n").map(l=>l.replace(/^#+\s*/,"").trim()).find(Boolean);
+    return first?first.slice(0,32):"Markdown";
+  }
+  const txt=(el.textContent||"").replace(/\s+/g," ").trim();
+  return txt?txt.slice(0,32):t.charAt(0).toUpperCase()+t.slice(1);
+}
 function refreshNav(){
-  const frames=[...world.querySelectorAll(".frame")];
-  frames.sort((a,b)=>(+a.dataset.y-+b.dataset.y)||(+a.dataset.x-+b.dataset.x));
+  const items=[...new Set(world.querySelectorAll('.frame, .node[data-anchor="1"]'))];
+  items.sort((a,b)=>(+a.dataset.y-+b.dataset.y)||(+a.dataset.x-+b.dataset.x));
   const list=$("#navList"); list.innerHTML="";
-  $("#nav").style.display=frames.length?"block":"none";
-  frames.forEach((f,i)=>{
+  $("#nav").style.display=items.length?"block":"none";
+  items.forEach((el,i)=>{
     const item=document.createElement("button"); item.className="nav-item";
     item.innerHTML=`<span class="ni-num">${i+1}</span><span class="ni-name"></span>`;
-    item.querySelector(".ni-name").textContent=(f.dataset.name||"").trim()||"Untitled";
-    item.onclick=()=>flyToFrame(f);
+    item.querySelector(".ni-name").textContent=anchorName(el);
+    item.onclick=()=>flyTo(el);
     list.appendChild(item);
   });
 }
@@ -1040,6 +1109,7 @@ function scheduleSave(){ clearTimeout(saveT); saveT=setTimeout(saveNow,400); }
 function saveNow(){
   const nodes=[...world.querySelectorAll(".node")].map(n=>{
     const o={id:n.dataset.id,type:n.dataset.type,x:+n.dataset.x,y:+n.dataset.y,z:+n.dataset.z};
+    if(n.dataset.anchor==="1")o.anchor=1;
     if(n.dataset.type==="sticky"){o.color=n.dataset.color;o.text=n.querySelector(".txt").textContent;}
     else if(n.dataset.type==="tblock"){o.text=n.querySelector(".txt").textContent;}
     else if(n.dataset.type==="frame"){o.w=+n.dataset.w;o.h=+n.dataset.h;o.text=n.dataset.name;}
@@ -1148,6 +1218,7 @@ function boot(){
     });
     (saved.shapes||[]).forEach(s=>{const o={...s,_el:null,_svg:null};shapes.push(o);renderShape(o);
       const num=parseInt(s.id.replace(/\D/g,""))||0; if(num>shapeSeq)shapeSeq=num;});
+    saved.nodes.forEach(n=>{ if(n.anchor){ const el=world.querySelector('.node[data-id="'+CSS.escape(n.id)+'"]'); if(el)el.dataset.anchor="1"; } });
     if(saved.view){ view={...saved.view}; } target={...view}; applyView();
   }else{
     buildCards(null);
@@ -1157,6 +1228,7 @@ function boot(){
     requestAnimationFrame(()=>{ fitAll(false); saveNow(); });
   }
   refreshNav(); syncChrome();
+  setMode(localStorage.getItem(STORE+"-mode")==="view");
 }
 window.addEventListener("resize",syncChrome);
 boot();
