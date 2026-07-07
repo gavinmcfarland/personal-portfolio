@@ -917,9 +917,19 @@ window.addEventListener("pointerup",e=>{
 });
 
 /* ── Wheel (pan + zoom) ───────────────────────────────────────── */
-viewport.addEventListener("wheel",e=>{
-  e.preventDefault(); if(menuOpen)hideMenu();
-  if(e.ctrlKey||e.metaKey){
+// Listen on window, not #viewport: the screen-space #chrome layer (edit/delete
+// controls, resize handle, frame labels) is a sibling of #viewport, so wheel
+// events over those elements never reach a viewport-scoped listener — the
+// browser then runs its native ctrl/pinch zoom on the whole page. A window
+// listener catches them all; zoomAt/panBy use clientX/clientY so the target
+// element doesn't matter. UI panels (nav list) and the markdown editor are
+// allowed to scroll natively unless a zoom modifier is held.
+window.addEventListener("wheel",e=>{
+  if(menuOpen)hideMenu();
+  const zoomKey=e.ctrlKey||e.metaKey;
+  if(!zoomKey && e.target.closest(".ui.panel, textarea")) return; // native scroll
+  e.preventDefault();
+  if(zoomKey){
     // Pinch / ctrl-wheel zoom — clamp the delta so mouse wheels and trackpads
     // feel consistent, convert to an exponential factor, glide toward it.
     const d=Math.max(-ZOOM.deltaClamp,Math.min(ZOOM.deltaClamp,e.deltaY));
