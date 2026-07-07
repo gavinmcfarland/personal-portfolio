@@ -430,6 +430,7 @@ const STORE="gm-canvas-portfolio-v1";
 let view={x:0,y:0,scale:1};      // currently-applied transform (source of truth)
 let target={x:0,y:0,scale:1};    // where the view is gliding toward
 const ZOOM={min:0.08,max:8,sensitivity:0.015,deltaClamp:24,lerp:0.3,doneScale:0.0012,donePan:0.12};
+const PAN={wheelSpeed:1.4};   // multiplier for scroll-wheel / trackpad panning
 const RASTER={blur:1.1};   // re-rasterize once the composited layer drifts >10% from the true scale
 const clampScale=s=>Math.min(ZOOM.max,Math.max(ZOOM.min,s));
 
@@ -935,7 +936,7 @@ window.addEventListener("wheel",e=>{
     const d=Math.max(-ZOOM.deltaClamp,Math.min(ZOOM.deltaClamp,e.deltaY));
     zoomAt(e.clientX,e.clientY,Math.exp(-d*ZOOM.sensitivity));
   }else{
-    panBy(-e.deltaX,-e.deltaY);
+    panBy(-e.deltaX*PAN.wheelSpeed,-e.deltaY*PAN.wheelSpeed);
   }
 },{passive:false});
 
