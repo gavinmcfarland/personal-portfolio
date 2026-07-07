@@ -5,7 +5,7 @@ const Intro = () => {
       <h1 className="rise d1 mt-5 text-[2.25rem] font-bold leading-[1.05] tracking-[-0.01em] text-ink sm:text-[2.75rem]">
         Gavin McFarland
       </h1>
-      <div className="rise d2 mt-7 max-w-[48ch] space-y-4 text-pretty text-[1.0625rem] leading-relaxed text-muted">
+      <div className="rise d2 mt-7 max-w-[55ch] space-y-4 text-pretty text-[1.0625rem] leading-relaxed text-muted">
         <p>Designer and full-stack engineer building tools and web applications. Background in product design and user research.</p>
         <p>
           Currently freelancing and building{" "}
