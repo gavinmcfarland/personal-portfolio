@@ -222,11 +222,6 @@ html.dark .md-hl .t-link{color:#7cb7ff;}
 .md-render .md-tags{display:flex;flex-wrap:wrap;gap:.4rem .5rem;margin:.55em 0;}
 .md-render .md-tags span{font-family:var(--sans);font-size:.62rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:100px;padding:.22rem .6rem;}
 /* editing hint pinned under the source */
-.md-edit::after{
-  content:"Esc or click away to render";
-  position:absolute;right:10px;bottom:6px;font-family:var(--sans);font-size:.6rem;font-weight:600;
-  letter-spacing:.04em;color:var(--faint);pointer-events:none;opacity:.8;
-}
 
 /* ── CHROME LAYER (screen-space, never scales with zoom) ──────── */
 #chrome{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:90;}
