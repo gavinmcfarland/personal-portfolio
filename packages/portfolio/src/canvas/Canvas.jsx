@@ -256,7 +256,16 @@ export default function Canvas() {
       if (S.fullscreenId) { e.preventDefault(); return; } // lightbox covers the board
       setCtxMenu(null);
       const zoomKey = e.ctrlKey || e.metaKey;
-      if (!zoomKey && e.target.closest && e.target.closest('.ui.panel, textarea')) return;
+      if (!zoomKey && e.target.closest) {
+        if (e.target.closest('.ui.panel')) return;
+        // Defer to a textarea only if it can actually scroll — the markdown
+        // source editor is overflow:hidden, so the wheel should pan the canvas.
+        const ta = e.target.closest('textarea');
+        if (ta) {
+          const oy = getComputedStyle(ta).overflowY;
+          if ((oy === 'auto' || oy === 'scroll') && ta.scrollHeight > ta.clientHeight) return;
+        }
+      }
       e.preventDefault();
       if (zoomKey) {
         const d = Math.max(-ZOOM.deltaClamp, Math.min(ZOOM.deltaClamp, e.deltaY));
