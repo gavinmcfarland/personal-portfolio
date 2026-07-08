@@ -6,10 +6,8 @@ import Chrome from './Chrome';
 import TopBar from './ui/TopBar';
 import Toolbar from './ui/Toolbar';
 import ZoomControls from './ui/ZoomControls';
-import SectionsNav from './ui/SectionsNav';
 import ContextMenu from './ui/ContextMenu';
 import Lightbox from './ui/Lightbox';
-import PageTabs from './ui/PageTabs';
 import Hint from './ui/Hint';
 
 export default function Canvas() {
@@ -291,9 +289,7 @@ export default function Canvas() {
       </div>
       <Chrome />
       <TopBar />
-      <PageTabs />
       <Hint />
-      <SectionsNav />
       {EDITABLE && <Toolbar />}
       <ZoomControls />
       <ContextMenu />

@@ -385,6 +385,22 @@ export function CanvasProvider({ children }) {
       targetRef.scale = s; targetRef.x = innerWidth / 2 - (x + w / 2) * s; targetRef.y = innerHeight / 2 - (y + h / 2) * s;
       startZoomLoop();
     }
+    /* Fly to a section that may live on another page: switch to its page first,
+       then fly once the target node has mounted (elements only exist for the
+       active page). */
+    function goToSection(pageId, id) {
+      if (pageId && pageId !== S.activePageId) {
+        switchPage(pageId);
+        let tries = 30;
+        const tick = () => {
+          if (nodeEls.get(id)) { flyTo(id); return; }
+          if (--tries > 0) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      } else {
+        flyTo(id);
+      }
+    }
 
     /* ── Persistence ──────────────────────────────────────────── */
     function serializeNode(n) {
@@ -558,7 +574,7 @@ export function CanvasProvider({ children }) {
       selectNode, selectShape, deselect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape,
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
-      setTool, setMode, fitAll, flyTo, scheduleSave, saveNow, serialize, publish, resetBoard,
+      setTool, setMode, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       addImageFromFile, openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
       nextZ, backZ,
@@ -598,7 +614,7 @@ export function CanvasProvider({ children }) {
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, hintHidden, ctxMenu,
-    publishState, fullscreenId, pages, activePageId,
+    publishState, fullscreenId, pages, activePageId, pageData,
     brand: init.brand, EDITABLE,
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setHintHidden, setCtxMenu, setSelectedState,
