@@ -88,6 +88,7 @@ export default function Chrome() {
   const { nodes, selected, eng, actionRef } = useCanvas();
 
   const selRef = useCallback((el) => eng.setChrome('sel', el), [eng]);
+  const hovRef = useCallback((el) => eng.setChrome('hov', el), [eng]);
   const delRef = useCallback((el) => eng.setChrome('del', el), [eng]);
   const editRef = useCallback((el) => eng.setChrome('edit', el), [eng]);
   const rzRef = useCallback((el) => eng.setChrome('rz', el), [eng]);
@@ -103,6 +104,7 @@ export default function Chrome() {
 
   return (
     <div id="chrome">
+      <div id="cHov" ref={hovRef} />
       <div id="cSel" ref={selRef} />
       <div
         id="cDel"

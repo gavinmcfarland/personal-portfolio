@@ -128,7 +128,7 @@ export function CanvasProvider({ children }) {
   const viewportRef = useRef(null);
   const worldRef = useRef(null);
   const zoomLabelRef = useRef(null);
-  const chromeRef = useRef({ sel: null, del: null, edit: null, rz: null });
+  const chromeRef = useRef({ sel: null, del: null, edit: null, rz: null, hov: null });
   const chrome = chromeRef.current;
   const nodeEls = useRef(new Map()).current; // id → element
   const shapeEls = useRef(new Map()).current; // id → shape svg child (.shape)
@@ -268,8 +268,8 @@ export function CanvasProvider({ children }) {
     function placeSel(x, y, w, h) {
       const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s, sw = w * s, sh = h * s;
       chrome.sel.style.display = 'block';
-      chrome.sel.style.left = (sx - 3) + 'px'; chrome.sel.style.top = (sy - 3) + 'px';
-      chrome.sel.style.width = (sw + 6) + 'px'; chrome.sel.style.height = (sh + 6) + 'px';
+      chrome.sel.style.left = (sx - 4) + 'px'; chrome.sel.style.top = (sy - 4) + 'px';
+      chrome.sel.style.width = (sw + 8) + 'px'; chrome.sel.style.height = (sh + 8) + 'px';
       const nodeEl = S.selected && S.selected.kind === 'node' ? nodeEls.get(S.selected.id) : null;
       const type = nodeEl ? nodeEl.dataset.type : null;
       const editing = type && S.editingId === S.selected.id;
@@ -279,9 +279,30 @@ export function CanvasProvider({ children }) {
         chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11 - 26) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
       } else chrome.edit.style.display = 'none';
       if ((type === 'frame' || type === 'md' || type === 'image') && !editing) {
-        chrome.rz.style.display = 'block'; chrome.rz.style.left = (sx + sw - 7) + 'px'; chrome.rz.style.top = (sy + sh - 7) + 'px';
+        chrome.rz.style.display = 'block'; chrome.rz.style.left = (sx + sw - 4) + 'px'; chrome.rz.style.top = (sy + sh - 4) + 'px';
         chrome.rz.style.cursor = type === 'md' ? 'ew-resize' : 'nwse-resize';
       } else chrome.rz.style.display = 'none';
+    }
+    /* Faint hover outline for the node under the cursor (edit mode only). Drawn
+       in the screen-space chrome layer so its thickness never scales with zoom. */
+    function placeHover() {
+      const hov = chrome.hov; if (!hov) return;
+      const id = S.hoverId;
+      const suppressed = !id || actionRef.current || S.readOnly || S.tool !== 'select' ||
+        (S.selected && S.selected.kind === 'node' && S.selected.id === id);
+      if (suppressed) { hov.style.display = 'none'; return; }
+      const el = nodeEls.get(id);
+      if (!el) { hov.style.display = 'none'; return; }
+      const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth, h = el.offsetHeight;
+      const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s;
+      hov.style.display = 'block';
+      hov.style.left = (sx - 4) + 'px'; hov.style.top = (sy - 4) + 'px';
+      hov.style.width = (w * s + 8) + 'px'; hov.style.height = (h * s + 8) + 'px';
+    }
+    function setHover(id) {
+      const next = S.readOnly || S.tool !== 'select' ? null : (id || null);
+      S.hoverId = next;
+      placeHover();
     }
     function syncChrome() {
       const s = viewRef.scale;
@@ -290,6 +311,7 @@ export function CanvasProvider({ children }) {
         label.style.left = (viewRef.x + +f.dataset.x * s) + 'px';
         label.style.top = (viewRef.y + +f.dataset.y * s - 28) + 'px';
       });
+      placeHover();
       if (!S.selected || !chrome.sel) { hideSelChrome(); return; }
       const rect = worldRectOf(S.selected);
       if (!rect) { hideSelChrome(); return; }
@@ -570,7 +592,7 @@ export function CanvasProvider({ children }) {
 
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
-      zoomAt, zoomTo, panBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel,
+      zoomAt, zoomTo, panBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel, setHover,
       selectNode, selectShape, deselect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape,
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,

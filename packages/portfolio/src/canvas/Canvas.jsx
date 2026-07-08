@@ -137,7 +137,12 @@ export default function Canvas() {
 
     const onMove = (e) => {
       const a = actionRef.current;
-      if (!a) return;
+      if (!a) {
+        // No gesture in progress → track the node under the cursor for the hover hint.
+        const nodeEl = e.target.closest && e.target.closest('.node');
+        eng.setHover(nodeEl ? nodeEl.dataset.id : null);
+        return;
+      }
       if (a.type === 'pan') {
         if (Math.abs(e.clientX - a.sx) + Math.abs(e.clientY - a.sy) > 4) a.moved = 1;
         eng.viewRef.x = a.ox + (e.clientX - a.sx);
