@@ -317,7 +317,7 @@ export default function Canvas() {
         <World />
       </div>
       <Chrome />
-      <TopBar />
+      <TopBar className="ui panel pl-[8px]" />
       <Hint />
       {EDITABLE && <Toolbar />}
       <ZoomControls />
