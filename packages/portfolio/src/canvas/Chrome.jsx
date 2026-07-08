@@ -89,7 +89,6 @@ export default function Chrome() {
 
   const selRef = useCallback((el) => eng.setChrome('sel', el), [eng]);
   const hovRef = useCallback((el) => eng.setChrome('hov', el), [eng]);
-  const delRef = useCallback((el) => eng.setChrome('del', el), [eng]);
   const editRef = useCallback((el) => eng.setChrome('edit', el), [eng]);
   const rzRef = useCallback((el) => eng.setChrome('rz', el), [eng]);
 
@@ -106,16 +105,6 @@ export default function Chrome() {
     <div id="chrome">
       <div id="cHov" ref={hovRef} />
       <div id="cSel" ref={selRef} />
-      <div
-        id="cDel"
-        className="cbtn"
-        title="Delete"
-        ref={delRef}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => { e.stopPropagation(); eng.deleteSelected(); }}
-      >
-        ✕
-      </div>
       <div
         id="cEdit"
         className="cbtn"

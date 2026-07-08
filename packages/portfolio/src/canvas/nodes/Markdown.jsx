@@ -7,11 +7,22 @@ import { mdParse, mdHighlight } from '../markdown';
    editing. The <textarea> is uncontrolled (caret-safe); a mirrored <pre> paints
    the syntax highlight and drives the box height. */
 function Markdown({ node }) {
-  const { editingId, readOnly, eng } = useCanvas();
+  const { editingId, readOnly, eng, nodeEls } = useCanvas();
   const { setRef, dataProps } = useRegister(node);
   const taRef = useRef(null);
   const [src, setSrc] = useState(node.text || '');
   const editing = editingId === node.id;
+
+  // While editing, keep the selection outline in sync as the source grows/shrinks
+  // the node (edits live in local state, so the provider's sync never fires).
+  useEffect(() => {
+    if (!editing || typeof ResizeObserver === 'undefined') return;
+    const el = nodeEls.get(node.id);
+    if (!el) return;
+    const ro = new ResizeObserver(() => eng.syncChrome());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [editing, eng, nodeEls, node.id]);
 
   useEffect(() => {
     if (!editing) return;

@@ -168,6 +168,11 @@ body.tool-select:not(.read-only) .node{cursor:var(--cur-edit-hover),grab;}
 .md-edit{display:none;position:relative;}
 .md.md-editing .md-edit{display:block;}
 .md.md-editing .md-render{display:none;}
+/* In edit mode, treat the rendered markdown as a single hit-testing surface so a
+   native double-click (to enter edit mode) fires reliably. Without this the two
+   clicks can land on different inline children (p / a / strong / code …) and the
+   browser never emits dblclick. Read-only keeps links individually clickable. */
+body:not(.read-only) .md-render *{pointer-events:none;}
 .md-hl,.md-src{
   margin:0;padding:16px 18px;border:0;
   font-family:var(--mono);font-size:13px;line-height:1.62;letter-spacing:0;tab-size:2;
@@ -235,7 +240,6 @@ html.dark .md-hl .t-link{color:#7cb7ff;}
   box-shadow:var(--shadow);pointer-events:auto;
 }
 .cbtn:hover{color:var(--accent);border-color:var(--accent);}
-#cDel:hover{color:#e5484d;border-color:#e5484d;}
 .cbtn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 #cRz{width:14px;height:14px;background:var(--surface);border:2px solid var(--accent);display:none;box-sizing:border-box;pointer-events:auto;}
 #chrome .frame-label{

@@ -5,10 +5,21 @@ import { useRegister } from './common';
 /* Sticky notes & free text blocks — uncontrolled contentEditable so React never
    fights the caret. Text commits to the model on blur; empty ones self-delete. */
 function EditableNode({ node }) {
-  const { editingId, readOnly, eng } = useCanvas();
+  const { editingId, readOnly, eng, nodeEls } = useCanvas();
   const { setRef, dataProps, style } = useRegister(node);
   const txtRef = useRef(null);
   const editing = editingId === node.id;
+
+  // While editing, keep the selection outline in sync as the text grows/shrinks
+  // the node (text isn't committed to state until blur, so nothing else fires).
+  useEffect(() => {
+    if (!editing || typeof ResizeObserver === 'undefined') return;
+    const el = nodeEls.get(node.id);
+    if (!el) return;
+    const ro = new ResizeObserver(() => eng.syncChrome());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [editing, eng, nodeEls, node.id]);
 
   // Seed the text exactly once; the DOM owns it thereafter.
   useEffect(() => {

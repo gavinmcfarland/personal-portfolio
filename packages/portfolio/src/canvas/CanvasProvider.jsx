@@ -263,7 +263,7 @@ export function CanvasProvider({ children }) {
       const bb = el.getBBox(); return [bb.x, bb.y, bb.width, bb.height];
     }
     function hideSelChrome() {
-      for (const k of ['sel', 'del', 'edit', 'rz']) if (chrome[k]) chrome[k].style.display = 'none';
+      for (const k of ['sel', 'edit', 'rz']) if (chrome[k]) chrome[k].style.display = 'none';
     }
     function placeSel(x, y, w, h) {
       const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s, sw = w * s, sh = h * s;
@@ -273,10 +273,8 @@ export function CanvasProvider({ children }) {
       const nodeEl = S.selected && S.selected.kind === 'node' ? nodeEls.get(S.selected.id) : null;
       const type = nodeEl ? nodeEl.dataset.type : null;
       const editing = type && S.editingId === S.selected.id;
-      chrome.del.style.display = editing ? 'none' : 'flex';
-      chrome.del.style.left = (sx + sw - 11) + 'px'; chrome.del.style.top = (sy - 11) + 'px';
       if (type === 'md' && !editing) {
-        chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11 - 26) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
+        chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
       } else chrome.edit.style.display = 'none';
       if ((type === 'frame' || type === 'md' || type === 'image') && !editing) {
         chrome.rz.style.display = 'block'; chrome.rz.style.left = (sx + sw - 4) + 'px'; chrome.rz.style.top = (sy + sh - 4) + 'px';

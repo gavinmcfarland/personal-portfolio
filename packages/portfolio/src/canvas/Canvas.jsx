@@ -115,6 +115,21 @@ export default function Canvas() {
     imgs.forEach((file, i) => eng.addImageFromFile(file, w.x + i * 24, w.y + i * 24));
   };
 
+  /* Double-click an editable object (sticky / text / markdown) to edit it.
+     The viewport captures the pointer while dragging, which retargets the
+     dblclick event to the viewport itself — so resolve the real node under the
+     cursor via elementFromPoint rather than e.target. */
+  const onDoubleClick = (e) => {
+    if (S.readOnly) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const nodeEl = el && el.closest && el.closest('.node');
+    if (!nodeEl) return;
+    const type = nodeEl.dataset.type;
+    if (type !== 'sticky' && type !== 'tblock' && type !== 'md') return;
+    const id = nodeEl.dataset.id;
+    eng.setTool('select'); eng.selectNode(id); eng.startEditing(id);
+  };
+
   const onContextMenu = (e) => {
     if (S.readOnly) return;
     e.preventDefault();
@@ -289,7 +304,7 @@ export default function Canvas() {
 
   return (
     <>
-      <div id="viewport" ref={viewportRef} onPointerDown={onPointerDown} onContextMenu={onContextMenu} onDragOver={onDragOver} onDrop={onDrop}>
+      <div id="viewport" ref={viewportRef} onPointerDown={onPointerDown} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu} onDragOver={onDragOver} onDrop={onDrop}>
         <World />
       </div>
       <Chrome />
