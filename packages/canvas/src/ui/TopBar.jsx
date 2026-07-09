@@ -1,5 +1,4 @@
 import { useCanvas } from "../CanvasProvider";
-import { useTheme } from "../../contexts/ThemeContext";
 import PageTabs from "./PageTabs";
 
 const EDIT_ICON = (
@@ -71,8 +70,9 @@ const THEME = {
 };
 
 export default function TopBar() {
-  const { brand, readOnly, EDITABLE, publishState, eng } = useCanvas();
-  const { mode, toggleTheme } = useTheme();
+  const { brand, readOnly, EDITABLE, canPublish, publishState, eng, theme } = useCanvas();
+  const mode = theme?.mode;
+  const toggleTheme = theme?.toggle;
   const pub = PUBLISH[publishState] || PUBLISH.idle;
   const th = THEME[mode] || THEME.system;
 
@@ -103,15 +103,17 @@ export default function TopBar() {
         </svg>
         Fit
       </button>
-      <button
-        className="chip"
-        title="Cycle theme: system / light / dark"
-        onClick={toggleTheme}
-      >
-        <svg viewBox="0 0 24 24">{th.icon}</svg>
-        {th.label}
-      </button>
-      {EDITABLE && (
+      {theme && (
+        <button
+          className="chip"
+          title="Cycle theme: system / light / dark"
+          onClick={toggleTheme}
+        >
+          <svg viewBox="0 0 24 24">{th.icon}</svg>
+          {th.label}
+        </button>
+      )}
+      {canPublish && (
         <button
           className={`chip${publishState === "done" ? " on" : ""}`}
           title={pub.title}

@@ -12,11 +12,15 @@ import Hint from './ui/Hint';
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE } = ctx;
+  const { rootRef, hoverInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, fit } = ctx;
+
+  /* Toggle a state class on the scoped root (not document.body) so multiple
+     canvases stay independent and nothing leaks onto the host page. */
+  const rootClass = (name, on) => { const el = rootRef.current; if (el) el.classList.toggle(name, on); };
 
   /* Pointerdown is a React handler (correct simulated bubbling so chrome / node
-     handlers can stopPropagation). Move/up/wheel/keys are native window
-     listeners so gestures keep tracking off-viewport. */
+     handlers can stopPropagation). Move/up are native window listeners so
+     gestures keep tracking off-viewport; wheel/keys are scoped to this canvas. */
   const onPointerDown = (e) => {
     if (e.button === 2) return;
     const vp = viewportRef.current;
@@ -27,7 +31,7 @@ export default function Canvas() {
       // Remember an image under the pointer so a stationary tap opens it full-screen.
       const imgEl = e.target.closest && e.target.closest('.node.image');
       actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: imgEl ? imgEl.dataset.id : null };
-      document.body.classList.add('panning');
+      rootClass('panning', true);
       vp.setPointerCapture(e.pointerId);
       return;
     }
@@ -46,7 +50,7 @@ export default function Canvas() {
     if (spacePan || tool === 'hand' || (tool === 'select' && !nodeEl && !shapeEl)) {
       if (tool === 'select' && !nodeEl && !shapeEl) eng.deselect();
       actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y };
-      document.body.classList.add('panning');
+      rootClass('panning', true);
       vp.setPointerCapture(e.pointerId);
       return;
     }
@@ -213,7 +217,7 @@ export default function Canvas() {
       const a = actionRef.current;
       if (!a) return;
       if (a.type === 'pan') {
-        document.body.classList.remove('panning');
+        rootClass('panning', false);
         if (a.imgId && !a.moved) eng.openFullscreen(a.imgId); // tap an image → full-screen
       }
       if (a.type === 'node') {
@@ -276,11 +280,15 @@ export default function Canvas() {
     };
 
     const onKeyDown = (e) => {
+      // Only act when the pointer is over this canvas, so an embedded board never
+      // steals keystrokes meant for the rest of the host page (in fullscreen the
+      // pointer is always inside, preserving the original behaviour).
+      if (!hoverInsideRef.current) return;
       if (S.editingId) return;
       // Don't hijack keys while typing in a field (e.g. renaming a page/frame).
       const ae = document.activeElement;
       if (ae && (ae.isContentEditable || ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
-      if (e.code === 'Space') { panKey.current = true; document.body.classList.add('tool-hand'); return; }
+      if (e.code === 'Space') { panKey.current = true; rootClass('tool-hand', true); return; }
       if (e.key === 'Backspace' || e.key === 'Delete') {
         if (S.selected) { e.preventDefault(); eng.deleteSelected(); }
         return;
@@ -293,18 +301,22 @@ export default function Canvas() {
       if (e.key === 'Escape') { eng.deselect(); setCtxMenu(null); eng.stopEditing(); }
     };
     const onKeyUp = (e) => {
-      if (e.code === 'Space') { panKey.current = false; if (S.tool !== 'hand') document.body.classList.remove('tool-hand'); }
+      if (e.code === 'Space') { panKey.current = false; if (S.tool !== 'hand') rootClass('tool-hand', false); }
     };
 
+    // Gesture tracking stays on window so drags continue off-viewport. The wheel
+    // is bound to the viewport element so scrolling elsewhere on the host page is
+    // never hijacked; keys are on window but gated by pointer-inside (above).
+    const vp = viewportRef.current;
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
-    window.addEventListener('wheel', onWheel, { passive: false });
+    (vp || window).addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('wheel', onWheel);
+      (vp || window).removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
@@ -312,8 +324,14 @@ export default function Canvas() {
   }, []);
 
   return (
-    <>
-      <div id="viewport" ref={viewportRef} onPointerDown={onPointerDown} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu} onDragOver={onDragOver} onDrop={onDrop}>
+    <div
+      className="canvas-root"
+      ref={rootRef}
+      data-fit={fit}
+      onPointerEnter={() => { hoverInsideRef.current = true; }}
+      onPointerLeave={() => { hoverInsideRef.current = false; }}
+    >
+      <div className="cv-viewport" ref={viewportRef} onPointerDown={onPointerDown} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu} onDragOver={onDragOver} onDrop={onDrop}>
         <World />
       </div>
       <Chrome />
@@ -323,6 +341,6 @@ export default function Canvas() {
       <ZoomControls />
       <ContextMenu />
       <Lightbox />
-    </>
+    </div>
   );
 }

@@ -102,11 +102,10 @@ export default function Chrome() {
   };
 
   return (
-    <div id="chrome">
-      <div id="cHov" ref={hovRef} />
-      <div id="cSel" ref={selRef} />
+    <div className="cv-chrome">
+      <div className="cv-hov" ref={hovRef} />
+      <div className="cv-sel" ref={selRef} />
       <div
-        id="cEdit"
         className="cbtn"
         title="Edit markdown"
         ref={editRef}
@@ -115,7 +114,7 @@ export default function Chrome() {
       >
         <svg viewBox="0 0 24 24"><path d="M4 20h4L18 10l-4-4L4 16v4z" /><path d="M13.5 6.5l4 4" /></svg>
       </div>
-      <div id="cRz" ref={rzRef} onPointerDown={onResizeDown} />
+      <div className="cv-rz" ref={rzRef} onPointerDown={onResizeDown} />
       {nodes.filter((n) => n.type === 'frame').map((n) => <FrameLabel key={n.id} node={n} />)}
     </div>
   );

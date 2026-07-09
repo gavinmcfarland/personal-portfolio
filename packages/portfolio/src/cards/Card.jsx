@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { useCanvas } from '../CanvasProvider';
-import { profile } from '../../data/profile';
+import { useCanvas } from '@gavinmcfarland/canvas';
+import { profile } from '../data/profile';
 
 const Arrow = () => (
   <svg viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">

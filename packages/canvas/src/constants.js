@@ -1,5 +1,4 @@
 /* Tunables for the canvas viewport & tools. */
-export const STORE = 'gm-canvas-portfolio-v1';
 
 export const ZOOM = {
   min: 0.08,

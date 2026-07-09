@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useCanvas, HOME_ID } from '../CanvasProvider';
+import { useCanvas } from '../CanvasProvider';
 
 const CHEVRON = <path d="M6 9l6 6 6-6" />;
 const RENAME_ICON = <><path d="M4 20h4L18 10l-4-4L4 16v4z" /><path d="M13.5 6.5l4 4" /></>;
@@ -28,7 +28,7 @@ function sectionLabel(node) {
    page opens a menu to rename or delete it, and right-clicking a frame section
    opens a menu to rename it. New pages are added from the footer button. */
 export default function PageTabs() {
-  const { pages, activePageId, nodes, pageData, readOnly, EDITABLE, eng } = useCanvas();
+  const { pages, activePageId, nodes, pageData, readOnly, EDITABLE, homeId: HOME_ID, eng } = useCanvas();
   const editing = EDITABLE && !readOnly;
   const [open, setOpen] = useState(false);
   const [renaming, setRenaming] = useState(null); // {scope:'page'|'section', id}

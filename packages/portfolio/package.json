@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@gavinmcfarland/canvas": "workspace:*",
     "@babel/plugin-syntax-jsx": "^7.28.6",
     "@babel/plugin-syntax-typescript": "^7.28.6",
     "@babel/preset-react": "^7.28.5",

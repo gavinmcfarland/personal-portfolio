@@ -1,11 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, useRef, useState, useEffect } from 'react';
-import { STORE, ZOOM, PAN, RASTER, GRID, DRAW_TOOLS, clampScale } from './constants';
-import { buildInitialState } from '../data/canvasLayout';
-import publishedState from '../data/canvasState.json';
+import { ZOOM, PAN, RASTER, GRID, clampScale } from './constants';
 
-export const EDITABLE = import.meta.env.DEV;
-export const HOME_ID = 'home'; // the first page; carries the data-driven portfolio cards
+/* Default localStorage key for the dev autosave. Override with the `storageKey`
+   prop when embedding more than one editable canvas on a page. */
+const DEFAULT_STORE = 'embed-canvas-v1';
+const DEFAULT_HOME_ID = 'home'; // id of the first page
 
 const CanvasContext = createContext(null);
 export const useCanvas = () => {
@@ -26,42 +26,45 @@ function normalizeSaved(n) {
   return { ...base, text: n.text || '' }; // tblock
 }
 
-/* Merge a saved node list over the data-derived base for the HOME page: cards
-   keep their content but take saved position/z/anchor, while free annotations
-   come straight from the snapshot. */
-function mergeHomeNodes(base, savedNodes) {
+/* Merge a saved node list over the data-derived base for the home page. Nodes of
+   a "managed" type (e.g. the portfolio's data-driven `card`s) keep their content
+   from the base but take saved position/z/anchor; everything else comes straight
+   from the snapshot. With no managed types this is a plain snapshot restore. */
+function mergeBase(base, savedNodes, managedTypes) {
+  if (!managedTypes.length) return savedNodes.map(normalizeSaved);
   const savedById = Object.fromEntries(savedNodes.map((n) => [n.id, n]));
-  const cards = base.nodes
-    .filter((n) => n.type === 'card')
+  const managed = base.nodes
+    .filter((n) => managedTypes.includes(n.type))
     .map((c) => {
       const s = savedById[c.id];
       return s ? { ...c, x: s.x, y: s.y, z: s.z, anchor: !!s.anchor } : c;
     });
-  const others = savedNodes.filter((n) => n.type !== 'card').map(normalizeSaved);
-  return [...cards, ...others];
+  const managedIds = new Set(managed.map((n) => n.id));
+  const others = savedNodes.filter((n) => !managedIds.has(n.id)).map(normalizeSaved);
+  return [...managed, ...others];
 }
 
 /* Expand one persisted page into live page data. The first (home) page re-merges
-   the portfolio cards; extra pages are free-form annotation boards. */
-function normalizePage(raw, base, isHome) {
+   the managed base nodes; extra pages are free-form annotation boards. */
+function normalizePage(raw, base, isHome, managedTypes) {
   const view = raw.view || defaultView();
   if (isHome) {
-    return { name: raw.name || 'Home', view, nodes: mergeHomeNodes(base, raw.nodes || []), shapes: raw.shapes || [] };
+    return { name: raw.name || 'Home', view, nodes: mergeBase(base, raw.nodes || [], managedTypes), shapes: raw.shapes || [] };
   }
   return { name: raw.name || 'Page', view, nodes: (raw.nodes || []).map(normalizeSaved), shapes: raw.shapes || [] };
 }
 
 /* Accept either the legacy single-board snapshot ({view,nodes,shapes}) or the
    multi-page shape ({activePage,pages:[…]}) and expand it into live pages. */
-function buildFromSaved(base, raw) {
+function buildFromSaved(base, raw, homeId, managedTypes) {
   const rawPages = Array.isArray(raw.pages)
     ? raw.pages
-    : [{ id: HOME_ID, name: 'Home', view: raw.view, nodes: raw.nodes, shapes: raw.shapes }];
+    : [{ id: homeId, name: 'Home', view: raw.view, nodes: raw.nodes, shapes: raw.shapes }];
   const pagesMeta = [];
   const pagesData = {};
   rawPages.forEach((rp, i) => {
-    const id = i === 0 ? HOME_ID : rp.id || `pg${i}`;
-    const p = normalizePage(rp, base, i === 0);
+    const id = i === 0 ? homeId : rp.id || `pg${i}`;
+    const p = normalizePage(rp, base, i === 0, managedTypes);
     pagesMeta.push({ id, name: p.name });
     pagesData[id] = { nodes: p.nodes, shapes: p.shapes, view: p.view };
   });
@@ -69,41 +72,66 @@ function buildFromSaved(base, raw) {
   return { pagesMeta, pagesData, activePageId, brand: base.brand, hadSaved: true };
 }
 
-function freshState(base) {
+function freshState(base, homeId) {
   return {
-    pagesMeta: [{ id: HOME_ID, name: 'Home' }],
-    pagesData: { [HOME_ID]: { nodes: base.nodes, shapes: base.shapes, view: defaultView() } },
-    activePageId: HOME_ID,
+    pagesMeta: [{ id: homeId, name: 'Home' }],
+    pagesData: { [homeId]: { nodes: base.nodes, shapes: base.shapes, view: defaultView() } },
+    activePageId: homeId,
     brand: base.brand,
     hadSaved: false,
   };
 }
 
-/* Initial board. Priority: dev-only in-progress edits (localStorage) win, then
-   the committed published snapshot (applies in dev AND production), then the
-   fresh data-file layout with its seed annotations. */
-function loadInitial() {
-  const base = buildInitialState();
+/* Resolve the initial board. Priority: editable in-progress edits (localStorage)
+   win, then the committed `initialState` snapshot (applies when editable AND
+   read-only), then the fresh base layout with its seed content. */
+function loadInitial({ base, initialState, editable, storageKey, homeId, managedTypes }) {
   const usable = (s) => s && (Array.isArray(s.nodes) || Array.isArray(s.pages));
 
-  // Unpublished dev edits take precedence so you can keep iterating.
-  if (EDITABLE) {
+  // Unpublished edits take precedence so you can keep iterating in edit mode.
+  if (editable) {
     try {
-      const saved = JSON.parse(localStorage.getItem(STORE) || 'null');
-      if (usable(saved)) return buildFromSaved(base, saved);
+      const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+      if (usable(saved)) return buildFromSaved(base, saved, homeId, managedTypes);
     } catch {
       /* ignore corrupt storage */
     }
   }
 
-  // The published snapshot ships in the bundle and drives the live site.
-  if (usable(publishedState)) return buildFromSaved(base, publishedState);
+  // The published snapshot ships with the app and drives the live board.
+  if (usable(initialState)) return buildFromSaved(base, initialState, homeId, managedTypes);
 
-  return freshState(base);
+  return freshState(base, homeId);
 }
 
-export function CanvasProvider({ children }) {
-  const init = useMemo(loadInitial, []);
+const EMPTY_BASE = { nodes: [], shapes: [], brand: {} };
+
+export function CanvasProvider({
+  children,
+  base = EMPTY_BASE,
+  managedTypes = [],
+  initialState = null,
+  editable = false,
+  storageKey = DEFAULT_STORE,
+  homeId = DEFAULT_HOME_ID,
+  nodeTypes = null,
+  onPublish = null,
+  onUploadImage = null,
+  onChange = null,
+  theme = null, // optional { mode, toggle } — renders a theme button in the top bar
+  fit = 'contain', // 'contain' fills the parent box; 'fullscreen' covers the browser viewport
+}) {
+  const EDITABLE = editable;
+  const HOME_ID = homeId;
+  const STORE = storageKey;
+  const canPublish = editable && typeof onPublish === 'function';
+
+  const init = useMemo(
+    () => loadInitial({ base, initialState, editable, storageKey, homeId, managedTypes }),
+    // Config is captured once; changing it requires remounting the provider.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
   const active0 = init.pagesData[init.activePageId];
 
   /* ── React state (discrete data model) ──────────────────────── */
@@ -125,6 +153,8 @@ export function CanvasProvider({ children }) {
   const publishT = useRef(0);
 
   /* ── Refs (imperative engine state) ─────────────────────────── */
+  const rootRef = useRef(null);          // the scoped `.canvas-root` wrapper
+  const hoverInsideRef = useRef(false);  // pointer is over this canvas (gates keyboard shortcuts)
   const viewportRef = useRef(null);
   const worldRef = useRef(null);
   const zoomLabelRef = useRef(null);
@@ -200,6 +230,15 @@ export function CanvasProvider({ children }) {
       const r = viewportRef.current.getBoundingClientRect();
       return { x: (sx - r.left - viewRef.x) / viewRef.scale, y: (sy - r.top - viewRef.y) / viewRef.scale };
     }
+    /* Viewport dimensions in CSS pixels. Fit/zoom/centering all measure the
+       canvas container (not the browser window) so the board behaves correctly
+       when embedded in a section rather than owning the whole screen. */
+    function vpRect() {
+      const el = viewportRef.current;
+      return el ? el.getBoundingClientRect() : { left: 0, top: 0, width: 0, height: 0 };
+    }
+    function vpW() { return vpRect().width || 0; }
+    function vpH() { return vpRect().height || 0; }
 
     /* smooth zoom glide */
     function markActive() {
@@ -244,9 +283,11 @@ export function CanvasProvider({ children }) {
       targetRef.x = px * (1 - k) + targetRef.x * k; targetRef.y = py * (1 - k) + targetRef.y * k; targetRef.scale = ns;
       startZoomLoop();
     }
+    /* Zoom about the viewport's own centre (used by the +/- buttons). */
+    function zoomCenter(factor) { const r = vpRect(); zoomAt(r.left + r.width / 2, r.top + r.height / 2, factor); }
     function zoomTo(scale, sx, sy) {
       const r = viewportRef.current.getBoundingClientRect();
-      const px = (sx == null ? innerWidth / 2 : sx) - r.left, py = (sy == null ? innerHeight / 2 : sy) - r.top;
+      const px = sx == null ? r.width / 2 : sx - r.left, py = sy == null ? r.height / 2 : sy - r.top;
       const old = targetRef.scale, ns = clampScale(scale), k = ns / old;
       targetRef.x = px * (1 - k) + targetRef.x * k; targetRef.y = py * (1 - k) + targetRef.y * k; targetRef.scale = ns;
       startZoomLoop();
@@ -390,19 +431,20 @@ export function CanvasProvider({ children }) {
     }
     function fitAll(animate = true) {
       const b = bounds(); if (!b) return;
+      const W = vpW(), H = vpH();
       const pad = 90, bw = b.maxX - b.minX + pad * 2, bh = b.maxY - b.minY + pad * 2;
-      const s = clampScale(Math.min(innerWidth / bw, innerHeight / bh));
+      const s = clampScale(Math.min(W / bw, H / bh));
       targetRef.scale = s;
-      targetRef.x = (innerWidth - (b.maxX + b.minX) * s) / 2;
-      targetRef.y = (innerHeight - (b.maxY + b.minY) * s) / 2;
+      targetRef.x = (W - (b.maxX + b.minX) * s) / 2;
+      targetRef.y = (H - (b.maxY + b.minY) * s) / 2;
       if (animate) startZoomLoop(); else snapView();
     }
     function flyTo(id) {
       const el = nodeEls.get(id); if (!el) return;
       const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth, h = el.offsetHeight;
-      const pad = 90;
-      const s = clampScale(Math.min(innerWidth / (w + pad * 2), innerHeight / (h + pad * 2)));
-      targetRef.scale = s; targetRef.x = innerWidth / 2 - (x + w / 2) * s; targetRef.y = innerHeight / 2 - (y + h / 2) * s;
+      const W = vpW(), H = vpH(), pad = 90;
+      const s = clampScale(Math.min(W / (w + pad * 2), H / (h + pad * 2)));
+      targetRef.scale = s; targetRef.x = W / 2 - (x + w / 2) * s; targetRef.y = H / 2 - (y + h / 2) * s;
       startZoomLoop();
     }
     /* Fly to a section that may live on another page: switch to its page first,
@@ -465,22 +507,19 @@ export function CanvasProvider({ children }) {
     function scheduleSave() { if (!EDITABLE) return; clearTimeout(saveT.current); saveT.current = setTimeout(saveNow, 400); }
     function saveNow() {
       if (!EDITABLE) return;
-      localStorage.setItem(STORE, JSON.stringify(serialize()));
+      const snap = serialize();
+      localStorage.setItem(STORE, JSON.stringify(snap));
+      if (onChange) onChange(snap);
     }
-    /* Bake the current board into the committed data file via the dev-server
-       endpoint, so `git commit` + deploy makes it the live portfolio. */
+    /* Persist the current board through the host-supplied `onPublish` adapter
+       (e.g. the portfolio bakes it into a committed data file via a dev endpoint).
+       Hidden in the UI when no adapter is provided. */
     async function publish() {
-      if (!EDITABLE) return;
+      if (!canPublish) return;
       clearTimeout(publishT.current);
       setPublishState('saving');
       try {
-        const res = await fetch('/__canvas/save', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(serialize()),
-        });
-        const out = await res.json().catch(() => ({}));
-        if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+        await onPublish(serialize());
         setPublishState('done');
       } catch (err) {
         console.error('[canvas] publish failed', err);
@@ -518,8 +557,8 @@ export function CanvasProvider({ children }) {
     function addPage(name) {
       if (!EDITABLE) return;
       const id = newPageId();
-      // A blank board with world-origin roughly centred on screen.
-      const view = { x: Math.round(innerWidth / 2), y: Math.round(innerHeight / 2), scale: 1 };
+      // A blank board with world-origin roughly centred in the viewport.
+      const view = { x: Math.round(vpW() / 2), y: Math.round(vpH() / 2), scale: 1 };
       pageData[id] = { nodes: [], shapes: [], view };
       const label = (name && name.trim()) || `Page ${S.pages.length + 1}`;
       setPages((ps) => [...ps, { id, name: label }]);
@@ -552,22 +591,20 @@ export function CanvasProvider({ children }) {
       im.onerror = () => reject(new Error('could not decode image'));
       im.src = src;
     });
-    /* Read the file, persist it as a committed asset via the dev endpoint, then
-       drop an image node (centred on the cursor, scaled to a sane default). */
+    /* Read the file, resolve a src for it through the host-supplied
+       `onUploadImage` adapter (default: inline the data URL), then drop an image
+       node (centred on the cursor, scaled to a sane default). */
     async function addImageFromFile(file, wx, wy) {
       if (!EDITABLE || !file || !file.type.startsWith('image/')) return;
       try {
         const dataUrl = await readDataUrl(file);
         const nat = await measure(dataUrl);
-        const res = await fetch('/__canvas/asset', {
-          method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ dataUrl }),
-        });
-        const out = await res.json().catch(() => ({}));
-        if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+        const src = onUploadImage ? await onUploadImage(file, dataUrl) : dataUrl;
+        if (!src) throw new Error('onUploadImage returned no src');
         const MAX = 360;
         const k = nat.w > MAX || nat.h > MAX ? MAX / Math.max(nat.w, nat.h) : 1;
         const w = Math.round(nat.w * k), h = Math.round(nat.h * k);
-        const n = addNode({ id: newId('image'), type: 'image', x: wx - w / 2, y: wy - h / 2, w, h, src: out.url, alt: file.name || '' });
+        const n = addNode({ id: newId('image'), type: 'image', x: wx - w / 2, y: wy - h / 2, w, h, src, alt: file.name || '' });
         setToolState('select'); selectNode(n.id);
       } catch (err) {
         console.error('[canvas] image drop failed', err);
@@ -590,7 +627,7 @@ export function CanvasProvider({ children }) {
 
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
-      zoomAt, zoomTo, panBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel, setHover,
+      zoomAt, zoomCenter, zoomTo, panBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel, setHover,
       selectNode, selectShape, deselect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape,
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
@@ -602,9 +639,10 @@ export function CanvasProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ── Body classes (tool / mode) ─────────────────────────────── */
+  /* ── Root element classes (tool / mode) ─────────────────────── */
   useEffect(() => {
-    const b = document.body;
+    const b = rootRef.current;
+    if (!b) return;
     [...b.classList].forEach((c) => { if (c.startsWith('tool-')) b.classList.remove(c); });
     b.classList.add('tool-' + tool);
     b.classList.toggle('read-only', readOnly);
@@ -625,21 +663,29 @@ export function CanvasProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* Re-sync chrome whenever the container resizes (section reflow, window
+     resize, sidebar toggles, …) — measured on the viewport, not the window. */
   useEffect(() => {
-    const onResize = () => eng.syncChrome();
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    const vp = viewportRef.current;
+    if (!vp || typeof ResizeObserver === 'undefined') {
+      const onResize = () => eng.syncChrome();
+      window.addEventListener('resize', onResize);
+      return () => window.removeEventListener('resize', onResize);
+    }
+    const ro = new ResizeObserver(() => eng.syncChrome());
+    ro.observe(vp);
+    return () => ro.disconnect();
   }, [eng]);
 
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, hintHidden, ctxMenu,
     publishState, fullscreenId, pages, activePageId, pageData,
-    brand: init.brand, EDITABLE,
+    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, theme, fit,
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setHintHidden, setCtxMenu, setSelectedState,
     // refs
-    viewportRef, worldRef, zoomLabelRef, nodeEls, shapeEls, frameLabelEls, actionRef, panKey, S,
+    rootRef, hoverInsideRef, viewportRef, worldRef, zoomLabelRef, nodeEls, shapeEls, frameLabelEls, actionRef, panKey, S,
     // engine
     eng,
   };
