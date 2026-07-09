@@ -28,7 +28,7 @@ function sectionLabel(node) {
    page opens a menu to rename or delete it, and right-clicking a frame section
    opens a menu to rename it. New pages are added from the footer button. */
 export default function PageTabs() {
-  const { pages, activePageId, nodes, pageData, readOnly, EDITABLE, homeId: HOME_ID, eng } = useCanvas();
+  const { pages, activePageId, nodes, pageData, readOnly, EDITABLE, homeId: HOME_ID, eng, rootRef } = useCanvas();
   const editing = EDITABLE && !readOnly;
   const [open, setOpen] = useState(false);
   const [renaming, setRenaming] = useState(null); // {scope:'page'|'section', id}
@@ -186,7 +186,7 @@ export default function PageTabs() {
             </button>
           )}
         </div>,
-        document.body
+        rootRef.current || document.body
       )}
     </div>
   );
