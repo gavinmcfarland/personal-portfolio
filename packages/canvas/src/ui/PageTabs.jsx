@@ -76,9 +76,6 @@ export default function PageTabs() {
 
   const active = pages.find((p) => p.id === activePageId) || pages[0];
 
-  // In view mode, only show if there's something to navigate to.
-  if (!editing && pages.length <= 1 && sectionsFor(activePageId).length === 0) return null;
-
   const commitRename = () => {
     const v = inputRef.current ? inputRef.current.value : '';
     if (renaming.scope === 'page') eng.renamePage(renaming.id, v);

@@ -1,5 +1,14 @@
+import { useEffect, useRef, useState } from 'react';
 import { useCanvas } from '../CanvasProvider';
 import { COLORS, DRAW_TOOLS } from '../constants';
+
+/* Vector shape tools grouped behind a single dropdown button in the toolbar. */
+const SHAPE_TOOLS = [
+  { t: 'line', label: 'Line', key: 'L', icon: <path d="M5 19L19 5" /> },
+  { t: 'arrow', label: 'Arrow', key: 'A', icon: <path d="M5 19L19 5M11 5h8v8" /> },
+  { t: 'rect', label: 'Rectangle', key: 'R', icon: <rect x="4" y="6" width="16" height="12" rx="1.5" /> },
+  { t: 'ellipse', label: 'Ellipse', key: 'O', icon: <ellipse cx="12" cy="12" rx="8" ry="6" /> },
+];
 
 const TOOLS = [
   { t: 'select', label: 'Select / Move', key: 'V', icon: <path d="M4 3l7 17 2.5-6.5L20 11 4 3z" /> },
@@ -10,13 +19,66 @@ const TOOLS = [
   { t: 'md', label: 'Markdown', key: 'M', icon: <><rect x="3" y="6" width="18" height="12" rx="1.5" /><path d="M6 15v-6l2.5 3L11 9v6M15 9v4m0 0l-1.6-1.6M15 13l1.6-1.6" /></> },
   { sep: true },
   { t: 'pen', label: 'Draw / Pen', key: 'P', icon: <><path d="M4 20c3-1 4-3 7-8s5-6 7-6 1 3-2 7-6 6-9 7z" /><path d="M4 20l1.5-3.5" /></> },
-  { t: 'line', label: 'Line', key: 'L', icon: <path d="M5 19L19 5" /> },
-  { t: 'arrow', label: 'Arrow', key: 'A', icon: <path d="M5 19L19 5M11 5h8v8" /> },
-  { t: 'rect', label: 'Rectangle', key: 'R', icon: <rect x="4" y="6" width="16" height="12" rx="1.5" /> },
-  { t: 'ellipse', label: 'Ellipse', key: 'O', icon: <ellipse cx="12" cy="12" rx="8" ry="6" /> },
+  { shapeMenu: true },
   { sep: true },
   { t: 'frame', label: 'Anchor / Section', key: 'F', icon: <><circle cx="12" cy="5" r="2" /><path d="M12 7v13M5 12a7 7 0 0 0 14 0M5 12H3m16 0h2" /></> },
 ];
+
+function ShapeMenu() {
+  const { tool, eng } = useCanvas();
+  const [open, setOpen] = useState(false);
+  const [lastShape, setLastShape] = useState('arrow');
+  const wrapRef = useRef(null);
+
+  const activeShape = SHAPE_TOOLS.find((s) => s.t === tool);
+  const shown =
+    activeShape ||
+    SHAPE_TOOLS.find((s) => s.t === lastShape) ||
+    SHAPE_TOOLS[0];
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    window.addEventListener('pointerdown', onDown);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const pick = (t) => { setLastShape(t); eng.setTool(t); setOpen(false); };
+
+  return (
+    <div className="shape-menu-wrap" ref={wrapRef}>
+      {open && (
+        <div className="ui panel shape-menu">
+          {SHAPE_TOOLS.map((s) => (
+            <button
+              key={s.t}
+              className={`tool${tool === s.t ? ' active' : ''}`}
+              title={`${s.label} (${s.key})`}
+              onClick={() => pick(s.t)}
+            >
+              <svg viewBox="0 0 24 24">{s.icon}</svg>
+            </button>
+          ))}
+        </div>
+      )}
+      <button
+        className={`tool${activeShape ? ' active' : ''}`}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="tip">Shapes</span>
+        <svg viewBox="0 0 24 24">{shown.icon}</svg>
+        <span className="shape-caret" />
+      </button>
+    </div>
+  );
+}
 
 function Swatches() {
   const { tool, noteColor, strokeColor, setNoteColor, setStrokeColor, selected, nodes, eng } = useCanvas();
@@ -58,6 +120,8 @@ export default function Toolbar() {
         {TOOLS.map((item, i) =>
           item.sep ? (
             <span className="sep" key={`sep-${i}`} />
+          ) : item.shapeMenu ? (
+            <ShapeMenu key="shape-menu" />
           ) : (
             <button
               key={item.t}

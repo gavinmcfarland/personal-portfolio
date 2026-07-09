@@ -6,6 +6,7 @@ import Experience from "./components/Experience";
 import Awards from "./components/Awards";
 import Education from "./components/Education";
 import Connect from "./components/Connect";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
 
           <Connect />
         </main>
+        <Footer />
       </div>
     </ThemeProvider>
   );

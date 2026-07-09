@@ -7,13 +7,6 @@ const EDIT_ICON = (
     <path d="M13.5 6.5l4 4" />
   </>
 );
-const VIEW_ICON = (
-  <>
-    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
-    <circle cx="12" cy="12" r="3" />
-  </>
-);
-
 const PUBLISH_ICON = (
   <>
     <path d="M12 19V6" />
@@ -79,30 +72,16 @@ export default function TopBar() {
   return (
     <div className="ui panel" id="topbar">
       <PageTabs />
-      {EDITABLE && (
+      {EDITABLE && import.meta.env.DEV && (
         <button
           className={`chip${!readOnly ? " on" : ""}`}
-          title={
-            readOnly
-              ? "Read-only — click to edit"
-              : "Editing — click for read-only"
-          }
+          title={readOnly ? "Edit this board" : "Editing — click to stop"}
           onClick={() => eng.setMode(!readOnly)}
         >
-          <svg viewBox="0 0 24 24">{readOnly ? VIEW_ICON : EDIT_ICON}</svg>
-          <span>{readOnly ? "Viewing" : "Editing"}</span>
+          <svg viewBox="0 0 24 24">{EDIT_ICON}</svg>
+          <span>Edit</span>
         </button>
       )}
-      <button
-        className="chip"
-        title="Frame all content"
-        onClick={() => eng.fitAll()}
-      >
-        <svg viewBox="0 0 24 24">
-          <path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4" />
-        </svg>
-        Fit
-      </button>
       {theme && (
         <button
           className="chip"
@@ -122,25 +101,6 @@ export default function TopBar() {
         >
           <svg viewBox="0 0 24 24">{pub.icon}</svg>
           {pub.label}
-        </button>
-      )}
-      {EDITABLE && (
-        <button
-          className="chip"
-          title="Clear notes & drawings, restore layout"
-          onClick={() => {
-            if (
-              confirm(
-                "Clear all notes & drawings and restore the original layout?"
-              )
-            )
-              eng.resetBoard();
-          }}
-        >
-          <svg viewBox="0 0 24 24">
-            <path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4" />
-          </svg>
-          Reset
         </button>
       )}
     </div>

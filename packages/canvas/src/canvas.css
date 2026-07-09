@@ -248,6 +248,12 @@
 .canvas-root .tool:hover .tip{opacity:1;}
 .canvas-root .sep{width:1px;height:26px;background:var(--ui-border);margin:0 4px;}
 
+/* Shapes dropdown */
+.canvas-root .shape-menu-wrap{position:relative;display:flex;}
+.canvas-root .shape-menu{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);display:flex;gap:3px;padding:6px;}
+.canvas-root .tool .shape-caret{position:absolute;right:4px;bottom:5px;width:0;height:0;border-left:3px solid transparent;border-right:3px solid transparent;border-top:4px solid currentColor;opacity:.5;}
+.canvas-root .tool:hover .shape-caret,.canvas-root .tool.active .shape-caret{opacity:.9;}
+
 /* Colour swatches */
 .canvas-root #swatches{left:50%;bottom:78px;transform:translateX(-50%);display:none;gap:6px;padding:8px;}
 .canvas-root #swatches.show{display:flex;}
@@ -256,7 +262,7 @@
 .canvas-root .swatch.active{outline:2px solid var(--accent);outline-offset:2px;}
 
 /* Top bar */
-.canvas-root #topbar{left:22px;top:22px;display:flex;align-items:center;gap:14px;padding:9px 9px 9px 9px;}
+.canvas-root #topbar{left:22px;top:22px;display:flex;align-items:center;gap:8px;padding:8px;}
 .canvas-root #topbar .brand{font-weight:700;font-size:.9rem;letter-spacing:-.01em;}
 .canvas-root #topbar .brand small{color:var(--faint);font-weight:500;margin-left:.4rem;}
 .canvas-root .chip{
@@ -285,6 +291,8 @@
 .canvas-root #zoom{right:22px;bottom:22px;display:flex;align-items:center;gap:2px;padding:5px;}
 .canvas-root #zoom button{width:34px;height:34px;border:0;background:transparent;border-radius:9px;color:var(--muted);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.15s;}
 .canvas-root #zoom button:hover{background:var(--accent-soft);color:var(--ink);}
+.canvas-root #zoom #zoomFit svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.canvas-root #zoom .zoom-sep{width:1px;align-self:stretch;margin:4px 3px;background:var(--line);}
 .canvas-root #zoomval{min-width:52px;text-align:center;font-size:.75rem;font-weight:600;font-variant-numeric:tabular-nums;color:var(--muted);cursor:pointer;}
 
 /* Hint */

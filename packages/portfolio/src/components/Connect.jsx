@@ -25,9 +25,6 @@ const Connect = () => (
             </a>
           ))}
         </div>
-        <p className="mt-10 text-[0.8125rem] text-faint">
-          © 2026 Gavin McFarland
-        </p>
       </div>
     </Section>
   </div>
