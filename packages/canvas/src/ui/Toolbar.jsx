@@ -1,27 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
+import {
+  MousePointer2, Hand, StickyNote, Type, FileCode, Pen, Anchor,
+  Slash, ArrowUpRight, Square, Circle,
+} from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { COLORS, DRAW_TOOLS } from '../constants';
 
 /* Vector shape tools grouped behind a single dropdown button in the toolbar. */
 const SHAPE_TOOLS = [
-  { t: 'line', label: 'Line', key: 'L', icon: <path d="M5 19L19 5" /> },
-  { t: 'arrow', label: 'Arrow', key: 'A', icon: <path d="M5 19L19 5M11 5h8v8" /> },
-  { t: 'rect', label: 'Rectangle', key: 'R', icon: <rect x="4" y="6" width="16" height="12" rx="1.5" /> },
-  { t: 'ellipse', label: 'Ellipse', key: 'O', icon: <ellipse cx="12" cy="12" rx="8" ry="6" /> },
+  { t: 'line', label: 'Line', key: 'L', icon: <Slash /> },
+  { t: 'arrow', label: 'Arrow', key: 'A', icon: <ArrowUpRight /> },
+  { t: 'rect', label: 'Rectangle', key: 'R', icon: <Square /> },
+  { t: 'ellipse', label: 'Ellipse', key: 'O', icon: <Circle /> },
 ];
 
 const TOOLS = [
-  { t: 'select', label: 'Select / Move', key: 'V', icon: <path d="M4 3l7 17 2.5-6.5L20 11 4 3z" /> },
-  { t: 'hand', label: 'Pan', key: 'H', icon: <path d="M8 13V6a1.5 1.5 0 0 1 3 0m0 0V5a1.5 1.5 0 0 1 3 0v1m0 0a1.5 1.5 0 0 1 3 0v5m0 0a1.5 1.5 0 0 1 3 0v3a7 7 0 0 1-7 7h-1a7 7 0 0 1-5.9-3.2L5 15.5a1.6 1.6 0 0 1 2.6-1.8L8 14" /> },
+  { t: 'select', label: 'Select / Move', key: 'V', icon: <MousePointer2 /> },
+  { t: 'hand', label: 'Pan', key: 'H', icon: <Hand /> },
   { sep: true },
-  { t: 'note', label: 'Sticky note', key: 'N', icon: <><path d="M4 4h16v10l-6 6H4V4z" /><path d="M20 14h-6v6" /></> },
-  { t: 'text', label: 'Text', key: 'T', icon: <path d="M5 5h14M12 5v14M9 19h6" /> },
-  { t: 'md', label: 'Markdown', key: 'M', icon: <><rect x="3" y="6" width="18" height="12" rx="1.5" /><path d="M6 15v-6l2.5 3L11 9v6M15 9v4m0 0l-1.6-1.6M15 13l1.6-1.6" /></> },
+  { t: 'note', label: 'Sticky note', key: 'N', icon: <StickyNote /> },
+  { t: 'text', label: 'Text', key: 'T', icon: <Type /> },
+  { t: 'md', label: 'Markdown', key: 'M', icon: <FileCode /> },
   { sep: true },
-  { t: 'pen', label: 'Draw / Pen', key: 'P', icon: <><path d="M4 20c3-1 4-3 7-8s5-6 7-6 1 3-2 7-6 6-9 7z" /><path d="M4 20l1.5-3.5" /></> },
+  { t: 'pen', label: 'Draw / Pen', key: 'P', icon: <Pen /> },
   { shapeMenu: true },
   { sep: true },
-  { t: 'frame', label: 'Anchor / Section', key: 'F', icon: <><circle cx="12" cy="5" r="2" /><path d="M12 7v13M5 12a7 7 0 0 0 14 0M5 12H3m16 0h2" /></> },
+  { t: 'frame', label: 'Anchor / Section', key: 'F', icon: <Anchor /> },
 ];
 
 function ShapeMenu() {
@@ -63,7 +67,7 @@ function ShapeMenu() {
               title={`${s.label} (${s.key})`}
               onClick={() => pick(s.t)}
             >
-              <svg viewBox="0 0 24 24">{s.icon}</svg>
+              {s.icon}
             </button>
           ))}
         </div>
@@ -73,7 +77,7 @@ function ShapeMenu() {
         onClick={() => setOpen((o) => !o)}
       >
         <span className="tip">Shapes</span>
-        <svg viewBox="0 0 24 24">{shown.icon}</svg>
+        {shown.icon}
         <span className="shape-caret" />
       </button>
     </div>
@@ -130,7 +134,7 @@ export default function Toolbar() {
               onClick={() => eng.setTool(item.t)}
             >
               <span className="tip">{item.label}<b>{item.key}</b></span>
-              <svg viewBox="0 0 24 24">{item.icon}</svg>
+              {item.icon}
             </button>
           )
         )}

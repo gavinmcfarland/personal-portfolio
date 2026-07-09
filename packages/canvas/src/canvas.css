@@ -271,7 +271,7 @@
   display:inline-flex;align-items:center;gap:.45rem;cursor:pointer;transition:.15s;
 }
 .canvas-root .chip:hover{color:var(--ink);border-color:var(--line-strong);}
-.canvas-root .chip svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.canvas-root .chip svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .canvas-root .chip.on{background:var(--accent);border-color:var(--accent);color:#fff;}
 .canvas-root .chip.on:hover{color:#fff;border-color:var(--accent);}
 
@@ -291,7 +291,7 @@
 .canvas-root #zoom{right:22px;top:22px;display:flex;align-items:center;gap:2px;padding:5px;}
 .canvas-root #zoom button{width:34px;height:34px;border:0;background:transparent;border-radius:9px;color:var(--muted);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.15s;}
 .canvas-root #zoom button:hover{background:var(--accent-soft);color:var(--ink);}
-.canvas-root #zoom #zoomFit svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.canvas-root #zoom button svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .canvas-root #zoom .zoom-sep{width:1px;align-self:stretch;margin:4px 3px;background:var(--line);}
 .canvas-root #zoomval{min-width:52px;text-align:center;font-size:.75rem;font-weight:600;font-variant-numeric:tabular-nums;color:var(--muted);cursor:pointer;}
 
@@ -319,7 +319,7 @@
 .canvas-root .page-nav-current{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .canvas-root .page-nav-chev{width:12px!important;height:12px!important;opacity:.7;}
 .canvas-root .page-menu{
-  position:absolute;top:calc(100% + 8px);left:-9px;z-index:200;
+  position:absolute;top:calc(100% + 12px);left:-9px;z-index:200;
   min-width:210px;max-height:60vh;overflow:auto;padding:6px;
   display:flex;flex-direction:column;gap:2px;
 }

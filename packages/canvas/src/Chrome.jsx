@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Pencil } from 'lucide-react';
 import { useCanvas } from './CanvasProvider';
 
 /* Screen-space frame label: title, drag handle, jump-to button. Positioned by
@@ -112,7 +113,7 @@ export default function Chrome() {
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => { e.stopPropagation(); if (selected && selected.kind === 'node') eng.startEditing(selected.id); }}
       >
-        <svg viewBox="0 0 24 24"><path d="M4 20h4L18 10l-4-4L4 16v4z" /><path d="M13.5 6.5l4 4" /></svg>
+        <Pencil />
       </div>
       <div className="cv-rz" ref={rzRef} onPointerDown={onResizeDown} />
       {nodes.filter((n) => n.type === 'frame').map((n) => <FrameLabel key={n.id} node={n} />)}

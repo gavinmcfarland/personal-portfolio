@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
-const CHEVRON = <path d="M6 9l6 6 6-6" />;
-const RENAME_ICON = <><path d="M4 20h4L18 10l-4-4L4 16v4z" /><path d="M13.5 6.5l4 4" /></>;
-const DELETE_ICON = <><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></>;
+const RENAME_ICON = <Pencil />;
+const DELETE_ICON = <Trash2 />;
 
 /* Display name for a section anchor: frame name, first markdown heading, or the
    node's text/type as a fallback. */
@@ -110,7 +110,7 @@ export default function PageTabs() {
         onClick={() => setOpen((o) => !o)}
       >
         <span className="page-nav-current">{active ? active.name : 'Page'}</span>
-        <svg viewBox="0 0 24 24" className="page-nav-chev">{CHEVRON}</svg>
+        <ChevronDown className="page-nav-chev" />
       </button>
 
       {open && (
@@ -176,12 +176,12 @@ export default function PageTabs() {
           style={{ left: Math.min(menu.x, innerWidth - 170), top: Math.min(menu.y, innerHeight - 90) }}
         >
           <button onClick={() => { setRenaming({ scope: menu.scope, id: menu.id }); setMenu(null); }}>
-            <svg viewBox="0 0 24 24">{RENAME_ICON}</svg>
+            {RENAME_ICON}
             Rename
           </button>
           {menu.canDelete && (
             <button className="danger" onClick={() => { eng.removePage(menu.id); setMenu(null); }}>
-              <svg viewBox="0 0 24 24">{DELETE_ICON}</svg>
+              {DELETE_ICON}
               Delete
             </button>
           )}
