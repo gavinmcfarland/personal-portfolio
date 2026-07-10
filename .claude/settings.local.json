@@ -29,7 +29,8 @@
       "Bash(chmod +x /Users/gavinmcfarland/Developer/repos/vibe-code-portfolio/packages/abstract-illustrations/bin/preview.mjs)",
       "Bash(npx vite *)",
       "Bash(pnpm --filter @gavinmcfarland/canvas build)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(curl -s -D - -o /dev/null -H 'Range: bytes=0-9' http://localhost:5173/canvas-assets/6d54283b60ce9f4c.png)"
     ],
     "deny": [],
     "ask": []
