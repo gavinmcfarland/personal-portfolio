@@ -49,7 +49,7 @@ function mergeBase(base, savedNodes, managedTypes) {
 function normalizePage(raw, base, isHome, managedTypes) {
   const view = raw.view || defaultView();
   if (isHome) {
-    return { name: raw.name || 'Home', view, nodes: mergeBase(base, raw.nodes || [], managedTypes), shapes: raw.shapes || [] };
+    return { name: raw.name || 'Page 1', view, nodes: mergeBase(base, raw.nodes || [], managedTypes), shapes: raw.shapes || [] };
   }
   return { name: raw.name || 'Page', view, nodes: (raw.nodes || []).map(normalizeSaved), shapes: raw.shapes || [] };
 }
@@ -59,7 +59,7 @@ function normalizePage(raw, base, isHome, managedTypes) {
 function buildFromSaved(base, raw, homeId, managedTypes) {
   const rawPages = Array.isArray(raw.pages)
     ? raw.pages
-    : [{ id: homeId, name: 'Home', view: raw.view, nodes: raw.nodes, shapes: raw.shapes }];
+    : [{ id: homeId, name: 'Page 1', view: raw.view, nodes: raw.nodes, shapes: raw.shapes }];
   const pagesMeta = [];
   const pagesData = {};
   rawPages.forEach((rp, i) => {
@@ -74,7 +74,7 @@ function buildFromSaved(base, raw, homeId, managedTypes) {
 
 function freshState(base, homeId) {
   return {
-    pagesMeta: [{ id: homeId, name: 'Home' }],
+    pagesMeta: [{ id: homeId, name: 'Page 1' }],
     pagesData: { [homeId]: { nodes: base.nodes, shapes: base.shapes, view: defaultView() } },
     activePageId: homeId,
     brand: base.brand,

@@ -76,6 +76,9 @@ export default function PageTabs() {
 
   const active = pages.find((p) => p.id === activePageId) || pages[0];
 
+  // Viewers can't add pages, so a single-page board has nothing to navigate.
+  if (!editing && pages.length <= 1) return null;
+
   const commitRename = () => {
     const v = inputRef.current ? inputRef.current.value : '';
     if (renaming.scope === 'page') eng.renamePage(renaming.id, v);
