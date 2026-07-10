@@ -295,6 +295,16 @@
 .canvas-root .chip.on{background:var(--accent);border-color:var(--accent);color:#fff;}
 .canvas-root .chip.on:hover{color:#fff;border-color:var(--accent);}
 
+/* Board background picker (top bar, edit mode) */
+.canvas-root .bg-menu-wrap{position:relative;display:flex;}
+.canvas-root .bg-menu{position:absolute;top:calc(100% + 10px);left:0;display:flex;align-items:center;gap:6px;padding:8px;}
+.canvas-root .chip .chip-swatch{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--line-strong);background:var(--bg);}
+.canvas-root .chip.on .chip-swatch{border-color:rgba(255,255,255,.7);}
+.canvas-root .bg-menu .swatch.default{position:relative;background:var(--bg);overflow:hidden;}
+.canvas-root .bg-menu .swatch.default::after{content:"";position:absolute;left:-3px;right:-3px;top:50%;height:1.6px;background:#E5484D;transform:rotate(-45deg);}
+.canvas-root .bg-menu .swatch.custom{position:relative;display:block;overflow:hidden;background:conic-gradient(#E5484D,#F5A524,#B7E6A5,#A9D3FF,#D9B8FF,#E5484D);}
+.canvas-root .bg-menu .swatch.custom input{position:absolute;inset:-4px;opacity:0;cursor:pointer;padding:0;border:0;}
+
 /* Read-only mode: hide authoring chrome; drag-to-pan everywhere */
 .canvas-root.read-only #toolbar,.canvas-root.read-only #swatches{display:none;}
 .canvas-root.read-only .cv-chrome .cbtn,.canvas-root.read-only .cv-rz,.canvas-root.read-only .cv-sel{display:none!important;}

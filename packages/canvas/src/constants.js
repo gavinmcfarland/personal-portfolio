@@ -35,3 +35,6 @@ export const COLORS = {
     ['#F5A524', ''],
   ],
 };
+
+/* Preset board background colours offered by the edit-mode picker. */
+export const BG_COLORS = ['#FFFFFF', '#FDF6E3', '#EEF2F7', '#EAF3EC', '#FBEEF3', '#1B1B22'];

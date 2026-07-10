@@ -10,9 +10,25 @@ import ContextMenu from './ui/ContextMenu';
 import Lightbox from './ui/Lightbox';
 import Hint from './ui/Hint';
 
+/* Grid dots that stay visible on any custom background: light ink on dark
+   colours, dark ink on light ones (matching the theme tokens' alpha). */
+function gridInkFor(hex) {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return null;
+  let h = m[1];
+  if (h.length === 3) h = h.replace(/./g, (c) => c + c);
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return lum < 128 ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.055)';
+}
+
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, fit, ui } = ctx;
+  const { rootRef, hoverInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, fit, ui, bgColor } = ctx;
+
+  const bgStyle = bgColor
+    ? { '--bg': bgColor, '--grid': gridInkFor(bgColor) || undefined }
+    : undefined;
 
   /* Toggle a state class on the scoped root (not document.body) so multiple
      canvases stay independent and nothing leaks onto the host page. */
@@ -353,6 +369,7 @@ export default function Canvas() {
       className="canvas-root"
       ref={rootRef}
       data-fit={fit}
+      style={bgStyle}
       onPointerEnter={() => { hoverInsideRef.current = true; }}
       onPointerLeave={() => { hoverInsideRef.current = false; }}
     >

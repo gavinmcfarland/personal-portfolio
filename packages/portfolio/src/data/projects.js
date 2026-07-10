@@ -89,4 +89,24 @@ export const projects = [
       'Keeps large tables maintainable over time',
     ],
   },
+  {
+    id: 'icon-preview',
+    title: 'Icon Preview',
+    summary: 'A Figma plugin that live-previews the icon you are editing at preset sizes for web, iOS and Android.',
+    tagline: 'See the icon you are editing rendered live at every size that matters — web, iOS and Android.',
+    tech: ['JavaScript', 'Figma API'],
+    role: 'Creator',
+    link: 'https://www.figma.com/community/plugin/888907972695800109/icon-preview',
+    linkLabel: 'Figma Community',
+    description: [
+      'Icons that look crisp at 256px can fall apart at 16px, and checking every target size by hand means duplicating frames and squinting. Icon Preview removes that loop: it detects the icon you are editing and shows a live preview of it across the preset sizes used on web, iOS and Android.',
+      'Edit, refresh, and see the result at every size at once — or switch icons from the picker without leaving the preview. It supports artwork up to 256px, so the same workflow covers everything from favicons to app icons.',
+    ],
+    highlights: [
+      'Live preview of the selected icon while you edit',
+      'Preset sizes for web, iOS and Android in one view',
+      'Detects the icon you are working on automatically',
+      'Supports artwork up to 256px',
+    ],
+  },
 ];

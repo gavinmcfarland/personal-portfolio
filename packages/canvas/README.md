@@ -54,13 +54,18 @@ All are optional.
 | `homeId` | `string` | `home` | Id of the first (permanent) page. |
 | `fit` | `'contain' \| 'fullscreen'` | `'contain'` | `contain` fills the parent box; `fullscreen` covers the browser viewport. |
 | `theme` | `{ mode, toggle }` | `null` | Renders a theme-cycle button in the top bar when provided. Dark mode also activates from a `.dark` ancestor. |
-| `onPublish` | `(snapshot) => Promise` | `null` | Persist the board somewhere durable. Shows the "Publish" button when set. |
+| `onPublish` | `(snapshot) => Promise` | `null` | Persist the board somewhere durable. Shows the "Save" button when set. |
 | `onUploadImage` | `(file, dataUrl) => Promise<url>` | inline / IndexedDB | Resolve a `src` for dropped images. |
 | `onUploadVideo` | `(file, dataUrl) => Promise<url>` | IndexedDB | Resolve a `src` for dropped videos. |
 | `onChange` | `(snapshot) => void` | `null` | Fires after every autosave. |
 
 Built-in node types: `sticky`, `tblock` (text), `md` (markdown), `frame`, `image`,
 `video`, plus freehand `shape`s.
+
+In edit mode the top bar shows a background-colour picker (presets or a custom
+colour) that recolours the whole board; the choice is stored on the snapshot as
+`bgColor` and applies in read-only views too. Picking "Theme default" removes
+the override so the board follows the light/dark theme tokens again.
 
 In edit mode, images and videos can be dragged onto the board either as local
 files or straight from another browser tab (the drop arrives as a URL). Animated

@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { canvasSave } from "./vite-plugin-canvas-save.js";
 
 // Consume the canvas package as source so its JSX is transformed by
 // @vitejs/plugin-react (a symlinked node_modules dep would be skipped). Exact
@@ -21,5 +22,5 @@ export default defineConfig({
 	},
 	plugins: [
     awenate(),
-		tailwindcss(), react()],
+		tailwindcss(), react(), canvasSave()],
 });

@@ -1,4 +1,5 @@
 import { Canvas } from "@gavinmcfarland/canvas";
+import { boardSaver, publishedBoard, uploadMedia } from "../data/canvasBoards";
 
 /* A self-contained board for the footer playground. `card` is a portfolio-only
    node type, so the demo sticks to the canvas's built-in nodes (markdown, sticky,
@@ -41,7 +42,16 @@ const Footer = () => (
         className="overflow-hidden rounded-2xl border border-line"
         style={{ height: "min(70vh, 520px)" }}
       >
-        <Canvas fit="contain" editable base={demoBase} storageKey="footer-canvas-demo" />
+        <Canvas
+          fit="contain"
+          editable
+          base={demoBase}
+          storageKey="footer-canvas-demo"
+          initialState={publishedBoard("footer-canvas-demo")}
+          onPublish={boardSaver("footer-canvas-demo")}
+          onUploadImage={uploadMedia}
+          onUploadVideo={uploadMedia}
+        />
       </div>
       <p className="mt-3 text-[0.8125rem] text-faint">
         Embedded with a single{" "}

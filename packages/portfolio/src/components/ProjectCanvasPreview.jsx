@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Canvas } from '@gavinmcfarland/canvas';
 import { buildBase } from './ProjectCanvas';
+import { publishedBoard } from '../data/canvasBoards';
 
 /* Wraps a project row and, while it is hovered, floats a small tilted card
    next to the cursor containing an inert miniature of the project's actual
@@ -104,13 +105,18 @@ export default function ProjectCanvasPreview({ project, children }) {
                       dropped there lives in IndexedDB under a DB derived from
                       it, and the miniature resolves those refs the same way.
                       Read-only canvases never write to the key. */}
+                  {/* Unsaved local edits win, then the committed snapshot —
+                      the same precedence the editable project page applies. */}
                   <Canvas
                     key={project.id}
                     fit="contain"
                     ui={false}
                     base={buildBase(project)}
                     storageKey={`project-canvas-${project.id}`}
-                    initialState={readSaved(`project-canvas-${project.id}`)}
+                    initialState={
+                      readSaved(`project-canvas-${project.id}`) ||
+                      publishedBoard(`project-canvas-${project.id}`)
+                    }
                   />
                 </div>
               </div>

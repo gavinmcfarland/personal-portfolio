@@ -1,6 +1,7 @@
 import { Pencil, Upload, Check, TriangleAlert, Sun, Moon, Monitor } from "lucide-react";
 import { useCanvas } from "../CanvasProvider";
 import PageTabs from "./PageTabs";
+import BgColorMenu from "./BgColorMenu";
 
 const EDIT_ICON = <Pencil />;
 const PUBLISH_ICON = <Upload />;
@@ -14,23 +15,23 @@ const SYSTEM_ICON = <Monitor />;
 const PUBLISH = {
   idle: {
     icon: PUBLISH_ICON,
-    label: "Publish",
-    title: "Bake the current board into canvasState.json",
+    label: "Save",
+    title: "Save this board through the host's onPublish adapter",
   },
   saving: {
     icon: PUBLISH_ICON,
-    label: "Publishing…",
-    title: "Writing canvasState.json…",
+    label: "Saving…",
+    title: "Saving…",
   },
   done: {
     icon: CHECK_ICON,
-    label: "Published",
-    title: "Saved — commit & deploy to go live",
+    label: "Saved",
+    title: "Saved",
   },
   error: {
     icon: WARN_ICON,
     label: "Failed",
-    title: "Publish failed — see console",
+    title: "Save failed — see console",
   },
 };
 
@@ -60,6 +61,7 @@ export default function TopBar() {
           <span>Edit</span>
         </button>
       )}
+      {EDITABLE && !readOnly && <BgColorMenu />}
       {theme && (
         <button
           className="chip"

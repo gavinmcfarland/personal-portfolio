@@ -71,7 +71,8 @@ function buildFromSaved(base, raw, homeId, managedTypes) {
     pagesData[id] = { nodes: p.nodes, shapes: p.shapes, view: p.view };
   });
   const activePageId = raw.activePage && pagesData[raw.activePage] ? raw.activePage : pagesMeta[0].id;
-  return { pagesMeta, pagesData, activePageId, brand: base.brand, hadSaved: true };
+  const bgColor = typeof raw.bgColor === 'string' ? raw.bgColor : null;
+  return { pagesMeta, pagesData, activePageId, bgColor, brand: base.brand, hadSaved: true };
 }
 
 function freshState(base, homeId) {
@@ -79,6 +80,7 @@ function freshState(base, homeId) {
     pagesMeta: [{ id: homeId, name: 'Page 1' }],
     pagesData: { [homeId]: { nodes: base.nodes, shapes: base.shapes, view: defaultView() } },
     activePageId: homeId,
+    bgColor: null,
     brand: base.brand,
     hadSaved: false,
   };
@@ -154,6 +156,7 @@ export function CanvasProvider({
   const [hintHidden, setHintHidden] = useState(false);
   const [ctxMenu, setCtxMenu] = useState(null); // {x,y,target:{kind,id}}
   const [fullscreenId, setFullscreenId] = useState(null); // image node shown in the lightbox
+  const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
   const [publishState, setPublishState] = useState('idle'); // idle|saving|done|error
   const publishT = useRef(0);
 
@@ -213,6 +216,7 @@ export function CanvasProvider({
   S.fullscreenId = fullscreenId;
   S.pages = pages;
   S.activePageId = activePageId;
+  S.bgColor = bgColor;
 
   /* ── Engine (defined once; reads fresh state via refs/S) ─────── */
   const eng = useMemo(() => {
@@ -507,7 +511,14 @@ export function CanvasProvider({
           shapes: d.shapes.map(serializeShape),
         };
       });
-      return { version: 2, activePage: S.activePageId, pages: out };
+      const snap = { version: 2, activePage: S.activePageId, pages: out };
+      if (S.bgColor) snap.bgColor = S.bgColor;
+      return snap;
+    }
+    /* Board-wide background colour override; null restores the theme default. */
+    function setCanvasBg(color) {
+      if (!EDITABLE) return;
+      setBgColor(color || null);
     }
     function scheduleSave() { if (!EDITABLE) return; clearTimeout(saveT.current); saveT.current = setTimeout(saveNow, 400); }
     function saveNow() {
@@ -749,7 +760,7 @@ export function CanvasProvider({
       selectNode, selectShape, deselect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape,
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
-      setTool, setMode, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, resetBoard,
+      setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, addImageFromFile, addVideoFromFile, addMediaFromUrl, resolveMediaSrc, parseIdbRef,
       openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
@@ -789,7 +800,7 @@ export function CanvasProvider({
   }, [tool, readOnly]);
 
   /* ── Keep chrome + persistence in sync with the model ───────── */
-  useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, eng]);
+  useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, eng]);
 
   /* ── Boot: apply the initial view (fit if nothing was saved) ── */
   useEffect(() => {
@@ -820,7 +831,7 @@ export function CanvasProvider({
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, hintHidden, ctxMenu,
-    publishState, fullscreenId, pages, activePageId, pageData,
+    publishState, fullscreenId, pages, activePageId, pageData, bgColor,
     brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, theme, fit, ui,
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setHintHidden, setCtxMenu, setSelectedState,

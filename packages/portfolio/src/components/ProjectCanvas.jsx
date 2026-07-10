@@ -1,4 +1,5 @@
 import { Canvas } from "@gavinmcfarland/canvas";
+import { boardSaver, publishedBoard, uploadMedia } from "../data/canvasBoards";
 
 /* Builds a small, self-contained board seeded from a project's own fields, so
    every project page gets an on-brand interactive hero without hand-authoring a
@@ -60,13 +61,18 @@ export function buildBase(project) {
 export default function ProjectCanvas({ project }) {
   // `key` remounts the canvas per project — the provider captures `base` only
   // once on mount, so a fresh key is what swaps the board between projects.
+  const storageKey = `project-canvas-${project.id}`;
   return (
     <Canvas
       key={project.id}
       fit="contain"
       editable
       base={buildBase(project)}
-      storageKey={`project-canvas-${project.id}`}
+      storageKey={storageKey}
+      initialState={publishedBoard(storageKey)}
+      onPublish={boardSaver(storageKey)}
+      onUploadImage={uploadMedia}
+      onUploadVideo={uploadMedia}
     />
   );
 }
