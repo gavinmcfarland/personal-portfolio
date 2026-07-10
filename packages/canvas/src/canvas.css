@@ -326,13 +326,6 @@
 .canvas-root #zoom .zoom-sep{width:1px;align-self:stretch;margin:4px 3px;background:var(--line);}
 .canvas-root #zoomval{min-width:52px;text-align:center;font-size:.75rem;font-weight:600;font-variant-numeric:tabular-nums;color:var(--muted);cursor:pointer;}
 
-/* Hint */
-.canvas-root #hint{right:22px;bottom:22px;max-width:230px;padding:12px 15px;font-size:.72rem;line-height:1.55;color:var(--muted);}
-.canvas-root #hint b{color:var(--ink);}
-.canvas-root #hint .kbd{font-family:var(--sans);font-size:.66rem;font-weight:600;background:var(--accent-soft);color:var(--accent);padding:.05em .4em;border-radius:5px;}
-.canvas-root #hint .x{position:absolute;top:8px;right:10px;cursor:pointer;color:var(--faint);font-size:14px;}
-.canvas-root #hint.hide{display:none;}
-
 /* Context menu (screen-space overlay, positioned at the cursor) */
 .canvas-root #ctxmenu{position:fixed;z-index:200;min-width:176px;padding:6px;display:none;}
 .canvas-root #ctxmenu.show{display:block;}
@@ -420,7 +413,6 @@
 @keyframes cv-lb-in{from{opacity:0;}to{opacity:1;}}
 
 @media(max-width:640px){
-  .canvas-root #hint{display:none;}
   .canvas-root #topbar .brand small{display:none;}
   .canvas-root .tool{width:38px;height:38px;}
 }

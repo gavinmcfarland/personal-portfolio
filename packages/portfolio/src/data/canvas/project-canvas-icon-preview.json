@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 1148.578302995987,
-        "y": 606.1701868386862,
-        "scale": 0.6938109239171522
+        "x": 2009.7940148984621,
+        "y": 612.8359613801928,
+        "scale": 0.9649535028298019
       },
       "nodes": [
         {
@@ -19,7 +19,7 @@
           "z": 1,
           "w": 800,
           "h": 540,
-          "text": "① The problem"
+          "text": "The problem"
         },
         {
           "id": "f-idea",
@@ -29,7 +29,7 @@
           "z": 2,
           "w": 620,
           "h": 540,
-          "text": "② The idea"
+          "text": "The idea"
         },
         {
           "id": "f-how",
@@ -39,7 +39,7 @@
           "z": 3,
           "w": 900,
           "h": 600,
-          "text": "③ How it works"
+          "text": "How it works"
         },
         {
           "id": "f-details",
@@ -49,7 +49,7 @@
           "z": 4,
           "w": 660,
           "h": 520,
-          "text": "④ Details that matter"
+          "text": "Details that matter"
         },
         {
           "id": "f-try",
@@ -59,7 +59,7 @@
           "z": 5,
           "w": 640,
           "h": 520,
-          "text": "⑤ Try it"
+          "text": "Try it"
         },
         {
           "id": "intro",
@@ -230,6 +230,17 @@
           "z": 27,
           "color": "yellow",
           "text": "Swap the dashed placeholders for real captures, then hit Save"
+        },
+        {
+          "id": "n2-image",
+          "type": "image",
+          "x": -1646.70831320072,
+          "y": -343.9686055090373,
+          "z": 46,
+          "w": 360,
+          "h": 299,
+          "src": "/canvas-assets/7e2654cd6d9e5a5e.png",
+          "alt": "Screenshot 2026-07-10 at 15.57.06 1.png"
         }
       ],
       "shapes": [

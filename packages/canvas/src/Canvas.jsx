@@ -8,7 +8,6 @@ import Toolbar from './ui/Toolbar';
 import ZoomControls from './ui/ZoomControls';
 import ContextMenu from './ui/ContextMenu';
 import Lightbox from './ui/Lightbox';
-import Hint from './ui/Hint';
 
 /* Grid dots that stay visible on any custom background: light ink on dark
    colours, dark ink on light ones (matching the theme tokens' alpha). */
@@ -382,7 +381,6 @@ export default function Canvas() {
       {ui && (
         <>
           <TopBar className="ui panel pl-[8px]" />
-          <Hint />
           {EDITABLE && <Toolbar />}
           <ZoomControls />
           <ContextMenu />
