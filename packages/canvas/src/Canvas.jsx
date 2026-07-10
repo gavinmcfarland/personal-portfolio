@@ -318,7 +318,11 @@ export default function Canvas() {
         const tiny = (s.type === 'pen' && s.points.length < 2) ||
           (s.type !== 'pen' && Math.abs(s.x2 - s.x1) < 4 && Math.abs(s.y2 - s.y1) < 4);
         setDraft(null);
-        if (!tiny) eng.addShape(s);
+        if (!tiny) {
+          eng.addShape(s);
+          // All draw tools except the pen snap back to select after one shape.
+          if (s.type !== 'pen') { eng.setTool('select'); eng.selectShape(s.id); }
+        }
       }
       if (a.type === 'resize') {
         const patch = {};
