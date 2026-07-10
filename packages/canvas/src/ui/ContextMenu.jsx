@@ -28,7 +28,7 @@ export default function ContextMenu() {
 
   return (
     <div className="panel show" id="ctxmenu" style={{ left: x, top: y }}>
-      {node && node.type === 'image' && (
+      {node && (node.type === 'image' || node.type === 'video') && (
         <>
           <button onClick={run(() => eng.openFullscreen(node.id))}>
             <Maximize />

@@ -1,11 +1,16 @@
 import { useEffect } from 'react';
 import { useCanvas } from '../CanvasProvider';
+import { useMediaSrc } from '../nodes/common';
 
-/* Full-screen viewer for image nodes. Opened via double-click on an image or the
+/* Full-screen viewer for image and video nodes. Opened via double-click or the
    node context menu; dismissed by clicking the backdrop, the close button, or
-   Escape. Works in both editing and read-only modes. */
+   Escape. Works in both editing and read-only modes. Videos get controls and
+   sound here (the board keeps them muted for autoplay). */
 export default function Lightbox() {
   const { fullscreenId, nodes, eng } = useCanvas();
+  const found = fullscreenId ? nodes.find((n) => n.id === fullscreenId) : null;
+  const node = found && (found.type === 'image' || found.type === 'video') ? found : null;
+  const src = useMediaSrc(node ? node.src : null);
 
   useEffect(() => {
     if (!fullscreenId) return undefined;
@@ -14,9 +19,7 @@ export default function Lightbox() {
     return () => window.removeEventListener('keydown', onKey);
   }, [fullscreenId, eng]);
 
-  if (!fullscreenId) return null;
-  const node = nodes.find((n) => n.id === fullscreenId);
-  if (!node || node.type !== 'image') return null;
+  if (!node) return null;
 
   return (
     <div id="lightbox" onPointerDown={() => eng.closeFullscreen()}>
@@ -27,7 +30,11 @@ export default function Lightbox() {
       >
         ✕
       </button>
-      <img src={node.src} alt={node.alt || ''} draggable={false} onPointerDown={(e) => e.stopPropagation()} />
+      {node.type === 'video' ? (
+        <video src={src || undefined} controls autoPlay loop playsInline onPointerDown={(e) => e.stopPropagation()} />
+      ) : (
+        <img src={src || undefined} alt={node.alt || ''} draggable={false} onPointerDown={(e) => e.stopPropagation()} />
+      )}
     </div>
   );
 }

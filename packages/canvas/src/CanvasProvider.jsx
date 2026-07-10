@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, useRef, useState, useEffect } from 'react';
 import { ZOOM, PAN, RASTER, GRID, clampScale } from './constants';
+import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
 
 /* Default localStorage key for the dev autosave. Override with the `storageKey`
    prop when embedding more than one editable canvas on a page. */
@@ -23,6 +24,7 @@ function normalizeSaved(n) {
   if (n.type === 'md') return { ...base, w: n.w || 340, text: n.text || '' };
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
   if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '' };
+  if (n.type === 'video') return { ...base, w: n.w || 320, h: n.h || 180, src: n.src || '', alt: n.alt || '' };
   return { ...base, text: n.text || '' }; // tblock
 }
 
@@ -117,6 +119,7 @@ export function CanvasProvider({
   nodeTypes = null,
   onPublish = null,
   onUploadImage = null,
+  onUploadVideo = null,
   onChange = null,
   theme = null, // optional { mode, toggle } — renders a theme button in the top bar
   fit = 'contain', // 'contain' fills the parent box; 'fullscreen' covers the browser viewport
@@ -125,6 +128,7 @@ export function CanvasProvider({
   const EDITABLE = editable;
   const HOME_ID = homeId;
   const STORE = storageKey;
+  const MEDIA_DB = storageKey + '-media';
   const canPublish = editable && typeof onPublish === 'function';
 
   const init = useMemo(
@@ -318,7 +322,7 @@ export function CanvasProvider({
       if (type === 'md' && !editing) {
         chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
       } else chrome.edit.style.display = 'none';
-      if ((type === 'frame' || type === 'md' || type === 'image') && !editing) {
+      if ((type === 'frame' || type === 'md' || type === 'image' || type === 'video') && !editing) {
         chrome.rz.style.display = 'block'; chrome.rz.style.left = (sx + sw - 4) + 'px'; chrome.rz.style.top = (sy + sh - 4) + 'px';
         chrome.rz.style.cursor = type === 'md' ? 'ew-resize' : 'nwse-resize';
       } else chrome.rz.style.display = 'none';
@@ -473,7 +477,7 @@ export function CanvasProvider({
       else if (n.type === 'tblock') { o.text = n.text; }
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
-      else if (n.type === 'image') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; }
+      else if (n.type === 'image' || n.type === 'video') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; }
       return o;
     }
     function serializeShape(s) {
@@ -509,7 +513,13 @@ export function CanvasProvider({
     function saveNow() {
       if (!EDITABLE) return;
       const snap = serialize();
-      localStorage.setItem(STORE, JSON.stringify(snap));
+      try {
+        localStorage.setItem(STORE, JSON.stringify(snap));
+      } catch (err) {
+        // Inline media data URLs can overflow the ~5MB quota; keep the board
+        // usable (and onChange flowing) instead of dying mid-gesture.
+        console.warn('[canvas] autosave skipped (storage quota? large inline media?)', err);
+      }
       if (onChange) onChange(snap);
     }
     /* Persist the current board through the host-supplied `onPublish` adapter
@@ -592,53 +602,126 @@ export function CanvasProvider({
       im.onerror = () => reject(new Error('could not decode image'));
       im.src = src;
     });
+    const measureVideo = (src) => new Promise((resolve, reject) => {
+      const v = document.createElement('video');
+      v.preload = 'metadata';
+      v.muted = true;
+      v.onloadedmetadata = () => resolve({ w: v.videoWidth || 320, h: v.videoHeight || 180 });
+      v.onerror = () => reject(new Error('could not decode video'));
+      v.src = src;
+    });
     /* Some drag sources (and OSes) hand over files with an empty MIME type, so
-       fall back to the extension. Covers animated formats (gif/webp/avif) —
-       these play automatically since image nodes render a plain <img>. */
+       fall back to the extension. Animated images and videos play automatically —
+       image nodes render a plain <img>, video nodes an autoplaying muted <video>. */
     const isImageFile = (f) =>
       !!f && (f.type.startsWith('image/') || /\.(gif|png|jpe?g|webp|avif|svg)$/i.test(f.name || ''));
-    /* Drop an image node centred on the cursor, scaled to a sane default. */
-    function placeImageNode(src, nat, wx, wy, alt) {
+    const isVideoFile = (f) =>
+      !!f && (f.type.startsWith('video/') || /\.(mp4|webm|mov|m4v|ogv)$/i.test(f.name || ''));
+    /* Drop a media node centred on the cursor, scaled to a sane default. */
+    function placeMediaNode(type, src, nat, wx, wy, alt) {
       const MAX = 360;
       const k = nat.w > MAX || nat.h > MAX ? MAX / Math.max(nat.w, nat.h) : 1;
       const w = Math.round(nat.w * k), h = Math.round(nat.h * k);
-      const n = addNode({ id: newId('image'), type: 'image', x: wx - w / 2, y: wy - h / 2, w, h, src, alt: alt || '' });
+      const n = addNode({ id: newId(type), type, x: wx - w / 2, y: wy - h / 2, w, h, src, alt: alt || '' });
       setToolState('select'); selectNode(n.id);
     }
-    /* Read the file, resolve a src for it through the host-supplied
-       `onUploadImage` adapter (default: inline the data URL), then drop an image
-       node. The bytes pass through untouched, so animated GIFs keep playing. */
+    /* Without an upload adapter, media bytes have to live somewhere durable.
+       Small images inline as data URLs (portable snapshots); anything bigger —
+       and all videos — goes into IndexedDB, because a single real video inlined
+       into the localStorage autosave blows its ~5MB quota and the board
+       silently stops saving. The node then holds an `idb:<key>` reference. */
+    const INLINE_MAX = 512 * 1024;
+    let mediaSeq = 0;
+    async function storeMediaBlob(blob) {
+      const key = 'm' + Date.now().toString(36) + '-' + ++mediaSeq;
+      await putMedia(MEDIA_DB, key, blob);
+      return 'idb:' + key;
+    }
+    /* Resolve a node src for rendering: `idb:` refs become (cached) object URLs;
+       anything else passes through untouched. */
+    const mediaUrlCache = new Map(); // idb key -> Promise<objectURL>
+    function resolveMediaSrc(src) {
+      if (typeof src !== 'string' || !src.startsWith('idb:')) return Promise.resolve(src);
+      const key = src.slice(4);
+      if (!mediaUrlCache.has(key)) {
+        mediaUrlCache.set(key, getMedia(MEDIA_DB, key).then((blob) => (blob ? URL.createObjectURL(blob) : '')));
+      }
+      return mediaUrlCache.get(key);
+    }
+    /* Measure/decode via a temporary object URL, resolve the stored src, then
+       drop the node. The bytes pass through untouched, so animated GIFs keep
+       playing. */
     async function addImageFromFile(file, wx, wy) {
       if (!EDITABLE || !isImageFile(file)) return;
       try {
-        const dataUrl = await readDataUrl(file);
-        const nat = await measure(dataUrl);
-        const src = onUploadImage ? await onUploadImage(file, dataUrl) : dataUrl;
-        if (!src) throw new Error('onUploadImage returned no src');
-        placeImageNode(src, nat, wx, wy, file.name);
+        const objUrl = URL.createObjectURL(file);
+        const nat = await measure(objUrl).finally(() => URL.revokeObjectURL(objUrl));
+        let src;
+        if (onUploadImage) {
+          src = await onUploadImage(file, await readDataUrl(file));
+          if (!src) throw new Error('onUploadImage returned no src');
+        } else if (hasIDB && file.size > INLINE_MAX) {
+          src = await storeMediaBlob(file);
+        } else {
+          src = await readDataUrl(file);
+        }
+        placeMediaNode('image', src, nat, wx, wy, file.name);
       } catch (err) {
         console.error('[canvas] image drop failed', err);
       }
     }
-    /* Drop an image node for a remote URL — how a GIF dragged in from another
-       browser tab arrives. `measure` doubles as validation: anything that
-       doesn't decode as an image is silently ignored. */
-    async function addImageFromUrl(url, wx, wy) {
-      if (!EDITABLE || !url) return;
+    /* Same flow for video files, through `onUploadVideo`. Files that arrive
+       with no MIME type get re-wrapped with one from the extension — <video>
+       won't content-sniff data:/blob: URLs the way <img> does. */
+    async function addVideoFromFile(file, wx, wy) {
+      if (!EDITABLE || !isVideoFile(file)) return;
       try {
-        const nat = await measure(url);
-        let alt = '';
-        try { alt = decodeURIComponent(new URL(url, location.href).pathname.split('/').pop() || ''); } catch { /* ignore */ }
-        placeImageNode(url, nat, wx, wy, alt);
+        const mime = file.type.startsWith('video/')
+          ? file.type
+          : { mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/mp4', webm: 'video/webm', ogv: 'video/ogg' }[
+              (file.name || '').split('.').pop().toLowerCase()] || 'video/mp4';
+        const typed = file.type === mime ? file : new Blob([file], { type: mime });
+        const objUrl = URL.createObjectURL(typed);
+        const nat = await measureVideo(objUrl).finally(() => URL.revokeObjectURL(objUrl));
+        let src;
+        if (onUploadVideo) {
+          src = await onUploadVideo(file, await readDataUrl(typed));
+          if (!src) throw new Error('onUploadVideo returned no src');
+        } else if (hasIDB) {
+          src = await storeMediaBlob(typed);
+        } else {
+          src = await readDataUrl(typed);
+        }
+        placeMediaNode('video', src, nat, wx, wy, file.name);
       } catch (err) {
-        console.error('[canvas] image url drop failed', err);
+        console.error('[canvas] video drop failed', err);
       }
     }
+    /* Drop a media node for a remote URL — how a GIF or video dragged in from
+       another browser tab arrives. Decoding doubles as validation: try it as an
+       image then as a video (extension decides the order) and ignore URLs that
+       are neither. */
+    async function addMediaFromUrl(url, wx, wy) {
+      if (!EDITABLE || !url) return;
+      let alt = '';
+      try { alt = decodeURIComponent(new URL(url, location.href).pathname.split('/').pop() || ''); } catch { /* ignore */ }
+      const attempts = /\.(mp4|webm|mov|m4v|ogv)([?#]|$)/i.test(url)
+        ? [['video', measureVideo], ['image', measure]]
+        : [['image', measure], ['video', measureVideo]];
+      for (const [type, probe] of attempts) {
+        try {
+          const nat = await probe(url);
+          placeMediaNode(type, url, nat, wx, wy, alt);
+          return;
+        } catch { /* try the other kind */ }
+      }
+      console.error('[canvas] media url drop failed: could not decode', url);
+    }
 
-    /* ── Image lightbox (full-screen viewing) ─────────────────── */
+    /* ── Media lightbox (full-screen viewing) ─────────────────── */
     function openFullscreen(id) {
       const n = S.nodes.find((x) => x.id === id);
-      if (n && n.type === 'image') setFullscreenId(id);
+      if (n && (n.type === 'image' || n.type === 'video')) setFullscreenId(id);
     }
     function closeFullscreen() { setFullscreenId(null); }
 
@@ -657,9 +740,30 @@ export function CanvasProvider({
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
       setTool, setMode, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, resetBoard,
       switchPage, addPage, renamePage, removePage,
-      isImageFile, addImageFromFile, addImageFromUrl, openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
+      isImageFile, isVideoFile, addImageFromFile, addVideoFromFile, addMediaFromUrl, resolveMediaSrc,
+      openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
       nextZ, backZ,
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* ── Boot GC: drop IndexedDB blobs no longer referenced by any page ──
+     Runs once against the freshly loaded snapshot (the DB is scoped to this
+     board's storageKey, so nothing else can reference its keys). Media deleted
+     during a session is collected on the next load. */
+  useEffect(() => {
+    if (!EDITABLE || !hasIDB) return;
+    const referenced = new Set();
+    Object.values(pageData).forEach((p) => p.nodes.forEach((n) => {
+      if (typeof n.src === 'string' && n.src.startsWith('idb:')) referenced.add(n.src.slice(4));
+    }));
+    listMediaKeys(MEDIA_DB)
+      .then((keys) => {
+        const orphans = keys.filter((k) => !referenced.has(k));
+        if (orphans.length) return deleteMedia(MEDIA_DB, orphans);
+        return undefined;
+      })
+      .catch(() => { /* GC is best-effort */ });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

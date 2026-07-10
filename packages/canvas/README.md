@@ -55,16 +55,27 @@ All are optional.
 | `fit` | `'contain' \| 'fullscreen'` | `'contain'` | `contain` fills the parent box; `fullscreen` covers the browser viewport. |
 | `theme` | `{ mode, toggle }` | `null` | Renders a theme-cycle button in the top bar when provided. Dark mode also activates from a `.dark` ancestor. |
 | `onPublish` | `(snapshot) => Promise` | `null` | Persist the board somewhere durable. Shows the "Publish" button when set. |
-| `onUploadImage` | `(file, dataUrl) => Promise<url>` | inline data URL | Resolve a `src` for dropped images. |
+| `onUploadImage` | `(file, dataUrl) => Promise<url>` | inline / IndexedDB | Resolve a `src` for dropped images. |
+| `onUploadVideo` | `(file, dataUrl) => Promise<url>` | IndexedDB | Resolve a `src` for dropped videos. |
 | `onChange` | `(snapshot) => void` | `null` | Fires after every autosave. |
 
 Built-in node types: `sticky`, `tblock` (text), `md` (markdown), `frame`, `image`,
-plus freehand `shape`s.
+`video`, plus freehand `shape`s.
 
-In edit mode, images can be dragged onto the board either as local files or
-straight from another browser tab (the drop arrives as a URL). Animated formats
-(GIF/WebP/AVIF) are stored untouched and play automatically — image nodes render
-a plain `<img>`, so no player wiring is needed.
+In edit mode, images and videos can be dragged onto the board either as local
+files or straight from another browser tab (the drop arrives as a URL). Animated
+image formats (GIF/WebP/AVIF) are stored untouched and play automatically —
+image nodes render a plain `<img>`, so no player wiring is needed. Video nodes
+autoplay muted and looped on the board (GIF-style); hovering one reveals a
+play/pause + scrub bar, and double-click opens the lightbox with native
+controls and sound.
+
+Without upload adapters, small images inline into the snapshot as data URLs,
+while videos and large images are stored in IndexedDB (scoped per `storageKey`,
+garbage-collected on load) with only an `idb:<key>` reference in the snapshot —
+localStorage's ~5MB quota can't hold real video bytes. `idb:` refs only resolve
+in the browser profile that dropped them, so wire `onUploadImage`/`onUploadVideo`
+to real storage for boards you intend to publish for other viewers.
 
 ## Build
 

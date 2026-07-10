@@ -1,5 +1,21 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useCanvas } from '../CanvasProvider';
+
+/* Resolve a node's stored src for rendering. Plain URLs / data URLs pass
+   through synchronously; `idb:` refs (media parked in IndexedDB) resolve to a
+   cached object URL, returning '' until ready. */
+export function useMediaSrc(src) {
+  const { eng } = useCanvas();
+  const isIdb = typeof src === 'string' && src.startsWith('idb:');
+  const [url, setUrl] = useState(isIdb ? '' : src);
+  useEffect(() => {
+    let live = true;
+    if (isIdb) eng.resolveMediaSrc(src).then((u) => { if (live) setUrl(u); });
+    else setUrl(src);
+    return () => { live = false; };
+  }, [src, isIdb, eng]);
+  return url;
+}
 
 /* Shared node wiring: register the DOM element into the engine's id→el map and
    emit the data-* attributes the imperative engine (drag/chrome/fit/save) reads. */

@@ -3,6 +3,7 @@ import EditableNode from './nodes/EditableNode';
 import Markdown from './nodes/Markdown';
 import Frame from './nodes/Frame';
 import ImageNode from './nodes/Image';
+import VideoNode from './nodes/Video';
 import Shape from './Shape';
 
 /* Built-in node renderers. Consumers extend this map via the `nodeTypes` prop
@@ -13,6 +14,7 @@ const BUILTIN_TYPES = {
   md: Markdown,
   frame: Frame,
   image: ImageNode,
+  video: VideoNode,
 };
 
 function NodeView({ node, nodeTypes }) {

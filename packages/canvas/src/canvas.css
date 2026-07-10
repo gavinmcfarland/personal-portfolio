@@ -128,8 +128,28 @@
 .canvas-root .frame .frame-body{position:absolute;inset:0;border:1.6px dashed var(--accent);border-radius:9px;background:var(--accent-soft);pointer-events:none;}
 
 /* Dropped image object */
-.canvas-root .node.image{border-radius:6px;box-shadow:var(--shadow);overflow:hidden;background:var(--surface);}
+.canvas-root .node.image,.canvas-root .node.video{border-radius:6px;box-shadow:var(--shadow);overflow:hidden;background:var(--surface);}
 .canvas-root .node.image img{display:block;width:100%;height:100%;object-fit:cover;user-select:none;-webkit-user-drag:none;pointer-events:none;}
+.canvas-root .node.video video{display:block;width:100%;height:100%;object-fit:cover;user-select:none;pointer-events:none;}
+
+/* Video playback controls — revealed on hover. Pointer events are stopped
+   inside, so the bar never starts a node drag / pan / lightbox tap. */
+.canvas-root .node.video .vctrl{
+  position:absolute;left:6px;right:6px;bottom:6px;display:flex;align-items:center;gap:2px;
+  padding:3px 8px 3px 4px;border-radius:8px;background:rgba(12,12,14,.62);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  opacity:0;transition:opacity .15s ease;user-select:none;cursor:default;
+}
+.canvas-root .node.video:hover .vctrl{opacity:1;}
+.canvas-root .node.video .vplay{
+  display:flex;align-items:center;justify-content:center;width:22px;height:22px;flex:none;
+  border:0;border-radius:6px;background:transparent;color:#fff;cursor:pointer;padding:0;
+}
+.canvas-root .node.video .vplay:hover{background:rgba(255,255,255,.18);}
+.canvas-root .node.video .vplay svg{width:12px;height:12px;fill:currentColor;stroke:currentColor;}
+.canvas-root .node.video .vbar{flex:1;display:flex;align-items:center;height:16px;cursor:pointer;touch-action:none;}
+.canvas-root .node.video .vtrack{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.32);overflow:hidden;}
+.canvas-root .node.video .vfill{width:0;height:100%;border-radius:2px;background:#fff;}
 
 /* Markdown object — live-highlighted source while editing, rendered on blur */
 .canvas-root .md{width:340px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;}
@@ -281,7 +301,7 @@
 .canvas-root.read-only .cv-viewport{cursor:grab;}
 .canvas-root.read-only.panning .cv-viewport{cursor:grabbing;}
 .canvas-root.read-only .frame-label{cursor:default;}
-.canvas-root.read-only .node.image{cursor:zoom-in;}
+.canvas-root.read-only .node.image,.canvas-root.read-only .node.video{cursor:zoom-in;}
 .canvas-root.read-only .frame .frame-body{background:transparent;}
 
 /* Objects marked as navigation anchors (author view only) */
@@ -370,13 +390,13 @@
   background:var(--surface);color:var(--ink);font-family:var(--sans);font-size:.82rem;font-weight:500;outline:none;
 }
 
-/* Image lightbox (covers the canvas surface) */
+/* Media lightbox (covers the canvas surface) */
 .canvas-root #lightbox{
   position:absolute;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;
   padding:4vmin;background:rgba(12,12,14,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
   cursor:zoom-out;animation:cv-lb-in .16s ease;
 }
-.canvas-root #lightbox img{
+.canvas-root #lightbox img,.canvas-root #lightbox video{
   max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;
   box-shadow:0 24px 80px rgba(0,0,0,.5);cursor:default;
 }

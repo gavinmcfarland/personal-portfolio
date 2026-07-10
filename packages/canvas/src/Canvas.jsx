@@ -28,8 +28,8 @@ export default function Canvas() {
     if (S.readOnly) {
       if (e.target.closest && e.target.closest('a,button')) return;
       eng.freezeView();
-      // Remember an image under the pointer so a stationary tap opens it full-screen.
-      const imgEl = e.target.closest && e.target.closest('.node.image');
+      // Remember media under the pointer so a stationary tap opens it full-screen.
+      const imgEl = e.target.closest && e.target.closest('.node.image,.node.video');
       actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: imgEl ? imgEl.dataset.id : null };
       rootClass('panning', true);
       vp.setPointerCapture(e.pointerId);
@@ -101,9 +101,9 @@ export default function Canvas() {
     }
   };
 
-  /* Drag-and-drop images onto the board (dev editing only). Accepts both local
-     files (incl. animated GIFs — they play as-is) and images dragged straight
-     from another browser tab, which arrive as a URL rather than a file. */
+  /* Drag-and-drop media onto the board (dev editing only). Accepts local files
+     (images incl. animated GIFs, and videos — both play as-is) and media dragged
+     straight from another browser tab, which arrives as a URL rather than a file. */
   const dropActive = () => EDITABLE && !S.readOnly;
   const onDragOver = (e) => {
     if (!dropActive() || !e.dataTransfer) return;
@@ -113,11 +113,12 @@ export default function Canvas() {
       e.dataTransfer.dropEffect = 'copy';
     }
   };
-  /* Cross-tab image drags carry the <img> markup in text/html (most reliable —
-     uri-list can point at the page rather than the image) and/or a plain URL. */
-  const droppedImageUrl = (dt) => {
+  /* Cross-tab media drags carry the <img>/<video> markup in text/html (most
+     reliable — uri-list can point at the page rather than the media) and/or a
+     plain URL. */
+  const droppedMediaUrl = (dt) => {
     const html = dt.getData('text/html');
-    const m = html && /<img[^>]+src\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+    const m = html && /<(?:img|video|source)[^>]+src\s*=\s*["']?([^"'\s>]+)/i.exec(html);
     if (m) return m[1].replace(/&amp;/g, '&');
     const uri = (dt.getData('text/uri-list') || '').split('\n').find((l) => l.trim() && !l.startsWith('#'));
     return uri ? uri.trim() : '';
@@ -125,31 +126,36 @@ export default function Canvas() {
   const onDrop = (e) => {
     if (!dropActive() || !e.dataTransfer) return;
     const w = eng.screenToWorld(e.clientX, e.clientY);
-    const imgs = Array.from(e.dataTransfer.files || []).filter(eng.isImageFile);
-    if (imgs.length) {
+    const media = Array.from(e.dataTransfer.files || []).filter((f) => eng.isImageFile(f) || eng.isVideoFile(f));
+    if (media.length) {
       e.preventDefault();
-      imgs.forEach((file, i) => eng.addImageFromFile(file, w.x + i * 24, w.y + i * 24));
+      media.forEach((file, i) => {
+        const add = eng.isVideoFile(file) ? eng.addVideoFromFile : eng.addImageFromFile;
+        add(file, w.x + i * 24, w.y + i * 24);
+      });
       return;
     }
-    const url = droppedImageUrl(e.dataTransfer);
+    const url = droppedMediaUrl(e.dataTransfer);
     if (url) {
       e.preventDefault();
-      eng.addImageFromUrl(url, w.x, w.y);
+      eng.addMediaFromUrl(url, w.x, w.y);
     }
   };
 
-  /* Double-click an editable object (sticky / text / markdown) to edit it.
-     The viewport captures the pointer while dragging, which retargets the
-     dblclick event to the viewport itself — so resolve the real node under the
-     cursor via elementFromPoint rather than e.target. */
+  /* Double-click an editable object (sticky / text / markdown) to edit it, or
+     media (image / video) to open it full-screen. The viewport captures the
+     pointer while dragging, which retargets the dblclick event to the viewport
+     itself — so resolve the real node under the cursor via elementFromPoint
+     rather than e.target. */
   const onDoubleClick = (e) => {
     if (S.readOnly) return;
     const el = document.elementFromPoint(e.clientX, e.clientY);
     const nodeEl = el && el.closest && el.closest('.node');
     if (!nodeEl) return;
     const type = nodeEl.dataset.type;
-    if (type !== 'sticky' && type !== 'tblock' && type !== 'md') return;
     const id = nodeEl.dataset.id;
+    if (type === 'image' || type === 'video') { eng.openFullscreen(id); return; }
+    if (type !== 'sticky' && type !== 'tblock' && type !== 'md') return;
     eng.setTool('select'); eng.selectNode(id); eng.startEditing(id);
   };
 
@@ -213,7 +219,7 @@ export default function Canvas() {
         const minW = a.mdType === 'md' ? 160 : 60;
         const w = Math.max(minW, a.ow + (e.clientX - a.sx) / scale());
         el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
-        if (a.mdType === 'image') {
+        if (a.mdType === 'image' || a.mdType === 'video') {
           const h = Math.max(1, Math.round(w * (a.oh / a.ow))); // lock aspect ratio
           el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
         } else if (a.mdType !== 'md') {
@@ -237,7 +243,7 @@ export default function Canvas() {
       if (!a) return;
       if (a.type === 'pan') {
         rootClass('panning', false);
-        if (a.imgId && !a.moved) eng.openFullscreen(a.imgId); // tap an image → full-screen
+        if (a.imgId && !a.moved) eng.openFullscreen(a.imgId); // tap an image/video → full-screen
       }
       if (a.type === 'node') {
         const el = a.el || nodeEls.get(a.id);
