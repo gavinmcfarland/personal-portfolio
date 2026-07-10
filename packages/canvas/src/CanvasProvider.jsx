@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useMemo, useRef, useState, useEffect } from 'react';
+import { createContext, useContext, useMemo, useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { ZOOM, PAN, RASTER, GRID, clampScale } from './constants';
 import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
 
@@ -151,7 +151,13 @@ export function CanvasProvider({
   const [draft, setDraft] = useState(null); // in-progress drawing
   const [tool, setToolState] = useState('select');
   const [selected, setSelectedState] = useState([]); // [{kind:'node'|'shape', id}] — multi-select
-  const [readOnly, setReadOnlyState] = useState(!EDITABLE);
+  const [readOnly, setReadOnlyState] = useState(() => {
+    // Seed from the persisted mode so an editable board saved in view mode
+    // doesn't paint a frame in edit mode (Edit chip active) before a boot
+    // effect flips it back.
+    if (!EDITABLE) return true;
+    try { return localStorage.getItem(storageKey + '-mode') === 'view'; } catch { return false; }
+  });
   const [editingId, setEditingId] = useState(null);
   const [noteColor, setNoteColor] = useState('yellow');
   const [strokeColor, setStrokeColor] = useState('#7C2D91');
@@ -926,17 +932,20 @@ export function CanvasProvider({
   useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, eng]);
 
   /* ── Boot: apply the initial view (fit if nothing was saved, or if the
-     embedder asked for a framed overview via initialView='fit') ── */
-  useEffect(() => {
-    eng.applyView();
+     embedder asked for a framed overview via initialView='fit') ──
+     Runs in a layout effect so the world transform is set before the browser
+     paints — otherwise the board flashes one frame at the un-fitted origin
+     (objects in the wrong place) before jumping to the saved/fitted view.
+     Node ref callbacks fire at commit, so elements are already measurable. */
+  useLayoutEffect(() => {
     if (initialView === 'fit' || !init.hadSaved) {
+      eng.fitAll(false);
       // Only persist the fitted view when it's the first-ever view of the
       // board; a forced fit is presentational and must not clobber the save.
-      const id = requestAnimationFrame(() => { eng.fitAll(false); if (!init.hadSaved) eng.saveNow(); });
-      return () => cancelAnimationFrame(id);
+      if (!init.hadSaved) eng.saveNow();
+    } else {
+      eng.applyView();
     }
-    if (EDITABLE && localStorage.getItem(STORE + '-mode') === 'view') setReadOnlyState(true);
-    return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
