@@ -100,11 +100,16 @@ export default function ProjectCanvasPreview({ project, children }) {
             >
               <div className="h-64 w-104">
                 <div className="h-128 w-208 origin-top-left scale-50">
+                  {/* storageKey must match the project page's board: media
+                      dropped there lives in IndexedDB under a DB derived from
+                      it, and the miniature resolves those refs the same way.
+                      Read-only canvases never write to the key. */}
                   <Canvas
                     key={project.id}
                     fit="contain"
                     ui={false}
                     base={buildBase(project)}
+                    storageKey={`project-canvas-${project.id}`}
                     initialState={readSaved(`project-canvas-${project.id}`)}
                   />
                 </div>

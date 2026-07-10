@@ -632,21 +632,32 @@ export function CanvasProvider({
        silently stops saving. The node then holds an `idb:<key>` reference. */
     const INLINE_MAX = 512 * 1024;
     let mediaSeq = 0;
+    /* Refs are self-describing (`idb:<dbName>/<key>`) so another canvas
+       instance rendering this board's snapshot — e.g. a read-only preview —
+       can resolve them regardless of its own storageKey. Keys contain no `/`;
+       split on the last one in case a host's storageKey does. Bare legacy refs
+       (`idb:<key>`) fall back to this instance's own DB. */
+    function parseIdbRef(src) {
+      if (typeof src !== 'string' || !src.startsWith('idb:')) return null;
+      const body = src.slice(4);
+      const i = body.lastIndexOf('/');
+      return i === -1 ? { db: MEDIA_DB, key: body } : { db: body.slice(0, i), key: body.slice(i + 1) };
+    }
     async function storeMediaBlob(blob) {
       const key = 'm' + Date.now().toString(36) + '-' + ++mediaSeq;
       await putMedia(MEDIA_DB, key, blob);
-      return 'idb:' + key;
+      return `idb:${MEDIA_DB}/${key}`;
     }
     /* Resolve a node src for rendering: `idb:` refs become (cached) object URLs;
        anything else passes through untouched. */
-    const mediaUrlCache = new Map(); // idb key -> Promise<objectURL>
+    const mediaUrlCache = new Map(); // full idb ref -> Promise<objectURL>
     function resolveMediaSrc(src) {
-      if (typeof src !== 'string' || !src.startsWith('idb:')) return Promise.resolve(src);
-      const key = src.slice(4);
-      if (!mediaUrlCache.has(key)) {
-        mediaUrlCache.set(key, getMedia(MEDIA_DB, key).then((blob) => (blob ? URL.createObjectURL(blob) : '')));
+      const ref = parseIdbRef(src);
+      if (!ref) return Promise.resolve(src);
+      if (!mediaUrlCache.has(src)) {
+        mediaUrlCache.set(src, getMedia(ref.db, ref.key).then((blob) => (blob ? URL.createObjectURL(blob) : '')));
       }
-      return mediaUrlCache.get(key);
+      return mediaUrlCache.get(src);
     }
     /* Measure/decode via a temporary object URL, resolve the stored src, then
        drop the node. The bytes pass through untouched, so animated GIFs keep
@@ -740,7 +751,7 @@ export function CanvasProvider({
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
       setTool, setMode, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, resetBoard,
       switchPage, addPage, renamePage, removePage,
-      isImageFile, isVideoFile, addImageFromFile, addVideoFromFile, addMediaFromUrl, resolveMediaSrc,
+      isImageFile, isVideoFile, addImageFromFile, addVideoFromFile, addMediaFromUrl, resolveMediaSrc, parseIdbRef,
       openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
       nextZ, backZ,
     };
@@ -755,7 +766,8 @@ export function CanvasProvider({
     if (!EDITABLE || !hasIDB) return;
     const referenced = new Set();
     Object.values(pageData).forEach((p) => p.nodes.forEach((n) => {
-      if (typeof n.src === 'string' && n.src.startsWith('idb:')) referenced.add(n.src.slice(4));
+      const ref = eng.parseIdbRef(n.src);
+      if (ref && ref.db === MEDIA_DB) referenced.add(ref.key);
     }));
     listMediaKeys(MEDIA_DB)
       .then((keys) => {
