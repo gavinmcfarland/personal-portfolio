@@ -86,6 +86,11 @@ export default function Canvas() {
       return;
     }
 
+    /* Creation tools: cancel the pointerdown so the compat mousedown never
+       runs its focus-change default. Otherwise the browser blurs the freshly
+       focused text of the new node mid-click, and the empty-on-blur cleanup
+       deletes it in the same gesture that created it. */
+    e.preventDefault();
     const w = eng.screenToWorld(e.clientX, e.clientY);
     if (tool === 'note') {
       const n = eng.addNode({ id: eng.newId('sticky'), type: 'sticky', x: w.x - 105, y: w.y - 90, color: S.noteColor, text: '' });
@@ -231,13 +236,13 @@ export default function Canvas() {
       }
       if (a.type === 'resize') {
         const el = nodeEls.get(a.id); if (!el) return;
-        const minW = a.mdType === 'md' ? 160 : 60;
+        const minW = a.mdType === 'md' ? 160 : a.mdType === 'tblock' ? 120 : 60;
         const w = Math.max(minW, a.ow + (e.clientX - a.sx) / scale());
         el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
         if (a.mdType === 'image' || a.mdType === 'video') {
           const h = Math.max(1, Math.round(w * (a.oh / a.ow))); // lock aspect ratio
           el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
-        } else if (a.mdType !== 'md') {
+        } else if (a.mdType !== 'md' && a.mdType !== 'tblock') {
           const h = Math.max(40, a.oh + (e.clientY - a.sy) / scale());
           el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
         }

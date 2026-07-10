@@ -86,7 +86,7 @@ function FrameLabel({ node }) {
 }
 
 export default function Chrome() {
-  const { nodes, selected, eng, actionRef } = useCanvas();
+  const { nodes, selected, eng, actionRef, nodeEls } = useCanvas();
 
   const selRef = useCallback((el) => eng.setChrome('sel', el), [eng]);
   const hovRef = useCallback((el) => eng.setChrome('hov', el), [eng]);
@@ -99,7 +99,10 @@ export default function Chrome() {
     eng.freezeView();
     const n = nodes.find((x) => x.id === selected.id);
     if (!n) return;
-    actionRef.current = { type: 'resize', id: n.id, sx: e.clientX, sy: e.clientY, ow: +n.w, oh: +n.h, mdType: n.type };
+    // A never-resized text block has no stored width — measure its element.
+    const el = nodeEls.get(n.id);
+    const ow = n.w != null ? +n.w : el ? el.offsetWidth : 0;
+    actionRef.current = { type: 'resize', id: n.id, sx: e.clientX, sy: e.clientY, ow, oh: +n.h, mdType: n.type };
   };
 
   return (

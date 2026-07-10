@@ -1,0 +1,74 @@
+{
+  "version": 2,
+  "activePage": "home",
+  "pages": [
+    {
+      "id": "home",
+      "name": "Page 1",
+      "view": {
+        "x": 716.6725479116675,
+        "y": 342.26080458490634,
+        "scale": 0.9751018201223154
+      },
+      "nodes": [
+        {
+          "id": "intro",
+          "type": "md",
+          "x": -338.46570509958406,
+          "y": -187.94876133587596,
+          "z": 1,
+          "w": 340,
+          "text": "# Askeroo\n\nA modern CLI prompt library that treats a terminal flow like a real, navigable form.\n\n[TypeScript] [React] [Ink]"
+        },
+        {
+          "id": "stack",
+          "type": "md",
+          "x": 998.2742692324898,
+          "y": -14.918984045175826,
+          "z": 2,
+          "w": 300,
+          "text": "The first stateful CLI that allows back navigation. I created Askeroo after wishing more from the available prompt wizards that were avaiable. I wanted something modular and configurable for different needs."
+        },
+        {
+          "id": "note-0",
+          "type": "sticky",
+          "x": 1213.7172786608849,
+          "y": 211.2506847013008,
+          "z": 3,
+          "color": "yellow",
+          "text": "Stateful back-navigation — revise earlier answers at any time"
+        },
+        {
+          "id": "note-1",
+          "type": "sticky",
+          "x": 1214.7170397667794,
+          "y": 436.9473342114573,
+          "z": 4,
+          "color": "blue",
+          "text": "Conditional fields that respond to prior input"
+        },
+        {
+          "id": "note-2",
+          "type": "sticky",
+          "x": 1216.1314590686702,
+          "y": 659.844410428556,
+          "z": 5,
+          "color": "green",
+          "text": "Built-in task runners for long-running steps"
+        },
+        {
+          "id": "n1-video",
+          "type": "video",
+          "x": -49.81660028283852,
+          "y": -103.03685783966168,
+          "z": -1,
+          "w": 1105.03515625,
+          "h": 644,
+          "src": "/canvas-assets/06fb9db1cd6d5b82.mp4",
+          "alt": "plugma-eslint.mp4"
+        }
+      ],
+      "shapes": []
+    }
+  ]
+}

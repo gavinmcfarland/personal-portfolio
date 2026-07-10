@@ -3,7 +3,9 @@ import { useCanvas } from '../CanvasProvider';
 import { useRegister } from './common';
 
 /* Sticky notes & free text blocks — uncontrolled contentEditable so React never
-   fights the caret. Text commits to the model on blur; empty ones self-delete. */
+   fights the caret. Text commits to the model on blur. Empty text blocks
+   self-delete (they'd be invisible); empty stickies stay — the note itself is
+   a visible object the user placed. */
 function EditableNode({ node }) {
   const { editingId, readOnly, eng, nodeEls } = useCanvas();
   const { setRef, dataProps, style } = useRegister(node);
@@ -46,7 +48,7 @@ function EditableNode({ node }) {
 
   const commit = () => {
     const text = txtRef.current ? txtRef.current.textContent : '';
-    if (text.trim() === '') { eng.removeNode(node.id); eng.stopEditing(); return; }
+    if (text.trim() === '' && node.type !== 'sticky') { eng.removeNode(node.id); eng.stopEditing(); return; }
     eng.updateNode(node.id, { text });
     eng.stopEditing();
   };
@@ -60,6 +62,9 @@ function EditableNode({ node }) {
 
   const isSticky = node.type === 'sticky';
   const cls = `node ${isSticky ? 'sticky' : 'tblock'}${editing ? ' editing' : ''}`;
+  // A text block starts width-less (single line, grows as you type); once the
+  // user resizes it, the stored width fixes the box and the text wraps inside.
+  const sizedStyle = node.w != null ? { ...style, width: node.w + 'px' } : style;
 
   return (
     <div
@@ -68,7 +73,7 @@ function EditableNode({ node }) {
       {...dataProps}
       {...(isSticky ? { 'data-color': node.color } : {})}
       data-editing={editing ? '1' : ''}
-      style={style}
+      style={sizedStyle}
       onDoubleClick={onDoubleClick}
     >
       <div className="txt" ref={txtRef} onBlur={commit} suppressContentEditableWarning />

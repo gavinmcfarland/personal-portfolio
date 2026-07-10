@@ -25,6 +25,7 @@ function normalizeSaved(n) {
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
   if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '' };
   if (n.type === 'video') return { ...base, w: n.w || 320, h: n.h || 180, src: n.src || '', alt: n.alt || '' };
+  if (n.w != null) return { ...base, w: n.w, text: n.text || '' }; // resized tblock wraps at its width
   return { ...base, text: n.text || '' }; // tblock
 }
 
@@ -325,9 +326,9 @@ export function CanvasProvider({
       if (type === 'md' && !editing) {
         chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
       } else chrome.edit.style.display = 'none';
-      if ((type === 'frame' || type === 'md' || type === 'image' || type === 'video') && !editing) {
+      if ((type === 'frame' || type === 'md' || type === 'tblock' || type === 'image' || type === 'video') && !editing) {
         chrome.rz.style.display = 'block'; chrome.rz.style.left = (sx + sw - 4) + 'px'; chrome.rz.style.top = (sy + sh - 4) + 'px';
-        chrome.rz.style.cursor = type === 'md' ? 'ew-resize' : 'nwse-resize';
+        chrome.rz.style.cursor = type === 'md' || type === 'tblock' ? 'ew-resize' : 'nwse-resize';
       } else chrome.rz.style.display = 'none';
     }
     /* Faint hover outline for the node under the cursor (edit mode only). Drawn
@@ -477,7 +478,7 @@ export function CanvasProvider({
       const o = { id: n.id, type: n.type, x: +n.x, y: +n.y, z: n.z };
       if (n.anchor) o.anchor = 1;
       if (n.type === 'sticky') { o.color = n.color; o.text = n.text; }
-      else if (n.type === 'tblock') { o.text = n.text; }
+      else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; }
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
       else if (n.type === 'image' || n.type === 'video') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; }
