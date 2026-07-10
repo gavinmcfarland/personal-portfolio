@@ -592,23 +592,46 @@ export function CanvasProvider({
       im.onerror = () => reject(new Error('could not decode image'));
       im.src = src;
     });
+    /* Some drag sources (and OSes) hand over files with an empty MIME type, so
+       fall back to the extension. Covers animated formats (gif/webp/avif) —
+       these play automatically since image nodes render a plain <img>. */
+    const isImageFile = (f) =>
+      !!f && (f.type.startsWith('image/') || /\.(gif|png|jpe?g|webp|avif|svg)$/i.test(f.name || ''));
+    /* Drop an image node centred on the cursor, scaled to a sane default. */
+    function placeImageNode(src, nat, wx, wy, alt) {
+      const MAX = 360;
+      const k = nat.w > MAX || nat.h > MAX ? MAX / Math.max(nat.w, nat.h) : 1;
+      const w = Math.round(nat.w * k), h = Math.round(nat.h * k);
+      const n = addNode({ id: newId('image'), type: 'image', x: wx - w / 2, y: wy - h / 2, w, h, src, alt: alt || '' });
+      setToolState('select'); selectNode(n.id);
+    }
     /* Read the file, resolve a src for it through the host-supplied
        `onUploadImage` adapter (default: inline the data URL), then drop an image
-       node (centred on the cursor, scaled to a sane default). */
+       node. The bytes pass through untouched, so animated GIFs keep playing. */
     async function addImageFromFile(file, wx, wy) {
-      if (!EDITABLE || !file || !file.type.startsWith('image/')) return;
+      if (!EDITABLE || !isImageFile(file)) return;
       try {
         const dataUrl = await readDataUrl(file);
         const nat = await measure(dataUrl);
         const src = onUploadImage ? await onUploadImage(file, dataUrl) : dataUrl;
         if (!src) throw new Error('onUploadImage returned no src');
-        const MAX = 360;
-        const k = nat.w > MAX || nat.h > MAX ? MAX / Math.max(nat.w, nat.h) : 1;
-        const w = Math.round(nat.w * k), h = Math.round(nat.h * k);
-        const n = addNode({ id: newId('image'), type: 'image', x: wx - w / 2, y: wy - h / 2, w, h, src, alt: file.name || '' });
-        setToolState('select'); selectNode(n.id);
+        placeImageNode(src, nat, wx, wy, file.name);
       } catch (err) {
         console.error('[canvas] image drop failed', err);
+      }
+    }
+    /* Drop an image node for a remote URL — how a GIF dragged in from another
+       browser tab arrives. `measure` doubles as validation: anything that
+       doesn't decode as an image is silently ignored. */
+    async function addImageFromUrl(url, wx, wy) {
+      if (!EDITABLE || !url) return;
+      try {
+        const nat = await measure(url);
+        let alt = '';
+        try { alt = decodeURIComponent(new URL(url, location.href).pathname.split('/').pop() || ''); } catch { /* ignore */ }
+        placeImageNode(url, nat, wx, wy, alt);
+      } catch (err) {
+        console.error('[canvas] image url drop failed', err);
       }
     }
 
@@ -634,7 +657,7 @@ export function CanvasProvider({
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
       setTool, setMode, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, resetBoard,
       switchPage, addPage, renamePage, removePage,
-      addImageFromFile, openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
+      isImageFile, addImageFromFile, addImageFromUrl, openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
       nextZ, backZ,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

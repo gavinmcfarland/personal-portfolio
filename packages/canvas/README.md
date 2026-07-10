@@ -61,6 +61,11 @@ All are optional.
 Built-in node types: `sticky`, `tblock` (text), `md` (markdown), `frame`, `image`,
 plus freehand `shape`s.
 
+In edit mode, images can be dragged onto the board either as local files or
+straight from another browser tab (the drop arrives as a URL). Animated formats
+(GIF/WebP/AVIF) are stored untouched and play automatically — image nodes render
+a plain `<img>`, so no player wiring is needed.
+
 ## Build
 
 ```bash

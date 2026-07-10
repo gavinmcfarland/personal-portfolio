@@ -101,22 +101,41 @@ export default function Canvas() {
     }
   };
 
-  /* Drag-and-drop image files onto the board (dev editing only). */
+  /* Drag-and-drop images onto the board (dev editing only). Accepts both local
+     files (incl. animated GIFs — they play as-is) and images dragged straight
+     from another browser tab, which arrive as a URL rather than a file. */
   const dropActive = () => EDITABLE && !S.readOnly;
   const onDragOver = (e) => {
     if (!dropActive() || !e.dataTransfer) return;
-    if (Array.from(e.dataTransfer.types || []).includes('Files')) {
+    const types = Array.from(e.dataTransfer.types || []);
+    if (types.includes('Files') || types.includes('text/uri-list')) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
     }
   };
+  /* Cross-tab image drags carry the <img> markup in text/html (most reliable —
+     uri-list can point at the page rather than the image) and/or a plain URL. */
+  const droppedImageUrl = (dt) => {
+    const html = dt.getData('text/html');
+    const m = html && /<img[^>]+src\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+    if (m) return m[1].replace(/&amp;/g, '&');
+    const uri = (dt.getData('text/uri-list') || '').split('\n').find((l) => l.trim() && !l.startsWith('#'));
+    return uri ? uri.trim() : '';
+  };
   const onDrop = (e) => {
     if (!dropActive() || !e.dataTransfer) return;
-    const imgs = Array.from(e.dataTransfer.files || []).filter((f) => f.type.startsWith('image/'));
-    if (!imgs.length) return;
-    e.preventDefault();
     const w = eng.screenToWorld(e.clientX, e.clientY);
-    imgs.forEach((file, i) => eng.addImageFromFile(file, w.x + i * 24, w.y + i * 24));
+    const imgs = Array.from(e.dataTransfer.files || []).filter(eng.isImageFile);
+    if (imgs.length) {
+      e.preventDefault();
+      imgs.forEach((file, i) => eng.addImageFromFile(file, w.x + i * 24, w.y + i * 24));
+      return;
+    }
+    const url = droppedImageUrl(e.dataTransfer);
+    if (url) {
+      e.preventDefault();
+      eng.addImageFromUrl(url, w.x, w.y);
+    }
   };
 
   /* Double-click an editable object (sticky / text / markdown) to edit it.
