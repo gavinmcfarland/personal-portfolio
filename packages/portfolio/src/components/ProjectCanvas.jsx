@@ -4,7 +4,7 @@ import { Canvas } from "@gavinmcfarland/canvas";
    every project page gets an on-brand interactive hero without hand-authoring a
    snapshot each time. Uses only the canvas's built-in node types (md, sticky)
    and a single accent arrow — no managedTypes / nodeTypes needed. */
-function buildBase(project) {
+export function buildBase(project) {
   const stickyColors = ["yellow", "blue", "green", "pink"];
   const highlights = (project.highlights || []).slice(0, 3);
 
