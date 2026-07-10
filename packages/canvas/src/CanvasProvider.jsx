@@ -120,6 +120,7 @@ export function CanvasProvider({
   onChange = null,
   theme = null, // optional { mode, toggle } — renders a theme button in the top bar
   fit = 'contain', // 'contain' fills the parent box; 'fullscreen' covers the browser viewport
+  ui = true, // set false to hide the overlay panels (top bar, toolbar, zoom, hint, context menu)
 }) {
   const EDITABLE = editable;
   const HOME_ID = homeId;
@@ -681,7 +682,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, hintHidden, ctxMenu,
     publishState, fullscreenId, pages, activePageId, pageData,
-    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, theme, fit,
+    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, theme, fit, ui,
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setHintHidden, setCtxMenu, setSelectedState,
     // refs

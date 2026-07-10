@@ -12,7 +12,7 @@ import Hint from './ui/Hint';
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, fit } = ctx;
+  const { rootRef, hoverInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, fit, ui } = ctx;
 
   /* Toggle a state class on the scoped root (not document.body) so multiple
      canvases stay independent and nothing leaks onto the host page. */
@@ -335,11 +335,15 @@ export default function Canvas() {
         <World />
       </div>
       <Chrome />
-      <TopBar className="ui panel pl-[8px]" />
-      <Hint />
-      {EDITABLE && <Toolbar />}
-      <ZoomControls />
-      <ContextMenu />
+      {ui && (
+        <>
+          <TopBar className="ui panel pl-[8px]" />
+          <Hint />
+          {EDITABLE && <Toolbar />}
+          <ZoomControls />
+          <ContextMenu />
+        </>
+      )}
       <Lightbox />
     </div>
   );

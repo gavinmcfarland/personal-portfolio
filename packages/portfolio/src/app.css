@@ -165,11 +165,9 @@ a.row:hover { background: var(--surface); }
 }
 
 /* ── Canvas hover preview (Projects list) ────────────────────── */
-/* The popover shares the entrance curve of the rest of the page, and the
-   miniature canvas inside it drops its UI chrome (top bar, zoom, hint) so
-   only the board itself shows. */
+/* The popover shares the entrance curve of the rest of the page; the mini
+   canvas hides its own chrome via the <Canvas ui={false}> prop. */
 .canvas-preview { animation: rise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.canvas-preview .canvas-root .ui { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .rise { animation: none; }
