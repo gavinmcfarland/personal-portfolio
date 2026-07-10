@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Maximize, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
+import { Maximize, Copy, CopyPlus, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
@@ -38,6 +38,15 @@ export default function ContextMenu() {
           <div className="ctxsep" />
         </>
       )}
+      <button onClick={run(() => { eng.copySelected(); })}>
+        <Copy />
+        {count > 1 ? `Copy ${count} objects` : 'Copy'}
+      </button>
+      <button onClick={run(() => eng.duplicateTarget(target))}>
+        <CopyPlus />
+        {count > 1 ? `Duplicate ${count} objects` : 'Duplicate'}
+      </button>
+      <div className="ctxsep" />
       <button onClick={run(() => eng.bringFront(target))}>
         <BringToFront />
         Bring to front

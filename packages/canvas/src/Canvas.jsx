@@ -78,7 +78,8 @@ export default function Canvas() {
       const items = eng.moveItemsFor({ kind, id });
       if (!eng.isSelected(kind, id)) (kind === 'node' ? eng.selectNode : eng.selectShape)(id);
       if (nodeEl) { nodeEl.dataset.moved = ''; nodeEl.classList.add('dragging'); }
-      actionRef.current = { type: 'move', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, items, clickItem: { kind, id } };
+      // Alt-drag leaves the originals in place and drops a copy at the release point.
+      actionRef.current = { type: 'move', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, items, clickItem: { kind, id }, dup: e.altKey && !S.readOnly };
       vp.setPointerCapture(e.pointerId);
       return;
     }
@@ -223,6 +224,13 @@ export default function Canvas() {
         const dx = (e.clientX - a.sx) / scale(), dy = (e.clientY - a.sy) / scale();
         a.dx = dx; a.dy = dy;
         if (Math.abs(dx) + Math.abs(dy) > 2) a.moved = 1;
+        // Alt-drag: the instant the drag begins, drop a copy at the origin so the
+        // original stays visible while the dragged items carry on. Selection stays
+        // on the dragged items (select:false) so they remain the ones being moved.
+        if (a.dup && a.moved && !a.duplicated) {
+          a.duplicated = 1;
+          eng.duplicateItemsAt(a.items.map((it) => ({ kind: it.kind, id: it.id })), 0, 0);
+        }
         for (const it of a.items) {
           if (it.kind === 'node') {
             const nx = it.ox + dx, ny = it.oy + dy;
@@ -384,6 +392,12 @@ export default function Canvas() {
       if (e.key === 'Backspace' || e.key === 'Delete') {
         if (S.selected.length) { e.preventDefault(); eng.deleteSelected(); }
         return;
+      }
+      if (e.metaKey || e.ctrlKey) {
+        const mk = e.key.toLowerCase();
+        if (mk === 'c') { if (S.selected.length) { e.preventDefault(); eng.copySelected(); } return; }
+        if (mk === 'v') { if (!S.readOnly) { e.preventDefault(); eng.paste(); } return; }
+        if (mk === 'd') { if (!S.readOnly && S.selected.length) { e.preventDefault(); eng.duplicateSelected(); } return; }
       }
       const map = S.readOnly
         ? { v: 'select', h: 'hand' }

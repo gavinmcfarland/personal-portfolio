@@ -179,6 +179,8 @@ export function CanvasProvider({
   const nodeEls = useRef(new Map()).current; // id → element
   const shapeEls = useRef(new Map()).current; // id → shape svg child (.shape)
   const frameLabelEls = useRef(new Map()).current; // id → label element
+  const clipboard = useRef(null); // copied [{kind,data}] items, for paste
+  const pasteCount = useRef(0); // cascades each successive paste of the same clipboard
 
   /* Full per-page data for every board. The active page's live data lives in the
      React state above; the others are parked here until switched to. */
@@ -522,6 +524,52 @@ export function CanvasProvider({
     function deleteTarget(target) {
       deleteItems(targetsOf(target));
       deselect();
+    }
+
+    /* ── Copy / paste / duplicate ─────────────────────────────────
+       Selection holds only {kind,id}; resolve to the live node/shape. */
+    function itemData(it) {
+      return it.kind === 'node' ? S.nodes.find((n) => n.id === it.id) : S.shapes.find((s) => s.id === it.id);
+    }
+    /* Add a fresh copy of one node/shape offset by (dx,dy); returns its {kind,id}. */
+    function addClone(kind, data, dx, dy) {
+      if (kind === 'node') {
+        const n = addNode({ ...data, id: newId(data.type), x: +data.x + dx, y: +data.y + dy, z: undefined });
+        return { kind: 'node', id: n.id };
+      }
+      const s = { ...data, id: newShapeId(), z: undefined };
+      if (data.type === 'pen') s.points = data.points.map(([px, py]) => [px + dx, py + dy]);
+      else { s.x1 = data.x1 + dx; s.y1 = data.y1 + dy; s.x2 = data.x2 + dx; s.y2 = data.y2 + dy; }
+      addShape(s);
+      return { kind: 'shape', id: s.id };
+    }
+    /* Clone the given items offset by (dx,dy). Selects the copies unless select
+       is false (alt-drag keeps the selection on the items still being dragged). */
+    function duplicateItems(items, dx = 24, dy = 24, select = true) {
+      const created = items.map((it) => { const d = itemData(it); return d ? addClone(it.kind, d, dx, dy) : null; }).filter(Boolean);
+      if (created.length && select) setSelectedState(created);
+    }
+    function duplicateSelected() { if (S.selected.length) duplicateItems([...S.selected]); }
+    function duplicateTarget(target) { duplicateItems(targetsOf(target)); }
+    /* Alt-drag: drop a copy at the origin the moment the drag starts, leaving the
+       originals (still selected) to be dragged away so nothing appears to vanish. */
+    function duplicateItemsAt(items, dx, dy) { duplicateItems(items, dx, dy, false); }
+    /* Snapshot the current selection into the clipboard (deep-copied so later
+       edits to the originals don't leak into a paste). */
+    function copySelected() {
+      const items = S.selected.map((it) => { const d = itemData(it); return d ? { kind: it.kind, data: JSON.parse(JSON.stringify(d)) } : null; }).filter(Boolean);
+      if (!items.length) return;
+      clipboard.current = items;
+      pasteCount.current = 0;
+    }
+    /* Paste the clipboard, cascading each successive paste so copies don't stack. */
+    function paste() {
+      const clip = clipboard.current;
+      if (!clip || !clip.length) return;
+      pasteCount.current += 1;
+      const off = 24 * pasteCount.current;
+      const created = clip.map((it) => addClone(it.kind, it.data, off, off));
+      setSelectedState(created);
     }
 
     /* ── Tools / mode ─────────────────────────────────────────── */
@@ -878,6 +926,7 @@ export function CanvasProvider({
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
+      copySelected, paste, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, addImageFromFile, addVideoFromFile, addMediaFromUrl, resolveMediaSrc, parseIdbRef,
