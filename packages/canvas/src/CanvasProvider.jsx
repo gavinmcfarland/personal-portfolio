@@ -193,6 +193,7 @@ export function CanvasProvider({
   const waTimer = useRef(0);
   const saveT = useRef(0);
   const lastRasterScale = useRef(active0.view.scale || 1);
+  const lastHoverScale = useRef(active0.view.scale || 1); // scale at the last applyView, to tell pan from zoom
   const repromotePending = useRef(false);
   const panKey = useRef(false);
 
@@ -242,6 +243,11 @@ export function CanvasProvider({
       vp.style.setProperty('--gy', (viewRef.y % step) + 'px');
       vp.style.backgroundSize = step + 'px ' + step + 'px';
       if (zoomLabelRef.current) zoomLabelRef.current.textContent = Math.round(viewRef.scale * 100) + '%';
+      // Panning clears the hover outline (it would otherwise cling to the object
+      // as the view slides); zooming keeps it, since placeHover just re-fits it
+      // around the same object. A zoom always changes the scale, a pan doesn't.
+      if (viewRef.scale === lastHoverScale.current) S.hoverId = null;
+      lastHoverScale.current = viewRef.scale;
       syncChrome();
       // View-mode pan/zoom is transient (snapshotActive keeps the saved view),
       // so only edit-mode view changes need to hit the autosave.
