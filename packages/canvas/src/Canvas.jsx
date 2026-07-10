@@ -396,7 +396,10 @@ export default function Canvas() {
       if (e.metaKey || e.ctrlKey) {
         const mk = e.key.toLowerCase();
         if (mk === 'c') { if (S.selected.length) { e.preventDefault(); eng.copySelected(); } return; }
-        if (mk === 'v') { if (!S.readOnly) { e.preventDefault(); eng.paste(); } return; }
+        // Paste is handled by the native `paste` event (below) so it can also
+        // pull image/gif/svg/video off the system clipboard — don't preventDefault
+        // here or that event never fires.
+        if (mk === 'v') return;
         if (mk === 'd') { if (!S.readOnly && S.selected.length) { e.preventDefault(); eng.duplicateSelected(); } return; }
       }
       const map = S.readOnly
@@ -408,6 +411,19 @@ export default function Canvas() {
     };
     const onKeyUp = (e) => {
       if (e.code === 'Space') { panKey.current = false; if (S.tool !== 'hand') rootClass('tool-hand', false); }
+    };
+    // Cmd/Ctrl+V. Gated like keydown so an embedded board never steals a paste
+    // meant for the host page or a focused field. Media off the system clipboard
+    // (image / gif / svg / video) drops at the viewport centre; otherwise fall
+    // back to the internal node clipboard.
+    const onPaste = (e) => {
+      if (!hoverInsideRef.current || S.editingId || S.readOnly) return;
+      const ae = document.activeElement;
+      if (ae && (ae.isContentEditable || ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
+      const r = viewportRef.current && viewportRef.current.getBoundingClientRect();
+      const w = eng.screenToWorld(r ? r.left + r.width / 2 : 0, r ? r.top + r.height / 2 : 0);
+      e.preventDefault();
+      if (!eng.pasteMedia(e.clipboardData, w.x, w.y)) eng.paste();
     };
 
     // Gesture tracking stays on window so drags continue off-viewport. The wheel
@@ -421,12 +437,14 @@ export default function Canvas() {
     (vp || window).addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('paste', onPaste);
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       (vp || window).removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('paste', onPaste);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

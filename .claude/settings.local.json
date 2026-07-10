@@ -28,7 +28,8 @@
       "Bash(node bin/generate-illustration.mjs code --seed 42)",
       "Bash(chmod +x /Users/gavinmcfarland/Developer/repos/vibe-code-portfolio/packages/abstract-illustrations/bin/preview.mjs)",
       "Bash(npx vite *)",
-      "Bash(pnpm --filter @gavinmcfarland/canvas build)"
+      "Bash(pnpm --filter @gavinmcfarland/canvas build)",
+      "Bash(npm run *)"
     ],
     "deny": [],
     "ask": []

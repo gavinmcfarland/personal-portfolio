@@ -977,6 +977,48 @@ export function CanvasProvider({
       console.error('[canvas] media url drop failed: could not decode', url);
     }
 
+    /* Pull an <svg>…</svg> fragment out of pasted text/html. Copying SVG source
+       from an editor lands as text/plain; some tools (and browsers) wrap it in
+       text/html. Only accept a real root <svg> element, not an inline reference. */
+    function pickSvgMarkup(str) {
+      if (!str) return '';
+      const m = /<svg[\s>][\s\S]*<\/svg\s*>/i.exec(str);
+      return m ? m[0] : '';
+    }
+    /* Paste image / gif / svg / video from the system clipboard, mirroring the
+       drop flow. Returns true if it consumed the clipboard so the caller can
+       fall back to the internal node clipboard when it didn't. Decoding/storage
+       is async, but presence is decided synchronously so the caller can
+       preventDefault straight away. */
+    function pasteMedia(cd, wx, wy) {
+      if (!EDITABLE || S.readOnly || !cd) return false;
+      // A pasted screenshot or copied media file arrives in `files`; fall back to
+      // `items` for the browsers that only populate that.
+      let files = Array.from(cd.files || []);
+      if (!files.length && cd.items) {
+        files = Array.from(cd.items)
+          .filter((it) => it.kind === 'file')
+          .map((it) => it.getAsFile())
+          .filter(Boolean);
+      }
+      files = files.filter((f) => isImageFile(f) || isVideoFile(f));
+      if (files.length) {
+        files.forEach((file, i) => {
+          const add = isVideoFile(file) ? addVideoFromFile : addImageFromFile;
+          add(file, wx + i * 24, wy + i * 24);
+        });
+        return true;
+      }
+      // Raw SVG source copied as text — wrap it as a file so the image flow
+      // measures it from its markup and tags it as vector art.
+      const svg = pickSvgMarkup(cd.getData('text/html')) || pickSvgMarkup(cd.getData('text/plain'));
+      if (svg) {
+        addImageFromFile(new File([svg], 'pasted.svg', { type: 'image/svg+xml' }), wx, wy);
+        return true;
+      }
+      return false;
+    }
+
     /* ── Media lightbox (full-screen viewing) ─────────────────── */
     function openFullscreen(id) {
       const n = S.nodes.find((x) => x.id === id);
@@ -1003,7 +1045,7 @@ export function CanvasProvider({
       copySelected, paste, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, resetBoard,
       switchPage, addPage, renamePage, removePage,
-      isImageFile, isVideoFile, addImageFromFile, addVideoFromFile, addMediaFromUrl, resolveMediaSrc, parseIdbRef,
+      isImageFile, isVideoFile, addImageFromFile, addVideoFromFile, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
       openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
       nextZ, backZ,
     };
