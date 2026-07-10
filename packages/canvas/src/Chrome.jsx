@@ -31,11 +31,13 @@ function FrameLabel({ node }) {
     if (readOnly || e.button !== 0 || renaming) return;
     e.stopPropagation();
     eng.freezeView();
-    eng.selectNode(node.id);
+    if (e.shiftKey) { eng.toggleSelect('node', node.id); return; }
+    // Part of a multi-selection → drag the whole group, same as grabbing the frame body.
+    const items = eng.moveItemsFor({ kind: 'node', id: node.id });
+    if (!eng.isSelected('node', node.id)) eng.selectNode(node.id);
     const el = nodeEls.get(node.id);
-    if (el) el.dataset.moved = '';
-    actionRef.current = { type: 'node', id: node.id, sx: e.clientX, sy: e.clientY, ox: +node.x, oy: +node.y };
-    if (el) el.classList.add('dragging');
+    if (el) { el.dataset.moved = ''; el.classList.add('dragging'); }
+    actionRef.current = { type: 'move', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, items, clickItem: { kind: 'node', id: node.id } };
     // NB: no setPointerCapture here — capturing the pointer retargets click/dblclick
     // away from the label and breaks double-click-to-rename. The drag is driven by
     // window-level pointermove/up handlers (see Canvas.jsx), so capture isn't needed.
@@ -92,12 +94,16 @@ export default function Chrome() {
   const hovRef = useCallback((el) => eng.setChrome('hov', el), [eng]);
   const editRef = useCallback((el) => eng.setChrome('edit', el), [eng]);
   const rzRef = useCallback((el) => eng.setChrome('rz', el), [eng]);
+  const marqRef = useCallback((el) => eng.setChrome('marq', el), [eng]);
+
+  // Edit / resize affordances only apply to a single selected node.
+  const single = selected.length === 1 && selected[0].kind === 'node' ? selected[0] : null;
 
   const onResizeDown = (e) => {
-    if (e.button !== 0 || !selected || selected.kind !== 'node') return;
+    if (e.button !== 0 || !single) return;
     e.stopPropagation();
     eng.freezeView();
-    const n = nodes.find((x) => x.id === selected.id);
+    const n = nodes.find((x) => x.id === single.id);
     if (!n) return;
     // A never-resized text block has no stored width — measure its element.
     const el = nodeEls.get(n.id);
@@ -109,12 +115,13 @@ export default function Chrome() {
     <div className="cv-chrome">
       <div className="cv-hov" ref={hovRef} />
       <div className="cv-sel" ref={selRef} />
+      <div className="cv-marquee" ref={marqRef} />
       <div
         className="cbtn"
         title="Edit markdown"
         ref={editRef}
         onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => { e.stopPropagation(); if (selected && selected.kind === 'node') eng.startEditing(selected.id); }}
+        onClick={(e) => { e.stopPropagation(); if (single) eng.startEditing(single.id); }}
       >
         <Pencil />
       </div>

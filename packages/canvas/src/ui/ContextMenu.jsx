@@ -3,7 +3,7 @@ import { Maximize, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
-  const { ctxMenu, setCtxMenu, nodes, eng } = useCanvas();
+  const { ctxMenu, setCtxMenu, nodes, selected, eng } = useCanvas();
 
   useEffect(() => {
     if (!ctxMenu) return undefined;
@@ -18,9 +18,10 @@ export default function ContextMenu() {
   }, [ctxMenu, setCtxMenu]);
 
   if (!ctxMenu) return null;
-  const { target } = ctxMenu;
+  const { target } = ctxMenu; // {kind:'node'|'shape', id} or {kind:'multi'} → whole selection
   const node = target.kind === 'node' ? nodes.find((n) => n.id === target.id) : null;
   const anchorable = node && node.type !== 'frame';
+  const count = target.kind === 'multi' ? selected.length : 1;
   const x = Math.min(ctxMenu.x, innerWidth - 190);
   const y = Math.min(ctxMenu.y, innerHeight - 190);
 
@@ -57,7 +58,7 @@ export default function ContextMenu() {
       <div className="ctxsep" />
       <button className="danger" onClick={run(() => eng.deleteTarget(target))}>
         <Trash2 />
-        Delete
+        {count > 1 ? `Delete ${count} objects` : 'Delete'}
       </button>
     </div>
   );

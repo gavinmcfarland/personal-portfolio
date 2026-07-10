@@ -102,10 +102,11 @@ function Swatches() {
             onClick={() => {
               if (kind === 'note') {
                 setNoteColor(name);
-                if (selected && selected.kind === 'node') {
-                  const n = nodes.find((x) => x.id === selected.id);
+                selected.forEach((it) => {
+                  if (it.kind !== 'node') return;
+                  const n = nodes.find((x) => x.id === it.id);
                   if (n && n.type === 'sticky') eng.updateNode(n.id, { color: name });
-                }
+                });
               } else setStrokeColor(hex);
             }}
           />

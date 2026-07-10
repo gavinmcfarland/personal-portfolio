@@ -149,7 +149,7 @@ export function CanvasProvider({
   const [shapes, setShapes] = useState(active0.shapes);     // active page's shapes
   const [draft, setDraft] = useState(null); // in-progress drawing
   const [tool, setToolState] = useState('select');
-  const [selected, setSelectedState] = useState(null); // {kind:'node'|'shape', id}
+  const [selected, setSelectedState] = useState([]); // [{kind:'node'|'shape', id}] — multi-select
   const [readOnly, setReadOnlyState] = useState(!EDITABLE);
   const [editingId, setEditingId] = useState(null);
   const [noteColor, setNoteColor] = useState('yellow');
@@ -166,7 +166,7 @@ export function CanvasProvider({
   const viewportRef = useRef(null);
   const worldRef = useRef(null);
   const zoomLabelRef = useRef(null);
-  const chromeRef = useRef({ sel: null, del: null, edit: null, rz: null, hov: null });
+  const chromeRef = useRef({ sel: null, del: null, edit: null, rz: null, hov: null, marq: null });
   const chrome = chromeRef.current;
   const nodeEls = useRef(new Map()).current; // id → element
   const shapeEls = useRef(new Map()).current; // id → shape svg child (.shape)
@@ -310,7 +310,11 @@ export function CanvasProvider({
         return [+n.dataset.x, +n.dataset.y, n.offsetWidth, n.offsetHeight];
       }
       const el = shapeEls.get(sel.id); if (!el) return null;
-      const bb = el.getBBox(); return [bb.x, bb.y, bb.width, bb.height];
+      const bb = el.getBBox();
+      // getBBox ignores the transient translate a shape carries mid-drag, so add it.
+      const a = actionRef.current;
+      const moving = a && a.type === 'move' && a.items.some((it) => it.kind === 'shape' && it.id === sel.id);
+      return [bb.x + (moving ? a.dx || 0 : 0), bb.y + (moving ? a.dy || 0 : 0), bb.width, bb.height];
     }
     function hideSelChrome() {
       for (const k of ['sel', 'edit', 'rz']) if (chrome[k]) chrome[k].style.display = 'none';
@@ -320,9 +324,11 @@ export function CanvasProvider({
       chrome.sel.style.display = 'block';
       chrome.sel.style.left = (sx - 4) + 'px'; chrome.sel.style.top = (sy - 4) + 'px';
       chrome.sel.style.width = (sw + 8) + 'px'; chrome.sel.style.height = (sh + 8) + 'px';
-      const nodeEl = S.selected && S.selected.kind === 'node' ? nodeEls.get(S.selected.id) : null;
+      /* The edit / resize affordances only make sense for a single selected node. */
+      const single = S.selected.length === 1 ? S.selected[0] : null;
+      const nodeEl = single && single.kind === 'node' ? nodeEls.get(single.id) : null;
       const type = nodeEl ? nodeEl.dataset.type : null;
-      const editing = type && S.editingId === S.selected.id;
+      const editing = type && S.editingId === single.id;
       if (type === 'md' && !editing) {
         chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
       } else chrome.edit.style.display = 'none';
@@ -337,7 +343,7 @@ export function CanvasProvider({
       const hov = chrome.hov; if (!hov) return;
       const id = S.hoverId;
       const suppressed = !id || actionRef.current || S.readOnly || S.tool !== 'select' ||
-        (S.selected && S.selected.kind === 'node' && S.selected.id === id);
+        S.selected.some((it) => it.kind === 'node' && it.id === id);
       if (suppressed) { hov.style.display = 'none'; return; }
       const el = nodeEls.get(id);
       if (!el) { hov.style.display = 'none'; return; }
@@ -360,16 +366,86 @@ export function CanvasProvider({
         label.style.top = (viewRef.y + +f.dataset.y * s - 28) + 'px';
       });
       placeHover();
-      if (!S.selected || !chrome.sel) { hideSelChrome(); return; }
-      const rect = worldRectOf(S.selected);
-      if (!rect) { hideSelChrome(); return; }
-      placeSel(rect[0], rect[1], rect[2], rect[3]);
+      if (!S.selected.length || !chrome.sel) { hideSelChrome(); return; }
+      // One box around the union of everything selected.
+      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, any = false;
+      for (const it of S.selected) {
+        const r = worldRectOf(it); if (!r) continue;
+        any = true;
+        x0 = Math.min(x0, r[0]); y0 = Math.min(y0, r[1]);
+        x1 = Math.max(x1, r[0] + r[2]); y1 = Math.max(y1, r[1] + r[3]);
+      }
+      if (!any) { hideSelChrome(); return; }
+      placeSel(x0, y0, x1 - x0, y1 - y0);
+    }
+
+    /* ── Marquee (rubber-band) selection ──────────────────────── */
+    function placeMarquee(x, y, w, h) {
+      const m = chrome.marq; if (!m) return;
+      m.style.display = 'block';
+      m.style.left = x + 'px'; m.style.top = y + 'px';
+      m.style.width = w + 'px'; m.style.height = h + 'px';
+    }
+    function hideMarquee() { if (chrome.marq) chrome.marq.style.display = 'none'; }
+    /* Select everything the world-space rect touches, unioned with `base` (the
+       pre-existing selection when shift-dragging). Nodes and shapes count on
+       intersection; frames only when fully contained, so sweeping a marquee
+       inside a large frame doesn't grab the frame itself. Runs per pointermove,
+       so skip the state write when membership hasn't changed. */
+    function marqueeSelect(rect, base) {
+      const rx1 = rect.x + rect.w, ry1 = rect.y + rect.h;
+      const hits = [];
+      nodeEls.forEach((el, id) => {
+        const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth, h = el.offsetHeight;
+        const hit = el.dataset.type === 'frame'
+          ? x >= rect.x && y >= rect.y && x + w <= rx1 && y + h <= ry1
+          : x < rx1 && x + w > rect.x && y < ry1 && y + h > rect.y;
+        if (hit) hits.push({ kind: 'node', id });
+      });
+      shapeEls.forEach((el, id) => {
+        const bb = el.getBBox();
+        if (bb.x < rx1 && bb.x + bb.width > rect.x && bb.y < ry1 && bb.y + bb.height > rect.y) {
+          hits.push({ kind: 'shape', id });
+        }
+      });
+      const baseKeys = new Set(base.map(selKey));
+      const items = [...base, ...hits.filter((h) => !baseKeys.has(selKey(h)))];
+      const next = items.map(selKey).sort().join('|');
+      const cur = S.selected.map(selKey).sort().join('|');
+      if (next !== cur) setSelectedState(items);
     }
 
     /* ── Selection ────────────────────────────────────────────── */
-    function selectNode(id) { setSelectedState({ kind: 'node', id }); }
-    function selectShape(id) { setSelectedState({ kind: 'shape', id }); }
-    function deselect() { setSelectedState(null); }
+    const selKey = (it) => it.kind + ':' + it.id;
+    function selectNode(id) { setSelectedState([{ kind: 'node', id }]); }
+    function selectShape(id) { setSelectedState([{ kind: 'shape', id }]); }
+    function deselect() { setSelectedState([]); }
+    function isSelected(kind, id) { return S.selected.some((it) => it.kind === kind && it.id === id); }
+    /* Shift-click: add the object to the selection, or drop it if already in. */
+    function toggleSelect(kind, id) {
+      setSelectedState(
+        isSelected(kind, id)
+          ? S.selected.filter((it) => !(it.kind === kind && it.id === id))
+          : [...S.selected, { kind, id }]
+      );
+    }
+    /* Build the payload for a move gesture starting on `item`: the whole
+       selection when the grabbed object is part of a multi-selection, else just
+       the object itself. Captures each element and its start position so the
+       pointermove handler can drive them all imperatively. */
+    function moveItemsFor(item) {
+      const group = S.selected.length > 1 && isSelected(item.kind, item.id) ? S.selected : [item];
+      return group
+        .map((it) => {
+          if (it.kind === 'node') {
+            const el = nodeEls.get(it.id); if (!el) return null;
+            return { kind: 'node', id: it.id, el, ox: +el.dataset.x, oy: +el.dataset.y };
+          }
+          const el = shapeEls.get(it.id); if (!el) return null;
+          return { kind: 'shape', id: it.id, el };
+        })
+        .filter(Boolean);
+    }
 
     /* ── Node / shape mutations ───────────────────────────────── */
     function newId(type) { return `n${++nodeSeq.current}-${type}`; }
@@ -391,26 +467,44 @@ export function CanvasProvider({
     }
     function updateShape(id, patch) { setShapes((ss) => ss.map((s) => (s.id === id ? { ...s, ...patch } : s))); }
     function removeShape(id) { shapeEls.delete(id); setShapes((ss) => ss.filter((s) => s.id !== id)); }
+    /* Commit a multi-object drag in one state write per collection. */
+    function patchMany(nodePatches, shapePatches) {
+      if (nodePatches && Object.keys(nodePatches).length) {
+        setNodes((ns) => ns.map((n) => (nodePatches[n.id] ? { ...n, ...nodePatches[n.id] } : n)));
+      }
+      if (shapePatches && Object.keys(shapePatches).length) {
+        setShapes((ss) => ss.map((s) => (shapePatches[s.id] ? { ...s, ...shapePatches[s.id] } : s)));
+      }
+    }
+    function deleteItems(items) {
+      const nodeIds = new Set(), shapeIds = new Set();
+      items.forEach((it) => (it.kind === 'node' ? nodeIds : shapeIds).add(it.id));
+      nodeIds.forEach((id) => { nodeEls.delete(id); frameLabelEls.delete(id); });
+      shapeIds.forEach((id) => shapeEls.delete(id));
+      if (nodeIds.size) setNodes((ns) => ns.filter((n) => !nodeIds.has(n.id)));
+      if (shapeIds.size) setShapes((ss) => ss.filter((s) => !shapeIds.has(s.id)));
+    }
 
     function setZ(target, z) {
       if (target.kind === 'node') updateNode(target.id, { z });
       else updateShape(target.id, { z });
     }
-    function bringFront(target) { setZ(target, nextZ()); }
-    function sendBack(target) { setZ(target, backZ()); }
+    /* Context-menu targets: a single {kind,id}, or {kind:'multi'} meaning the
+       whole current selection. */
+    function targetsOf(target) { return target.kind === 'multi' ? [...S.selected] : [target]; }
+    function bringFront(target) { targetsOf(target).forEach((t) => setZ(t, nextZ())); }
+    function sendBack(target) { targetsOf(target).forEach((t) => setZ(t, backZ())); }
     function toggleAnchor(id) {
       const n = S.nodes.find((x) => x.id === id); if (!n) return;
       updateNode(id, { anchor: !n.anchor });
     }
     function deleteSelected() {
-      if (!S.selected) return;
-      if (S.selected.kind === 'node') removeNode(S.selected.id);
-      else removeShape(S.selected.id);
+      if (!S.selected.length) return;
+      deleteItems(S.selected);
       deselect();
     }
     function deleteTarget(target) {
-      if (target.kind === 'node') removeNode(target.id);
-      else removeShape(target.id);
+      deleteItems(targetsOf(target));
       deselect();
     }
 
@@ -760,8 +854,9 @@ export function CanvasProvider({
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
       zoomAt, zoomCenter, zoomTo, panBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel, setHover,
-      selectNode, selectShape, deselect,
-      newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape,
+      selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor,
+      placeMarquee, hideMarquee, marqueeSelect,
+      newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
       setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, resetBoard,
       switchPage, addPage, renamePage, removePage,

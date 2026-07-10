@@ -62,26 +62,33 @@ export default function Canvas() {
     const spacePan = e.button === 1 || panKey.current;
     const tool = S.tool;
 
-    if (spacePan || tool === 'hand' || (tool === 'select' && !nodeEl && !shapeEl)) {
-      if (tool === 'select' && !nodeEl && !shapeEl) eng.deselect();
+    if (spacePan || tool === 'hand') {
       actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y };
       rootClass('panning', true);
       vp.setPointerCapture(e.pointerId);
       return;
     }
-    if (tool === 'select' && nodeEl) {
-      const id = nodeEl.dataset.id;
-      eng.selectNode(id);
-      nodeEl.dataset.moved = '';
-      actionRef.current = { type: 'node', id, el: nodeEl, sx: e.clientX, sy: e.clientY, ox: +nodeEl.dataset.x, oy: +nodeEl.dataset.y };
-      nodeEl.classList.add('dragging');
+    if (tool === 'select' && (nodeEl || shapeEl)) {
+      const kind = nodeEl ? 'node' : 'shape';
+      const id = (nodeEl || shapeEl).dataset.id;
+      // Shift-click adds/removes the object from the selection without dragging.
+      if (e.shiftKey) { eng.toggleSelect(kind, id); return; }
+      // Grabbing an object inside a multi-selection drags the whole group;
+      // anything else collapses the selection to the grabbed object.
+      const items = eng.moveItemsFor({ kind, id });
+      if (!eng.isSelected(kind, id)) (kind === 'node' ? eng.selectNode : eng.selectShape)(id);
+      if (nodeEl) { nodeEl.dataset.moved = ''; nodeEl.classList.add('dragging'); }
+      actionRef.current = { type: 'move', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, items, clickItem: { kind, id } };
       vp.setPointerCapture(e.pointerId);
       return;
     }
-    if (tool === 'select' && shapeEl) {
-      const id = shapeEl.dataset.id;
-      eng.selectShape(id);
-      actionRef.current = { type: 'shape', id, sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, bb: shapeEl.getBBox() };
+    if (tool === 'select') {
+      /* Empty canvas: rubber-band selection. (Drag-to-pan on empty space is
+         gone in edit mode — panning lives on space / middle-click / the hand
+         tool / the wheel.) Shift keeps the existing selection as the base. */
+      const base = e.shiftKey ? [...S.selected] : [];
+      if (!e.shiftKey) eng.deselect();
+      actionRef.current = { type: 'marquee', sx: e.clientX, sy: e.clientY, base };
       vp.setPointerCapture(e.pointerId);
       return;
     }
@@ -184,15 +191,13 @@ export default function Canvas() {
     e.preventDefault();
     const nodeEl = e.target.closest('.node');
     const shapeEl = e.target.closest('.shape');
-    if (nodeEl) {
-      const id = nodeEl.dataset.id;
-      eng.selectNode(id);
-      setCtxMenu({ x: e.clientX, y: e.clientY, target: { kind: 'node', id } });
-    } else if (shapeEl) {
-      const id = shapeEl.dataset.id;
-      eng.selectShape(id);
-      setCtxMenu({ x: e.clientX, y: e.clientY, target: { kind: 'shape', id } });
-    } else setCtxMenu(null);
+    if (!nodeEl && !shapeEl) { setCtxMenu(null); return; }
+    const kind = nodeEl ? 'node' : 'shape';
+    const id = (nodeEl || shapeEl).dataset.id;
+    // Right-clicking inside a multi-selection keeps it and targets the group.
+    const inMulti = S.selected.length > 1 && eng.isSelected(kind, id);
+    if (!inMulti) (kind === 'node' ? eng.selectNode : eng.selectShape)(id);
+    setCtxMenu({ x: e.clientX, y: e.clientY, target: inMulti ? { kind: 'multi' } : { kind, id } });
   };
 
   /* Native window listeners: move / up / wheel / keyboard. */
@@ -214,20 +219,34 @@ export default function Canvas() {
         eng.targetRef.x = eng.viewRef.x; eng.targetRef.y = eng.viewRef.y;
         eng.applyView(); eng.markActive(); return;
       }
-      if (a.type === 'node') {
+      if (a.type === 'move') {
         const dx = (e.clientX - a.sx) / scale(), dy = (e.clientY - a.sy) / scale();
-        if (Math.abs(dx) + Math.abs(dy) > 2 && a.el) a.el.dataset.moved = '1';
-        const nx = a.ox + dx, ny = a.oy + dy;
-        const el = a.el || nodeEls.get(a.id);
-        if (el) { el.style.transform = `translate(${nx}px,${ny}px)`; el.dataset.x = nx; el.dataset.y = ny; }
-        a.nx = nx; a.ny = ny;
+        a.dx = dx; a.dy = dy;
+        if (Math.abs(dx) + Math.abs(dy) > 2) a.moved = 1;
+        for (const it of a.items) {
+          if (it.kind === 'node') {
+            const nx = it.ox + dx, ny = it.oy + dy;
+            it.el.style.transform = `translate(${nx}px,${ny}px)`;
+            it.el.dataset.x = nx; it.el.dataset.y = ny;
+            if (a.moved) it.el.dataset.moved = '1';
+          } else {
+            it.el.setAttribute('transform', `translate(${dx},${dy})`);
+          }
+        }
         eng.syncChrome(); return;
       }
-      if (a.type === 'shape') {
-        a.dx = (e.clientX - a.sx) / scale(); a.dy = (e.clientY - a.sy) / scale();
-        const el = shapeEls.get(a.id);
-        if (el) el.setAttribute('transform', `translate(${a.dx},${a.dy})`);
-        eng.placeSel(a.bb.x + a.dx, a.bb.y + a.dy, a.bb.width, a.bb.height); return;
+      if (a.type === 'marquee') {
+        const r = viewportRef.current.getBoundingClientRect();
+        eng.placeMarquee(
+          Math.min(a.sx, e.clientX) - r.left, Math.min(a.sy, e.clientY) - r.top,
+          Math.abs(e.clientX - a.sx), Math.abs(e.clientY - a.sy)
+        );
+        const w1 = eng.screenToWorld(a.sx, a.sy), w2 = eng.screenToWorld(e.clientX, e.clientY);
+        eng.marqueeSelect(
+          { x: Math.min(w1.x, w2.x), y: Math.min(w1.y, w2.y), w: Math.abs(w2.x - w1.x), h: Math.abs(w2.y - w1.y) },
+          a.base
+        );
+        return;
       }
       if (a.type === 'draw') {
         const w = eng.screenToWorld(e.clientX, e.clientY), s = a.s;
@@ -265,21 +284,35 @@ export default function Canvas() {
         rootClass('panning', false);
         if (a.imgId && !a.moved) eng.openFullscreen(a.imgId); // tap an image/video → full-screen
       }
-      if (a.type === 'node') {
-        const el = a.el || nodeEls.get(a.id);
-        if (el) el.classList.remove('dragging');
-        if (a.nx != null) eng.updateNode(a.id, { x: a.nx, y: a.ny }); else eng.saveNow();
-      }
-      if (a.type === 'shape') {
-        const el = shapeEls.get(a.id);
-        if (el) el.removeAttribute('transform');
-        const s = S.shapes.find((x) => x.id === a.id);
-        if (s) {
-          if (s.type === 'pen') eng.updateShape(a.id, { points: s.points.map((p) => [p[0] + a.dx, p[1] + a.dy]) });
-          else eng.updateShape(a.id, { x1: s.x1 + a.dx, y1: s.y1 + a.dy, x2: s.x2 + a.dx, y2: s.y2 + a.dy });
+      if (a.type === 'move') {
+        const nodePatches = {}, shapePatches = {};
+        for (const it of a.items) {
+          if (it.kind === 'node') {
+            it.el.classList.remove('dragging');
+            if (a.moved) nodePatches[it.id] = { x: it.ox + a.dx, y: it.oy + a.dy };
+          } else {
+            it.el.removeAttribute('transform');
+            if (a.moved) {
+              const s = S.shapes.find((x) => x.id === it.id);
+              if (s) {
+                shapePatches[it.id] = s.type === 'pen'
+                  ? { points: s.points.map((p) => [p[0] + a.dx, p[1] + a.dy]) }
+                  : { x1: s.x1 + a.dx, y1: s.y1 + a.dy, x2: s.x2 + a.dx, y2: s.y2 + a.dy };
+              }
+            }
+          }
         }
-        eng.selectShape(a.id);
+        if (a.moved) {
+          eng.patchMany(nodePatches, shapePatches);
+        } else {
+          // A plain click on one object of a multi-selection collapses to just it.
+          if (a.clickItem && S.selected.length > 1) {
+            (a.clickItem.kind === 'node' ? eng.selectNode : eng.selectShape)(a.clickItem.id);
+          }
+          eng.saveNow();
+        }
       }
+      if (a.type === 'marquee') eng.hideMarquee();
       if (a.type === 'draw') {
         const s = a.s;
         const tiny = (s.type === 'pen' && s.points.length < 2) ||
@@ -335,7 +368,7 @@ export default function Canvas() {
       if (ae && (ae.isContentEditable || ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
       if (e.code === 'Space') { panKey.current = true; rootClass('tool-hand', true); return; }
       if (e.key === 'Backspace' || e.key === 'Delete') {
-        if (S.selected) { e.preventDefault(); eng.deleteSelected(); }
+        if (S.selected.length) { e.preventDefault(); eng.deleteSelected(); }
         return;
       }
       const map = S.readOnly

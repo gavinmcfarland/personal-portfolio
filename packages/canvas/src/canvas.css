@@ -218,6 +218,8 @@
 .canvas-root .cv-sel{border:2px solid var(--accent);display:none;box-sizing:border-box;}
 /* Faint hover hint — screen-space so its thickness never scales with zoom. */
 .canvas-root .cv-hov{border:1.5px solid color-mix(in srgb,var(--accent) 30%,transparent);display:none;box-sizing:border-box;}
+/* Rubber-band (marquee) selection rectangle */
+.canvas-root .cv-marquee{border:1px solid var(--accent);background:var(--accent-soft);display:none;box-sizing:border-box;}
 .canvas-root .cbtn{
   width:22px;height:22px;border-radius:50%;background:var(--surface);border:1px solid var(--line-strong);
   color:var(--faint);display:none;align-items:center;justify-content:center;cursor:pointer;font-size:13px;
