@@ -64,7 +64,8 @@ function EditableNode({ node }) {
   const cls = `node ${isSticky ? 'sticky' : 'tblock'}${editing ? ' editing' : ''}`;
   // A text block starts width-less (single line, grows as you type); once the
   // user resizes it, the stored width fixes the box and the text wraps inside.
-  const sizedStyle = node.w != null ? { ...style, width: node.w + 'px' } : style;
+  let sizedStyle = node.w != null ? { ...style, width: node.w + 'px' } : style;
+  if (node.fontSize != null) sizedStyle = { ...sizedStyle, fontSize: node.fontSize + 'px' };
 
   return (
     <div

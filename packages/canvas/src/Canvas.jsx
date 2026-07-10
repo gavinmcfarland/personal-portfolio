@@ -255,6 +255,15 @@ export default function Canvas() {
       }
       if (a.type === 'resize') {
         const el = nodeEls.get(a.id); if (!el) return;
+        // Cmd-drag on a text block scales the font instead of the box width. The
+        // scale tracks how far the handle would have stretched the box: font grows
+        // in proportion to (ow + dx) / ow, keeping the stored width untouched.
+        if (a.mdType === 'tblock' && (e.metaKey || e.ctrlKey)) {
+          const dx = (e.clientX - a.sx) / scale();
+          const f = Math.max(8, Math.round(a.ofs * (a.ow + dx) / a.ow));
+          el.style.fontSize = f + 'px'; a.fontSize = f;
+          eng.syncChrome(); return;
+        }
         const minW = a.mdType === 'md' ? 160 : a.mdType === 'tblock' ? 120 : 60;
         const w = Math.max(minW, a.ow + (e.clientX - a.sx) / scale());
         el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
@@ -328,6 +337,7 @@ export default function Canvas() {
         const patch = {};
         if (a.w != null) patch.w = a.w;
         if (a.h != null) patch.h = a.h;
+        if (a.fontSize != null) patch.fontSize = a.fontSize;
         if (Object.keys(patch).length) eng.updateNode(a.id, patch);
       }
       if (a.type === 'frameDraw') {

@@ -108,7 +108,9 @@ export default function Chrome() {
     // A never-resized text block has no stored width — measure its element.
     const el = nodeEls.get(n.id);
     const ow = n.w != null ? +n.w : el ? el.offsetWidth : 0;
-    actionRef.current = { type: 'resize', id: n.id, sx: e.clientX, sy: e.clientY, ow, oh: +n.h, mdType: n.type };
+    // Original font size, for cmd-drag text scaling (falls back to the rendered CSS size).
+    const ofs = n.fontSize != null ? +n.fontSize : el ? parseFloat(getComputedStyle(el).fontSize) : 24;
+    actionRef.current = { type: 'resize', id: n.id, sx: e.clientX, sy: e.clientY, ow, oh: +n.h, ofs, mdType: n.type };
   };
 
   return (

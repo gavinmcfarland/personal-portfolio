@@ -26,7 +26,8 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm generate:*)",
       "Bash(node bin/generate-illustration.mjs code --seed 42)",
-      "Bash(chmod +x /Users/gavinmcfarland/Developer/repos/vibe-code-portfolio/packages/abstract-illustrations/bin/preview.mjs)"
+      "Bash(chmod +x /Users/gavinmcfarland/Developer/repos/vibe-code-portfolio/packages/abstract-illustrations/bin/preview.mjs)",
+      "Bash(npx vite *)"
     ],
     "deny": [],
     "ask": []

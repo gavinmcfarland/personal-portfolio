@@ -25,8 +25,9 @@ function normalizeSaved(n) {
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
   if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '' };
   if (n.type === 'video') return { ...base, w: n.w || 320, h: n.h || 180, src: n.src || '', alt: n.alt || '' };
-  if (n.w != null) return { ...base, w: n.w, text: n.text || '' }; // resized tblock wraps at its width
-  return { ...base, text: n.text || '' }; // tblock
+  const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
+  if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs }; // resized tblock wraps at its width
+  return { ...base, text: n.text || '', ...fs }; // tblock
 }
 
 /* Merge a saved node list over the data-derived base for the home page. Nodes of
@@ -587,7 +588,7 @@ export function CanvasProvider({
       const o = { id: n.id, type: n.type, x: +n.x, y: +n.y, z: n.z };
       if (n.anchor) o.anchor = 1;
       if (n.type === 'sticky') { o.color = n.color; o.text = n.text; }
-      else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; }
+      else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; }
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
       else if (n.type === 'image' || n.type === 'video') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; }
