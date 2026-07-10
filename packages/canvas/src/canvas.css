@@ -107,7 +107,8 @@
   background:#FFE27A;box-shadow:0 2px 3px rgba(0,0,0,.14),0 14px 26px rgba(0,0,0,.16);
   border-radius:3px 3px 5px 5px;
 }
-.canvas-root .sticky .txt{outline:none;min-height:130px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;cursor:text;}
+.canvas-root .sticky .txt{outline:none;min-height:130px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;}
+.canvas-root .sticky[data-editing="1"] .txt{cursor:text;}
 .canvas-root .sticky[data-color="pink"]{background:#FFB4C6;color:#4a1024;}
 .canvas-root .sticky[data-color="blue"]{background:#A9D3FF;color:#0d2c4a;}
 .canvas-root .sticky[data-color="green"]{background:#B7E6A5;color:#173a10;}

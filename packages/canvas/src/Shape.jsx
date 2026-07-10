@@ -69,7 +69,9 @@ function Shape({ shape, draft }) {
   }
 
   return (
-    <svg className="shapeSvg" data-id={shape.id} style={{ zIndex: shape.z }}>
+    // A draft has no z yet (assigned on commit), so pin it above the whole
+    // stack — otherwise it renders behind existing objects while drawing.
+    <svg className="shapeSvg" data-id={shape.id} style={{ zIndex: draft ? 2147483647 : shape.z }}>
       {defs}
       {el}
     </svg>

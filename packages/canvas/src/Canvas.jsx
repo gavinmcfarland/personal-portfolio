@@ -346,9 +346,11 @@ export default function Canvas() {
     };
 
     // Gesture tracking stays on window so drags continue off-viewport. The wheel
-    // is bound to the viewport element so scrolling elsewhere on the host page is
-    // never hijacked; keys are on window but gated by pointer-inside (above).
-    const vp = viewportRef.current;
+    // is bound to the canvas root (not just the viewport) so it also fires over
+    // screen-space chrome like frame labels, while scrolling elsewhere on the
+    // host page is never hijacked; keys are on window but gated by
+    // pointer-inside (above).
+    const vp = rootRef.current;
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     (vp || window).addEventListener('wheel', onWheel, { passive: false });
