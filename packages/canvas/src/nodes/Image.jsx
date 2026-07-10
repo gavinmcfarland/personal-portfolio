@@ -13,7 +13,7 @@ function ImageNode({ node }) {
   return (
     <div
       ref={setRef}
-      className="node image"
+      className={node.svg ? 'node image svg' : 'node image'}
       {...dataProps}
       style={s}
       onDoubleClick={(e) => { e.stopPropagation(); eng.openFullscreen(node.id); }}

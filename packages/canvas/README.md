@@ -70,7 +70,10 @@ the override so the board follows the light/dark theme tokens again.
 In edit mode, images and videos can be dragged onto the board either as local
 files or straight from another browser tab (the drop arrives as a URL). Animated
 image formats (GIF/WebP/AVIF) are stored untouched and play automatically —
-image nodes render a plain `<img>`, so no player wiring is needed. Video nodes
+image nodes render a plain `<img>`, so no player wiring is needed. SVGs are
+supported too: they render crisply at any zoom, and their intrinsic size is read
+from the markup (`width`/`height`, else the `viewBox` aspect ratio) so
+viewBox-only exports land at the right proportions instead of a default box. Video nodes
 autoplay muted and looped on the board (GIF-style); hovering one reveals a
 play/pause + scrub bar, and double-click opens the lightbox with native
 controls and sound.

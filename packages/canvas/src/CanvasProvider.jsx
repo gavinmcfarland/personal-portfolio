@@ -775,6 +775,44 @@ export function CanvasProvider({
       r.onerror = () => reject(r.error);
       r.readAsDataURL(file);
     });
+    const readText = (file) => new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = () => reject(r.error);
+      r.readAsText(file);
+    });
+    /* Intrinsic size of an SVG straight from its markup. An <img> reports
+       naturalWidth/Height of 0 for the very common case of an SVG that declares
+       only a viewBox (no width/height) — icons exported from design tools almost
+       always do — so those would otherwise land as a squished 200×150 box. Read
+       explicit px width/height when present, else fall back to the viewBox
+       aspect ratio; ignore relative units (%/em) since they carry no intrinsic
+       size. */
+    const measureSvgText = (text) => {
+      const tag = /<svg\b[^>]*>/i.exec(text || '');
+      const attrs = tag ? tag[0] : '';
+      const dim = (name) => {
+        const m = new RegExp(`\\b${name}\\s*=\\s*["']([^"']+)["']`, 'i').exec(attrs);
+        if (!m) return null;
+        const v = m[1].trim();
+        if (/(%|em|ex|rem)\s*$/i.test(v)) return null; // relative → no intrinsic size
+        const n = parseFloat(v);
+        return Number.isFinite(n) && n > 0 ? n : null;
+      };
+      let w = dim('width'), h = dim('height');
+      const vb = /\bviewBox\s*=\s*["']([\d.eE,\s+-]+)["']/i.exec(attrs);
+      let vbw = null, vbh = null;
+      if (vb) {
+        const p = vb[1].trim().split(/[\s,]+/).map(Number);
+        if (p.length === 4 && p[2] > 0 && p[3] > 0) { vbw = p[2]; vbh = p[3]; }
+      }
+      const ar = vbw && vbh ? vbw / vbh : null;
+      if (w && !h) h = ar ? w / ar : w;
+      else if (h && !w) w = ar ? h * ar : h;
+      else if (!w && !h) { w = vbw || 200; h = vbh || 150; }
+      return { w: Math.max(1, Math.round(w)), h: Math.max(1, Math.round(h)) };
+    };
+    const isSvgFile = (f) => !!f && (f.type === 'image/svg+xml' || /\.svg$/i.test(f.name || ''));
     const measure = (src) => new Promise((resolve, reject) => {
       const im = new Image();
       im.onload = () => resolve({ w: im.naturalWidth || 200, h: im.naturalHeight || 150 });
@@ -797,11 +835,11 @@ export function CanvasProvider({
     const isVideoFile = (f) =>
       !!f && (f.type.startsWith('video/') || /\.(mp4|webm|mov|m4v|ogv)$/i.test(f.name || ''));
     /* Drop a media node centred on the cursor, scaled to a sane default. */
-    function placeMediaNode(type, src, nat, wx, wy, alt) {
+    function placeMediaNode(type, src, nat, wx, wy, alt, extra) {
       const MAX = 360;
       const k = nat.w > MAX || nat.h > MAX ? MAX / Math.max(nat.w, nat.h) : 1;
       const w = Math.round(nat.w * k), h = Math.round(nat.h * k);
-      const n = addNode({ id: newId(type), type, x: wx - w / 2, y: wy - h / 2, w, h, src, alt: alt || '' });
+      const n = addNode({ id: newId(type), type, x: wx - w / 2, y: wy - h / 2, w, h, src, alt: alt || '', ...extra });
       setToolState('select'); selectNode(n.id);
     }
     /* Without an upload adapter, media bytes have to live somewhere durable.
@@ -844,8 +882,14 @@ export function CanvasProvider({
     async function addImageFromFile(file, wx, wy) {
       if (!EDITABLE || !isImageFile(file)) return;
       try {
-        const objUrl = URL.createObjectURL(file);
-        const nat = await measure(objUrl).finally(() => URL.revokeObjectURL(objUrl));
+        let nat;
+        if (isSvgFile(file)) {
+          // Measure from the markup — an <img> reports 0×0 for viewBox-only SVGs.
+          nat = measureSvgText(await readText(file));
+        } else {
+          const objUrl = URL.createObjectURL(file);
+          nat = await measure(objUrl).finally(() => URL.revokeObjectURL(objUrl));
+        }
         let src;
         if (onUploadImage) {
           src = await onUploadImage(file, await readDataUrl(file));
@@ -855,7 +899,7 @@ export function CanvasProvider({
         } else {
           src = await readDataUrl(file);
         }
-        placeMediaNode('image', src, nat, wx, wy, file.name);
+        placeMediaNode('image', src, nat, wx, wy, file.name, isSvgFile(file) ? { svg: true } : null);
       } catch (err) {
         console.error('[canvas] image drop failed', err);
       }
@@ -898,6 +942,16 @@ export function CanvasProvider({
       if (!EDITABLE || !url) return;
       let alt = '';
       try { alt = decodeURIComponent(new URL(url, location.href).pathname.split('/').pop() || ''); } catch { /* ignore */ }
+      // An SVG dragged from another tab: the intrinsic size lives in its markup,
+      // and an <img> reports 0×0 for viewBox-only ones. Fetch + parse when we
+      // can; fall through to the <img> probe (and its 200×150 default) if a
+      // cross-origin fetch is blocked or the URL isn't really an SVG.
+      if (/\.svg([?#]|$)/i.test(url)) {
+        try {
+          const text = await fetch(url).then((r) => (r.ok ? r.text() : Promise.reject()));
+          if (/<svg\b/i.test(text)) { placeMediaNode('image', url, measureSvgText(text), wx, wy, alt, { svg: true }); return; }
+        } catch { /* fall through to the <img> probe */ }
+      }
       const attempts = /\.(mp4|webm|mov|m4v|ogv)([?#]|$)/i.test(url)
         ? [['video', measureVideo], ['image', measure]]
         : [['image', measure], ['video', measureVideo]];
