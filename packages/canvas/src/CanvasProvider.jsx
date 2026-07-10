@@ -18,12 +18,24 @@ export const useCanvas = () => {
 const defaultView = () => ({ x: 0, y: 0, scale: 1 });
 
 /* Normalise a persisted (serialised) annotation node back into the live model. */
+/* Recognise an SVG from a node's stored src/alt, so boards saved before the
+   `svg` flag existed still render without the photo card chrome. An `idb:` ref
+   is opaque here (SVGs rarely exceed the inline threshold anyway), so those fall
+   back to a plain image. */
+function isSvgSrc(src, alt) {
+  if (typeof src === 'string') {
+    if (/^data:image\/svg\+xml/i.test(src)) return true;
+    if (/\.svg([?#]|$)/i.test(src)) return true;
+  }
+  return /\.svg$/i.test(alt || '');
+}
+
 function normalizeSaved(n) {
   const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor };
   if (n.type === 'frame') return { ...base, w: n.w || 200, h: n.h || 140, name: n.text || 'Section' };
   if (n.type === 'md') return { ...base, w: n.w || 340, text: n.text || '' };
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
-  if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '' };
+  if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '', svg: n.svg != null ? !!n.svg : isSvgSrc(n.src, n.alt) };
   if (n.type === 'video') return { ...base, w: n.w || 320, h: n.h || 180, src: n.src || '', alt: n.alt || '' };
   const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
   if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs }; // resized tblock wraps at its width
@@ -645,7 +657,7 @@ export function CanvasProvider({
       else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; }
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
-      else if (n.type === 'image' || n.type === 'video') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; }
+      else if (n.type === 'image' || n.type === 'video') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; if (n.svg) o.svg = 1; }
       return o;
     }
     function serializeShape(s) {
@@ -968,7 +980,9 @@ export function CanvasProvider({
     /* ── Media lightbox (full-screen viewing) ─────────────────── */
     function openFullscreen(id) {
       const n = S.nodes.find((x) => x.id === id);
-      if (n && (n.type === 'image' || n.type === 'video')) setFullscreenId(id);
+      // SVGs are vector art shown at full size on the board — nothing to gain
+      // from a lightbox, so they never open full-screen.
+      if (n && (n.type === 'image' || n.type === 'video') && !n.svg) setFullscreenId(id);
     }
     function closeFullscreen() { setFullscreenId(null); }
 
