@@ -693,11 +693,14 @@ export function CanvasProvider({
     }
     /* Same flow for video files, through `onUploadVideo`. Files that arrive
        with no MIME type get re-wrapped with one from the extension — <video>
-       won't content-sniff data:/blob: URLs the way <img> does. */
+       won't content-sniff data:/blob: URLs the way <img> does. QuickTime .mov
+       gets the same treatment: browsers play its H.264 bytes fine but only
+       under a video/mp4 label, and upload adapters generally don't know
+       video/quicktime either. */
     async function addVideoFromFile(file, wx, wy) {
       if (!EDITABLE || !isVideoFile(file)) return;
       try {
-        const mime = file.type.startsWith('video/')
+        const mime = file.type.startsWith('video/') && file.type !== 'video/quicktime'
           ? file.type
           : { mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/mp4', webm: 'video/webm', ogv: 'video/ogg' }[
               (file.name || '').split('.').pop().toLowerCase()] || 'video/mp4';
@@ -786,6 +789,18 @@ export function CanvasProvider({
         return undefined;
       })
       .catch(() => { /* GC is best-effort */ });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* Flush the debounced autosave before the page goes away. Dropping media can
+     make the dev server reload the page (a new file under public/ isn't in
+     Vite's watch-ignore list) faster than the 400ms debounce fires, silently
+     losing the just-dropped node. */
+  useEffect(() => {
+    if (!EDITABLE) return undefined;
+    const flush = () => eng.saveNow();
+    window.addEventListener('pagehide', flush);
+    return () => window.removeEventListener('pagehide', flush);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

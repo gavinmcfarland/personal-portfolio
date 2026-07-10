@@ -1,0 +1,67 @@
+{
+  "version": 2,
+  "activePage": "home",
+  "pages": [
+    {
+      "id": "home",
+      "name": "Page 1",
+      "view": {
+        "x": -80.55268886695563,
+        "y": 249.00216482802068,
+        "scale": 1
+      },
+      "nodes": [
+        {
+          "id": "intro",
+          "type": "md",
+          "x": -118.42158921110058,
+          "y": -282.07502742040447,
+          "z": 25,
+          "w": 340,
+          "text": "# Figlet\n\nA browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup.\n\n[JavaScript] [Figma API] [Svelte]"
+        },
+        {
+          "id": "stack",
+          "type": "md",
+          "x": 15.279878525043813,
+          "y": 495.71114565114937,
+          "z": 2,
+          "w": 300,
+          "text": "**Built with**\n\nJavaScript  ·  Figma API  ·  Svelte"
+        },
+        {
+          "id": "note-0",
+          "type": "sticky",
+          "x": 913.8210691000011,
+          "y": 367.30140149896545,
+          "z": 26,
+          "color": "yellow",
+          "text": "Figma kindly awarded me a grant to build this Plugin."
+        },
+        {
+          "id": "n1-video",
+          "type": "video",
+          "x": 179.45597495731468,
+          "y": -204.34746330115468,
+          "z": 21,
+          "w": 899.1718178781017,
+          "h": 674,
+          "src": "/canvas-assets/8a75e76177f4496f.mp4",
+          "alt": "Kapture 2025-11-12 at 16.22.29.mp4"
+        },
+        {
+          "id": "n4-image",
+          "type": "image",
+          "x": 1431.0279272903622,
+          "y": -77.92444845955534,
+          "z": 27,
+          "w": 256.1914171348036,
+          "h": 431,
+          "src": "/canvas-assets/8e8e785d3f8a65e0.png",
+          "alt": "Frame 13833.png"
+        }
+      ],
+      "shapes": []
+    }
+  ]
+}

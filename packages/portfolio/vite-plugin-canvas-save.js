@@ -17,7 +17,7 @@ const KEY_RE = /^[a-zA-Z0-9_-]+$/;
 /* data:image/png;base64,… → { ext, buffer }. Returns null if not a data URL. */
 const EXT = {
   'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp', 'image/svg+xml': 'svg', 'image/avif': 'avif',
-  'video/mp4': 'mp4', 'video/webm': 'webm', 'video/ogg': 'ogv',
+  'video/mp4': 'mp4', 'video/webm': 'webm', 'video/ogg': 'ogv', 'video/quicktime': 'mov',
 };
 function decodeDataUrl(dataUrl) {
   const m = /^data:([^;]+);base64,(.+)$/s.exec(dataUrl || '');
@@ -29,7 +29,7 @@ function decodeDataUrl(dataUrl) {
 
 /* Only our content-hash-named files are eligible for pruning — anything else in
    the folder (manually added images) is left untouched. */
-const ASSET_RE = /^[0-9a-f]{16}\.(?:png|jpg|gif|webp|svg|avif|mp4|webm|ogv)$/;
+const ASSET_RE = /^[0-9a-f]{16}\.(?:png|jpg|gif|webp|svg|avif|mp4|webm|ogv|mov)$/;
 
 /* Every node across a snapshot, whether it's the legacy single-board shape
    ({nodes}) or the multi-page shape ({pages:[{nodes}]}). */
@@ -38,30 +38,44 @@ function allNodes(data) {
   return Array.isArray(data.nodes) ? data.nodes : [];
 }
 
-/* Delete generated assets that no media node in ANY published board references.
-   Scans every committed board file, not just the one being saved. */
-function pruneAssets() {
-  if (!fs.existsSync(ASSET_DIR)) return [];
+/* Asset filenames a snapshot's media nodes reference. */
+function assetRefs(data) {
+  const refs = new Set();
+  for (const n of allNodes(data)) {
+    if (n && (n.type === 'image' || n.type === 'video') && typeof n.src === 'string' && n.src.startsWith('/canvas-assets/')) {
+      refs.add(n.src.slice('/canvas-assets/'.length));
+    }
+  }
+  return refs;
+}
+
+function readBoard(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+/* Delete generated assets orphaned by this save. Only files the PREVIOUS
+   committed version of the saved board referenced are candidates — a sweep of
+   everything unreferenced would also delete media just dropped onto a
+   different board, which lives only in that board's localStorage autosave
+   until its own Save. A candidate survives if any committed board (including
+   the one just written) still references it. */
+function pruneAssets(prevRefs) {
+  if (!prevRefs.size || !fs.existsSync(ASSET_DIR)) return [];
   const referenced = new Set();
   if (fs.existsSync(BOARD_DIR)) {
     for (const file of fs.readdirSync(BOARD_DIR)) {
       if (!file.endsWith('.json')) continue;
-      let data;
-      try {
-        data = JSON.parse(fs.readFileSync(path.join(BOARD_DIR, file), 'utf8'));
-      } catch {
-        continue;
-      }
-      for (const n of allNodes(data)) {
-        if (n && (n.type === 'image' || n.type === 'video') && typeof n.src === 'string' && n.src.startsWith('/canvas-assets/')) {
-          referenced.add(n.src.slice('/canvas-assets/'.length));
-        }
-      }
+      const data = readBoard(path.join(BOARD_DIR, file));
+      if (data) assetRefs(data).forEach((name) => referenced.add(name));
     }
   }
   const removed = [];
-  for (const name of fs.readdirSync(ASSET_DIR)) {
-    if (ASSET_RE.test(name) && !referenced.has(name)) {
+  for (const name of prevRefs) {
+    if (ASSET_RE.test(name) && !referenced.has(name) && fs.existsSync(path.join(ASSET_DIR, name))) {
       fs.unlinkSync(path.join(ASSET_DIR, name));
       removed.push(name);
     }
@@ -130,9 +144,10 @@ export function canvasSave() {
             }
             fs.mkdirSync(BOARD_DIR, { recursive: true });
             const target = path.join(BOARD_DIR, `${key}.json`);
+            const prev = fs.existsSync(target) ? readBoard(target) : null;
             fs.writeFileSync(target, JSON.stringify(snapshot, null, 2) + '\n');
             server.config.logger.info(`  canvas saved → ${path.relative(process.cwd(), target)}`);
-            const removed = pruneAssets();
+            const removed = pruneAssets(prev ? assetRefs(prev) : new Set());
             if (removed.length) server.config.logger.info(`  pruned ${removed.length} orphaned asset(s)`);
             res.statusCode = 200;
             res.end(JSON.stringify({ ok: true, pruned: removed.length }));
