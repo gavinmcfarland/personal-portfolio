@@ -127,6 +127,7 @@ export function CanvasProvider({
   theme = null, // optional { mode, toggle } — renders a theme button in the top bar
   fit = 'contain', // 'contain' fills the parent box; 'fullscreen' covers the browser viewport
   ui = true, // set false to hide the overlay panels (top bar, toolbar, zoom, context menu)
+  initialView = null, // 'fit' frames all content on mount instead of restoring the saved pan/zoom
 }) {
   const EDITABLE = editable;
   const HOME_ID = homeId;
@@ -233,7 +234,9 @@ export function CanvasProvider({
       vp.style.backgroundSize = step + 'px ' + step + 'px';
       if (zoomLabelRef.current) zoomLabelRef.current.textContent = Math.round(viewRef.scale * 100) + '%';
       syncChrome();
-      scheduleSave();
+      // View-mode pan/zoom is transient (snapshotActive keeps the saved view),
+      // so only edit-mode view changes need to hit the autosave.
+      if (!S.readOnly) scheduleSave();
     }
     function screenToWorld(sx, sy) {
       const r = viewportRef.current.getBoundingClientRect();
@@ -241,13 +244,19 @@ export function CanvasProvider({
     }
     /* Viewport dimensions in CSS pixels. Fit/zoom/centering all measure the
        canvas container (not the browser window) so the board behaves correctly
-       when embedded in a section rather than owning the whole screen. */
+       when embedded in a section rather than owning the whole screen.
+
+       vpRect (screen space, includes ancestor transforms) is only for mapping
+       pointer coordinates. Fit/centering math must use the layout size instead:
+       the world transform operates in the element's layout box, which an
+       ancestor scale (e.g. the hover thumbnail's scale-50 wrapper) doesn't
+       change even though it shrinks the on-screen rect. */
     function vpRect() {
       const el = viewportRef.current;
       return el ? el.getBoundingClientRect() : { left: 0, top: 0, width: 0, height: 0 };
     }
-    function vpW() { return vpRect().width || 0; }
-    function vpH() { return vpRect().height || 0; }
+    function vpW() { const el = viewportRef.current; return el ? el.clientWidth : 0; }
+    function vpH() { const el = viewportRef.current; return el ? el.clientHeight : 0; }
 
     /* smooth zoom glide */
     function markActive() {
@@ -583,12 +592,16 @@ export function CanvasProvider({
       if (s.type === 'pen') o.points = s.points; else { o.x1 = s.x1; o.y1 = s.y1; o.x2 = s.x2; o.y2 = s.y2; }
       return o;
     }
-    /* Copy the live active-page data back into pageData so a serialise sees it. */
+    /* Copy the live active-page data back into pageData so a serialise sees it.
+       In view mode the live pan/zoom is transient: keep the page's last
+       edit-mode view so a refresh restores the framing from before the reader
+       started panning/zooming. */
     function snapshotActive() {
+      const prev = pageData[S.activePageId];
       pageData[S.activePageId] = {
         nodes: S.nodes,
         shapes: S.shapes,
-        view: { x: viewRef.x, y: viewRef.y, scale: viewRef.scale },
+        view: S.readOnly && prev ? prev.view : { x: viewRef.x, y: viewRef.y, scale: viewRef.scale },
       };
     }
     /* Serialise every page into the compact multi-page snapshot shared by the dev
@@ -912,11 +925,14 @@ export function CanvasProvider({
   /* ── Keep chrome + persistence in sync with the model ───────── */
   useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, eng]);
 
-  /* ── Boot: apply the initial view (fit if nothing was saved) ── */
+  /* ── Boot: apply the initial view (fit if nothing was saved, or if the
+     embedder asked for a framed overview via initialView='fit') ── */
   useEffect(() => {
     eng.applyView();
-    if (!init.hadSaved) {
-      const id = requestAnimationFrame(() => { eng.fitAll(false); eng.saveNow(); });
+    if (initialView === 'fit' || !init.hadSaved) {
+      // Only persist the fitted view when it's the first-ever view of the
+      // board; a forced fit is presentational and must not clobber the save.
+      const id = requestAnimationFrame(() => { eng.fitAll(false); if (!init.hadSaved) eng.saveNow(); });
       return () => cancelAnimationFrame(id);
     }
     if (EDITABLE && localStorage.getItem(STORE + '-mode') === 'view') setReadOnlyState(true);

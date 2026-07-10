@@ -107,10 +107,13 @@ export default function ProjectCanvasPreview({ project, children }) {
                       Read-only canvases never write to the key. */}
                   {/* Unsaved local edits win, then the committed snapshot —
                       the same precedence the editable project page applies. */}
+                  {/* initialView="fit" frames the whole board in the card
+                      instead of restoring the saved pan/zoom crop. */}
                   <Canvas
                     key={project.id}
                     fit="contain"
                     ui={false}
+                    initialView="fit"
                     base={buildBase(project)}
                     storageKey={`project-canvas-${project.id}`}
                     initialState={
