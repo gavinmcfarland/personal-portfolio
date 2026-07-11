@@ -1585,7 +1585,7 @@
 .canvas-root .page-menu {
   position: absolute;
   top: calc(100% + 12px);
-  left: -9px;
+  left: -5px;
   z-index: 200;
   min-width: 210px;
   max-height: 60vh;
