@@ -18,6 +18,7 @@ function Code({ node }) {
   const { setRef, dataProps } = useRegister(node);
   const taRef = useRef(null);
   const headerHit = useRef(false); // true between a header pointer-down and the resulting blur
+  const committed = useRef(false); // guards against committing twice per edit session
   const lang = node.lang || 'js';
   const [src, setSrc] = useState(node.text || '');
   const [copied, setCopied] = useState(false);
@@ -37,6 +38,7 @@ function Code({ node }) {
 
   useEffect(() => {
     if (!editing) return;
+    committed.current = false;
     const ta = taRef.current;
     if (!ta) return;
     setSrc(ta.value);
@@ -45,10 +47,27 @@ function Code({ node }) {
   }, [editing]);
 
   const commit = () => {
+    if (committed.current) return;
+    committed.current = true;
     const text = taRef.current ? taRef.current.value : src;
     eng.updateNode(node.id, { text });
     eng.stopEditing();
   };
+
+  // Clicking outside the node exits editing. The textarea's blur normally handles
+  // this, but opening the language dropdown moves focus onto the <select>, so the
+  // textarea won't fire another blur — a later outside click would otherwise leave
+  // the node stuck in edit mode. This pointer-down listener covers that case.
+  useEffect(() => {
+    if (!editing) return undefined;
+    const onDown = (e) => {
+      const el = nodeEls.get(node.id);
+      if (el && !el.contains(e.target)) commit();
+    };
+    document.addEventListener('pointerdown', onDown, true);
+    return () => document.removeEventListener('pointerdown', onDown, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing, node.id, nodeEls]);
 
   // Blur only commits when focus actually leaves the node. Clicking the in-node
   // language picker moves focus off the textarea but must not exit editing —
