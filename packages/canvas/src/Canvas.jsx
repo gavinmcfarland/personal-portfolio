@@ -120,8 +120,11 @@ export default function Canvas() {
       const items = eng.moveItemsFor({ kind, id });
       if (!eng.isSelected(kind, id)) (kind === 'node' ? eng.selectNode : eng.selectShape)(id);
       if (nodeEl) { nodeEl.dataset.moved = ''; nodeEl.classList.add('dragging'); }
+      // A stationary click on a link card opens it (a drag still just moves it);
+      // remembered here, acted on in onUp when the gesture turns out not to move.
+      const linkId = nodeEl && nodeEl.dataset.type === 'link' ? id : null;
       // Alt-drag leaves the originals in place and drops a copy at the release point.
-      actionRef.current = { type: 'move', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, items, clickItem: { kind, id }, dup: e.altKey && !S.readOnly };
+      actionRef.current = { type: 'move', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, items, clickItem: { kind, id }, dup: e.altKey && !S.readOnly, linkId };
       vp.setPointerCapture(e.pointerId);
       return;
     }
@@ -230,6 +233,7 @@ export default function Canvas() {
     const type = nodeEl.dataset.type;
     const id = nodeEl.dataset.id;
     if (type === 'image' || type === 'video') { eng.openFullscreen(id); return; }
+    if (type === 'link') { eng.openLink(id); return; }
     if (type !== 'sticky' && type !== 'tblock' && type !== 'md' && type !== 'code' && type !== 'sound') return;
     eng.setTool('select'); eng.selectNode(id); eng.startEditing(id);
   };
@@ -319,13 +323,13 @@ export default function Canvas() {
           el.style.fontSize = f + 'px'; a.fontSize = f;
           eng.syncChrome(); return;
         }
-        const minW = a.mdType === 'md' ? 160 : a.mdType === 'code' ? 200 : a.mdType === 'tblock' ? 120 : 60;
+        const minW = a.mdType === 'md' ? 160 : a.mdType === 'code' ? 200 : a.mdType === 'tblock' ? 120 : a.mdType === 'link' ? 200 : 60;
         const w = Math.max(minW, a.ow + (e.clientX - a.sx) / scale());
         el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
         if (a.mdType === 'image' || a.mdType === 'video') {
           const h = Math.max(1, Math.round(w * (a.oh / a.ow))); // lock aspect ratio
           el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
-        } else if (a.mdType !== 'md' && a.mdType !== 'tblock' && a.mdType !== 'code') {
+        } else if (a.mdType !== 'md' && a.mdType !== 'tblock' && a.mdType !== 'code' && a.mdType !== 'link') {
           const h = Math.max(40, a.oh + (e.clientY - a.sy) / scale());
           el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
         }
@@ -373,6 +377,8 @@ export default function Canvas() {
           if (a.clickItem && S.selected.length > 1) {
             (a.clickItem.kind === 'node' ? eng.selectNode : eng.selectShape)(a.clickItem.id);
           }
+          // Tap a link card (no drag) → open it.
+          if (a.linkId) eng.openLink(a.linkId);
           eng.saveNow();
         }
       }
@@ -479,7 +485,10 @@ export default function Canvas() {
       const r = viewportRef.current && viewportRef.current.getBoundingClientRect();
       const w = eng.screenToWorld(r ? r.left + r.width / 2 : 0, r ? r.top + r.height / 2 : 0);
       e.preventDefault();
-      if (!eng.pasteMedia(e.clipboardData, w.x, w.y)) eng.paste();
+      // Media file → link URL → internal node clipboard, in that order.
+      if (eng.pasteMedia(e.clipboardData, w.x, w.y)) return;
+      if (eng.pasteLink(e.clipboardData, w.x, w.y)) return;
+      eng.paste();
     };
 
     /* Pinch-to-zoom (touch): track the active touch pointers and drive zoom +

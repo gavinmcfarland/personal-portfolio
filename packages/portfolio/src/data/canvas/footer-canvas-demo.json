@@ -6,52 +6,25 @@
       "id": "home",
       "name": "Home",
       "view": {
-        "x": 384.29015997339854,
-        "y": 308.84120508390845,
-        "scale": 0.47903205634917234
+        "x": 487,
+        "y": 334.66666666666663,
+        "scale": 1.8592592592592592
       },
       "nodes": [
         {
-          "id": "d-md",
-          "type": "md",
-          "x": -271.7373009169884,
-          "y": -93.32231087113901,
-          "z": 1,
-          "w": 330,
-          "text": "# This is a canvas 👋\nAn **embeddable** React component — the same engine behind the canvas edition of this site.\n\n- Pan & zoom the board\n- Add notes, text & `markdown`\n- Draw, frame and organise"
-        },
-        {
-          "id": "d-note-1",
-          "type": "sticky",
-          "x": 190,
-          "y": -150,
-          "z": 2,
-          "color": "yellow",
-          "text": "Drag me\naround!"
-        },
-        {
-          "id": "d-note-2",
-          "type": "sticky",
-          "x": 217.42289303812743,
-          "y": 106.22330477799228,
-          "z": 3,
-          "color": "blue",
-          "text": "Double-click\nto edit me"
+          "id": "test-link",
+          "type": "link",
+          "x": -140,
+          "y": -90,
+          "z": 5,
+          "w": 280,
+          "url": "https://example.com/",
+          "title": "Example Domain",
+          "desc": "x",
+          "siteName": "example.com"
         }
       ],
-      "shapes": [
-        {
-          "id": "d-arrow",
-          "type": "arrow",
-          "stroke": "#7C2D91",
-          "width": 3,
-          "z": 4,
-          "x1": 150,
-          "y1": -70,
-          "x2": 195,
-          "y2": -115
-        }
-      ]
+      "shapes": []
     }
   ]
 }

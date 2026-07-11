@@ -51,6 +51,10 @@ function assetRefs(data) {
     if (n && (n.type === 'image' || n.type === 'video') && typeof n.src === 'string' && n.src.startsWith('/canvas-assets/')) {
       refs.add(n.src.slice('/canvas-assets/'.length));
     }
+    // Link cards bake their unfurled OG image in as a committed asset.
+    if (n && n.type === 'link' && typeof n.image === 'string' && n.image.startsWith('/canvas-assets/')) {
+      refs.add(n.image.slice('/canvas-assets/'.length));
+    }
   }
   return refs;
 }
@@ -87,6 +91,109 @@ function pruneAssets(prevRefs) {
     }
   }
   return removed;
+}
+
+/* ── Link unfurling (dev only) ──────────────────────────────────────────
+   Fetch a pasted URL server-side (no browser CORS), parse its Open Graph
+   metadata, and download the OG image into public/canvas-assets so the link
+   card's picture is a committed file — the saved board then renders offline
+   and never re-fetches. */
+const UNFURL_UA =
+  'Mozilla/5.0 (compatible; PortfolioCanvasBot/1.0; +https://limitlessloop.com)';
+
+function decodeEntities(s) {
+  return (s || '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;|&apos;|&#x27;/gi, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (_, d) => { try { return String.fromCodePoint(+d); } catch { return ''; } })
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => { try { return String.fromCodePoint(parseInt(h, 16)); } catch { return ''; } })
+    .trim();
+}
+
+/* First <meta property|name="<key>"> content for any of `keys`, in order. */
+function metaContent(html, keys) {
+  for (const key of keys) {
+    const re = new RegExp(`<meta[^>]+(?:property|name)\\s*=\\s*["']${key}["'][^>]*>`, 'i');
+    const tag = re.exec(html);
+    if (tag) {
+      const c = /content\s*=\s*["']([^"']*)["']/i.exec(tag[0]);
+      if (c && c[1].trim()) return decodeEntities(c[1]);
+    }
+  }
+  return '';
+}
+
+function pageTitle(html) {
+  const m = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html);
+  return m ? decodeEntities(m[1]) : '';
+}
+
+function faviconUrl(html, baseUrl) {
+  const re = /<link[^>]+>/gi;
+  let m, href = '';
+  while ((m = re.exec(html))) {
+    if (!/rel\s*=\s*["'][^"']*icon[^"']*["']/i.test(m[0])) continue;
+    const h = /href\s*=\s*["']([^"']+)["']/i.exec(m[0]);
+    // Sites suppress the default favicon with `href="data:,"`; ignore those and
+    // fall back to /favicon.ico rather than rendering an empty image.
+    if (h && h[1] && !/^data:/i.test(h[1].trim())) { href = h[1]; break; }
+  }
+  try { return new URL(href || '/favicon.ico', baseUrl).href; } catch { return ''; }
+}
+
+/* Download a remote image into the committed asset dir, return its public URL
+   (null on any failure — the caller falls back to hotlinking the remote URL). */
+async function downloadImageAsset(imageUrl) {
+  try {
+    const res = await fetch(imageUrl, { redirect: 'follow', headers: { 'user-agent': UNFURL_UA }, signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return null;
+    const ct = (res.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+    const ext = EXT[ct];
+    if (!ext || !ct.startsWith('image/')) return null;
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (!buffer.length || buffer.length > 8 * 1024 * 1024) return null;
+    const hash = crypto.createHash('sha1').update(buffer).digest('hex').slice(0, 16);
+    const name = `${hash}.${ext}`;
+    const file = path.join(ASSET_DIR, name);
+    if (!fs.existsSync(file)) {
+      fs.mkdirSync(ASSET_DIR, { recursive: true });
+      fs.writeFileSync(file, buffer);
+    }
+    return `/canvas-assets/${name}`;
+  } catch {
+    return null;
+  }
+}
+
+async function unfurl(rawUrl) {
+  let target;
+  try { target = new URL(rawUrl); } catch { throw new Error('invalid URL'); }
+  if (target.protocol !== 'http:' && target.protocol !== 'https:') throw new Error('unsupported protocol');
+  const res = await fetch(target.href, {
+    redirect: 'follow',
+    headers: { 'user-agent': UNFURL_UA, accept: 'text/html,application/xhtml+xml' },
+    signal: AbortSignal.timeout(10000),
+  });
+  const finalUrl = res.url || target.href;
+  const html = (await res.text()).slice(0, 500000); // meta tags live in <head>
+  const title = metaContent(html, ['og:title', 'twitter:title']) || pageTitle(html) || target.hostname;
+  const description = metaContent(html, ['og:description', 'twitter:description', 'description']);
+  const siteName = metaContent(html, ['og:site_name']);
+  let image = metaContent(html, ['og:image:secure_url', 'og:image:url', 'og:image', 'twitter:image', 'twitter:image:src']);
+  if (image) { try { image = new URL(image, finalUrl).href; } catch { image = ''; } }
+  const localImage = image ? await downloadImageAsset(image) : null;
+  return {
+    url: finalUrl,
+    title,
+    description,
+    siteName,
+    image: localImage || image || '',
+    favicon: faviconUrl(html, finalUrl),
+  };
 }
 
 function readBody(req) {
@@ -174,6 +281,24 @@ export function canvasSave() {
             }
             res.statusCode = 200;
             res.end(JSON.stringify({ ok: true, url: `/canvas-assets/${name}` }));
+          } catch (err) {
+            res.statusCode = 400;
+            res.end(JSON.stringify({ ok: false, error: String(err && err.message || err) }));
+          }
+        });
+      });
+
+      /* Unfurl a pasted URL: fetch its page, parse OG metadata, bake the image
+         into a committed asset, and return the card's data. */
+      server.middlewares.use('/__canvas/unfurl', (req, res, next) => {
+        if (req.method !== 'POST') return next();
+        res.setHeader('content-type', 'application/json');
+        readBody(req).then(async (body) => {
+          try {
+            const { url } = JSON.parse(body);
+            const data = await unfurl(url);
+            res.statusCode = 200;
+            res.end(JSON.stringify({ ok: true, data }));
           } catch (err) {
             res.statusCode = 400;
             res.end(JSON.stringify({ ok: false, error: String(err && err.message || err) }));

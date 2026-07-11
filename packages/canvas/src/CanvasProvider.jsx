@@ -51,6 +51,7 @@ function normalizeSaved(n) {
   if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '', svg: n.svg != null ? !!n.svg : isSvgSrc(n.src, n.alt) };
   if (n.type === 'video') return { ...base, w: n.w || 320, h: n.h || 180, src: n.src || '', alt: n.alt || '' };
   if (n.type === 'sound') return { ...base, w: n.w || 260, h: n.h || 56, src: n.src || '', name: n.name || '', dur: n.dur || 0 };
+  if (n.type === 'link') return { ...base, w: n.w || 280, url: n.url || '', title: n.title || '', desc: n.desc || '', image: n.image || '', siteName: n.siteName || '', favicon: n.favicon || '' };
   const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
   const ff = n.font ? { font: n.font } : null; // serif | sans | mono | script
   if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs, ...ff }; // resized tblock wraps at its width
@@ -155,6 +156,7 @@ export function CanvasProvider({
   onUploadImage = null,
   onUploadVideo = null,
   onUploadAudio = null,
+  onUnfurl = null, // optional (url) => { url, title, description, image, siteName, favicon } for pasted-link cards
   onChange = null,
   theme = null, // optional { mode, toggle } — renders a theme button in the top bar
   accent = null, // theme/accent colour: a single CSS colour, or { light, dark } per theme (default: purple)
@@ -437,9 +439,9 @@ export function CanvasProvider({
       if ((type === 'md' || type === 'code') && !editing) {
         chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
       } else chrome.edit.style.display = 'none';
-      if ((type === 'frame' || type === 'md' || type === 'code' || type === 'tblock' || type === 'image' || type === 'video') && !editing) {
+      if ((type === 'frame' || type === 'md' || type === 'code' || type === 'tblock' || type === 'image' || type === 'video' || type === 'link') && !editing) {
         chrome.rz.style.display = 'block'; chrome.rz.style.left = (sx + sw - 4) + 'px'; chrome.rz.style.top = (sy + sh - 4) + 'px';
-        chrome.rz.style.cursor = type === 'md' || type === 'code' || type === 'tblock' ? 'ew-resize' : 'nwse-resize';
+        chrome.rz.style.cursor = type === 'md' || type === 'code' || type === 'tblock' || type === 'link' ? 'ew-resize' : 'nwse-resize';
       } else chrome.rz.style.display = 'none';
     }
     /* Faint hover outline for the node under the cursor (edit mode only). Drawn
@@ -734,6 +736,15 @@ export function CanvasProvider({
       else if (n.type === 'code') { o.w = n.w; o.text = n.text; o.lang = n.lang; if (n.wrap != null) o.wrap = n.wrap ? 1 : 0; }
       else if (n.type === 'image' || n.type === 'video') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; if (n.svg) o.svg = 1; }
       else if (n.type === 'sound') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.name) o.name = n.name; if (n.dur) o.dur = n.dur; }
+      else if (n.type === 'link') {
+        if (n.w != null) o.w = n.w;
+        o.url = n.url;
+        if (n.title) o.title = n.title;
+        if (n.desc) o.desc = n.desc;
+        if (n.image) o.image = n.image;
+        if (n.siteName) o.siteName = n.siteName;
+        if (n.favicon) o.favicon = n.favicon;
+      }
       return o;
     }
     function serializeShape(s) {
@@ -1197,7 +1208,70 @@ export function CanvasProvider({
           return;
         } catch { /* try the other kind */ }
       }
+      // Not decodable as media — treat a plain http(s) URL as a link to unfurl
+      // (a bookmark dragged in from the address bar / another tab lands here).
+      if (/^https?:\/\//i.test(url)) { addLinkFromUrl(url, wx, wy); return; }
       console.error('[canvas] media url drop failed: could not decode', url);
+    }
+
+    /* A pasteable/droppable URL: a single http(s) token, nothing else. Multi-line
+       or free text with a URL embedded isn't treated as a link paste. */
+    function asLinkUrl(text) {
+      const t = (text || '').trim();
+      if (!t || /\s/.test(t)) return '';
+      return /^https?:\/\/[^\s]+$/i.test(t) ? t : '';
+    }
+    /* Drop a link card for `url`, then unfurl it: an immediate placeholder (so the
+       paste feels instant) that the `onUnfurl` adapter fills in with the page's
+       OG title / description / image. Without an adapter (or if the fetch fails)
+       the card still stands as a bare link showing the hostname. The resolved
+       metadata is stored on the node, so a saved board never re-fetches. */
+    async function addLinkFromUrl(url, wx, wy) {
+      if (!EDITABLE || S.readOnly) return;
+      const clean = asLinkUrl(url);
+      if (!clean) return;
+      const W = 280;
+      const n = addNode({ id: newId('link'), type: 'link', x: wx - W / 2, y: wy - 90, w: W, url: clean, loading: !!onUnfurl });
+      setToolState('select'); selectNode(n.id);
+      if (!onUnfurl) return;
+      try {
+        const meta = await onUnfurl(clean);
+        updateNode(n.id, {
+          loading: false,
+          url: meta && meta.url ? meta.url : clean,
+          title: (meta && meta.title) || '',
+          desc: (meta && meta.description) || '',
+          image: (meta && meta.image) || '',
+          siteName: (meta && meta.siteName) || '',
+          favicon: (meta && meta.favicon) || '',
+        });
+      } catch (err) {
+        console.error('[canvas] link unfurl failed', err);
+        updateNode(n.id, { loading: false });
+      }
+    }
+    /* Paste a copied URL as a link card. Returns true when it consumed the
+       clipboard, so the caller falls back to the internal node clipboard when the
+       pasted text isn't a bare URL. */
+    function pasteLink(cd, wx, wy) {
+      if (!EDITABLE || S.readOnly || !cd) return false;
+      const url = asLinkUrl(cd.getData('text/plain'));
+      if (!url) return false;
+      addLinkFromUrl(url, wx, wy);
+      return true;
+    }
+    /* Open a link card's target. In edit mode a tap (and double-click) routes
+       here; read-only clicks open the anchor natively. Debounced so the two
+       clicks of a physical double-click can't open the URL twice. */
+    let lastLinkOpen = 0;
+    function openLink(id) {
+      const now = Date.now();
+      if (now - lastLinkOpen < 500) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (n && n.type === 'link' && n.url) {
+        lastLinkOpen = now;
+        window.open(n.url, '_blank', 'noopener,noreferrer');
+      }
     }
 
     /* Pull an <svg>…</svg> fragment out of pasted text/html. Copying SVG source
@@ -1269,6 +1343,7 @@ export function CanvasProvider({
       setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
+      addLinkFromUrl, pasteLink, openLink,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
       nextZ, backZ,

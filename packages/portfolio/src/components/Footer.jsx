@@ -1,5 +1,5 @@
 import { Canvas } from "@gavinmcfarland/canvas";
-import { boardSaver, publishedBoard, uploadMedia } from "../data/canvasBoards";
+import { boardSaver, publishedBoard, uploadMedia, unfurlLink } from "../data/canvasBoards";
 import { ACCENT } from "../theme";
 
 /* A self-contained board for the footer playground. `card` is a portfolio-only
@@ -54,6 +54,7 @@ const Footer = () => (
           onPublish={boardSaver("footer-canvas-demo")}
           onUploadImage={uploadMedia}
           onUploadVideo={uploadMedia}
+          onUnfurl={unfurlLink}
         />
       </div>
       <p className="mt-3 text-[0.8125rem] text-faint">

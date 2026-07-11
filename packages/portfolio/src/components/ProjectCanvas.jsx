@@ -1,5 +1,5 @@
 import { Canvas } from "@gavinmcfarland/canvas";
-import { boardSaver, publishedBoard, uploadMedia } from "../data/canvasBoards";
+import { boardSaver, publishedBoard, uploadMedia, unfurlLink } from "../data/canvasBoards";
 import { ACCENT } from "../theme";
 
 /* Builds a small, self-contained board seeded from a project's own fields, so
@@ -77,6 +77,7 @@ export default function ProjectCanvas({ project }) {
       onPublish={boardSaver(storageKey)}
       onUploadImage={uploadMedia}
       onUploadVideo={uploadMedia}
+      onUnfurl={unfurlLink}
     />
   );
 }

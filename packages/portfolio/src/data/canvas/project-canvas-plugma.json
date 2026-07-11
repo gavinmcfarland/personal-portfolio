@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 497.5007945272453,
-        "y": 436.9564270230517,
-        "scale": 0.8840513100607428
+        "x": 893.1153753278688,
+        "y": 1979.9228634062397,
+        "scale": 5.234503325090316
       },
       "nodes": [
         {
@@ -55,7 +55,7 @@
           "z": 45,
           "text": "Features supported",
           "w": 346.4863948419979,
-          "font": "mono"
+          "font": "sans"
         },
         {
           "id": "n26-sticky",
@@ -69,8 +69,8 @@
         {
           "id": "n27-code",
           "type": "code",
-          "x": -295.493317473412,
-          "y": -130.36633113490532,
+          "x": -324.247578122257,
+          "y": -117.925489616031,
           "z": 54,
           "w": 372.26282295360716,
           "text": "npm create plugma@latest add",
@@ -89,22 +89,36 @@
         {
           "id": "n29-tblock",
           "type": "tblock",
-          "x": 368.7356503644622,
-          "y": -384.1010045656931,
+          "x": 369.29881383183306,
+          "y": -372.4748916419827,
           "z": 56,
           "text": "Features supported",
-          "w": 261.5990091908047
+          "w": 261.5990091908047,
+          "font": "sans"
         },
         {
           "id": "n30-code",
           "type": "code",
-          "x": -326.34615838875305,
-          "y": 94.19860300037699,
+          "x": -242.13618967012312,
+          "y": -8.878405167960693,
           "z": 57,
-          "w": 420,
-          "text": "<html>\n  asasas",
-          "lang": "html",
+          "w": 433.76899830964373,
+          "text": "import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig(({ mode, context }) => (\n    return {\n      plugins: context == \"ui\" ? [react()] : []\n    };\n}))",
+          "lang": "js",
           "wrap": 0
+        },
+        {
+          "id": "n31-link",
+          "type": "link",
+          "x": 1243.3339275075537,
+          "y": -400.999013532093,
+          "z": 58,
+          "w": 280,
+          "url": "https://screen.studio/share/neRqmJDi",
+          "title": "Plugma - End-to-end UI testing with Playwright — Screen Studio",
+          "desc": "Plugma - End-to-end UI testing with Playwright — Created and shared with Screen Studio",
+          "image": "/canvas-assets/0494b681d11dc2a9.png",
+          "favicon": "https://screen.studio/icon.png"
         }
       ],
       "shapes": []

@@ -47,3 +47,19 @@ export const uploadMedia = import.meta.env.DEV
       return out.url;
     }
   : undefined;
+
+/* onUnfurl adapter: resolve a pasted link's OG metadata via the dev endpoint,
+   which bakes its image into a committed asset. Dev only — the resolved data is
+   stored in the node, so published boards render link cards without it. */
+export const unfurlLink = import.meta.env.DEV
+  ? async (url) => {
+      const res = await fetch('/__canvas/unfurl', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+      return out.data;
+    }
+  : undefined;
