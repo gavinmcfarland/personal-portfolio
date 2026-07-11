@@ -15,7 +15,7 @@ function hostOf(url) {
 }
 
 function LinkCard({ node }) {
-  const { EDITABLE } = useCanvas();
+  const { readOnly } = useCanvas();
   const { setRef, dataProps, style } = useRegister(node);
   const img = useMediaSrc(node.image || '');
   const s = { ...style, width: (node.w || 280) + 'px' };
@@ -30,9 +30,11 @@ function LinkCard({ node }) {
       href={node.url || undefined}
       target="_blank"
       rel="noreferrer noopener"
-      // In edit mode the card is a draggable object, not a live link — let the
-      // pointer handlers own the click (double-click opens it, see Canvas).
-      onClick={(e) => { if (EDITABLE) e.preventDefault(); }}
+      // In edit mode the card is a draggable object, not a live link — suppress
+      // the native navigation and let the pointer handlers own the click (a tap
+      // opens it, see Canvas). In view mode (read-only) let the anchor work
+      // natively so a plain click opens the URL.
+      onClick={(e) => { if (!readOnly) e.preventDefault(); }}
       draggable={false}
     >
       {node.loading ? (

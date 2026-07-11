@@ -6,16 +6,16 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 893.1153753278688,
-        "y": 1979.9228634062397,
-        "scale": 5.234503325090316
+        "x": 380.9139487468589,
+        "y": 386.6559451786618,
+        "scale": 0.3270443909563989
       },
       "nodes": [
         {
           "id": "intro",
           "type": "md",
-          "x": -183.09229107993727,
-          "y": -404.26591200122607,
+          "x": -211.7868099100778,
+          "y": -738.9264166410173,
           "z": 1,
           "w": 340,
           "text": "# Plugma\n\nA zero-config CLI for building Figma plugins, with hot-module reloading that actually works.\n\n[Node.js] [TypeScript] [Vite] [React] [Svelte] [Vue]"
@@ -110,14 +110,27 @@
         {
           "id": "n31-link",
           "type": "link",
-          "x": 1243.3339275075537,
-          "y": -400.999013532093,
+          "x": 1383.795648899776,
+          "y": -452.7571592588324,
           "z": 58,
           "w": 280,
           "url": "https://screen.studio/share/neRqmJDi",
           "title": "Plugma - End-to-end UI testing with Playwright — Screen Studio",
           "desc": "Plugma - End-to-end UI testing with Playwright — Created and shared with Screen Studio",
           "image": "/canvas-assets/0494b681d11dc2a9.png",
+          "favicon": "https://screen.studio/icon.png"
+        },
+        {
+          "id": "n32-link",
+          "type": "link",
+          "x": 1038.8208440449428,
+          "y": -454.9988750655923,
+          "z": 59,
+          "w": 280,
+          "url": "https://screen.studio/share/4rh7VCM7",
+          "title": "Plugma | Getting Started — Screen Studio",
+          "desc": "Plugma | Getting Started — Created and shared with Screen Studio",
+          "image": "/canvas-assets/0cd418f06ae4e506.png",
           "favicon": "https://screen.studio/icon.png"
         }
       ],
