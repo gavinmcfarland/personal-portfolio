@@ -51,8 +51,9 @@ function normalizeSaved(n) {
   if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '', svg: n.svg != null ? !!n.svg : isSvgSrc(n.src, n.alt) };
   if (n.type === 'video') return { ...base, w: n.w || 320, h: n.h || 180, src: n.src || '', alt: n.alt || '' };
   const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
-  if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs }; // resized tblock wraps at its width
-  return { ...base, text: n.text || '', ...fs }; // tblock
+  const ff = n.font ? { font: n.font } : null; // serif | sans | mono | script
+  if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs, ...ff }; // resized tblock wraps at its width
+  return { ...base, text: n.text || '', ...fs, ...ff }; // tblock
 }
 
 /* Merge a saved node list over the data-derived base for the home page. Nodes of
@@ -203,6 +204,7 @@ export function CanvasProvider({
     try { window.dispatchEvent(new CustomEvent(FORMAT_EVENT, { detail: on })); } catch { /* no window */ }
   };
   const [noteColor, setNoteColor] = useState('yellow');
+  const [textFont, setTextFont] = useState('serif'); // default font for new text blocks
   const [strokeColor, setStrokeColor] = useState('#7C2D91');
   const [fillColor, setFillColor] = useState('none'); // default fill for new fillable shapes
   const [ctxMenu, setCtxMenu] = useState(null); // {x,y,target:{kind,id}}
@@ -270,6 +272,7 @@ export function CanvasProvider({
   S.selected = selected;
   S.editingId = editingId;
   S.noteColor = noteColor;
+  S.textFont = textFont;
   S.strokeColor = strokeColor;
   S.fillColor = fillColor;
   S.nodes = nodes;
@@ -707,7 +710,7 @@ export function CanvasProvider({
       const o = { id: n.id, type: n.type, x: +n.x, y: +n.y, z: n.z };
       if (n.anchor) o.anchor = 1;
       if (n.type === 'sticky') { o.color = n.color; o.text = n.text; }
-      else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; }
+      else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; if (n.font) o.font = n.font; }
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
       else if (n.type === 'code') { o.w = n.w; o.text = n.text; o.lang = n.lang; if (n.wrap != null) o.wrap = n.wrap ? 1 : 0; }
@@ -1237,11 +1240,11 @@ export function CanvasProvider({
 
   const value = {
     // state
-    nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, fillColor, ctxMenu,
+    nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     publishState, fullscreenId, pages, activePageId, pageData, bgColor,
     brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
-    setDraft, setNoteColor, setStrokeColor, setFillColor, setCtxMenu, setSelectedState,
+    setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState,
     // refs
     rootRef, hoverInsideRef, activeInsideRef, viewportRef, worldRef, zoomLabelRef, nodeEls, shapeEls, frameLabelEls, actionRef, panKey, S,
     // engine

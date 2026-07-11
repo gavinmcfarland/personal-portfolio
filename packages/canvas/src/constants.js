@@ -19,6 +19,15 @@ export const DRAW_TOOLS = ['pen', 'line', 'arrow', 'rect', 'ellipse'];
 /* Shapes with an interior that can take a fill colour. */
 export const FILLABLE_SHAPES = ['rect', 'ellipse'];
 
+/* Font families offered for text blocks. Each key maps to a CSS design token
+   (--sans / --serif / --mono / --hand) via `.tblock[data-font="…"]` rules. */
+export const FONTS = [
+	['sans', 'Sans'],
+	['serif', 'Serif'],
+	['mono', 'Mono'],
+	['script', 'Script'],
+];
+
 export const COLORS = {
 	note: [
 		['#FFE27A', 'yellow'],

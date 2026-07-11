@@ -243,6 +243,10 @@
   line-height: 1.4;
   color: var(--ink);
 }
+.canvas-root .tblock[data-font="sans"] { font-family: var(--sans); }
+.canvas-root .tblock[data-font="serif"] { font-family: var(--serif); }
+.canvas-root .tblock[data-font="mono"] { font-family: var(--mono); }
+.canvas-root .tblock[data-font="script"] { font-family: var(--hand); }
 .canvas-root .tblock .txt {
   outline: none;
   white-space: pre;
@@ -1227,6 +1231,30 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+/* Font-family chooser for text blocks — each button previews its own font. */
+.canvas-root .font-btn {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+}
+.dark .canvas-root .font-btn,
+.canvas-root.dark .font-btn {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.canvas-root .font-btn.active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.canvas-root .font-btn[data-font="sans"] { font-family: var(--sans); }
+.canvas-root .font-btn[data-font="serif"] { font-family: var(--serif); }
+.canvas-root .font-btn[data-font="mono"] { font-family: var(--mono); }
+.canvas-root .font-btn[data-font="script"] { font-family: var(--hand); font-size: 18px; }
 /* "No fill" swatch: white with a red diagonal slash. */
 .canvas-root .swatch.swatch-none {
   position: relative;

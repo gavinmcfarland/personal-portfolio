@@ -4,7 +4,7 @@ import {
   Slash, ArrowUpRight, Square, Circle,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
-import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES } from '../constants';
+import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES, FONTS } from '../constants';
 
 /* Vector shape tools grouped behind a single dropdown button in the toolbar. */
 const SHAPE_TOOLS = [
@@ -100,8 +100,8 @@ function commonValue(items, get) {
      rectangles/ellipses). */
 function Swatches() {
   const {
-    tool, noteColor, strokeColor, fillColor,
-    setNoteColor, setStrokeColor, setFillColor,
+    tool, noteColor, textFont, strokeColor, fillColor,
+    setNoteColor, setTextFont, setStrokeColor, setFillColor,
     selected, nodes, shapes, eng,
   } = useCanvas();
 
@@ -110,23 +110,31 @@ function Swatches() {
     .filter((it) => it.kind === 'shape')
     .map((it) => shapes.find((s) => s.id === it.id))
     .filter(Boolean);
-  const selStickies = selected
+  const selNodesOfType = (type) => selected
     .filter((it) => it.kind === 'node')
     .map((it) => nodes.find((n) => n.id === it.id))
-    .filter((n) => n && n.type === 'sticky');
+    .filter((n) => n && n.type === type);
+  const selStickies = selNodesOfType('sticky');
+  const selTexts = selNodesOfType('tblock');
   const editingShapes = isSelect && selShapes.length > 0;
   const editingStickies = isSelect && selStickies.length > 0;
+  const editingTexts = isSelect && selTexts.length > 0;
   const fillableSel = selShapes.filter((s) => FILLABLE_SHAPES.includes(s.type));
 
   const showNote = tool === 'note' || editingStickies;
+  const showFont = tool === 'text' || editingTexts;
   const showStroke = DRAW_TOOLS.includes(tool) || editingShapes;
   const showFill = FILLABLE_SHAPES.includes(tool) || fillableSel.length > 0;
 
-  if (!showNote && !showStroke && !showFill) return <div className="ui panel" id="swatches" />;
+  if (!showNote && !showFont && !showStroke && !showFill) return <div className="ui panel" id="swatches" />;
 
   const pickNote = (name) => {
     if (editingStickies) selStickies.forEach((n) => eng.updateNode(n.id, { color: name }));
     else setNoteColor(name);
+  };
+  const pickFont = (name) => {
+    if (editingTexts) selTexts.forEach((n) => eng.updateNode(n.id, { font: name }));
+    else setTextFont(name);
   };
   const pickStroke = (hex) => {
     if (editingShapes) selShapes.forEach((s) => eng.updateShape(s.id, { stroke: hex }));
@@ -138,6 +146,7 @@ function Swatches() {
   };
 
   const curNote = editingStickies ? commonValue(selStickies, (n) => n.color) : noteColor;
+  const curFont = editingTexts ? commonValue(selTexts, (n) => n.font || 'serif') : textFont;
   const curStroke = editingShapes ? commonValue(selShapes, (s) => s.stroke) : strokeColor;
   const curFill = fillableSel.length
     ? commonValue(fillableSel, (s) => s.fill || 'none')
@@ -155,6 +164,21 @@ function Swatches() {
               title={name}
               onClick={() => pickNote(name)}
             />
+          ))}
+        </div>
+      )}
+      {showFont && (
+        <div className="swatch-row">
+          {FONTS.map(([name, label]) => (
+            <button
+              key={name}
+              className={`font-btn${curFont === name ? ' active' : ''}`}
+              data-font={name}
+              title={label}
+              onClick={() => pickFont(name)}
+            >
+              {label}
+            </button>
           ))}
         </div>
       )}

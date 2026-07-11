@@ -72,7 +72,7 @@ function EditableNode({ node }) {
       ref={setRef}
       className={cls}
       {...dataProps}
-      {...(isSticky ? { 'data-color': node.color } : {})}
+      {...(isSticky ? { 'data-color': node.color } : { 'data-font': node.font || 'serif' })}
       data-editing={editing ? '1' : ''}
       style={sizedStyle}
       onDoubleClick={onDoubleClick}

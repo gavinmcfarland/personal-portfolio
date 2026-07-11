@@ -146,7 +146,7 @@ export default function Canvas() {
       eng.setTool('select'); eng.selectNode(n.id); eng.startEditing(n.id); return;
     }
     if (tool === 'text') {
-      const n = eng.addNode({ id: eng.newId('tblock'), type: 'tblock', x: w.x, y: w.y - 18, text: '' });
+      const n = eng.addNode({ id: eng.newId('tblock'), type: 'tblock', x: w.x, y: w.y - 18, text: '', font: S.textFont });
       eng.setTool('select'); eng.selectNode(n.id); eng.startEditing(n.id); return;
     }
     if (tool === 'md') {
