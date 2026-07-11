@@ -565,9 +565,17 @@
 .canvas-root .md-render ol {
   margin: 0.55em 0;
   padding-left: 1.4em;
+  list-style-position: outside;
+}
+.canvas-root .md-render ul {
+  list-style-type: disc;
+}
+.canvas-root .md-render ol {
+  list-style-type: decimal;
 }
 .canvas-root .md-render li {
   margin: 0.18em 0;
+  list-style: inherit;
 }
 .canvas-root .md-render blockquote {
   margin: 0.6em 0;

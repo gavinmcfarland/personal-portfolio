@@ -6,8 +6,8 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 662.7131382121468,
-        "y": 372.4574027595337,
+        "x": 533.9131382121471,
+        "y": 378.05740275953383,
         "scale": 0.832125120089922
       },
       "nodes": [
@@ -79,11 +79,11 @@
         {
           "id": "n28-md",
           "type": "md",
-          "x": 865.4203467027783,
-          "y": 66.46154148429328,
+          "x": 389.25810507115614,
+          "y": 160.2162222606282,
           "z": 55,
           "w": 454.83307303997344,
-          "text": "-`install <pkg-manager?>`: Install dependencies\n-`no-install`: Skip dependency installation\n-`verbose:` Show detailed logs\n-`debug`: Enable debug mode"
+          "text": "- `install <pkg-manager?>`: Install dependencies\n- `no-install`: Skip dependency installation\n- `verbose`: Show detailed logs\n- `debug`: Enable debug mode"
         },
         {
           "id": "n29-tblock",
