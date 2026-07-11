@@ -198,6 +198,7 @@ export function CanvasProvider({
   /* ── Refs (imperative engine state) ─────────────────────────── */
   const rootRef = useRef(null);          // the scoped `.canvas-root` wrapper
   const hoverInsideRef = useRef(false);  // pointer is over this canvas (gates keyboard shortcuts)
+  const activeInsideRef = useRef(false); // canvas was the last thing interacted with (also gates shortcuts)
   const viewportRef = useRef(null);
   const worldRef = useRef(null);
   const zoomLabelRef = useRef(null);
@@ -1208,7 +1209,7 @@ export function CanvasProvider({
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setFillColor, setCtxMenu, setSelectedState,
     // refs
-    rootRef, hoverInsideRef, viewportRef, worldRef, zoomLabelRef, nodeEls, shapeEls, frameLabelEls, actionRef, panKey, S,
+    rootRef, hoverInsideRef, activeInsideRef, viewportRef, worldRef, zoomLabelRef, nodeEls, shapeEls, frameLabelEls, actionRef, panKey, S,
     // engine
     eng,
   };

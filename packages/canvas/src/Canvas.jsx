@@ -59,7 +59,7 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, fit, ui, bgColor, accent } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, fit, ui, bgColor, accent } = ctx;
 
   const bgStyle = bgColor
     ? { '--bg': bgColor, '--grid': gridInkFor(bgColor) || undefined }
@@ -422,10 +422,12 @@ export default function Canvas() {
     };
 
     const onKeyDown = (e) => {
-      // Only act when the pointer is over this canvas, so an embedded board never
-      // steals keystrokes meant for the rest of the host page (in fullscreen the
-      // pointer is always inside, preserving the original behaviour).
-      if (!hoverInsideRef.current) return;
+      // Only act when this canvas is engaged — the pointer is over it, or it was
+      // the last thing the user interacted with (clicked a tool / the board) and
+      // they haven't since clicked elsewhere on the host page. That keeps an
+      // embedded board from stealing keystrokes meant for the rest of the page
+      // while letting shortcuts fire without babysitting the cursor over the canvas.
+      if (!hoverInsideRef.current && !activeInsideRef.current) return;
       if (S.editingId) return;
       // Don't hijack keys while typing in a field (e.g. renaming a page/frame).
       const ae = document.activeElement;
@@ -460,7 +462,7 @@ export default function Canvas() {
     // (image / gif / svg / video) drops at the viewport centre; otherwise fall
     // back to the internal node clipboard.
     const onPaste = (e) => {
-      if (!hoverInsideRef.current || S.editingId || S.readOnly) return;
+      if ((!hoverInsideRef.current && !activeInsideRef.current) || S.editingId || S.readOnly) return;
       const ae = document.activeElement;
       if (ae && (ae.isContentEditable || ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
       const r = viewportRef.current && viewportRef.current.getBoundingClientRect();
@@ -474,7 +476,15 @@ export default function Canvas() {
     // screen-space chrome like frame labels, while scrolling elsewhere on the
     // host page is never hijacked; keys are on window but gated by
     // pointer-inside (above).
+    // Track engagement: a pointerdown inside this canvas makes it "active" (so
+    // keyboard shortcuts keep working once the cursor moves off the board);
+    // clicking anywhere else on the host page releases it.
+    const onDocDown = (e) => {
+      activeInsideRef.current = !!(rootRef.current && rootRef.current.contains(e.target));
+    };
+
     const vp = rootRef.current;
+    window.addEventListener('pointerdown', onDocDown, true);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     (vp || window).addEventListener('wheel', onWheel, { passive: false });
@@ -482,6 +492,7 @@ export default function Canvas() {
     window.addEventListener('keyup', onKeyUp);
     window.addEventListener('paste', onPaste);
     return () => {
+      window.removeEventListener('pointerdown', onDocDown, true);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       (vp || window).removeEventListener('wheel', onWheel);
