@@ -644,7 +644,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 6px 8px 6px 6px;
+  padding: 6px;
   min-height: 34px;
   border-bottom: 1px solid var(--line);
   background: var(--bg);
