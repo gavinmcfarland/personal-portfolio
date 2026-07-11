@@ -16,6 +16,9 @@ function Shape({ shape, draft }) {
   const stroke = shape.stroke;
   const width = shape.width || 3;
   const common = { className: 'shape', stroke, strokeWidth: width, 'data-id': shape.id, ref: setRef };
+  // Inline style wins over the `.shape.fillable` CSS rule, so a per-shape fill
+  // (or 'none' for a hollow shape) is the source of truth for rect/ellipse.
+  const fillStyle = { fill: shape.fill && shape.fill !== 'none' ? shape.fill : 'none' };
 
   let el = null;
   let defs = null;
@@ -48,6 +51,7 @@ function Shape({ shape, draft }) {
       <rect
         {...common}
         className="shape fillable"
+        style={fillStyle}
         x={Math.min(shape.x1, shape.x2)}
         y={Math.min(shape.y1, shape.y2)}
         width={Math.abs(shape.x2 - shape.x1)}
@@ -60,6 +64,7 @@ function Shape({ shape, draft }) {
       <ellipse
         {...common}
         className="shape fillable"
+        style={fillStyle}
         cx={(shape.x1 + shape.x2) / 2}
         cy={(shape.y1 + shape.y2) / 2}
         rx={Math.abs(shape.x2 - shape.x1) / 2}

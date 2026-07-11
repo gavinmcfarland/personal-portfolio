@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useCanvas } from './CanvasProvider';
-import { ZOOM, PAN, DRAW_TOOLS } from './constants';
+import { ZOOM, PAN, DRAW_TOOLS, FILLABLE_SHAPES } from './constants';
 import World from './World';
 import Chrome from './Chrome';
 import TopBar from './ui/TopBar';
@@ -121,6 +121,7 @@ export default function Canvas() {
     }
     if (DRAW_TOOLS.includes(tool)) {
       const s = { id: eng.newShapeId(), type: tool, stroke: S.strokeColor, width: 3 };
+      if (FILLABLE_SHAPES.includes(tool)) s.fill = S.fillColor;
       if (tool === 'pen') s.points = [[w.x, w.y]];
       else { s.x1 = w.x; s.y1 = w.y; s.x2 = w.x; s.y2 = w.y; }
       actionRef.current = { type: 'draw', s };

@@ -4,7 +4,7 @@ import {
   Slash, ArrowUpRight, Square, Circle,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
-import { COLORS, DRAW_TOOLS } from '../constants';
+import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES } from '../constants';
 
 /* Vector shape tools grouped behind a single dropdown button in the toolbar. */
 const SHAPE_TOOLS = [
@@ -84,34 +84,111 @@ function ShapeMenu() {
   );
 }
 
+/* Value shared by every item in a list, or undefined when they differ — used to
+   highlight the active swatch only when the whole selection agrees. */
+function commonValue(items, get) {
+  if (!items.length) return undefined;
+  const first = get(items[0]);
+  return items.every((x) => get(x) === first) ? first : undefined;
+}
+
+/* Colour palette below the toolbar. Depending on context it either sets the
+   defaults for the next shape/note or live-edits the current selection:
+   - note tool, or a sticky note selected → note colours
+   - a draw tool active, or shapes selected → Stroke row (+ Fill row for
+     rectangles/ellipses). */
 function Swatches() {
-  const { tool, noteColor, strokeColor, setNoteColor, setStrokeColor, selected, nodes, eng } = useCanvas();
-  const kind = tool === 'note' ? 'note' : 'stroke';
-  const show = tool === 'note' || DRAW_TOOLS.includes(tool);
-  if (!show) return <div className="ui panel" id="swatches" />;
-  const current = kind === 'note' ? noteColor : strokeColor;
+  const {
+    tool, noteColor, strokeColor, fillColor,
+    setNoteColor, setStrokeColor, setFillColor,
+    selected, nodes, shapes, eng,
+  } = useCanvas();
+
+  const isSelect = tool === 'select';
+  const selShapes = selected
+    .filter((it) => it.kind === 'shape')
+    .map((it) => shapes.find((s) => s.id === it.id))
+    .filter(Boolean);
+  const selStickies = selected
+    .filter((it) => it.kind === 'node')
+    .map((it) => nodes.find((n) => n.id === it.id))
+    .filter((n) => n && n.type === 'sticky');
+  const editingShapes = isSelect && selShapes.length > 0;
+  const editingStickies = isSelect && selStickies.length > 0;
+  const fillableSel = selShapes.filter((s) => FILLABLE_SHAPES.includes(s.type));
+
+  const showNote = tool === 'note' || editingStickies;
+  const showStroke = DRAW_TOOLS.includes(tool) || editingShapes;
+  const showFill = FILLABLE_SHAPES.includes(tool) || fillableSel.length > 0;
+
+  if (!showNote && !showStroke && !showFill) return <div className="ui panel" id="swatches" />;
+
+  const pickNote = (name) => {
+    if (editingStickies) selStickies.forEach((n) => eng.updateNode(n.id, { color: name }));
+    else setNoteColor(name);
+  };
+  const pickStroke = (hex) => {
+    if (editingShapes) selShapes.forEach((s) => eng.updateShape(s.id, { stroke: hex }));
+    else setStrokeColor(hex);
+  };
+  const pickFill = (hex) => {
+    if (editingShapes) fillableSel.forEach((s) => eng.updateShape(s.id, { fill: hex }));
+    else setFillColor(hex);
+  };
+
+  const curNote = editingStickies ? commonValue(selStickies, (n) => n.color) : noteColor;
+  const curStroke = editingShapes ? commonValue(selShapes, (s) => s.stroke) : strokeColor;
+  const curFill = fillableSel.length
+    ? commonValue(fillableSel, (s) => s.fill || 'none')
+    : fillColor;
+
   return (
     <div className="ui panel show" id="swatches">
-      {COLORS[kind].map(([hex, name]) => {
-        const val = kind === 'note' ? name : hex;
-        return (
-          <button
-            key={hex}
-            className={`swatch${current === val ? ' active' : ''}`}
-            style={{ background: hex }}
-            onClick={() => {
-              if (kind === 'note') {
-                setNoteColor(name);
-                selected.forEach((it) => {
-                  if (it.kind !== 'node') return;
-                  const n = nodes.find((x) => x.id === it.id);
-                  if (n && n.type === 'sticky') eng.updateNode(n.id, { color: name });
-                });
-              } else setStrokeColor(hex);
-            }}
-          />
-        );
-      })}
+      {showNote && (
+        <div className="swatch-row">
+          {COLORS.note.map(([hex, name]) => (
+            <button
+              key={name}
+              className={`swatch${curNote === name ? ' active' : ''}`}
+              style={{ background: hex }}
+              title={name}
+              onClick={() => pickNote(name)}
+            />
+          ))}
+        </div>
+      )}
+      {showStroke && (
+        <div className="swatch-row">
+          <span className="swatch-label">Stroke</span>
+          {COLORS.stroke.map(([hex]) => (
+            <button
+              key={hex}
+              className={`swatch${curStroke === hex ? ' active' : ''}`}
+              style={{ background: hex }}
+              onClick={() => pickStroke(hex)}
+            />
+          ))}
+        </div>
+      )}
+      {showFill && (
+        <div className="swatch-row">
+          <span className="swatch-label">Fill</span>
+          {COLORS.fill.map(([hex, name]) => {
+            const none = hex === 'none';
+            return (
+              <button
+                key={hex}
+                className={`swatch${none ? ' swatch-none' : ''}${curFill === hex ? ' active' : ''}`}
+                // Composite the translucent fill over white so the chip looks
+                // the same in both themes (on the board it sits over the actual bg).
+                style={none ? undefined : { backgroundColor: '#fff', backgroundImage: `linear-gradient(${hex},${hex})` }}
+                title={none ? name : undefined}
+                onClick={() => pickFill(hex)}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

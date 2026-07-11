@@ -16,6 +16,8 @@ export const GRID = 26;
 export const clampScale = (s) => Math.min(ZOOM.max, Math.max(ZOOM.min, s));
 
 export const DRAW_TOOLS = ['pen', 'line', 'arrow', 'rect', 'ellipse'];
+/* Shapes with an interior that can take a fill colour. */
+export const FILLABLE_SHAPES = ['rect', 'ellipse'];
 
 export const COLORS = {
   note: [
@@ -33,6 +35,19 @@ export const COLORS = {
     ['#2E7D32', ''],
     ['#1565C0', ''],
     ['#F5A524', ''],
+  ],
+  // First entry is the "no fill" option; the rest are semi-transparent tints
+  // (8-digit #RRGGBBAA) so a single value composites correctly over both light
+  // and dark boards — no per-mode variants needed. Hues pair with the strokes.
+  fill: [
+    ['none', 'No fill'],
+    ['#1414174D', ''], // black
+    ['#7878804D', ''], // neutral grey
+    ['#7C2D914D', ''], // purple
+    ['#E5484D4D', ''], // red
+    ['#2E7D324D', ''], // green
+    ['#1565C04D', ''], // blue
+    ['#F5A5244D', ''], // orange
   ],
 };
 
