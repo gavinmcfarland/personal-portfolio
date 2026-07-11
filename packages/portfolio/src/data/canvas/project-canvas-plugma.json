@@ -6,16 +6,16 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 540.7249860459355,
-        "y": 384.3849647393936,
-        "scale": 0.664737527811461
+        "x": -16.59544456268901,
+        "y": 503.6610653801114,
+        "scale": 1.4228525083269974
       },
       "nodes": [
         {
           "id": "intro",
           "type": "md",
-          "x": -132.08422347464682,
-          "y": -277.5638990153701,
+          "x": 73.3303306976074,
+          "y": -338.44866535691625,
           "z": 1,
           "w": 340,
           "text": "# Plugma\n\nA zero-config CLI for building Figma plugins, with hot-module reloading that actually works.\n\n[Node.js] [TypeScript] [Vite] [React] [Svelte] [Vue]"
@@ -23,8 +23,8 @@
         {
           "id": "note-0",
           "type": "sticky",
-          "x": 566.6015607518334,
-          "y": 504.57630145512087,
+          "x": 478.78780626261175,
+          "y": -272.9218139700034,
           "z": 46,
           "color": "yellow",
           "text": "True HMR across the UI and plugin sandbox — no full reloads"
@@ -32,8 +32,8 @@
         {
           "id": "note-1",
           "type": "sticky",
-          "x": 761.3114904218588,
-          "y": 621.2926410896124,
+          "x": 665.1257947381375,
+          "y": -214.48008588778853,
           "z": 47,
           "color": "blue",
           "text": "Framework-agnostic: React, Svelte and Vue out of the box"
@@ -41,8 +41,8 @@
         {
           "id": "note-2",
           "type": "sticky",
-          "x": 411.49750558829476,
-          "y": 386.3984308230249,
+          "x": 552.2382528477617,
+          "y": -87.05822911433279,
           "z": 5,
           "color": "green",
           "text": "Zero config to start; a single command to build and publish"
@@ -50,8 +50,8 @@
         {
           "id": "n25-tblock",
           "type": "tblock",
-          "x": 308.3781971242966,
-          "y": 270.84158516682857,
+          "x": 473.7780551036948,
+          "y": -361.59870844164703,
           "z": 45,
           "text": "Features supported",
           "w": 261.5990091908047
@@ -59,8 +59,8 @@
         {
           "id": "n26-sticky",
           "type": "sticky",
-          "x": 142.501956018389,
-          "y": 692.6660601683317,
+          "x": 247.66354236587955,
+          "y": -86.28204985892307,
           "z": 52,
           "color": "yellow",
           "text": ""

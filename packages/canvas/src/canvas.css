@@ -123,7 +123,8 @@
   min-width:120px;padding:6px 8px;border-radius:6px;
   font-family:var(--serif);font-size:1.5rem;line-height:1.4;color:var(--ink);
 }
-.canvas-root .tblock .txt{outline:none;white-space:pre;cursor:text;}
+.canvas-root .tblock .txt{outline:none;white-space:pre;}
+.canvas-root .tblock[data-editing="1"] .txt{cursor:text;}
 .canvas-root .tblock[data-w] .txt{white-space:pre-wrap;word-break:break-word;}
 .canvas-root .node[data-editing="1"]{cursor:text;}
 
