@@ -241,8 +241,16 @@ function Code({ node }) {
     >
       <div
         className="code-head"
-        onPointerDown={(e) => { e.stopPropagation(); if (editing) headerHit.current = true; }}
-        onDoubleClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => {
+          // Only the interactive controls swallow the gesture (so using them
+          // doesn't drag the node or commit the edit); clicking bare header space
+          // falls through to the canvas so the node can be selected / dragged.
+          if (e.target.closest('button, select')) {
+            e.stopPropagation();
+            if (editing) headerHit.current = true;
+          }
+        }}
+        onDoubleClick={(e) => { if (e.target.closest('button, select')) e.stopPropagation(); }}
       >
         {/* The visible language text is always this <span>, so it never shifts
             between states. While editing, a transparent <select> overlays it to
