@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useLocation } from 'react-router-dom';
 import { Canvas } from '@gavinmcfarland/canvas';
 import { buildBase } from './ProjectCanvas';
 import { publishedBoard } from '../data/canvasBoards';
@@ -42,6 +43,14 @@ export default function ProjectCanvasPreview({ project, children }) {
   const popRef = useRef(null);
   const mouse = useRef({ x: 0, y: 0 });
 
+  /* The Projects list stays mounted for the app's life; navigating to a project
+     just overlays it (see App.jsx). So a hidden row can still be hovered or —
+     most visibly — refocused when the browser restores focus to the last-clicked
+     row's link on window regain, which would pop a thumbnail over the open
+     project page. The preview only ever makes sense on the home route, so gate
+     everything on it. */
+  const onHome = useLocation().pathname === '/';
+
   const clamp = (x, y) => {
     const w = popRef.current?.offsetWidth ?? 418;
     const h = popRef.current?.offsetHeight ?? 258;
@@ -51,16 +60,35 @@ export default function ProjectCanvasPreview({ project, children }) {
     };
   };
 
+  // A pending 150ms timer could fire after a fast row-click navigates away;
+  // read the live route here (not the value captured at schedule time) so it
+  // becomes a no-op off home.
+  const homeRef = useRef(onHome);
+  useEffect(() => { homeRef.current = onHome; }, [onHome]);
+
   // Small enter delay so skimming the list doesn't flash thumbnails.
   const show = () => {
+    if (!onHome) return;
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => setPos(clamp(mouse.current.x, mouse.current.y)), 150);
+    timer.current = setTimeout(() => {
+      if (homeRef.current) setPos(clamp(mouse.current.x, mouse.current.y));
+    }, 150);
   };
   const hide = () => {
     clearTimeout(timer.current);
     setPos(null);
   };
   useEffect(() => () => clearTimeout(timer.current), []);
+
+  // Leaving home (into a project overlay) must dismiss any open preview — its
+  // row is now hidden behind the overlay and should never resurface there.
+  // Reset during render (React's setState-during-render pattern) so no thumbnail
+  // lingers a frame on the way out.
+  const [prevHome, setPrevHome] = useState(onHome);
+  if (prevHome !== onHome) {
+    setPrevHome(onHome);
+    if (!onHome && pos) setPos(null);
+  }
 
   const onMouseEnter = (e) => {
     mouse.current = { x: e.clientX, y: e.clientY };
@@ -78,7 +106,9 @@ export default function ProjectCanvasPreview({ project, children }) {
     el.style.top = `${p.y}px`;
   };
 
-  // Keyboard focus has no cursor — anchor the card to the row instead.
+  // Keyboard focus has no cursor — anchor the card to the row instead. (show()
+  // gates on onHome, so a link refocused while hidden behind a project overlay
+  // never pops a thumbnail.)
   const onFocus = (e) => {
     const r = e.currentTarget.getBoundingClientRect();
     mouse.current = { x: r.left + r.width / 2, y: r.bottom };
@@ -88,7 +118,7 @@ export default function ProjectCanvasPreview({ project, children }) {
   return (
     <div onMouseEnter={onMouseEnter} onMouseMove={onMouseMove} onMouseLeave={hide} onFocus={onFocus} onBlur={hide}>
       {children}
-      {pos &&
+      {pos && onHome &&
         createPortal(
           <div
             ref={popRef}
