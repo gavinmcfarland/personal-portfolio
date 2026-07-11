@@ -6,16 +6,16 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 702.9154956573492,
-        "y": 529.5461946915002,
-        "scale": 1.1043514019382967
+        "x": 388.499199029426,
+        "y": 333.7654863025406,
+        "scale": 0.9002877808905491
       },
       "nodes": [
         {
           "id": "intro",
           "type": "md",
-          "x": 73.3303306976074,
-          "y": -338.44866535691625,
+          "x": -179.87199711776194,
+          "y": -437.56731924273015,
           "z": 1,
           "w": 340,
           "text": "# Plugma\n\nA zero-config CLI for building Figma plugins, with hot-module reloading that actually works.\n\n[Node.js] [TypeScript] [Vite] [React] [Svelte] [Vue]"
@@ -23,8 +23,8 @@
         {
           "id": "note-0",
           "type": "sticky",
-          "x": 478.78780626261175,
-          "y": -272.9218139700034,
+          "x": 366.5904649710787,
+          "y": -304.90202431382124,
           "z": 46,
           "color": "yellow",
           "text": "True HMR across the UI and plugin sandbox — no full reloads"
@@ -50,8 +50,8 @@
         {
           "id": "n25-tblock",
           "type": "tblock",
-          "x": 473.7780551036948,
-          "y": -361.59870844164703,
+          "x": 926.6779043991944,
+          "y": -94.38027660913957,
           "z": 45,
           "text": "Features supported",
           "w": 261.5990091908047
@@ -68,11 +68,39 @@
         {
           "id": "n27-code",
           "type": "code",
-          "x": -353.53573709237764,
-          "y": -324.6096547773974,
+          "x": -222.37581175170004,
+          "y": -122.01772563234131,
           "z": 54,
           "w": 372.26282295360716,
-          "text": "<html>\n  <div>Hello world</div>\n</html>",
+          "text": "npm create plugma@latest add",
+          "lang": "bash"
+        },
+        {
+          "id": "n28-md",
+          "type": "md",
+          "x": 865.4203467027783,
+          "y": 66.46154148429328,
+          "z": 55,
+          "w": 454.83307303997344,
+          "text": "-`install <pkg-manager?>`: Install dependencies\n-`no-install`: Skip dependency installation\n-`verbose:` Show detailed logs\n-`debug`: Enable debug mode"
+        },
+        {
+          "id": "n29-tblock",
+          "type": "tblock",
+          "x": 368.7356503644622,
+          "y": -384.1010045656931,
+          "z": 56,
+          "text": "Features supported",
+          "w": 261.5990091908047
+        },
+        {
+          "id": "n30-code",
+          "type": "code",
+          "x": -271.8288576429962,
+          "y": 86.98622858125873,
+          "z": 57,
+          "w": 420,
+          "text": "<html>",
           "lang": "html"
         }
       ],

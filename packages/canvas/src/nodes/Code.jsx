@@ -2,7 +2,11 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { useRegister } from './common';
-import { codeHighlight, codeLangLabel, CODE_LANGS } from '../code';
+import { codeHighlight, codeLangLabel, CODE_LANGS, normalizeLang } from '../code';
+import { formatCode as builtinFormat } from '../code-format';
+
+const FORMAT_DEBOUNCE = 220; // ms of idle before an on-type reformat runs
+const INDENT = '  ';         // one indent step (matches tab-size / Tab handling)
 
 /* Code card — highlighted source at rest, a live-highlighted source editor while
    editing. Same caret-safe technique as the markdown node: an uncontrolled
@@ -14,16 +18,23 @@ import { codeHighlight, codeLangLabel, CODE_LANGS } from '../code';
    can override it by passing `highlightCode(src, lang)` to <Canvas> (e.g. wired
    to Shiki / Prism), keeping any such library entirely optional. */
 function Code({ node }) {
-  const { editingId, readOnly, eng, nodeEls, highlightCode } = useCanvas();
+  const { editingId, readOnly, eng, nodeEls, highlightCode, formatCode, formatOnType } = useCanvas();
   const { setRef, dataProps } = useRegister(node);
   const taRef = useRef(null);
   const headerHit = useRef(false); // true between a header pointer-down and the resulting blur
   const committed = useRef(false); // guards against committing twice per edit session
+  const fmtTimer = useRef(0);      // pending debounced on-type reformat
+  const composing = useRef(false); // true during IME composition (don't reformat mid-compose)
   const lang = node.lang || 'js';
   const [src, setSrc] = useState(node.text || '');
   const [copied, setCopied] = useState(false);
   const editing = editingId === node.id;
   const hl = highlightCode || codeHighlight;
+  // Format-on-type is on by default via the built-in reindenter; a host can swap
+  // in a real formatter (e.g. Prettier's formatWithCursor) through `formatCode`,
+  // or disable it with `formatOnType={false}`.
+  const fmt = formatCode || builtinFormat;
+  const typeFormat = formatOnType !== false && !!fmt;
 
   // While editing, keep the selection outline in sync as the source grows/shrinks
   // the node (edits live in local state, so the provider's sync never fires).
@@ -49,10 +60,48 @@ function Code({ node }) {
   const commit = () => {
     if (committed.current) return;
     committed.current = true;
+    clearTimeout(fmtTimer.current);
     const text = taRef.current ? taRef.current.value : src;
     eng.updateNode(node.id, { text });
     eng.stopEditing();
   };
+
+  // Reformat the live buffer in place, preserving the caret. Runs on idle (see
+  // scheduleFormat) so it never fights active typing. Supports sync or async
+  // formatters and silently keeps the raw text if the formatter rejects/throws.
+  const runFormat = () => {
+    const ta = taRef.current;
+    if (!ta || composing.current) return;
+    const before = ta.value;
+    const pos = ta.selectionStart;
+    Promise.resolve()
+      .then(() => fmt(before, lang, { cursorOffset: pos }))
+      .then((res) => {
+        const el = taRef.current;
+        if (!el || el.value !== before) return; // stale: unmounted, or user typed since
+        const formatted = typeof res === 'string' ? res : res && res.formatted;
+        if (formatted == null || formatted === before) return;
+        const rawPos = typeof res === 'string' ? pos : (res.cursorOffset != null ? res.cursorOffset : pos);
+        const caret = Math.max(0, Math.min(rawPos, formatted.length));
+        el.value = formatted;
+        try { el.setSelectionRange(caret, caret); } catch { /* not focused */ }
+        setSrc(formatted);
+        eng.syncChrome();
+      })
+      .catch(() => { /* formatter rejected invalid/incomplete code — leave as-is */ });
+  };
+
+  const scheduleFormat = () => {
+    if (!typeFormat) return;
+    clearTimeout(fmtTimer.current);
+    fmtTimer.current = setTimeout(runFormat, FORMAT_DEBOUNCE);
+  };
+
+  // Cancel any pending reformat when editing ends (and on unmount).
+  useEffect(() => {
+    if (!editing) clearTimeout(fmtTimer.current);
+    return () => clearTimeout(fmtTimer.current);
+  }, [editing]);
 
   // Clicking outside the node exits editing. The textarea's blur normally handles
   // this, but opening the language dropdown moves focus onto the <select>, so the
@@ -90,18 +139,45 @@ function Code({ node }) {
       ta.selectionStart = ta.selectionEnd = s + 2;
       setSrc(ta.value);
     } else if (e.key === 'Enter') {
-      // Auto-indent: carry the current line's leading whitespace onto the new line.
-      const s = ta.selectionStart;
-      const lineStart = ta.value.lastIndexOf('\n', s - 1) + 1;
-      const indent = (ta.value.slice(lineStart, s).match(/^[ \t]*/) || [''])[0];
-      if (indent) {
-        e.preventDefault();
-        const en = ta.selectionEnd;
-        ta.value = ta.value.slice(0, s) + '\n' + indent + ta.value.slice(en);
-        ta.selectionStart = ta.selectionEnd = s + 1 + indent.length;
-        setSrc(ta.value);
+      e.preventDefault();
+      const s = ta.selectionStart, en = ta.selectionEnd, v = ta.value;
+      const lineStart = v.lastIndexOf('\n', s - 1) + 1;
+      const prevIndent = (v.slice(lineStart, s).match(/^[ \t]*/) || [''])[0]; // fallback baseline
+      const before = v.slice(0, s), after = v.slice(en);
+      const prevCh = before.slice(-1);
+      // Expand a bracket / tag pair the caret sits inside onto three lines.
+      const pairs = { '{': '}', '(': ')', '[': ']' };
+      const braceExpand = pairs[prevCh] && after.charAt(0) === pairs[prevCh];
+      const htmlExpand = normalizeLang(lang) === 'html' && prevCh === '>' && before.slice(-2) !== '/>' && /^\s*<\//.test(after);
+      let caret;
+      if (braceExpand || htmlExpand) {
+        const rest = after.replace(/^[ \t]*/, '');
+        ta.value = before + '\n' + prevIndent + INDENT + '\n' + prevIndent + rest;
+        caret = before.length + 1 + prevIndent.length + INDENT.length;
+      } else {
+        ta.value = before + '\n' + prevIndent + after;
+        caret = before.length + 1 + prevIndent.length;
       }
+      ta.setSelectionRange(caret, caret);
+      setSrc(ta.value);
+      // Reformat immediately (not debounced) so the new line lands at its correct
+      // structural indent right away. The formatter overrides the baseline above
+      // for supported languages; for others the baseline stands.
+      if (typeFormat) { clearTimeout(fmtTimer.current); runFormat(); }
     }
+  };
+
+  const onInput = (e) => {
+    setSrc(e.target.value);
+    const it = (e.nativeEvent && e.nativeEvent.inputType) || '';
+    // Don't reformat on deletions or undo/redo — otherwise removing indentation
+    // (or undoing) is instantly reverted by the reindenter. Also cancel any
+    // already-pending reformat so a prior keystroke doesn't bring it back.
+    if (it.startsWith('delete') || it === 'historyUndo' || it === 'historyRedo') {
+      clearTimeout(fmtTimer.current);
+      return;
+    }
+    scheduleFormat();
   };
 
   const onDoubleClick = (e) => {
@@ -173,9 +249,11 @@ function Code({ node }) {
           spellCheck={false}
           ref={taRef}
           defaultValue={node.text || ''}
-          onInput={(e) => setSrc(e.target.value)}
+          onInput={onInput}
           onKeyDown={onKeyDown}
           onBlur={onBlur}
+          onCompositionStart={() => { composing.current = true; clearTimeout(fmtTimer.current); }}
+          onCompositionEnd={() => { composing.current = false; scheduleFormat(); }}
         />
       </div>
     </div>

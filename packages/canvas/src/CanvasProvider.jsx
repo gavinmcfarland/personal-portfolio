@@ -142,6 +142,8 @@ export function CanvasProvider({
   homeId = DEFAULT_HOME_ID,
   nodeTypes = null,
   highlightCode = null, // optional custom code highlighter (src, lang) => html; falls back to the built-in tokeniser
+  formatCode = null, // optional code formatter (src, lang, {cursorOffset}) => string | {formatted, cursorOffset}; falls back to the built-in reindenter
+  formatOnType = true, // reformat code objects on the fly while typing (set false to disable)
   onPublish = null,
   onUploadImage = null,
   onUploadVideo = null,
@@ -1208,7 +1210,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, fillColor, ctxMenu,
     publishState, fullscreenId, pages, activePageId, pageData, bgColor,
-    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, theme, accent, fit, ui, saveStatus,
+    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setFillColor, setCtxMenu, setSelectedState,
     // refs
