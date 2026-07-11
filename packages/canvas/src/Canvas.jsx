@@ -73,11 +73,19 @@ export default function Canvas() {
     const vp = viewportRef.current;
 
     if (S.readOnly) {
-      if (e.target.closest && e.target.closest('a,button')) return;
+      // Only genuine interactive controls (in read-only, just the code card's
+      // copy button) swallow the gesture so a tap operates them. Everything else —
+      // crucially link cards, which are a full <a> — still starts a pan; a
+      // stationary tap opens the link (handled in onUp), mirroring how an image
+      // tap opens full-screen. Bailing on <a> here left link (and code button)
+      // cards un-pannable on touch, where cards fill the screen and there's little
+      // bare board to grab.
+      if (e.target.closest && e.target.closest('button, select')) return;
       eng.freezeView();
-      // Remember media under the pointer so a stationary tap opens it full-screen.
+      // Remember media / links under the pointer so a stationary tap opens them.
       const imgEl = e.target.closest && e.target.closest('.node.image,.node.video');
-      actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: imgEl ? imgEl.dataset.id : null };
+      const linkEl = e.target.closest && e.target.closest('.node.link');
+      actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: imgEl ? imgEl.dataset.id : null, linkId: linkEl ? linkEl.dataset.id : null };
       rootClass('panning', true);
       vp.setPointerCapture(e.pointerId);
       return;
@@ -341,6 +349,7 @@ export default function Canvas() {
       if (a.type === 'pan') {
         rootClass('panning', false);
         if (a.imgId && !a.moved) eng.openFullscreen(a.imgId); // tap an image/video → full-screen
+        if (a.linkId && !a.moved) eng.openLink(a.linkId);      // tap a link card → open it
       }
       if (a.type === 'move') {
         const nodePatches = {}, shapePatches = {};
