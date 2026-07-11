@@ -11,7 +11,7 @@
 /* ── Design tokens ────────────────────────────────────────────── */
 .canvas-root{
   --bg:#F6F5F3;
-  --grid:rgba(0,0,0,.055);
+  --grid:rgba(0,0,0,.075);
   --grid-strong:rgba(0,0,0,.12);
   --surface:#FFFFFF;
   --ink:#141417;
@@ -34,7 +34,7 @@
 }
 .dark .canvas-root,.canvas-root.dark{
   --bg:#0C0C0E;
-  --grid:rgba(255,255,255,.05);
+  --grid:rgba(255,255,255,.07);
   --grid-strong:rgba(255,255,255,.10);
   --surface:#161619;
   --ink:#F2F2EF;
@@ -71,7 +71,7 @@
   position:absolute;inset:0;
   background-color:var(--bg);
   background-image:radial-gradient(var(--grid) 1.4px,transparent 1.4px);
-  background-size:26px 26px;
+  background-size:22px 22px;
   background-position:var(--gx,0) var(--gy,0);
   cursor:default;
   transition:background-color .4s ease;
