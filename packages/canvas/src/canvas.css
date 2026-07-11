@@ -723,11 +723,10 @@
 .canvas-root .code:hover .code-copy {
   opacity: 1;
 }
-/* While editing, keep the button's slot (so the header height doesn't change)
-   but hide it — the copy affordance belongs to the resting state. */
+/* While editing, keep the copy button visible and usable (its click is handled
+   without exiting edit mode). */
 .canvas-root .code.code-editing .code-copy {
-  visibility: hidden;
-  pointer-events: none;
+  opacity: 1;
 }
 .canvas-root .code-copy:hover {
   color: var(--accent);

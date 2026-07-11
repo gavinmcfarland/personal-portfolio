@@ -47,6 +47,16 @@
           "w": 420,
           "text": "const greet = (name) => {\nreturn `Hello, ${name}!`; // template\n}\nlet n = 42;\nif (n > 10) console.log(greet(\"world\"));",
           "lang": "js"
+        },
+        {
+          "id": "n2-code",
+          "type": "code",
+          "x": 442.7516721033052,
+          "y": 5.889748643377353,
+          "z": 6,
+          "w": 420,
+          "text": "",
+          "lang": "js"
         }
       ],
       "shapes": [

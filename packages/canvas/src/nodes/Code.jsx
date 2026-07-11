@@ -99,10 +99,12 @@ function Code({ node }) {
 
   const copy = (e) => {
     e.stopPropagation();
-    const text = node.text || '';
+    // While editing, copy the live (uncommitted) editor text, not the stored value.
+    const text = editing && taRef.current ? taRef.current.value : (node.text || '');
     const done = () => { setCopied(true); setTimeout(() => setCopied(false), 1400); };
     if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(done, () => {});
     else done();
+    if (editing) taRef.current?.focus(); // clicking the button blurred the textarea — restore it
   };
 
   const painted = hl(editing ? src : (node.text || ''), lang);
