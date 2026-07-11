@@ -50,6 +50,7 @@ function normalizeSaved(n) {
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
   if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '', svg: n.svg != null ? !!n.svg : isSvgSrc(n.src, n.alt) };
   if (n.type === 'video') return { ...base, w: n.w || 320, h: n.h || 180, src: n.src || '', alt: n.alt || '' };
+  if (n.type === 'sound') return { ...base, w: n.w || 260, h: n.h || 56, src: n.src || '', name: n.name || '', dur: n.dur || 0 };
   const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
   const ff = n.font ? { font: n.font } : null; // serif | sans | mono | script
   if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs, ...ff }; // resized tblock wraps at its width
@@ -153,6 +154,7 @@ export function CanvasProvider({
   onPublish = null,
   onUploadImage = null,
   onUploadVideo = null,
+  onUploadAudio = null,
   onChange = null,
   theme = null, // optional { mode, toggle } — renders a theme button in the top bar
   accent = null, // theme/accent colour: a single CSS colour, or { light, dark } per theme (default: purple)
@@ -211,6 +213,8 @@ export function CanvasProvider({
   const [fullscreenId, setFullscreenId] = useState(null); // image node shown in the lightbox
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
   const [publishState, setPublishState] = useState('idle'); // idle|saving|done|error
+  const [recording, setRecording] = useState(null); // {} while capturing mic audio, else null
+  const recRef = useRef(null); // { rec: MediaRecorder, stream, cancelled } during a recording
   const publishT = useRef(0);
   const autoPublishT = useRef(0); // debounce for background auto-publish
   const publishDirty = useRef(false); // a debounced publish is pending / unflushed
@@ -278,6 +282,7 @@ export function CanvasProvider({
   S.nodes = nodes;
   S.shapes = shapes;
   S.fullscreenId = fullscreenId;
+  S.recording = recording;
   S.pages = pages;
   S.activePageId = activePageId;
   S.bgColor = bgColor;
@@ -715,6 +720,7 @@ export function CanvasProvider({
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
       else if (n.type === 'code') { o.w = n.w; o.text = n.text; o.lang = n.lang; if (n.wrap != null) o.wrap = n.wrap ? 1 : 0; }
       else if (n.type === 'image' || n.type === 'video') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; if (n.svg) o.svg = 1; }
+      else if (n.type === 'sound') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.name) o.name = n.name; if (n.dur) o.dur = n.dur; }
       return o;
     }
     function serializeShape(s) {
@@ -910,6 +916,16 @@ export function CanvasProvider({
       v.onerror = () => reject(new Error('could not decode video'));
       v.src = src;
     });
+    /* Audio has no visual size — measuring just reads the clip duration so the
+       node can show a total time before the element loads. MediaRecorder WebMs
+       report Infinity, which the node resolves live on play; treat it as 0 here. */
+    const measureAudio = (src) => new Promise((resolve) => {
+      const a = document.createElement('audio');
+      a.preload = 'metadata';
+      a.onloadedmetadata = () => resolve(isFinite(a.duration) ? a.duration : 0);
+      a.onerror = () => resolve(0);
+      a.src = src;
+    });
     /* Some drag sources (and OSes) hand over files with an empty MIME type, so
        fall back to the extension. Animated images and videos play automatically —
        image nodes render a plain <img>, video nodes an autoplaying muted <video>. */
@@ -917,6 +933,12 @@ export function CanvasProvider({
       !!f && (f.type.startsWith('image/') || /\.(gif|png|jpe?g|webp|avif|svg)$/i.test(f.name || ''));
     const isVideoFile = (f) =>
       !!f && (f.type.startsWith('video/') || /\.(mp4|webm|mov|m4v|ogv)$/i.test(f.name || ''));
+    /* Audio by MIME, or by an unambiguously-audio extension. `.webm`/`.ogg` are
+       shared with video, so those only count as audio when the MIME says so —
+       hence they're absent from the extension list (and isVideoFile is checked
+       first at the drop/paste call sites). */
+    const isAudioFile = (f) =>
+      !!f && (f.type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|oga|opus|flac|weba)$/i.test(f.name || ''));
     /* Drop a media node centred on the cursor, scaled to a sane default. */
     function placeMediaNode(type, src, nat, wx, wy, alt, extra) {
       const MAX = 360;
@@ -1017,6 +1039,117 @@ export function CanvasProvider({
         console.error('[canvas] video drop failed', err);
       }
     }
+    /* Drop a fixed-size sound player card centred on the cursor. Audio carries no
+       intrinsic size, so unlike image/video the box is a constant — only its
+       stored duration/name vary. */
+    const SOUND_W = 260, SOUND_H = 56;
+    function placeSoundNode(src, wx, wy, name, dur) {
+      const n = addNode({
+        id: newId('sound'), type: 'sound',
+        x: wx - SOUND_W / 2, y: wy - SOUND_H / 2, w: SOUND_W, h: SOUND_H,
+        src, name: name || '', dur: dur || 0,
+      });
+      setToolState('select'); selectNode(n.id);
+      return n;
+    }
+    /* Same storage flow as image/video: through `onUploadAudio`, else IndexedDB
+       for anything over the inline cap (most clips), else a data URL. */
+    async function addAudioFromFile(file, wx, wy) {
+      if (!EDITABLE || !isAudioFile(file)) return;
+      try {
+        const objUrl = URL.createObjectURL(file);
+        const dur = await measureAudio(objUrl).finally(() => URL.revokeObjectURL(objUrl));
+        const label = (file.name || '').replace(/\.[^.]+$/, '') || 'Audio';
+        let src;
+        if (onUploadAudio) {
+          src = await onUploadAudio(file, await readDataUrl(file));
+          if (!src) throw new Error('onUploadAudio returned no src');
+        } else if (hasIDB && file.size > INLINE_MAX) {
+          src = await storeMediaBlob(file);
+        } else {
+          src = await readDataUrl(file);
+        }
+        placeSoundNode(src, wx, wy, label, dur);
+      } catch (err) {
+        console.error('[canvas] audio drop failed', err);
+      }
+    }
+
+    /* ── Microphone recording ─────────────────────────────────────
+       Recording lives in the engine (not a node) so its MediaRecorder survives
+       independently of any render, and a half-finished capture never persists to
+       the autosave. The floating recorder panel (see Recorder.jsx) reflects the
+       `recording` state; on stop we drop a finished sound node at the viewport
+       centre, mirroring the file-drop flow. */
+    const recordingSupported = () =>
+      typeof navigator !== 'undefined' && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+      && typeof window !== 'undefined' && typeof window.MediaRecorder !== 'undefined';
+    async function finalizeRecording(blob) {
+      const r = vpRect();
+      const w = screenToWorld(r.left + r.width / 2, r.top + r.height / 2);
+      try {
+        const objUrl = URL.createObjectURL(blob);
+        const dur = await measureAudio(objUrl).finally(() => URL.revokeObjectURL(objUrl));
+        const ext = ((blob.type.split('/')[1] || 'webm').split(';')[0]) || 'webm';
+        const file = new File([blob], `recording.${ext}`, { type: blob.type || 'audio/webm' });
+        let src;
+        if (onUploadAudio) {
+          src = await onUploadAudio(file, await readDataUrl(file));
+          if (!src) throw new Error('onUploadAudio returned no src');
+        } else if (hasIDB) {
+          src = await storeMediaBlob(blob);
+        } else {
+          src = await readDataUrl(blob);
+        }
+        placeSoundNode(src, w.x, w.y, 'Recording', dur);
+      } catch (err) {
+        console.error('[canvas] recording save failed', err);
+      }
+    }
+    async function startRecording() {
+      if (!EDITABLE || S.readOnly || recRef.current || !recordingSupported()) return;
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (err) {
+        console.error('[canvas] microphone access denied', err);
+        return;
+      }
+      // Pick a container the browser can both record and later play back.
+      const mime = ['audio/webm', 'audio/mp4', 'audio/ogg']
+        .find((t) => window.MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || '';
+      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      const chunks = [];
+      rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const info = recRef.current;
+        recRef.current = null;
+        setRecording(null);
+        if (info && info.cancelled) return;
+        const blob = new Blob(chunks, { type: rec.mimeType || mime || 'audio/webm' });
+        if (blob.size) finalizeRecording(blob);
+      };
+      recRef.current = { rec, stream, cancelled: false };
+      rec.start();
+      setRecording({});
+    }
+    function stopRecording() {
+      const info = recRef.current;
+      if (info && info.rec.state !== 'inactive') info.rec.stop();
+    }
+    function cancelRecording() {
+      const info = recRef.current;
+      if (!info) return;
+      info.cancelled = true;
+      if (info.rec.state !== 'inactive') {
+        info.rec.stop();
+      } else {
+        info.stream.getTracks().forEach((t) => t.stop());
+        recRef.current = null;
+        setRecording(null);
+      }
+    }
     /* Drop a media node for a remote URL — how a GIF or video dragged in from
        another browser tab arrives. Decoding doubles as validation: try it as an
        image then as a video (extension decides the order) and ignore URLs that
@@ -1034,6 +1167,12 @@ export function CanvasProvider({
           const text = await fetch(url).then((r) => (r.ok ? r.text() : Promise.reject()));
           if (/<svg\b/i.test(text)) { placeMediaNode('image', url, measureSvgText(text), wx, wy, alt, { svg: true }); return; }
         } catch { /* fall through to the <img> probe */ }
+      }
+      // An unambiguously-audio URL: no visual to decode, so drop a sound node
+      // directly (measuring is just for the duration readout).
+      if (/\.(mp3|wav|m4a|aac|oga|opus|flac|weba)([?#]|$)/i.test(url)) {
+        placeSoundNode(url, wx, wy, alt.replace(/\.[^.]+$/, '') || 'Audio', await measureAudio(url));
+        return;
       }
       const attempts = /\.(mp4|webm|mov|m4v|ogv)([?#]|$)/i.test(url)
         ? [['video', measureVideo], ['image', measure]]
@@ -1072,10 +1211,10 @@ export function CanvasProvider({
           .map((it) => it.getAsFile())
           .filter(Boolean);
       }
-      files = files.filter((f) => isImageFile(f) || isVideoFile(f));
+      files = files.filter((f) => isImageFile(f) || isVideoFile(f) || isAudioFile(f));
       if (files.length) {
         files.forEach((file, i) => {
-          const add = isVideoFile(file) ? addVideoFromFile : addImageFromFile;
+          const add = isVideoFile(file) ? addVideoFromFile : isAudioFile(file) ? addAudioFromFile : addImageFromFile;
           add(file, wx + i * 24, wy + i * 24);
         });
         return true;
@@ -1116,7 +1255,8 @@ export function CanvasProvider({
       copySelected, paste, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
-      isImageFile, isVideoFile, addImageFromFile, addVideoFromFile, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
+      isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
+      recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
       nextZ, backZ,
     };
@@ -1241,7 +1381,7 @@ export function CanvasProvider({
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
-    publishState, fullscreenId, pages, activePageId, pageData, bgColor,
+    publishState, recording, fullscreenId, pages, activePageId, pageData, bgColor,
     brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState,

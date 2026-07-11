@@ -381,6 +381,105 @@
   background: #fff;
 }
 
+/* Sound object — a fixed-size audio player card (play / name / scrub bar) */
+.canvas-root .node.sound {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px 0 8px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  user-select: none;
+}
+.canvas-root .node.sound audio { display: none; }
+.canvas-root .node.sound .splay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  padding: 0;
+}
+.canvas-root .node.sound .splay svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+  stroke: currentColor;
+}
+.canvas-root .node.sound .sbody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.canvas-root .node.sound .srow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.canvas-root .node.sound .sname {
+  min-width: 0;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.canvas-root .node.sound .sname-input {
+  min-width: 0;
+  flex: 1;
+  margin: -2px 0;
+  padding: 1px 4px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 5px;
+  outline: none;
+}
+.canvas-root .node.sound .stime {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.canvas-root .node.sound .sbar {
+  display: flex;
+  align-items: center;
+  height: 12px;
+  cursor: pointer;
+  touch-action: none;
+}
+.canvas-root .node.sound .strack {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+.canvas-root .node.sound .sfill {
+  width: 0;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
 /* Markdown object — live-highlighted source while editing, rendered on blur */
 .canvas-root .md {
   width: 340px;
@@ -1188,6 +1287,81 @@
 .canvas-root .tool:hover .shape-caret,
 .canvas-root .tool.active .shape-caret {
   opacity: 0.9;
+}
+
+/* Record button — pulses red while a capture is running */
+.canvas-root .tool.recording,
+.canvas-root .tool.recording:hover {
+  background: #e5484d;
+  color: #fff;
+  animation: cv-rec-pulse 1.4s ease-in-out infinite;
+}
+@keyframes cv-rec-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(229, 72, 77, 0); }
+}
+
+/* Floating recorder panel (mic capture in progress) */
+.canvas-root #recorder {
+  left: 50%;
+  top: 22px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 14px;
+}
+.canvas-root #recorder .rec-dot {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 50%;
+  background: #e5484d;
+  animation: cv-rec-blink 1.1s ease-in-out infinite;
+}
+@keyframes cv-rec-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+.canvas-root #recorder .rec-time {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.canvas-root #recorder .rec-btn {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+}
+.canvas-root #recorder .rec-btn:hover {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+.canvas-root #recorder .rec-btn.stop:hover {
+  background: #e5484d;
+  color: #fff;
+}
+.canvas-root #recorder .rec-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.canvas-root #recorder .rec-btn.stop svg {
+  fill: currentColor;
 }
 
 /* Colour swatches */

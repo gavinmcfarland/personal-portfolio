@@ -8,6 +8,7 @@ import Toolbar from './ui/Toolbar';
 import ZoomControls from './ui/ZoomControls';
 import ContextMenu from './ui/ContextMenu';
 import SaveStatus from './ui/SaveStatus';
+import Recorder from './ui/Recorder';
 import Lightbox from './ui/Lightbox';
 
 /* Grid dots that stay visible on any custom background: light ink on dark
@@ -200,11 +201,11 @@ export default function Canvas() {
   const onDrop = (e) => {
     if (!dropActive() || !e.dataTransfer) return;
     const w = eng.screenToWorld(e.clientX, e.clientY);
-    const media = Array.from(e.dataTransfer.files || []).filter((f) => eng.isImageFile(f) || eng.isVideoFile(f));
+    const media = Array.from(e.dataTransfer.files || []).filter((f) => eng.isImageFile(f) || eng.isVideoFile(f) || eng.isAudioFile(f));
     if (media.length) {
       e.preventDefault();
       media.forEach((file, i) => {
-        const add = eng.isVideoFile(file) ? eng.addVideoFromFile : eng.addImageFromFile;
+        const add = eng.isVideoFile(file) ? eng.addVideoFromFile : eng.isAudioFile(file) ? eng.addAudioFromFile : eng.addImageFromFile;
         add(file, w.x + i * 24, w.y + i * 24);
       });
       return;
@@ -229,7 +230,7 @@ export default function Canvas() {
     const type = nodeEl.dataset.type;
     const id = nodeEl.dataset.id;
     if (type === 'image' || type === 'video') { eng.openFullscreen(id); return; }
-    if (type !== 'sticky' && type !== 'tblock' && type !== 'md' && type !== 'code') return;
+    if (type !== 'sticky' && type !== 'tblock' && type !== 'md' && type !== 'code' && type !== 'sound') return;
     eng.setTool('select'); eng.selectNode(id); eng.startEditing(id);
   };
 
@@ -456,7 +457,13 @@ export default function Canvas() {
         : { v: 'select', h: 'hand', n: 'note', t: 'text', m: 'md', c: 'code', p: 'pen', l: 'line', a: 'arrow', r: 'rect', o: 'ellipse', f: 'frame' };
       const k = e.key.toLowerCase();
       if (map[k] && !e.metaKey && !e.ctrlKey) eng.setTool(map[k]);
-      if (e.key === 'Escape') { eng.deselect(); setCtxMenu(null); eng.stopEditing(); }
+      // Record is an action, not a placement tool: `S` starts a capture (Esc /
+      // the recorder panel stop it), and never fires while already recording.
+      if (k === 's' && !e.metaKey && !e.ctrlKey && !S.readOnly && !S.recording) eng.startRecording();
+      if (e.key === 'Escape') {
+        if (S.recording) eng.cancelRecording();
+        eng.deselect(); setCtxMenu(null); eng.stopEditing();
+      }
     };
     const onKeyUp = (e) => {
       if (e.code === 'Space') { panKey.current = false; if (S.tool !== 'hand') rootClass('tool-hand', false); }
@@ -526,6 +533,7 @@ export default function Canvas() {
         <>
           <TopBar className="ui panel pl-[8px]" />
           {EDITABLE && <Toolbar />}
+          {EDITABLE && <Recorder />}
           <ZoomControls />
           <ContextMenu />
           <SaveStatus />

@@ -58,10 +58,11 @@ All are optional.
 | `onPublish` | `(snapshot) => Promise` | `null` | Persist the board somewhere durable. Shows the "Save" button when set. |
 | `onUploadImage` | `(file, dataUrl) => Promise<url>` | inline / IndexedDB | Resolve a `src` for dropped images. |
 | `onUploadVideo` | `(file, dataUrl) => Promise<url>` | IndexedDB | Resolve a `src` for dropped videos. |
+| `onUploadAudio` | `(file, dataUrl) => Promise<url>` | inline / IndexedDB | Resolve a `src` for dropped / pasted / recorded sound clips. |
 | `onChange` | `(snapshot) => void` | `null` | Fires after every autosave. |
 
 Built-in node types: `sticky`, `tblock` (text), `md` (markdown), `frame`, `image`,
-`video`, plus freehand `shape`s.
+`video`, `sound`, plus freehand `shape`s.
 
 In edit mode the top bar shows a background-colour picker (presets or a custom
 colour) that recolours the whole board; the choice is stored on the snapshot as
@@ -78,6 +79,18 @@ viewBox-only exports land at the right proportions instead of a default box. Vid
 autoplay muted and looped on the board (GIF-style); hovering one reveals a
 play/pause + scrub bar, and double-click opens the lightbox with native
 controls and sound.
+
+Sound is a first-class object too. Audio files (`mp3`, `wav`, `m4a`, `aac`,
+`ogg`, `flac`, …) can be **dragged in** or **pasted** — each lands as a
+fixed-size player card with a play/pause button, its name, and a scrub bar with
+elapsed / total time. The toolbar's mic button (shortcut `S`) **records**
+straight from the microphone: pressing it starts capturing and shows a floating
+recorder (live timer + stop / cancel); stop drops the finished clip on the
+board, cancel or `Esc` discards it. Playback works in read-only views so
+published boards stay listenable. Recorded and dropped clips are stored the same
+way as other media — inline as a data URL when small, otherwise IndexedDB (or
+`onUploadAudio` when provided). The mic button hides itself where the browser
+can't record.
 
 Without upload adapters, small images inline into the snapshot as data URLs,
 while videos and large images are stored in IndexedDB (scoped per `storageKey`,

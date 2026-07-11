@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   MousePointer2, Hand, StickyNote, Type, FileCode, Code, Pen, Anchor,
-  Slash, ArrowUpRight, Square, Circle,
+  Slash, ArrowUpRight, Square, Circle, Mic,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES, FONTS } from '../constants';
@@ -22,6 +22,7 @@ const TOOLS = [
   { t: 'text', label: 'Text', key: 'T', icon: <Type /> },
   { t: 'md', label: 'Markdown', key: 'M', icon: <FileCode /> },
   { t: 'code', label: 'Code', key: 'C', icon: <Code /> },
+  { record: true },
   { sep: true },
   { t: 'pen', label: 'Draw / Pen', key: 'P', icon: <Pen /> },
   { shapeMenu: true },
@@ -82,6 +83,24 @@ function ShapeMenu() {
         <span className="shape-caret" />
       </button>
     </div>
+  );
+}
+
+/* Record-audio button. A one-shot action (not a click-to-place tool): pressing
+   it requests the mic and starts capturing straight away; the floating recorder
+   panel then drives stop/cancel. Hidden entirely where the browser can't record. */
+function RecordButton() {
+  const { recording, eng } = useCanvas();
+  if (!eng.recordingSupported()) return null;
+  return (
+    <button
+      className={`tool${recording ? ' active recording' : ''}`}
+      data-tool="record"
+      onClick={() => { if (!recording) eng.startRecording(); }}
+    >
+      <span className="tip">Record sound<b>S</b></span>
+      <Mic />
+    </button>
   );
 }
 
@@ -229,6 +248,8 @@ export default function Toolbar() {
             <span className="sep" key={`sep-${i}`} />
           ) : item.shapeMenu ? (
             <ShapeMenu key="shape-menu" />
+          ) : item.record ? (
+            <RecordButton key="record" />
           ) : (
             <button
               key={item.t}

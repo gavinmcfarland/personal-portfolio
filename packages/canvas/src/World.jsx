@@ -5,6 +5,7 @@ import Code from './nodes/Code';
 import Frame from './nodes/Frame';
 import ImageNode from './nodes/Image';
 import VideoNode from './nodes/Video';
+import SoundNode from './nodes/Sound';
 import Shape from './Shape';
 
 /* Built-in node renderers. Consumers extend this map via the `nodeTypes` prop
@@ -17,6 +18,7 @@ const BUILTIN_TYPES = {
   frame: Frame,
   image: ImageNode,
   video: VideoNode,
+  sound: SoundNode,
 };
 
 function NodeView({ node, nodeTypes }) {
