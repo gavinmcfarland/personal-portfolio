@@ -4,178 +4,70 @@
   "pages": [
     {
       "id": "home",
-      "name": "Page 1",
+      "name": "Home",
       "view": {
-        "x": -864.6902258565375,
-        "y": 293.4262608929633,
-        "scale": 0.9484200084384002
+        "x": 472.6875,
+        "y": 178.90625,
+        "scale": 0.715625
       },
       "nodes": [
         {
           "id": "intro",
           "type": "md",
-          "x": -132.08422347464682,
-          "y": -277.5638990153701,
+          "x": -340,
+          "y": -150,
           "z": 1,
           "w": 340,
-          "text": "# Plugma\n\nA zero-config CLI for building Figma plugins, with hot-module reloading that actually works.\n\n[Node.js] [TypeScript] [Vite] [React] [Svelte] [Vue]"
+          "text": "# Plugma\n\nA zero-config CLI for building Figma plugins — with hot-module reloading that actually works."
+        },
+        {
+          "id": "stack",
+          "type": "md",
+          "x": -340,
+          "y": 90,
+          "z": 2,
+          "w": 300,
+          "text": "**Built with**\n\nNode.js  ·  TypeScript  ·  Vite"
         },
         {
           "id": "note-0",
           "type": "sticky",
-          "x": 566.6015607518334,
-          "y": 504.57630145512087,
-          "z": 46,
+          "x": 170,
+          "y": -160,
+          "z": 3,
           "color": "yellow",
           "text": "True HMR across the UI and plugin sandbox — no full reloads"
         },
         {
           "id": "note-1",
           "type": "sticky",
-          "x": 761.3114904218588,
-          "y": 621.2926410896124,
-          "z": 47,
+          "x": 170,
+          "y": -20,
+          "z": 4,
           "color": "blue",
           "text": "Framework-agnostic: React, Svelte and Vue out of the box"
         },
         {
           "id": "note-2",
           "type": "sticky",
-          "x": 411.49750558829476,
-          "y": 386.3984308230249,
+          "x": 170,
+          "y": 120,
           "z": 5,
           "color": "green",
           "text": "Zero config to start; a single command to build and publish"
-        },
-        {
-          "id": "n11-image",
-          "type": "image",
-          "x": 1048.7502414222035,
-          "y": -175.47968469764942,
-          "z": 31,
-          "w": 347,
-          "h": 360,
-          "src": "/canvas-assets/fa55b672b60d12e8.png",
-          "alt": "image 1.png"
-        },
-        {
-          "id": "n12-image",
-          "type": "image",
-          "x": 655.4240756729969,
-          "y": -172.31422610047127,
-          "z": 32,
-          "w": 334,
-          "h": 360,
-          "src": "/canvas-assets/d0dd139fd4d9a410.png",
-          "alt": "image 2.png"
-        },
-        {
-          "id": "n13-image",
-          "type": "image",
-          "x": 246.04520483852687,
-          "y": -174.89029638007307,
-          "z": 33,
-          "w": 360,
-          "h": 346,
-          "src": "/canvas-assets/c2b5d5fb3c5d5d03.png",
-          "alt": "image 3.png"
-        },
-        {
-          "id": "n17-image",
-          "type": "image",
-          "x": 2412.545793580546,
-          "y": 139.45175183677318,
-          "z": 37,
-          "w": 137.06945112675623,
-          "h": 132,
-          "src": "/canvas-assets/f1ccc47aa7421fe5.png",
-          "alt": "Frame 35.png"
-        },
-        {
-          "id": "n24-tblock",
-          "type": "tblock",
-          "x": 1585.285855148167,
-          "y": -32.114159060444415,
-          "z": 44,
-          "text": "Logo",
-          "fontSize": 31
-        },
-        {
-          "id": "n25-tblock",
-          "type": "tblock",
-          "x": 308.3781971242966,
-          "y": 270.84158516682857,
-          "z": 45,
-          "text": "Features supported",
-          "w": 261.5990091908047
-        },
-        {
-          "id": "n26-sticky",
-          "type": "sticky",
-          "x": 142.501956018389,
-          "y": 692.6660601683317,
-          "z": 52,
-          "color": "yellow",
-          "text": ""
-        },
-        {
-          "id": "n27-tblock",
-          "type": "tblock",
-          "x": 1696.339303260398,
-          "y": 73.25910130805414,
-          "z": 53,
-          "text": "Logo",
-          "w": 155.49814671830586,
-          "fontSize": 31
-        },
-        {
-          "id": "n28-tblock",
-          "type": "tblock",
-          "x": 2326.2114525426728,
-          "y": -38.764510430508196,
-          "z": 54,
-          "text": "Logo",
-          "fontSize": 31
-        },
-        {
-          "id": "n29-tblock",
-          "type": "tblock",
-          "x": 1863.2292811127122,
-          "y": -95.91141663786287,
-          "z": 55,
-          "text": "Logo",
-          "fontSize": 31
-        },
-        {
-          "id": "n30-tblock",
-          "type": "tblock",
-          "x": 2141.8644407051656,
-          "y": -109.26672992756212,
-          "z": 56,
-          "text": "Logo",
-          "fontSize": 31
-        },
-        {
-          "id": "n31-tblock",
-          "type": "tblock",
-          "x": 1995.4414216257778,
-          "y": -14.82081836274206,
-          "z": 57,
-          "text": "Logo",
-          "fontSize": 31
         }
       ],
       "shapes": [
         {
-          "id": "s1",
+          "id": "link-arrow",
           "type": "arrow",
           "stroke": "#7C2D91",
           "width": 3,
-          "z": 48,
-          "x1": 96.46728970712913,
-          "y1": 468.48562909594466,
-          "x2": 270.2681255755214,
-          "y2": 143.77385609866803
+          "z": 20,
+          "x1": 20,
+          "y1": -100,
+          "x2": 150,
+          "y2": -120
         }
       ]
     }
