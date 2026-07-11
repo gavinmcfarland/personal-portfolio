@@ -51,7 +51,7 @@ export default function TopBar() {
   return (
     <div className="ui panel" id="topbar">
       <PageTabs />
-      {EDITABLE && import.meta.env.DEV && (
+      {EDITABLE && (
         <button
           className={`chip${!readOnly ? " on" : ""}`}
           title={readOnly ? "Edit this board" : "Editing — click to stop"}

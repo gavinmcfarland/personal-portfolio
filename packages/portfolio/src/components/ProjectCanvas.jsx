@@ -66,7 +66,7 @@ export default function ProjectCanvas({ project }) {
     <Canvas
       key={project.id}
       fit="contain"
-      editable
+      editable={import.meta.env.DEV}
       base={buildBase(project)}
       storageKey={storageKey}
       initialState={publishedBoard(storageKey)}
