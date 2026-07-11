@@ -28,7 +28,7 @@ export default function ProjectPage({ project }) {
     <div className="fixed inset-0 flex flex-col bg-base">
       {/* ── Fixed header ─────────────────────────────────────────────── */}
       <header className="shrink-0 border-b border-line bg-base">
-        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 pb-6 pt-6 max-sm:pt-4">
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 pb-6 pt-6 max-sm:pt-4 max-2xl:pb-8">
           <div className="flex items-start justify-between gap-4 sm:gap-6">
             {/* Left: back (+ visit on phones), title, short description */}
             <div className="min-w-0 flex-1">
