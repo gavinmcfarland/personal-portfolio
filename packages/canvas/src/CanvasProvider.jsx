@@ -334,9 +334,14 @@ export function CanvasProvider({
     function zoomCenter(factor) { const r = vpRect(); zoomAt(r.left + r.width / 2, r.top + r.height / 2, factor); }
     function zoomTo(scale, sx, sy) {
       const r = viewportRef.current.getBoundingClientRect();
-      const px = sx == null ? r.width / 2 : sx - r.left, py = sy == null ? r.height / 2 : sy - r.top;
-      const old = targetRef.scale, ns = clampScale(scale), k = ns / old;
-      targetRef.x = px * (1 - k) + targetRef.x * k; targetRef.y = py * (1 - k) + targetRef.y * k; targetRef.scale = ns;
+      // Default centre uses the layout box (vpW/vpH), not the getBoundingClientRect
+      // size, so an ancestor transform (e.g. an embedded/scaled board) can't skew it.
+      const px = sx == null ? vpW() / 2 : sx - r.left, py = sy == null ? vpH() / 2 : sy - r.top;
+      // Pivot about the point on screen NOW (viewRef, the displayed frame), not the
+      // target of an in-flight glide — otherwise a reset pressed mid-zoom keeps the
+      // wrong point fixed and the object under the cursor jumps away.
+      const old = viewRef.scale, ns = clampScale(scale), k = ns / old;
+      targetRef.x = px * (1 - k) + viewRef.x * k; targetRef.y = py * (1 - k) + viewRef.y * k; targetRef.scale = ns;
       startZoomLoop();
     }
     function panBy(dx, dy) { viewRef.x += dx; viewRef.y += dy; targetRef.x += dx; targetRef.y += dy; applyView(); markActive(); }

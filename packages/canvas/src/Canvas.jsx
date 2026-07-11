@@ -396,6 +396,7 @@ export default function Canvas() {
       }
       if (e.metaKey || e.ctrlKey) {
         const mk = e.key.toLowerCase();
+        if (mk === '0') { e.preventDefault(); eng.zoomTo(1); return; }
         if (mk === 'c') { if (S.selected.length) { e.preventDefault(); eng.copySelected(); } return; }
         // Paste is handled by the native `paste` event (below) so it can also
         // pull image/gif/svg/video off the system clipboard — don't preventDefault
