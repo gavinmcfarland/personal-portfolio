@@ -8,6 +8,13 @@ import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-
 const DEFAULT_STORE = 'embed-canvas-v1';
 const DEFAULT_HOME_ID = 'home'; // id of the first page
 
+/* Edit/view mode is shared across every canvas instance on the page rather than
+   stored per-board: toggling one board's mode toggles them all. The mode lives
+   under a single global localStorage key, and same-document instances stay in
+   sync via a custom event (the native `storage` event only fires cross-tab). */
+const GLOBAL_MODE_KEY = 'canvas-global-mode';
+const MODE_EVENT = 'canvas:mode';
+
 const CanvasContext = createContext(null);
 export const useCanvas = () => {
   const c = useContext(CanvasContext);
@@ -165,11 +172,11 @@ export function CanvasProvider({
   const [tool, setToolState] = useState('select');
   const [selected, setSelectedState] = useState([]); // [{kind:'node'|'shape', id}] — multi-select
   const [readOnly, setReadOnlyState] = useState(() => {
-    // Seed from the persisted mode so an editable board saved in view mode
-    // doesn't paint a frame in edit mode (Edit chip active) before a boot
-    // effect flips it back.
+    // Seed from the shared global mode so every board mounts in the same
+    // edit/view state (and doesn't paint a frame in the wrong mode before a
+    // boot effect flips it back).
     if (!EDITABLE) return true;
-    try { return localStorage.getItem(storageKey + '-mode') === 'view'; } catch { return false; }
+    try { return localStorage.getItem(GLOBAL_MODE_KEY) === 'view'; } catch { return false; }
   });
   const [editingId, setEditingId] = useState(null);
   const [noteColor, setNoteColor] = useState('yellow');
@@ -599,10 +606,15 @@ export function CanvasProvider({
 
     /* ── Tools / mode ─────────────────────────────────────────── */
     function setTool(t) { setToolState(t); deselect(); }
-    function setMode(ro) {
+    // `broadcast` is false when applying a mode change that originated from
+    // another canvas instance, so we don't persist/re-emit and loop.
+    function setMode(ro, broadcast = true) {
       setReadOnlyState(ro);
       if (ro) { deselect(); setCtxMenu(null); setToolState((t) => (t === 'select' || t === 'hand' ? t : 'select')); }
-      if (EDITABLE) localStorage.setItem(STORE + '-mode', ro ? 'view' : 'edit');
+      if (EDITABLE && broadcast) {
+        try { localStorage.setItem(GLOBAL_MODE_KEY, ro ? 'view' : 'edit'); } catch { /* storage unavailable */ }
+        try { window.dispatchEvent(new CustomEvent(MODE_EVENT, { detail: ro })); } catch { /* no window */ }
+      }
     }
 
     /* ── Fit / fly-to ─────────────────────────────────────────── */
@@ -1101,6 +1113,20 @@ export function CanvasProvider({
     b.classList.add('tool-' + tool);
     b.classList.toggle('read-only', readOnly);
   }, [tool, readOnly]);
+
+  /* ── Global edit/view mode: follow toggles from any other instance ── */
+  useEffect(() => {
+    if (!EDITABLE) return;
+    // Same-document instances hear the custom event; other tabs hear `storage`.
+    const onMode = (e) => eng.setMode(!!e.detail, false);
+    const onStorage = (e) => { if (e.key === GLOBAL_MODE_KEY) eng.setMode(e.newValue === 'view', false); };
+    window.addEventListener(MODE_EVENT, onMode);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener(MODE_EVENT, onMode);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [EDITABLE, eng]);
 
   /* ── Keep chrome + persistence in sync with the model ───────── */
   useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, eng]);
