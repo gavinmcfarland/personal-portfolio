@@ -544,6 +544,10 @@ export default function Canvas() {
     window.addEventListener('pointerdown', onDocDown, true);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
+    // Finalize (and clear actionRef) if the OS/browser cancels the gesture — e.g.
+    // a native scroller stealing the touch — so a canceled pan can't leave the
+    // board stuck mid-drag.
+    window.addEventListener('pointercancel', onUp);
     window.addEventListener('pointerdown', onTouchDown);
     window.addEventListener('pointermove', onTouchMove, { passive: false });
     window.addEventListener('pointerup', onTouchUp);
@@ -556,6 +560,7 @@ export default function Canvas() {
       window.removeEventListener('pointerdown', onDocDown, true);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
       window.removeEventListener('pointerdown', onTouchDown);
       window.removeEventListener('pointermove', onTouchMove);
       window.removeEventListener('pointerup', onTouchUp);

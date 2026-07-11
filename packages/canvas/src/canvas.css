@@ -1056,6 +1056,12 @@
 .canvas-root .code-render {
   color: var(--ink);
   overflow: auto;
+  /* A scroll container (overflow:auto, plus overflow-x in nowrap mode) otherwise
+     claims a touch drag for native scrolling and fires pointercancel mid-gesture
+     — the board pan starts, jerks a few px, then dies. Opt it out so the canvas
+     pan owns the gesture (the root's touch-action:none doesn't reach a nested
+     scroller). Wheel/trackpad scrolling on desktop is unaffected. */
+  touch-action: none;
 }
 .canvas-root .code-render code,
 .canvas-root .code-hl code {
