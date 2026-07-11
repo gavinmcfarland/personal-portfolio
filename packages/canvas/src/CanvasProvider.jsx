@@ -191,6 +191,8 @@ export function CanvasProvider({
   const autoPublishT = useRef(0); // debounce for background auto-publish
   const publishDirty = useRef(false); // a debounced publish is pending / unflushed
   const didAutoPublishMount = useRef(false); // skip the first (mount) auto-publish fire
+  const booted = useRef(false); // true once the initial view has been applied, so the
+                                // boot-time applyView doesn't trigger a publish
 
   /* ── Refs (imperative engine state) ─────────────────────────── */
   const rootRef = useRef(null);          // the scoped `.canvas-root` wrapper
@@ -275,8 +277,13 @@ export function CanvasProvider({
       lastHoverScale.current = viewRef.scale;
       syncChrome();
       // View-mode pan/zoom is transient (snapshotActive keeps the saved view),
-      // so only edit-mode view changes need to hit the autosave.
-      if (!S.readOnly) scheduleSave();
+      // so only edit-mode view changes need to hit the autosave. Also commit the
+      // new framing to the published snapshot in the background — but not on the
+      // boot-time apply, which would rewrite the board on every load.
+      if (!S.readOnly) {
+        scheduleSave();
+        if (booted.current) schedulePublish();
+      }
     }
     function screenToWorld(sx, sy) {
       const r = viewportRef.current.getBoundingClientRect();
@@ -1173,6 +1180,8 @@ export function CanvasProvider({
     } else {
       eng.applyView();
     }
+    // From here on, view changes are user-driven and should publish.
+    booted.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
