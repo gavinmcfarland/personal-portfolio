@@ -482,6 +482,44 @@ export default function Canvas() {
       if (!eng.pasteMedia(e.clipboardData, w.x, w.y)) eng.paste();
     };
 
+    /* Pinch-to-zoom (touch): track the active touch pointers and drive zoom +
+       two-finger pan off the distance/midpoint between them. A second finger
+       cancels whatever single-finger action (pan / marquee / draw) was underway
+       so it can't fight the pinch. */
+    const touches = new Map(); // pointerId -> { x, y }
+    let pinch = null;          // { dist, cx, cy } baseline from the previous move
+    const twoPoints = () => { const [a, b] = [...touches.values()]; return [a, b]; };
+    const pinchMetrics = () => {
+      const [a, b] = twoPoints();
+      return { dist: Math.hypot(a.x - b.x, a.y - b.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2 };
+    };
+    const onTouchDown = (e) => {
+      if (e.pointerType !== 'touch') return;
+      touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (touches.size === 2) {
+        actionRef.current = null;        // drop the single-finger gesture
+        rootClass('panning', false);
+        eng.freezeView();
+        const m = pinchMetrics();
+        pinch = { dist: m.dist, cx: m.cx, cy: m.cy };
+      }
+    };
+    const onTouchMove = (e) => {
+      if (e.pointerType !== 'touch' || !touches.has(e.pointerId)) return;
+      touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (touches.size !== 2 || !pinch) return;
+      e.preventDefault();
+      const m = pinchMetrics();
+      const factor = pinch.dist > 0 ? m.dist / pinch.dist : 1;
+      eng.pinchBy(m.cx, m.cy, factor, m.cx - pinch.cx, m.cy - pinch.cy);
+      pinch = { dist: m.dist, cx: m.cx, cy: m.cy };
+    };
+    const onTouchUp = (e) => {
+      if (!touches.has(e.pointerId)) return;
+      touches.delete(e.pointerId);
+      if (touches.size < 2) pinch = null;
+    };
+
     // Gesture tracking stays on window so drags continue off-viewport. The wheel
     // is bound to the canvas root (not just the viewport) so it also fires over
     // screen-space chrome like frame labels, while scrolling elsewhere on the
@@ -498,6 +536,10 @@ export default function Canvas() {
     window.addEventListener('pointerdown', onDocDown, true);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointerdown', onTouchDown);
+    window.addEventListener('pointermove', onTouchMove, { passive: false });
+    window.addEventListener('pointerup', onTouchUp);
+    window.addEventListener('pointercancel', onTouchUp);
     (vp || window).addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
@@ -506,6 +548,10 @@ export default function Canvas() {
       window.removeEventListener('pointerdown', onDocDown, true);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointerdown', onTouchDown);
+      window.removeEventListener('pointermove', onTouchMove);
+      window.removeEventListener('pointerup', onTouchUp);
+      window.removeEventListener('pointercancel', onTouchUp);
       (vp || window).removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);

@@ -394,6 +394,19 @@ export function CanvasProvider({
       startZoomLoop();
     }
     function panBy(dx, dy) { viewRef.x += dx; viewRef.y += dy; targetRef.x += dx; targetRef.y += dy; applyView(); markActive(); }
+    /* Touch pinch: zoom about the two-finger midpoint by `factor` and pan by the
+       midpoint drift, applied straight to the displayed frame (no eased glide) so
+       the board tracks the fingers 1:1. */
+    function pinchBy(sx, sy, factor, panX, panY) {
+      stopZoomLoop();
+      const r = viewportRef.current.getBoundingClientRect(), px = sx - r.left, py = sy - r.top;
+      const old = viewRef.scale, ns = clampScale(old * factor), k = ns / old;
+      viewRef.x = px * (1 - k) + viewRef.x * k + panX;
+      viewRef.y = py * (1 - k) + viewRef.y * k + panY;
+      viewRef.scale = ns;
+      targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = ns;
+      applyView(); markActive();
+    }
 
     /* ── Chrome (screen-space selection UI) ───────────────────── */
     function worldRectOf(sel) {
@@ -1247,7 +1260,7 @@ export function CanvasProvider({
 
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
-      zoomAt, zoomCenter, zoomTo, panBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel, setHover,
+      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel, setHover,
       selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
