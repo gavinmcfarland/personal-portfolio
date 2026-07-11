@@ -11,18 +11,6 @@ import SaveStatus from './ui/SaveStatus';
 import Recorder from './ui/Recorder';
 import Lightbox from './ui/Lightbox';
 
-/* Grid dots that stay visible on any custom background: light ink on dark
-   colours, dark ink on light ones (matching the theme tokens' alpha). */
-function gridInkFor(hex) {
-  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex || '');
-  if (!m) return null;
-  let h = m[1];
-  if (h.length === 3) h = h.replace(/./g, (c) => c + c);
-  const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
-  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return lum < 128 ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.055)';
-}
-
 /* Recolour the custom edit caret (the inline-SVG cursor) to a given accent, with
    a contrasting outline so it stays legible over the board — white on light
    themes, the dark backdrop on dark ones. Mirrors the two --cur-edit* tokens in
@@ -62,9 +50,11 @@ export default function Canvas() {
   const ctx = useCanvas();
   const { rootRef, hoverInsideRef, activeInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, fit, ui, bgColor, accent } = ctx;
 
-  const bgStyle = bgColor
-    ? { '--bg': bgColor, '--grid': gridInkFor(bgColor) || undefined }
-    : undefined;
+  /* A chosen board colour is exposed as `--bg-pick`; canvas.css blends it a
+     short way into the base (`--bg-base`) the way a shape fill composites over
+     the board, so the same value reads soft in light mode and dark-tinted (no
+     light hue) in dark mode. See the `[data-cv-bg="custom"]` rule. */
+  const bgStyle = bgColor ? { '--bg-pick': bgColor } : undefined;
 
   /* Per-instance accent override. A unique attribute scopes the injected rules to
      this board so several canvases with different accents can share a page. */
@@ -575,6 +565,7 @@ export default function Canvas() {
       ref={rootRef}
       data-fit={fit}
       data-cv-accent={accent ? accentId : undefined}
+      data-cv-bg={bgColor ? 'custom' : undefined}
       style={bgStyle}
       onPointerEnter={() => { hoverInsideRef.current = true; }}
       onPointerLeave={() => { hoverInsideRef.current = false; }}

@@ -10,7 +10,9 @@
 
 /* ── Design tokens ────────────────────────────────────────────── */
 .canvas-root {
-  --bg: #f6f5f3;
+  --bg-base: #f6f5f3;
+  --bg: var(--bg-base);
+  --bg-tint: 6%; /* how far a picked board colour blends into --bg-base */
   --grid: rgba(0, 0, 0, 0.075);
   --grid-strong: rgba(0, 0, 0, 0.12);
   --surface: #ffffff;
@@ -38,7 +40,9 @@
 }
 .dark .canvas-root,
 .canvas-root.dark {
-  --bg: #0c0c0e;
+  --bg-base: #0c0c0e;
+  --bg: var(--bg-base);
+  --bg-tint: 18%; /* stronger in dark mode so the hue reads over the near-black base */
   --grid: rgba(255, 255, 255, 0.07);
   --grid-strong: rgba(255, 255, 255, 0.1);
   --surface: #161619;
@@ -56,6 +60,21 @@
     5 3;
   --cur-edit-hover: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cpath d='M5 3 L5 21 L10 16 L13.5 23.5 L16.5 22.2 L13 14.8 L20 14.8 Z' fill='%230C0C0E' stroke='%23C88BE8' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='19.5' cy='6.5' r='3' fill='%23C88BE8'/%3E%3C/svg%3E")
     5 3;
+}
+
+/* ── Custom board background ───────────────────────────────────────
+   A picked board colour (`--bg-pick`, set inline by Canvas.jsx) is blended a
+   short way into the theme's base board colour — exactly how a shape fill
+   composites over the board. One value therefore reads as a soft paper tint in
+   light mode and a dark, hue-tinted board in dark mode (never a washed-out
+   light hue), with no per-theme rules. The blend stays base-dominant, so its
+   luminance tracks the base and the theme's grid ink still reads correctly.
+   The blend amount (`--bg-tint`) is a per-theme token: lighter in light mode,
+   stronger in dark mode. */
+.canvas-root[data-cv-bg="custom"] {
+  /* Mix in OKLCH, not sRGB: the base is near-neutral, so OKLCH keeps the pick's
+     hue clean instead of greying it into a muddy tint. */
+  --bg: color-mix(in oklch, var(--bg-pick) var(--bg-tint), var(--bg-base));
 }
 
 /* ── Root container ───────────────────────────────────────────── */

@@ -60,5 +60,10 @@ export const COLORS = {
 	],
 };
 
-/* Preset board background colours offered by the edit-mode picker. */
-export const BG_COLORS = ['#FFFFFF', '#FDF6E3', '#EEF2F7', '#EAF3EC', '#FBEEF3', '#1B1B22'];
+/* Preset board background tints offered by the edit-mode picker. These are
+   saturated hues (paired with the stroke/fill palette), not pale paper colours:
+   they're blended a short way into the board's base — exactly like a shape fill
+   composites over the board — so one value reads as a soft paper in light mode
+   and a dark, hue-tinted board in dark mode, never a washed-out light hue.
+   The blend amount is the per-theme `--bg-tint` token (see canvas.css). */
+export const BG_COLORS = ['#787880', '#7C2D91', '#E5484D', '#2E7D32', '#1565C0', '#F5A524'];

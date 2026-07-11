@@ -3,6 +3,11 @@ import { PaintBucket } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { BG_COLORS } from '../constants';
 
+/* Preview a preset the way it lands on the board: the hue blended into the base
+   board colour. `--bg-base` and `--bg-tint` both resolve per theme, so swatches
+   match what you'll get in the current mode. Mirrors the color-mix in canvas.css. */
+const tint = (hex) => `color-mix(in oklch, ${hex} var(--bg-tint), var(--bg-base))`;
+
 /* Edit-mode picker for the board's background colour. Lives in the top bar;
    the chosen colour persists in the board snapshot (null = theme default). */
 export default function BgColorMenu() {
@@ -32,7 +37,7 @@ export default function BgColorMenu() {
         onClick={() => setOpen((o) => !o)}
       >
         <PaintBucket />
-        <span className="chip-swatch" style={bgColor ? { background: bgColor } : undefined} />
+        <span className="chip-swatch" style={bgColor ? { background: tint(bgColor) } : undefined} />
       </button>
       {open && (
         <div className="ui panel bg-menu">
@@ -46,7 +51,7 @@ export default function BgColorMenu() {
               key={hex}
               className={`swatch${bgColor === hex ? ' active' : ''}`}
               title={hex}
-              style={{ background: hex }}
+              style={{ background: tint(hex) }}
               onClick={() => eng.setCanvasBg(hex)}
             />
           ))}
