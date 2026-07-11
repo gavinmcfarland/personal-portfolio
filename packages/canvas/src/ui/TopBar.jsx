@@ -24,16 +24,6 @@ export default function TopBar() {
   return (
     <div className="ui panel" id="topbar">
       <PageTabs />
-      {EDITABLE && (
-        <button
-          className={`chip${!readOnly ? " on" : ""}`}
-          title={readOnly ? "Edit this board" : "Editing — click to stop"}
-          onClick={() => eng.setMode(!readOnly)}
-        >
-          {EDIT_ICON}
-          <span>Edit</span>
-        </button>
-      )}
       {EDITABLE && !readOnly && <BgColorMenu />}
       {theme && (
         <button
@@ -43,6 +33,16 @@ export default function TopBar() {
         >
           {th.icon}
           {th.label}
+        </button>
+      )}
+      {EDITABLE && (
+        <button
+          className={`chip${!readOnly ? " on" : ""}`}
+          title={readOnly ? "Edit this board" : "Editing — click to stop"}
+          onClick={() => eng.setMode(!readOnly)}
+        >
+          {EDIT_ICON}
+          <span>Edit</span>
         </button>
       )}
     </div>
