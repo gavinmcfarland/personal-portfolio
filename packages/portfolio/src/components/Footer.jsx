@@ -45,6 +45,7 @@ const Footer = () => (
       >
         <Canvas
           fit="contain"
+          initialView="fit"
           accent={ACCENT}
           editable
           base={demoBase}
