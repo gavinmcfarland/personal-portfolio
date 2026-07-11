@@ -148,6 +148,7 @@ export function CanvasProvider({
   fit = 'contain', // 'contain' fills the parent box; 'fullscreen' covers the browser viewport
   ui = true, // set false to hide the overlay panels (top bar, toolbar, zoom, context menu)
   initialView = null, // 'fit' frames all content on mount instead of restoring the saved pan/zoom
+  saveStatus = true, // show the background-save status indicator (bottom-right) while editing
 }) {
   const EDITABLE = editable;
   const HOME_ID = homeId;
@@ -187,6 +188,9 @@ export function CanvasProvider({
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
   const [publishState, setPublishState] = useState('idle'); // idle|saving|done|error
   const publishT = useRef(0);
+  const autoPublishT = useRef(0); // debounce for background auto-publish
+  const publishDirty = useRef(false); // a debounced publish is pending / unflushed
+  const didAutoPublishMount = useRef(false); // skip the first (mount) auto-publish fire
 
   /* ── Refs (imperative engine state) ─────────────────────────── */
   const rootRef = useRef(null);          // the scoped `.canvas-root` wrapper
@@ -735,10 +739,14 @@ export function CanvasProvider({
     }
     /* Persist the current board through the host-supplied `onPublish` adapter
        (e.g. the portfolio bakes it into a committed data file via a dev endpoint).
-       Hidden in the UI when no adapter is provided. */
+       Runs automatically in the background as the user edits — see
+       `schedulePublish` — so there's no manual save action. No-ops when no
+       adapter is provided. */
     async function publish() {
       if (!canPublish) return;
+      clearTimeout(autoPublishT.current);
       clearTimeout(publishT.current);
+      publishDirty.current = false;
       setPublishState('saving');
       try {
         await onPublish(serialize());
@@ -748,6 +756,15 @@ export function CanvasProvider({
         setPublishState('error');
       }
       publishT.current = setTimeout(() => setPublishState('idle'), 2200);
+    }
+    /* Debounced background publish. Fired on every content change while editing
+       so edits persist without a save button; the delay coalesces bursts (drag,
+       typing) into a single write to the host adapter. */
+    function schedulePublish() {
+      if (!canPublish || S.readOnly) return;
+      publishDirty.current = true;
+      clearTimeout(autoPublishT.current);
+      autoPublishT.current = setTimeout(publish, 900);
     }
     function resetBoard() {
       if (!EDITABLE) return;
@@ -1063,7 +1080,7 @@ export function CanvasProvider({
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
       copySelected, paste, duplicateSelected, duplicateTarget, duplicateItemsAt,
-      setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, resetBoard,
+      setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, addImageFromFile, addVideoFromFile, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
       openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
@@ -1099,7 +1116,7 @@ export function CanvasProvider({
      losing the just-dropped node. */
   useEffect(() => {
     if (!EDITABLE) return undefined;
-    const flush = () => eng.saveNow();
+    const flush = () => { eng.saveNow(); if (publishDirty.current) eng.publish(); };
     window.addEventListener('pagehide', flush);
     return () => window.removeEventListener('pagehide', flush);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1130,6 +1147,16 @@ export function CanvasProvider({
 
   /* ── Keep chrome + persistence in sync with the model ───────── */
   useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, eng]);
+
+  /* ── Background auto-publish on content changes ──────────────
+     Persists edits through the host adapter without a save button. Keyed on
+     content only (not selection/editing focus) so clicking around doesn't
+     trigger writes. The first (mount) fire is skipped so simply loading a board
+     doesn't rewrite its published snapshot. */
+  useEffect(() => {
+    if (!didAutoPublishMount.current) { didAutoPublishMount.current = true; return; }
+    eng.schedulePublish();
+  }, [nodes, shapes, pages, activePageId, bgColor, eng]);
 
   /* ── Boot: apply the initial view (fit if nothing was saved, or if the
      embedder asked for a framed overview via initialView='fit') ──
@@ -1167,7 +1194,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, fillColor, ctxMenu,
     publishState, fullscreenId, pages, activePageId, pageData, bgColor,
-    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, theme, fit, ui,
+    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, theme, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setFillColor, setCtxMenu, setSelectedState,
     // refs

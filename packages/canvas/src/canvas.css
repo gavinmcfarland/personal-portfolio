@@ -307,6 +307,17 @@
 .canvas-root .chip svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .canvas-root .chip.on{background:var(--accent);border-color:var(--accent);color:#fff;}
 .canvas-root .chip.on:hover{color:#fff;border-color:var(--accent);}
+/* Passive background-save status, pinned to the bottom-right of the canvas.
+   Auto-saves as the user edits, so this is an indicator, not a button. */
+.canvas-root .save-status{
+  right:22px;bottom:22px;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:10px;
+  color:var(--muted);cursor:default;pointer-events:none;
+  background:var(--ui-bg);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);
+  border:1px solid var(--ui-border);box-shadow:var(--shadow);
+}
+.canvas-root .save-status svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 
 /* Board background picker (top bar, edit mode) */
 .canvas-root .bg-menu-wrap{position:relative;display:flex;}

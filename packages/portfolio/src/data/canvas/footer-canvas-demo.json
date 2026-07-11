@@ -1,0 +1,57 @@
+{
+  "version": 2,
+  "activePage": "home",
+  "pages": [
+    {
+      "id": "home",
+      "name": "Home",
+      "view": {
+        "x": 372.56500582381875,
+        "y": 229.74504767356882,
+        "scale": 0.8406043653065355
+      },
+      "nodes": [
+        {
+          "id": "d-md",
+          "type": "md",
+          "x": -271.7373009169884,
+          "y": -93.32231087113901,
+          "z": 1,
+          "w": 330,
+          "text": "# This is a canvas 👋\nAn **embeddable** React component — the same engine behind the canvas edition of this site.\n\n- Pan & zoom the board\n- Add notes, text & `markdown`\n- Draw, frame and organise"
+        },
+        {
+          "id": "d-note-1",
+          "type": "sticky",
+          "x": 190,
+          "y": -150,
+          "z": 2,
+          "color": "yellow",
+          "text": "Drag me\naround!"
+        },
+        {
+          "id": "d-note-2",
+          "type": "sticky",
+          "x": 217.42289303812743,
+          "y": 106.22330477799228,
+          "z": 3,
+          "color": "blue",
+          "text": "Double-click\nto edit me"
+        }
+      ],
+      "shapes": [
+        {
+          "id": "d-arrow",
+          "type": "arrow",
+          "stroke": "#7C2D91",
+          "width": 3,
+          "z": 4,
+          "x1": 150,
+          "y1": -70,
+          "x2": 195,
+          "y2": -115
+        }
+      ]
+    }
+  ]
+}

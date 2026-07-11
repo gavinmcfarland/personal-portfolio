@@ -1,11 +1,11 @@
 /* Shared persistence wiring for every <Canvas> in the portfolio.
 
-   Saving: the canvas "Save" button calls the onPublish adapter, which POSTs
-   the board to the dev-only endpoints in vite-plugin-canvas-save.js. Those
-   bake it into src/data/canvas/<storageKey>.json (and dropped images into
-   public/canvas-assets), so `git commit` + deploy makes the board live.
-   The endpoints only exist under `vite serve`, so hosts pass the adapters
-   in dev only — in production the Save button simply doesn't render. */
+   Saving: the canvas auto-saves in the background as you edit, calling the
+   onPublish adapter, which POSTs the board to the dev-only endpoints in
+   vite-plugin-canvas-save.js. Those bake it into src/data/canvas/<storageKey>.json
+   (and dropped images into public/canvas-assets), so `git commit` + deploy makes
+   the board live. The endpoints only exist under `vite serve`, so hosts pass the
+   adapters in dev only — in production the board is read-only and never saves. */
 
 /* Committed board snapshots, keyed by storageKey. Eagerly globbed so a board
    with no published file just resolves to undefined. */
@@ -17,7 +17,7 @@ export function publishedBoard(key) {
 }
 
 /* onPublish adapter for the board saved under `key`. Returns undefined outside
-   dev so the canvas hides its Save button where saving can't work. */
+   dev so the canvas skips background saving where it can't work. */
 export function boardSaver(key) {
   if (!import.meta.env.DEV) return undefined;
   return async (snapshot) => {

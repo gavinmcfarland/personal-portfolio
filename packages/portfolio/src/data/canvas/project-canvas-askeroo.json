@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 716.6725479116675,
-        "y": 342.26080458490634,
-        "scale": 0.9751018201223154
+        "x": 346.95250879215746,
+        "y": 163.55290992631376,
+        "scale": 0.6685290127185832
       },
       "nodes": [
         {
@@ -23,8 +23,8 @@
         {
           "id": "stack",
           "type": "md",
-          "x": 998.2742692324898,
-          "y": -14.918984045175826,
+          "x": 1146.0321397025064,
+          "y": -33.63794209883191,
           "z": 2,
           "w": 300,
           "text": "The first stateful CLI that allows back navigation. I created Askeroo after wishing more from the available prompt wizards that were avaiable. I wanted something modular and configurable for different needs."
@@ -32,8 +32,8 @@
         {
           "id": "note-0",
           "type": "sticky",
-          "x": 1213.7172786608849,
-          "y": 211.2506847013008,
+          "x": 1189.3459074263824,
+          "y": 176.96949672891387,
           "z": 3,
           "color": "yellow",
           "text": "Stateful back-navigation — revise earlier answers at any time"

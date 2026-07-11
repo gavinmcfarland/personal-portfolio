@@ -1,39 +1,13 @@
-import { Pencil, Upload, Check, TriangleAlert, Sun, Moon, Monitor } from "lucide-react";
+import { Pencil, Sun, Moon, Monitor } from "lucide-react";
 import { useCanvas } from "../CanvasProvider";
 import PageTabs from "./PageTabs";
 import BgColorMenu from "./BgColorMenu";
 
 const EDIT_ICON = <Pencil />;
-const PUBLISH_ICON = <Upload />;
-const CHECK_ICON = <Check />;
-const WARN_ICON = <TriangleAlert />;
 
 const SUN_ICON = <Sun />;
 const MOON_ICON = <Moon />;
 const SYSTEM_ICON = <Monitor />;
-
-const PUBLISH = {
-  idle: {
-    icon: PUBLISH_ICON,
-    label: "Save",
-    title: "Save this board through the host's onPublish adapter",
-  },
-  saving: {
-    icon: PUBLISH_ICON,
-    label: "Saving…",
-    title: "Saving…",
-  },
-  done: {
-    icon: CHECK_ICON,
-    label: "Saved",
-    title: "Saved",
-  },
-  error: {
-    icon: WARN_ICON,
-    label: "Failed",
-    title: "Save failed — see console",
-  },
-};
 
 const THEME = {
   system: { icon: SYSTEM_ICON, label: "System" },
@@ -42,10 +16,9 @@ const THEME = {
 };
 
 export default function TopBar() {
-  const { brand, readOnly, EDITABLE, canPublish, publishState, eng, theme } = useCanvas();
+  const { brand, readOnly, EDITABLE, eng, theme } = useCanvas();
   const mode = theme?.mode;
   const toggleTheme = theme?.toggle;
-  const pub = PUBLISH[publishState] || PUBLISH.idle;
   const th = THEME[mode] || THEME.system;
 
   return (
@@ -70,17 +43,6 @@ export default function TopBar() {
         >
           {th.icon}
           {th.label}
-        </button>
-      )}
-      {canPublish && (
-        <button
-          className={`chip${publishState === "done" ? " on" : ""}`}
-          title={pub.title}
-          disabled={publishState === "saving"}
-          onClick={() => eng.publish()}
-        >
-          {pub.icon}
-          {pub.label}
         </button>
       )}
     </div>

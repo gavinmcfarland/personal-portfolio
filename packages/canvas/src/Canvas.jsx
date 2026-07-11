@@ -7,6 +7,7 @@ import TopBar from './ui/TopBar';
 import Toolbar from './ui/Toolbar';
 import ZoomControls from './ui/ZoomControls';
 import ContextMenu from './ui/ContextMenu';
+import SaveStatus from './ui/SaveStatus';
 import Lightbox from './ui/Lightbox';
 
 /* Grid dots that stay visible on any custom background: light ink on dark
@@ -470,6 +471,7 @@ export default function Canvas() {
           {EDITABLE && <Toolbar />}
           <ZoomControls />
           <ContextMenu />
+          <SaveStatus />
         </>
       )}
       <Lightbox />
