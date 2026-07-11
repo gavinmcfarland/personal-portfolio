@@ -263,32 +263,35 @@ function Code({ node }) {
             </select>
           )}
         </span>
-        {/* Right-side actions — the toggles are always accessible (not only while
-            editing); copy fades in on hover. Kept mounted so the header height
-            stays constant. */}
-        {!readOnly && (
-          <div className="code-head-actions">
-            <button
-              className={`code-toggle${fmtOn ? ' on' : ''}`}
-              title={fmtOn ? 'Format on type: on' : 'Format on type: off'}
-              aria-pressed={fmtOn}
-              onClick={toggleFormat}
-            >
-              <Wand2 />
-            </button>
-            <button
-              className={`code-toggle${wrap ? ' on' : ''}`}
-              title={wrap ? 'Wrap text: on' : 'Wrap text: off'}
-              aria-pressed={wrap}
-              onClick={toggleWrap}
-            >
-              <WrapText />
-            </button>
-            <button className="code-copy" title={copied ? 'Copied' : 'Copy'} onClick={copy}>
-              {copied ? <Check /> : <Copy />}
-            </button>
-          </div>
-        )}
+        {/* Right-side actions — copy fades in on hover and is available in every
+            mode (including view/readOnly, so viewers can grab the source). The
+            format/wrap toggles are editing-only. Kept mounted so the header
+            height stays constant. */}
+        <div className="code-head-actions">
+          {!readOnly && (
+            <>
+              <button
+                className={`code-toggle${fmtOn ? ' on' : ''}`}
+                title={fmtOn ? 'Format on type: on' : 'Format on type: off'}
+                aria-pressed={fmtOn}
+                onClick={toggleFormat}
+              >
+                <Wand2 />
+              </button>
+              <button
+                className={`code-toggle${wrap ? ' on' : ''}`}
+                title={wrap ? 'Wrap text: on' : 'Wrap text: off'}
+                aria-pressed={wrap}
+                onClick={toggleWrap}
+              >
+                <WrapText />
+              </button>
+            </>
+          )}
+          <button className="code-copy" title={copied ? 'Copied' : 'Copy'} onClick={copy}>
+            {copied ? <Check /> : <Copy />}
+          </button>
+        </div>
       </div>
       <pre className="code-render"><code dangerouslySetInnerHTML={{ __html: rendered }} /></pre>
       <div className="code-edit">

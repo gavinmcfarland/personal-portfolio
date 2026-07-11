@@ -756,7 +756,12 @@
   justify-content: space-between;
   gap: 8px;
   padding: 6px;
-  min-height: 34px;
+  /* Sized to the 24px action buttons so the header stays a constant height
+     whether or not those buttons render — in view mode (readOnly) the actions
+     are omitted, and a smaller min-height lets the header collapse shorter than
+     in edit mode. With box-sizing:border-box the min-height must cover the
+     buttons *plus* padding and the border-bottom: 24 + (6+6) + 1 = 37px. */
+  min-height: 37px;
   border-bottom: 1px solid var(--line);
   background: var(--bg);
 }
