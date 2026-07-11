@@ -883,7 +883,9 @@
      buttons *plus* padding and the border-bottom: 24 + (6+6) + 1 = 37px. */
   min-height: 37px;
   border-bottom: 1px solid var(--line);
-  background: var(--bg);
+  /* Untinted base background, not --bg: the header shouldn't pick up a custom
+     board colour — it's a surface element, distinct from the canvas. */
+  background: var(--bg-base);
 }
 .canvas-root .code-head-actions {
   display: flex;
