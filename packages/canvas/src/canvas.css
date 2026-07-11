@@ -1193,7 +1193,7 @@
 /* Colour swatches */
 .canvas-root #swatches {
   left: 50%;
-  bottom: 78px;
+  bottom: 84px;
   transform: translateX(-50%);
   display: none;
   flex-direction: column;
