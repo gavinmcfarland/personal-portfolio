@@ -17,6 +17,10 @@ function sectionLabel(node) {
       .find(Boolean);
     return first ? first.slice(0, 32) : 'Markdown';
   }
+  if (node.type === 'code') {
+    const first = (node.text || '').split('\n').map((l) => l.trim()).find(Boolean);
+    return first ? first.slice(0, 32) : 'Code';
+  }
   const txt = (node.text || '').replace(/\s+/g, ' ').trim();
   return txt ? txt.slice(0, 32) : node.type.charAt(0).toUpperCase() + node.type.slice(1);
 }

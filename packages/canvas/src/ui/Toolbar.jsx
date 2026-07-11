@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  MousePointer2, Hand, StickyNote, Type, FileCode, Pen, Anchor,
+  MousePointer2, Hand, StickyNote, Type, FileCode, Code, Pen, Anchor,
   Slash, ArrowUpRight, Square, Circle,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
@@ -21,6 +21,7 @@ const TOOLS = [
   { t: 'note', label: 'Sticky note', key: 'N', icon: <StickyNote /> },
   { t: 'text', label: 'Text', key: 'T', icon: <Type /> },
   { t: 'md', label: 'Markdown', key: 'M', icon: <FileCode /> },
+  { t: 'code', label: 'Code', key: 'C', icon: <Code /> },
   { sep: true },
   { t: 'pen', label: 'Draw / Pen', key: 'P', icon: <Pen /> },
   { shapeMenu: true },

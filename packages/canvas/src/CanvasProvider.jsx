@@ -41,6 +41,7 @@ function normalizeSaved(n) {
   const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor };
   if (n.type === 'frame') return { ...base, w: n.w || 200, h: n.h || 140, name: n.text || 'Section' };
   if (n.type === 'md') return { ...base, w: n.w || 340, text: n.text || '' };
+  if (n.type === 'code') return { ...base, w: n.w || 420, text: n.text || '', lang: n.lang || 'js' };
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
   if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '', svg: n.svg != null ? !!n.svg : isSvgSrc(n.src, n.alt) };
   if (n.type === 'video') return { ...base, w: n.w || 320, h: n.h || 180, src: n.src || '', alt: n.alt || '' };
@@ -140,6 +141,7 @@ export function CanvasProvider({
   storageKey = DEFAULT_STORE,
   homeId = DEFAULT_HOME_ID,
   nodeTypes = null,
+  highlightCode = null, // optional custom code highlighter (src, lang) => html; falls back to the built-in tokeniser
   onPublish = null,
   onUploadImage = null,
   onUploadVideo = null,
@@ -392,12 +394,12 @@ export function CanvasProvider({
       const nodeEl = single && single.kind === 'node' ? nodeEls.get(single.id) : null;
       const type = nodeEl ? nodeEl.dataset.type : null;
       const editing = type && S.editingId === single.id;
-      if (type === 'md' && !editing) {
+      if ((type === 'md' || type === 'code') && !editing) {
         chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
       } else chrome.edit.style.display = 'none';
-      if ((type === 'frame' || type === 'md' || type === 'tblock' || type === 'image' || type === 'video') && !editing) {
+      if ((type === 'frame' || type === 'md' || type === 'code' || type === 'tblock' || type === 'image' || type === 'video') && !editing) {
         chrome.rz.style.display = 'block'; chrome.rz.style.left = (sx + sw - 4) + 'px'; chrome.rz.style.top = (sy + sh - 4) + 'px';
-        chrome.rz.style.cursor = type === 'md' || type === 'tblock' ? 'ew-resize' : 'nwse-resize';
+        chrome.rz.style.cursor = type === 'md' || type === 'code' || type === 'tblock' ? 'ew-resize' : 'nwse-resize';
       } else chrome.rz.style.display = 'none';
     }
     /* Faint hover outline for the node under the cursor (edit mode only). Drawn
@@ -689,6 +691,7 @@ export function CanvasProvider({
       else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; }
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
+      else if (n.type === 'code') { o.w = n.w; o.text = n.text; o.lang = n.lang; }
       else if (n.type === 'image' || n.type === 'video') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; if (n.svg) o.svg = 1; }
       return o;
     }
@@ -1205,7 +1208,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, fillColor, ctxMenu,
     publishState, fullscreenId, pages, activePageId, pageData, bgColor,
-    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, theme, accent, fit, ui, saveStatus,
+    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setFillColor, setCtxMenu, setSelectedState,
     // refs

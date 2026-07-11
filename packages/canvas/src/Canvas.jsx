@@ -153,6 +153,10 @@ export default function Canvas() {
       const n = eng.addNode({ id: eng.newId('md'), type: 'md', x: w.x, y: w.y, w: 340, text: '' });
       eng.setTool('select'); eng.selectNode(n.id); eng.startEditing(n.id); return;
     }
+    if (tool === 'code') {
+      const n = eng.addNode({ id: eng.newId('code'), type: 'code', x: w.x, y: w.y, w: 420, text: '', lang: 'js' });
+      eng.setTool('select'); eng.selectNode(n.id); eng.startEditing(n.id); return;
+    }
     if (tool === 'frame') {
       const count = S.nodes.filter((x) => x.type === 'frame').length + 1;
       const n = eng.addNode({ id: eng.newId('frame'), type: 'frame', x: w.x, y: w.y, w: 1, h: 1, name: 'Section ' + count });
@@ -225,7 +229,7 @@ export default function Canvas() {
     const type = nodeEl.dataset.type;
     const id = nodeEl.dataset.id;
     if (type === 'image' || type === 'video') { eng.openFullscreen(id); return; }
-    if (type !== 'sticky' && type !== 'tblock' && type !== 'md') return;
+    if (type !== 'sticky' && type !== 'tblock' && type !== 'md' && type !== 'code') return;
     eng.setTool('select'); eng.selectNode(id); eng.startEditing(id);
   };
 
@@ -314,13 +318,13 @@ export default function Canvas() {
           el.style.fontSize = f + 'px'; a.fontSize = f;
           eng.syncChrome(); return;
         }
-        const minW = a.mdType === 'md' ? 160 : a.mdType === 'tblock' ? 120 : 60;
+        const minW = a.mdType === 'md' ? 160 : a.mdType === 'code' ? 200 : a.mdType === 'tblock' ? 120 : 60;
         const w = Math.max(minW, a.ow + (e.clientX - a.sx) / scale());
         el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
         if (a.mdType === 'image' || a.mdType === 'video') {
           const h = Math.max(1, Math.round(w * (a.oh / a.ow))); // lock aspect ratio
           el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
-        } else if (a.mdType !== 'md' && a.mdType !== 'tblock') {
+        } else if (a.mdType !== 'md' && a.mdType !== 'tblock' && a.mdType !== 'code') {
           const h = Math.max(40, a.oh + (e.clientY - a.sy) / scale());
           el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
         }
@@ -449,7 +453,7 @@ export default function Canvas() {
       }
       const map = S.readOnly
         ? { v: 'select', h: 'hand' }
-        : { v: 'select', h: 'hand', n: 'note', t: 'text', m: 'md', p: 'pen', l: 'line', a: 'arrow', r: 'rect', o: 'ellipse', f: 'frame' };
+        : { v: 'select', h: 'hand', n: 'note', t: 'text', m: 'md', c: 'code', p: 'pen', l: 'line', a: 'arrow', r: 'rect', o: 'ellipse', f: 'frame' };
       const k = e.key.toLowerCase();
       if (map[k] && !e.metaKey && !e.ctrlKey) eng.setTool(map[k]);
       if (e.key === 'Escape') { eng.deselect(); setCtxMenu(null); eng.stopEditing(); }

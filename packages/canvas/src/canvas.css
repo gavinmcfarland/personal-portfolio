@@ -85,7 +85,7 @@
 .canvas-root.tool-select:not(.read-only):has(.node.dragging) .cv-viewport{cursor:var(--cur-edit-hover),grabbing;}
 .canvas-root.tool-hand .cv-viewport,.canvas-root.panning .cv-viewport{cursor:grab;}
 .canvas-root.panning .cv-viewport{cursor:grabbing;}
-.canvas-root.tool-note .cv-viewport,.canvas-root.tool-text .cv-viewport,.canvas-root.tool-md .cv-viewport{cursor:crosshair;}
+.canvas-root.tool-note .cv-viewport,.canvas-root.tool-text .cv-viewport,.canvas-root.tool-md .cv-viewport,.canvas-root.tool-code .cv-viewport{cursor:crosshair;}
 .canvas-root.tool-pen .cv-viewport,.canvas-root.tool-line .cv-viewport,.canvas-root.tool-arrow .cv-viewport,
 .canvas-root.tool-rect .cv-viewport,.canvas-root.tool-ellipse .cv-viewport,.canvas-root.tool-frame .cv-viewport{cursor:crosshair;}
 
@@ -218,6 +218,78 @@
 .canvas-root .md-render .md-kicker:first-child{margin-top:0;}
 .canvas-root .md-render .md-tags{display:flex;flex-wrap:wrap;gap:.4rem .5rem;margin:.55em 0;}
 .canvas-root .md-render .md-tags span{font-family:var(--sans);font-size:.62rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:100px;padding:.22rem .6rem;}
+
+/* Code object — highlighted source, editable via the same mirrored-<pre> +
+   transparent-<textarea> overlay as the markdown node. */
+.canvas-root .code{width:420px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;}
+.canvas-root .code-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:6px 8px 6px 14px;min-height:34px;border-bottom:1px solid var(--line);background:var(--bg);
+}
+/* The visible language text is always `.code-lang`, wrapped in `.code-langbox`
+   whose padding + (transparent) border stay constant. Editing only reveals the
+   border/background/chevron and lays a transparent native <select> over the box,
+   so the text itself never shifts position. */
+.canvas-root .code-langbox{
+  position:relative;display:inline-flex;align-items:center;
+  padding:2px 6px;border:1px solid transparent;border-radius:7px;
+  font-family:var(--sans);font-size:.72rem;font-weight:600;line-height:1.4;
+}
+.canvas-root .code-lang{color:var(--faint);white-space:nowrap;}
+.canvas-root .code.code-editing .code-langbox{border-color:var(--line);background:var(--surface);cursor:pointer;padding-right:22px;}
+.canvas-root .code.code-editing .code-lang{color:var(--muted);}
+.canvas-root .code.code-editing .code-langbox::after{
+  content:"";position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  width:11px;height:11px;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8b91' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center/11px no-repeat;
+}
+.canvas-root select.code-lang-sel{
+  position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;
+  opacity:0;cursor:pointer;font:inherit;
+}
+.canvas-root .code-copy{
+  width:24px;height:24px;flex:none;border:0;border-radius:7px;background:transparent;color:var(--faint);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .12s ease,color .12s ease,background-color .12s ease;
+}
+.canvas-root .code:hover .code-copy{opacity:1;}
+/* While editing, keep the button's slot (so the header height doesn't change)
+   but hide it — the copy affordance belongs to the resting state. */
+.canvas-root .code.code-editing .code-copy{visibility:hidden;pointer-events:none;}
+.canvas-root .code-copy:hover{color:var(--accent);background:var(--accent-soft);}
+.canvas-root .code-copy svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.canvas-root .code-edit{display:none;position:relative;}
+.canvas-root .code.code-editing .code-edit{display:block;}
+.canvas-root .code.code-editing .code-render{display:none;}
+.canvas-root .code-render,.canvas-root .code-hl,.canvas-root .code-src{
+  margin:0;padding:14px 16px;border:0;
+  font-family:var(--mono);font-size:12.5px;line-height:1.6;letter-spacing:0;tab-size:2;
+  white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
+}
+.canvas-root .code-render{color:var(--ink);overflow:auto;}
+.canvas-root .code-render code,.canvas-root .code-hl code{font:inherit;white-space:inherit;background:none;padding:0;}
+.canvas-root .code-hl{color:var(--ink);pointer-events:none;min-height:44px;}
+.canvas-root .code-src{
+  position:absolute;inset:0;width:100%;height:100%;resize:none;overflow:hidden;
+  background:transparent;color:transparent;caret-color:var(--accent);outline:none;
+}
+.canvas-root .code-src::selection{background:color-mix(in srgb,var(--accent) 28%,transparent);}
+.canvas-root .code-render .code-empty{color:var(--faint);font-style:italic;}
+/* Syntax tokens — stable hues (One Light / One Dark) independent of the accent. */
+.canvas-root .code .c-com{color:#a0a1a7;font-style:italic;}
+.canvas-root .code .c-key{color:#a626a4;}
+.canvas-root .code .c-str{color:#50a14f;}
+.canvas-root .code .c-num,.canvas-root .code .c-bool,.canvas-root .code .c-attr{color:#b76b01;}
+.canvas-root .code .c-fn,.canvas-root .code .c-prop{color:#4078f2;}
+.canvas-root .code .c-tag{color:#e45649;}
+.canvas-root .code .c-punc{color:var(--faint);}
+.dark .canvas-root .code .c-com,.canvas-root.dark .code .c-com{color:#7d8590;}
+.dark .canvas-root .code .c-key,.canvas-root.dark .code .c-key{color:#c678dd;}
+.dark .canvas-root .code .c-str,.canvas-root.dark .code .c-str{color:#98c379;}
+.dark .canvas-root .code .c-num,.dark .canvas-root .code .c-bool,.dark .canvas-root .code .c-attr,
+.canvas-root.dark .code .c-num,.canvas-root.dark .code .c-bool,.canvas-root.dark .code .c-attr{color:#d19a66;}
+.dark .canvas-root .code .c-fn,.dark .canvas-root .code .c-prop,
+.canvas-root.dark .code .c-fn,.canvas-root.dark .code .c-prop{color:#61afef;}
+.dark .canvas-root .code .c-tag,.canvas-root.dark .code .c-tag{color:#e06c75;}
 
 /* ── Chrome layer (screen-space, never scales with zoom) ──────── */
 .canvas-root .cv-chrome{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:90;}

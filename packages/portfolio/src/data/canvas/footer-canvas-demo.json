@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Home",
       "view": {
-        "x": 364.1650058238188,
-        "y": 187.74504767356876,
-        "scale": 0.8406043653065355
+        "x": 333.45625727977347,
+        "y": 169.93130959196094,
+        "scale": 1.0507554566331694
       },
       "nodes": [
         {
@@ -37,6 +37,16 @@
           "z": 3,
           "color": "blue",
           "text": "Double-click\nto edit me"
+        },
+        {
+          "id": "n1-code",
+          "type": "code",
+          "x": -32.31604182059269,
+          "y": -57.988097237388665,
+          "z": 5,
+          "w": 420,
+          "text": "const greet = (name) => {\nreturn `Hello, ${name}!`; // template\n}\nlet n = 42;\nif (n > 10) console.log(greet(\"world\"));",
+          "lang": "js"
         }
       ],
       "shapes": [

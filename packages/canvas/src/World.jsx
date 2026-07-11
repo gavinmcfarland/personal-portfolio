@@ -1,6 +1,7 @@
 import { useCanvas } from './CanvasProvider';
 import EditableNode from './nodes/EditableNode';
 import Markdown from './nodes/Markdown';
+import Code from './nodes/Code';
 import Frame from './nodes/Frame';
 import ImageNode from './nodes/Image';
 import VideoNode from './nodes/Video';
@@ -12,6 +13,7 @@ const BUILTIN_TYPES = {
   sticky: EditableNode,
   tblock: EditableNode,
   md: Markdown,
+  code: Code,
   frame: Frame,
   image: ImageNode,
   video: VideoNode,
