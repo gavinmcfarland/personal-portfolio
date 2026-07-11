@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Wand2, WrapText } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { useRegister } from './common';
 import { codeHighlight, codeLangLabel, CODE_LANGS, normalizeLang } from '../code';
@@ -18,9 +18,10 @@ const INDENT = '  ';         // one indent step (matches tab-size / Tab handling
    can override it by passing `highlightCode(src, lang)` to <Canvas> (e.g. wired
    to Shiki / Prism), keeping any such library entirely optional. */
 function Code({ node }) {
-  const { editingId, readOnly, eng, nodeEls, highlightCode, formatCode, formatOnType } = useCanvas();
+  const { editingId, readOnly, eng, nodeEls, highlightCode, formatCode, formatOnType, setFormatOnType } = useCanvas();
   const { setRef, dataProps } = useRegister(node);
   const taRef = useRef(null);
+  const hlRef = useRef(null);      // the highlight <pre>, kept scroll-synced with the textarea
   const headerHit = useRef(false); // true between a header pointer-down and the resulting blur
   const committed = useRef(false); // guards against committing twice per edit session
   const fmtTimer = useRef(0);      // pending debounced on-type reformat
@@ -30,11 +31,13 @@ function Code({ node }) {
   const [copied, setCopied] = useState(false);
   const editing = editingId === node.id;
   const hl = highlightCode || codeHighlight;
-  // Format-on-type is on by default via the built-in reindenter; a host can swap
-  // in a real formatter (e.g. Prettier's formatWithCursor) through `formatCode`,
-  // or disable it with `formatOnType={false}`.
+  // `format` is a global preference (shared by every code object); `wrap` is
+  // per-node. A host can swap in a real formatter (e.g. Prettier's
+  // formatWithCursor) through the `formatCode` prop.
   const fmt = formatCode || builtinFormat;
-  const typeFormat = formatOnType !== false && !!fmt;
+  const fmtOn = formatOnType !== false;
+  const wrap = node.wrap != null ? node.wrap : true;
+  const typeFormat = fmtOn && !!fmt;
 
   // While editing, keep the selection outline in sync as the source grows/shrinks
   // the node (edits live in local state, so the provider's sync never fires).
@@ -192,6 +195,25 @@ function Code({ node }) {
     taRef.current?.focus();
   };
 
+  const toggleFormat = (e) => {
+    e.stopPropagation();
+    setFormatOnType(!fmtOn); // global preference — affects every code object
+    if (editing) taRef.current?.focus();
+  };
+
+  const toggleWrap = (e) => {
+    e.stopPropagation();
+    eng.updateNode(node.id, { wrap: !wrap });
+    if (editing) taRef.current?.focus();
+  };
+
+  // Keep the highlight <pre> aligned with the textarea when it scrolls (matters
+  // with wrapping off, where long lines scroll horizontally).
+  const onScroll = (e) => {
+    const p = hlRef.current;
+    if (p) { p.scrollLeft = e.target.scrollLeft; p.scrollTop = e.target.scrollTop; }
+  };
+
   const copy = (e) => {
     e.stopPropagation();
     // While editing, copy the live (uncommitted) editor text, not the stored value.
@@ -212,7 +234,7 @@ function Code({ node }) {
   return (
     <div
       ref={setRef}
-      className={`node code${editing ? ' code-editing' : ''}`}
+      className={`node code${editing ? ' code-editing' : ''}${wrap ? '' : ' code-nowrap'}`}
       {...dataProps}
       style={style}
       onDoubleClick={onDoubleClick}
@@ -233,17 +255,36 @@ function Code({ node }) {
             </select>
           )}
         </span>
-        {/* Kept mounted while editing (hidden via CSS) so the header height stays
-            constant — its removal would otherwise shrink the header. */}
+        {/* Right-side actions — the toggles are always accessible (not only while
+            editing); copy fades in on hover. Kept mounted so the header height
+            stays constant. */}
         {!readOnly && (
-          <button className="code-copy" title={copied ? 'Copied' : 'Copy'} onClick={copy}>
-            {copied ? <Check /> : <Copy />}
-          </button>
+          <div className="code-head-actions">
+            <button
+              className={`code-toggle${fmtOn ? ' on' : ''}`}
+              title={fmtOn ? 'Format on type: on' : 'Format on type: off'}
+              aria-pressed={fmtOn}
+              onClick={toggleFormat}
+            >
+              <Wand2 />
+            </button>
+            <button
+              className={`code-toggle${wrap ? ' on' : ''}`}
+              title={wrap ? 'Wrap text: on' : 'Wrap text: off'}
+              aria-pressed={wrap}
+              onClick={toggleWrap}
+            >
+              <WrapText />
+            </button>
+            <button className="code-copy" title={copied ? 'Copied' : 'Copy'} onClick={copy}>
+              {copied ? <Check /> : <Copy />}
+            </button>
+          </div>
         )}
       </div>
       <pre className="code-render"><code dangerouslySetInnerHTML={{ __html: rendered }} /></pre>
       <div className="code-edit">
-        <pre className="code-hl" aria-hidden="true"><code dangerouslySetInnerHTML={{ __html: painted + '\n' }} /></pre>
+        <pre className="code-hl" aria-hidden="true" ref={hlRef}><code dangerouslySetInnerHTML={{ __html: painted + '\n' }} /></pre>
         <textarea
           className="code-src"
           spellCheck={false}
@@ -252,6 +293,7 @@ function Code({ node }) {
           onInput={onInput}
           onKeyDown={onKeyDown}
           onBlur={onBlur}
+          onScroll={onScroll}
           onCompositionStart={() => { composing.current = true; clearTimeout(fmtTimer.current); }}
           onCompositionEnd={() => { composing.current = false; scheduleFormat(); }}
         />

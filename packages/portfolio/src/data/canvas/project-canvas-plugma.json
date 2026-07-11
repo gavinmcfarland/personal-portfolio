@@ -6,16 +6,16 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 388.499199029426,
-        "y": 333.7654863025406,
-        "scale": 0.9002877808905491
+        "x": 662.7131382121468,
+        "y": 372.4574027595337,
+        "scale": 0.832125120089922
       },
       "nodes": [
         {
           "id": "intro",
           "type": "md",
-          "x": -179.87199711776194,
-          "y": -437.56731924273015,
+          "x": -183.09229107993727,
+          "y": -404.26591200122607,
           "z": 1,
           "w": 340,
           "text": "# Plugma\n\nA zero-config CLI for building Figma plugins, with hot-module reloading that actually works.\n\n[Node.js] [TypeScript] [Vite] [React] [Svelte] [Vue]"
@@ -68,12 +68,13 @@
         {
           "id": "n27-code",
           "type": "code",
-          "x": -222.37581175170004,
-          "y": -122.01772563234131,
+          "x": -295.493317473412,
+          "y": -130.36633113490532,
           "z": 54,
           "w": 372.26282295360716,
           "text": "npm create plugma@latest add",
-          "lang": "bash"
+          "lang": "bash",
+          "wrap": 0
         },
         {
           "id": "n28-md",
@@ -96,12 +97,13 @@
         {
           "id": "n30-code",
           "type": "code",
-          "x": -271.8288576429962,
-          "y": 86.98622858125873,
+          "x": -332.0685174848052,
+          "y": 31.69861202019859,
           "z": 57,
           "w": 420,
-          "text": "<html>",
-          "lang": "html"
+          "text": "<html>\n  asasas",
+          "lang": "html",
+          "wrap": 0
         }
       ],
       "shapes": []

@@ -649,6 +649,50 @@
   border-bottom: 1px solid var(--line);
   background: var(--bg);
 }
+.canvas-root .code-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+/* Editor toggle buttons (format-on-type, wrap) — revealed on hover / while
+   editing, like the copy button; accent when on. */
+.canvas-root .code-toggle {
+  width: 26px;
+  height: 24px;
+  flex: none;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
+}
+.canvas-root .code:hover .code-toggle,
+.canvas-root .code.code-editing .code-toggle {
+  opacity: 1;
+}
+.canvas-root .code-toggle:hover {
+  color: var(--muted);
+  background: var(--accent-soft);
+}
+.canvas-root .code-toggle.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.canvas-root .code-toggle svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 /* The visible language text is always `.code-lang`, wrapped in `.code-langbox`
    whose padding + (transparent) border stay constant. Editing only reveals the
    border/background/chevron and lays a transparent native <select> over the box,
@@ -796,6 +840,30 @@
 }
 .canvas-root .code-src::selection {
   background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+/* Wrap off: long lines scroll horizontally instead of wrapping. The textarea
+   scrolls to keep the caret in view and mirrors its offset onto the highlight
+   <pre> (see onScroll); the read view scrolls on its own. */
+.canvas-root .code.code-nowrap .code-render,
+.canvas-root .code.code-nowrap .code-hl,
+.canvas-root .code.code-nowrap .code-src {
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.canvas-root .code.code-nowrap .code-hl {
+  overflow: hidden;
+}
+.canvas-root .code.code-nowrap .code-src {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* scrollbar hidden — the caret-follow scroll mirrors onto .code-hl */
+}
+.canvas-root .code.code-nowrap .code-src::-webkit-scrollbar {
+  display: none;
+}
+.canvas-root .code.code-nowrap .code-render {
+  overflow-x: auto;
 }
 .canvas-root .code-render .code-empty {
   color: var(--faint);

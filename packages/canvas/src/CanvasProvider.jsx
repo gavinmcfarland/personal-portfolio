@@ -15,6 +15,11 @@ const DEFAULT_HOME_ID = 'home'; // id of the first page
 const GLOBAL_MODE_KEY = 'canvas-global-mode';
 const MODE_EVENT = 'canvas:mode';
 
+/* Format-on-type is likewise a single global preference shared by every code
+   object on the page (and across tabs), not stored per-node. */
+const FORMAT_KEY = 'canvas-format-on-type';
+const FORMAT_EVENT = 'canvas:format-on-type';
+
 const CanvasContext = createContext(null);
 export const useCanvas = () => {
   const c = useContext(CanvasContext);
@@ -41,7 +46,7 @@ function normalizeSaved(n) {
   const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor };
   if (n.type === 'frame') return { ...base, w: n.w || 200, h: n.h || 140, name: n.text || 'Section' };
   if (n.type === 'md') return { ...base, w: n.w || 340, text: n.text || '' };
-  if (n.type === 'code') return { ...base, w: n.w || 420, text: n.text || '', lang: n.lang || 'js' };
+  if (n.type === 'code') return { ...base, w: n.w || 420, text: n.text || '', lang: n.lang || 'js', ...(n.wrap != null ? { wrap: !!n.wrap } : {}) };
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
   if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '', svg: n.svg != null ? !!n.svg : isSvgSrc(n.src, n.alt) };
   if (n.type === 'video') return { ...base, w: n.w || 320, h: n.h || 180, src: n.src || '', alt: n.alt || '' };
@@ -143,7 +148,7 @@ export function CanvasProvider({
   nodeTypes = null,
   highlightCode = null, // optional custom code highlighter (src, lang) => html; falls back to the built-in tokeniser
   formatCode = null, // optional code formatter (src, lang, {cursorOffset}) => string | {formatted, cursorOffset}; falls back to the built-in reindenter
-  formatOnType = true, // reformat code objects on the fly while typing (set false to disable)
+  formatOnType: formatOnTypeDefault = true, // initial global default for reformat-on-type (persisted user pref wins)
   onPublish = null,
   onUploadImage = null,
   onUploadVideo = null,
@@ -185,6 +190,18 @@ export function CanvasProvider({
     try { return localStorage.getItem(GLOBAL_MODE_KEY) === 'view'; } catch { return false; }
   });
   const [editingId, setEditingId] = useState(null);
+  // Global format-on-type preference: seeded from the persisted user pref, else
+  // the prop default. Toggling it from any code object updates them all.
+  const [formatOnType, setFormatOnTypeState] = useState(() => {
+    try { const v = localStorage.getItem(FORMAT_KEY); if (v != null) return v === '1'; } catch { /* storage unavailable */ }
+    return formatOnTypeDefault !== false;
+  });
+  const setFormatOnType = (v) => {
+    const on = !!v;
+    setFormatOnTypeState(on);
+    try { localStorage.setItem(FORMAT_KEY, on ? '1' : '0'); } catch { /* storage unavailable */ }
+    try { window.dispatchEvent(new CustomEvent(FORMAT_EVENT, { detail: on })); } catch { /* no window */ }
+  };
   const [noteColor, setNoteColor] = useState('yellow');
   const [strokeColor, setStrokeColor] = useState('#7C2D91');
   const [fillColor, setFillColor] = useState('none'); // default fill for new fillable shapes
@@ -693,7 +710,7 @@ export function CanvasProvider({
       else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; }
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
-      else if (n.type === 'code') { o.w = n.w; o.text = n.text; o.lang = n.lang; }
+      else if (n.type === 'code') { o.w = n.w; o.text = n.text; o.lang = n.lang; if (n.wrap != null) o.wrap = n.wrap ? 1 : 0; }
       else if (n.type === 'image' || n.type === 'video') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; if (n.svg) o.svg = 1; }
       return o;
     }
@@ -1159,6 +1176,18 @@ export function CanvasProvider({
     };
   }, [EDITABLE, eng]);
 
+  /* ── Global format-on-type: follow toggles from any other instance ── */
+  useEffect(() => {
+    const onFmt = (e) => setFormatOnTypeState(!!e.detail);
+    const onStorage = (e) => { if (e.key === FORMAT_KEY) setFormatOnTypeState(e.newValue === '1'); };
+    window.addEventListener(FORMAT_EVENT, onFmt);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener(FORMAT_EVENT, onFmt);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
   /* ── Keep chrome + persistence in sync with the model ───────── */
   useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, eng]);
 
@@ -1210,7 +1239,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, fillColor, ctxMenu,
     publishState, fullscreenId, pages, activePageId, pageData, bgColor,
-    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, theme, accent, fit, ui, saveStatus,
+    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setFillColor, setCtxMenu, setSelectedState,
     // refs
