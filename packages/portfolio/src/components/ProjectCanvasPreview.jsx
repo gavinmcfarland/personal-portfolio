@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Canvas } from '@gavinmcfarland/canvas';
 import { buildBase } from './ProjectCanvas';
 import { publishedBoard } from '../data/canvasBoards';
+import { ACCENT } from '../theme';
 
 /* Wraps a project row and, while it is hovered, floats a small tilted card
    next to the cursor containing an inert miniature of the project's actual
@@ -112,6 +113,7 @@ export default function ProjectCanvasPreview({ project, children }) {
                   <Canvas
                     key={project.id}
                     fit="contain"
+                    accent={ACCENT}
                     ui={false}
                     initialView="fit"
                     base={buildBase(project)}

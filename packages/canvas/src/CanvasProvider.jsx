@@ -145,6 +145,7 @@ export function CanvasProvider({
   onUploadVideo = null,
   onChange = null,
   theme = null, // optional { mode, toggle } — renders a theme button in the top bar
+  accent = null, // theme/accent colour: a single CSS colour, or { light, dark } per theme (default: purple)
   fit = 'contain', // 'contain' fills the parent box; 'fullscreen' covers the browser viewport
   ui = true, // set false to hide the overlay panels (top bar, toolbar, zoom, context menu)
   initialView = null, // 'fit' frames all content on mount instead of restoring the saved pan/zoom
@@ -1203,7 +1204,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, strokeColor, fillColor, ctxMenu,
     publishState, fullscreenId, pages, activePageId, pageData, bgColor,
-    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, theme, fit, ui, saveStatus,
+    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setStrokeColor, setFillColor, setCtxMenu, setSelectedState,
     // refs

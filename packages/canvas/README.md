@@ -54,6 +54,7 @@ All are optional.
 | `homeId` | `string` | `home` | Id of the first (permanent) page. |
 | `fit` | `'contain' \| 'fullscreen'` | `'contain'` | `contain` fills the parent box; `fullscreen` covers the browser viewport. |
 | `theme` | `{ mode, toggle }` | `null` | Renders a theme-cycle button in the top bar when provided. Dark mode also activates from a `.dark` ancestor. |
+| `accent` | `string \| { light, dark }` | purple | Accent/theme colour for the UI (selection, active tool, frames, hover, edit caret). A single CSS colour applies to both themes; `{ light, dark }` varies per theme. |
 | `onPublish` | `(snapshot) => Promise` | `null` | Persist the board somewhere durable. Shows the "Save" button when set. |
 | `onUploadImage` | `(file, dataUrl) => Promise<url>` | inline / IndexedDB | Resolve a `src` for dropped images. |
 | `onUploadVideo` | `(file, dataUrl) => Promise<url>` | IndexedDB | Resolve a `src` for dropped videos. |

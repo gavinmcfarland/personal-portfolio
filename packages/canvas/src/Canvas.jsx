@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { useCanvas } from './CanvasProvider';
 import { ZOOM, PAN, DRAW_TOOLS, FILLABLE_SHAPES } from './constants';
 import World from './World';
@@ -22,13 +22,53 @@ function gridInkFor(hex) {
   return lum < 128 ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.055)';
 }
 
+/* Recolour the custom edit caret (the inline-SVG cursor) to a given accent, with
+   a contrasting outline so it stays legible over the board — white on light
+   themes, the dark backdrop on dark ones. Mirrors the two --cur-edit* tokens in
+   canvas.css. Returns ready-to-use `cursor` values (url + hotspot). */
+function editCursor(accent, outline) {
+  const a = encodeURIComponent(accent);
+  const o = encodeURIComponent(outline);
+  const head = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E";
+  const caret = "%3Cpath d='M5 3 L5 21 L10 16 L13.5 23.5 L16.5 22.2 L13 14.8 L20 14.8 Z'";
+  const edit = `url("${head}${caret} fill='${a}' stroke='${o}' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 5 3`;
+  const hover = `url("${head}${caret} fill='${o}' stroke='${a}' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='19.5' cy='6.5' r='3' fill='${a}'/%3E%3C/svg%3E") 5 3`;
+  return { edit, hover };
+}
+
+/* Build a small stylesheet that overrides the accent token (and the derived edit
+   caret) for one canvas instance, scoped by `sel` so multiple boards stay
+   independent. `accent` is a single CSS colour applied to both themes, or
+   `{ light, dark }` to vary by theme. Everything else accent-derived
+   (--accent-soft, selection tints, frames, active tool…) cascades from --accent
+   automatically — see canvas.css. */
+function buildAccentCss(sel, accent) {
+  const light = typeof accent === 'string' ? accent : accent && accent.light;
+  const dark = typeof accent === 'string' ? accent : accent && (accent.dark || accent.light);
+  const rules = [];
+  if (light) {
+    const c = editCursor(light, '#fff');
+    rules.push(`${sel}{--accent:${light};--cur-edit:${c.edit};--cur-edit-hover:${c.hover};}`);
+  }
+  if (dark) {
+    const c = editCursor(dark, '#0C0C0E');
+    rules.push(`.dark ${sel},${sel}.dark{--accent:${dark};--cur-edit:${c.edit};--cur-edit-hover:${c.hover};}`);
+  }
+  return rules.join('');
+}
+
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, fit, ui, bgColor } = ctx;
+  const { rootRef, hoverInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, fit, ui, bgColor, accent } = ctx;
 
   const bgStyle = bgColor
     ? { '--bg': bgColor, '--grid': gridInkFor(bgColor) || undefined }
     : undefined;
+
+  /* Per-instance accent override. A unique attribute scopes the injected rules to
+     this board so several canvases with different accents can share a page. */
+  const accentId = useId().replace(/:/g, '');
+  const accentCss = accent ? buildAccentCss(`.canvas-root[data-cv-accent="${accentId}"]`, accent) : '';
 
   /* Toggle a state class on the scoped root (not document.body) so multiple
      canvases stay independent and nothing leaks onto the host page. */
@@ -457,10 +497,12 @@ export default function Canvas() {
       className="canvas-root"
       ref={rootRef}
       data-fit={fit}
+      data-cv-accent={accent ? accentId : undefined}
       style={bgStyle}
       onPointerEnter={() => { hoverInsideRef.current = true; }}
       onPointerLeave={() => { hoverInsideRef.current = false; }}
     >
+      {accentCss && <style dangerouslySetInnerHTML={{ __html: accentCss }} />}
       <div className="cv-viewport" ref={viewportRef} onPointerDown={onPointerDown} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu} onDragOver={onDragOver} onDrop={onDrop}>
         <World />
       </div>

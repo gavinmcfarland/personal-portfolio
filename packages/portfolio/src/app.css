@@ -24,8 +24,8 @@
   --line: rgba(0, 0, 0, 0.10);
   --line-strong: rgba(0, 0, 0, 0.22);
   --rule: rgba(0, 0, 0, 0.55);        /* section header hairline */
-  --accent: #7C2D91;      /* CV purple */
-  --accent-soft: rgba(124, 45, 145, 0.10);
+  --accent: #1E7A4D;      /* portfolio green */
+  --accent-soft: rgba(30, 122, 77, 0.10);
 }
 
 .dark {
@@ -37,8 +37,8 @@
   --line: rgba(243, 243, 240, 0.10);
   --line-strong: rgba(243, 243, 240, 0.24);
   --rule: rgba(243, 243, 240, 0.42);
-  --accent: #C88BE8;      /* lifted purple for dark canvas */
-  --accent-soft: rgba(200, 139, 232, 0.14);
+  --accent: #56D49B;      /* lifted green for dark canvas */
+  --accent-soft: rgba(86, 212, 155, 0.14);
 }
 
 html {

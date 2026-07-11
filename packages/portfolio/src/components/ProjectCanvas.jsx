@@ -1,5 +1,6 @@
 import { Canvas } from "@gavinmcfarland/canvas";
 import { boardSaver, publishedBoard, uploadMedia } from "../data/canvasBoards";
+import { ACCENT } from "../theme";
 
 /* Builds a small, self-contained board seeded from a project's own fields, so
    every project page gets an on-brand interactive hero without hand-authoring a
@@ -46,7 +47,7 @@ export function buildBase(project) {
       {
         id: "link-arrow",
         type: "arrow",
-        stroke: "#7C2D91",
+        stroke: ACCENT.light,
         width: 3,
         z: 20,
         x1: 20,
@@ -66,6 +67,7 @@ export default function ProjectCanvas({ project }) {
     <Canvas
       key={project.id}
       fit="contain"
+      accent={ACCENT}
       editable={import.meta.env.DEV}
       saveStatus
       base={buildBase(project)}

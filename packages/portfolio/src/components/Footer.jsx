@@ -1,5 +1,6 @@
 import { Canvas } from "@gavinmcfarland/canvas";
 import { boardSaver, publishedBoard, uploadMedia } from "../data/canvasBoards";
+import { ACCENT } from "../theme";
 
 /* A self-contained board for the footer playground. `card` is a portfolio-only
    node type, so the demo sticks to the canvas's built-in nodes (markdown, sticky,
@@ -22,7 +23,7 @@ const demoBase = {
     { id: "d-note-2", type: "sticky", color: "blue", x: 210, y: 95, z: 3, text: "Double-click\nto edit me" },
   ],
   shapes: [
-    { id: "d-arrow", type: "arrow", stroke: "#7C2D91", width: 3, z: 4, x1: 150, y1: -70, x2: 195, y2: -115 },
+    { id: "d-arrow", type: "arrow", stroke: ACCENT.light, width: 3, z: 4, x1: 150, y1: -70, x2: 195, y2: -115 },
   ],
 };
 
@@ -44,6 +45,7 @@ const Footer = () => (
       >
         <Canvas
           fit="contain"
+          accent={ACCENT}
           editable
           base={demoBase}
           storageKey="footer-canvas-demo"
