@@ -10,9 +10,15 @@ import { useRegister, useMediaSrc } from './common';
    lightbox (read-only). Double-click opens the lightbox, where the video gets
    native controls and sound. */
 function VideoNode({ node }) {
-  const { eng } = useCanvas();
+  const { eng, mediaEls } = useCanvas();
   const { setRef, dataProps, style } = useRegister(node);
   const vidRef = useRef(null);
+  /* Publish this element so the lightbox can pick up (and hand back) the live
+     playback position — full-screen viewing resumes instead of restarting. */
+  const setVid = (el) => {
+    vidRef.current = el;
+    if (el) mediaEls.set(node.id, el); else mediaEls.delete(node.id);
+  };
   const fillRef = useRef(null);
   const scrub = useRef(null); // {wasPlaying} while dragging the bar
   const [playing, setPlaying] = useState(true);
@@ -99,7 +105,7 @@ function VideoNode({ node }) {
       style={s}
       onDoubleClick={(e) => { e.stopPropagation(); eng.openFullscreen(node.id); }}
     >
-      <video ref={vidRef} src={src || undefined} autoPlay muted loop playsInline aria-label={node.alt || ''} />
+      <video ref={setVid} src={src || undefined} autoPlay muted loop playsInline aria-label={node.alt || ''} />
       <div
         className="vctrl"
         onPointerDown={(e) => e.stopPropagation()}

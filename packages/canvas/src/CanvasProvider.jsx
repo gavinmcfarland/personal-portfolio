@@ -246,6 +246,7 @@ export function CanvasProvider({
   const chromeRef = useRef({ sel: null, del: null, edit: null, rz: null, hov: null, marq: null });
   const chrome = chromeRef.current;
   const nodeEls = useRef(new Map()).current; // id → element
+  const mediaEls = useRef(new Map()).current; // id → inline <video> element (for lightbox playback hand-off)
   const shapeEls = useRef(new Map()).current; // id → shape svg child (.shape)
   const frameLabelEls = useRef(new Map()).current; // id → label element
   const clipboard = useRef(null); // copied [{kind,data}] items, for paste
@@ -1486,7 +1487,7 @@ export function CanvasProvider({
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
     // refs
-    rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, worldRef, zoomLabelRef, nodeEls, shapeEls, frameLabelEls, actionRef, panKey, S,
+    rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, worldRef, zoomLabelRef, nodeEls, mediaEls, shapeEls, frameLabelEls, actionRef, panKey, S,
     // engine
     eng,
   };

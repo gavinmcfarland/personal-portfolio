@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 425.8157197342403,
-        "y": 187.5554902813451,
-        "scale": 0.6747844076725396
+        "x": -2849.8948466567354,
+        "y": -530.3188941816677,
+        "scale": 1.9050819774191219
       },
       "nodes": [
         {
@@ -32,8 +32,8 @@
         {
           "id": "note-0",
           "type": "sticky",
-          "x": 1189.3459074263824,
-          "y": 176.96949672891387,
+          "x": 1187.646792209002,
+          "y": 198.29523385355998,
           "z": 3,
           "color": "yellow",
           "text": "Stateful back-navigation — revise earlier answers at any time"
@@ -66,6 +66,17 @@
           "h": 644,
           "src": "/canvas-assets/06fb9db1cd6d5b82.mp4",
           "alt": "plugma-eslint.mp4"
+        },
+        {
+          "id": "n2-image",
+          "type": "image",
+          "x": 1839.9741025948897,
+          "y": 373.87294786563217,
+          "z": 6,
+          "w": 360,
+          "h": 178,
+          "src": "/canvas-assets/b546b7a85476b163.gif",
+          "alt": "Kapture 2026-07-13 at 11.52.14.gif"
         }
       ],
       "shapes": []
