@@ -505,7 +505,14 @@ export default function Canvas() {
       if (e.pointerType !== 'touch') return;
       touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (touches.size === 2) {
-        actionRef.current = null;        // drop the single-finger gesture
+        // Drop the single-finger gesture so it can't fight the pinch. onUp would
+        // normally clean these up, but nulling actionRef means it bails — so undo
+        // the single-finger visuals here or a tiny marquee/draft is left frozen
+        // on screen (looks like a stray pixel after a two-finger pan).
+        const prev = actionRef.current;
+        actionRef.current = null;
+        if (prev && prev.type === 'marquee') eng.hideMarquee();
+        if (prev && prev.type === 'draw') setDraft(null);
         rootClass('panning', false);
         eng.freezeView();
         const m = pinchMetrics();
