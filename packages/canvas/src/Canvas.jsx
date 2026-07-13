@@ -48,21 +48,32 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, fit, ui, bgColor, accent } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, accent } = ctx;
+  // Cooperative gestures only apply in view mode; while editing the board keeps
+  // full gesture control. `readOnly` (reactive) drives the CSS attribute/render;
+  // the imperative handlers read the live `S.readOnly` instead.
+  const coopView = COOP && readOnly;
 
-  /* Cooperative-gesture hint. When a wheel/touch is allowed to pass through to
-     the host page (so the page scrolls instead of the board hijacking it), flash
-     a transient centred label so the interaction stays discoverable. Toggling a
-     class on the element (rather than React state) keeps it off the render path
-     during a scroll storm. `⌘` on Apple, `Ctrl` elsewhere. */
-  const hintRef = useRef(null);
-  const hintTimer = useRef(null);
-  const isApple = typeof navigator !== 'undefined' && /Mac|iP(hone|ad|od)/.test(navigator.platform || navigator.userAgent || '');
-  const HINT_ZOOM = `Hold ${isApple ? '⌘' : 'Ctrl'} to zoom`;
-  const HINT_TOUCH = 'Use two fingers to move';
-  // Touch-primary devices "tap"; everything else "clicks".
+  // Touch-primary devices phrase things differently ("tap" vs "click", etc.).
   const coarsePointer = typeof matchMedia !== 'undefined' && matchMedia('(hover: none)').matches;
   const interactLabel = coarsePointer ? 'Tap to interact' : 'Click to interact';
+  /* Cooperative-gesture lock control (bottom-left). While locked the page scrolls
+     past the board instead of the board hijacking the wheel/touch; the message
+     says so and the lock button toggles it. `engaged` = unlocked = scroll (or a
+     single finger) pans the board directly. */
+  const lockMsg = coarsePointer ? 'Use two fingers to move' : 'Scroll to pan is disabled';
+  /* The message only surfaces when the user actually tries to scroll the locked
+     board (the lock button stays put); it then fades. Toggling a class keeps it
+     off React's render path during a scroll storm. */
+  const msgRef = useRef(null);
+  const msgTimer = useRef(null);
+  const flashMsg = () => {
+    const el = msgRef.current;
+    if (!el) return;
+    el.classList.add('show');
+    clearTimeout(msgTimer.current);
+    msgTimer.current = setTimeout(() => el.classList.remove('show'), 1400);
+  };
 
   /* Unlock the click-to-interact overlay only on a genuine tap, never on a
      scroll. Neither `click` nor pointer-move tracking is reliable on touch: the
@@ -93,15 +104,6 @@ export default function Canvas() {
   const onLockCancel = () => { lockTapRef.current = null; };
   // Keyboard activation (Enter/Space) — pointer handlers don't cover it.
   const onLockKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEngaged(true); } };
-  const flashHint = (msg) => {
-    const el = hintRef.current;
-    if (!el) return;
-    const span = el.firstChild;
-    if (span) span.textContent = msg;
-    el.classList.add('show');
-    clearTimeout(hintTimer.current);
-    hintTimer.current = setTimeout(() => el.classList.remove('show'), 1200);
-  };
 
   /* A chosen board colour is exposed as `--bg-pick`; canvas.css blends it a
      short way into the base (`--bg-base`) the way a shape fill composites over
@@ -139,8 +141,10 @@ export default function Canvas() {
       // pinch handler. Mouse drag-pan is left alone (a drag never traps scroll).
       // In click-to-interact mode this branch only runs once unlocked (the
       // overlay swallows touches while locked), where touch-pan is wanted — so
-      // exclude it here.
-      if (COOP && !CLICK_TO_INTERACT && e.pointerType === 'touch') return;
+      // exclude it here. When unlocked via the lock button (engaged), a single
+      // finger pans the board too. A finger landing here is a scroll attempt, so
+      // surface the "use two fingers" message.
+      if (COOP && !CLICK_TO_INTERACT && !engagedRef.current && e.pointerType === 'touch') { flashMsg(); return; }
       eng.freezeView();
       // Remember media / links under the pointer so a stationary tap opens them.
       const imgEl = e.target.closest && e.target.closest('.node.image,.node.video');
@@ -487,11 +491,13 @@ export default function Canvas() {
       // overlay is the affordance, so no wheel hint here.
       if (CLICK_TO_INTERACT) {
         if (!engagedRef.current) return; // locked → page scrolls past
-      } else if (COOP && !zoomKey) {
-        // Cooperative gestures: a plain wheel scrolls the host page (don't
-        // preventDefault); only ⌘/Ctrl+wheel zooms. Flash the hint so the zoom
-        // affordance is discoverable.
-        flashHint(HINT_ZOOM); return;
+      } else if (COOP && S.readOnly && !engagedRef.current && !zoomKey) {
+        // Cooperative gestures (view mode, locked): a plain wheel scrolls the host
+        // page (don't preventDefault). Surface the "scroll to pan is disabled"
+        // message since the user just tried to scroll the board. Unlocking via the
+        // lock button (engaged) or editing lets the wheel pan the board instead.
+        flashMsg();
+        return;
       }
       e.preventDefault();
       if (zoomKey) {
@@ -594,10 +600,6 @@ export default function Canvas() {
     const onTouchMove = (e) => {
       if (e.pointerType !== 'touch' || !touches.has(e.pointerId)) return;
       touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
-      // One finger dragging in cooperative mode: the page is scrolling, not the
-      // board — nudge the user toward the two-finger gesture. (Skip in
-      // click-to-interact mode, which uses the overlay instead of hints.)
-      if (COOP && !CLICK_TO_INTERACT && touches.size === 1) { flashHint(HINT_TOUCH); return; }
       if (touches.size !== 2 || !pinch) return;
       e.preventDefault();
       const m = pinchMetrics();
@@ -622,20 +624,22 @@ export default function Canvas() {
     const onDocDown = (e) => {
       const inside = !!(rootRef.current && rootRef.current.contains(e.target));
       activeInsideRef.current = inside;
-      // Click-to-interact: a press anywhere off the board relocks it.
-      if (CLICK_TO_INTERACT && engagedRef.current && !inside) setEngaged(false);
+      // The board loses focus → relock an unlocked (engaged) board, whether it
+      // was unlocked via the cooperative lock button or the click-to-interact
+      // overlay. A press on the board's own lock button counts as inside.
+      if (engagedRef.current && !inside) setEngaged(false);
     };
 
-    // Click-to-interact: scrolling the host page relocks the board. Guard on the
-    // scroll target being the document itself so scrolling an inner card (e.g. a
-    // code block) while engaged doesn't relock.
+    // Scrolling the host page relocks an unlocked board. Guard on the scroll
+    // target being the document itself so scrolling an inner card (e.g. a code
+    // block) while engaged doesn't relock.
     const onDocScroll = (e) => {
-      // A scroll during a lock-overlay press means the finger was scrolling, not
-      // tapping — flag the in-progress gesture so pointerup won't engage. Runs
-      // for scrolls of any element (capture phase), so it works whether the host
-      // scrolls the window or a container.
+      // A scroll during a click-to-interact overlay press means the finger was
+      // scrolling, not tapping — flag the in-progress gesture so pointerup won't
+      // engage. Runs for scrolls of any element (capture phase), so it works
+      // whether the host scrolls the window or a container.
       if (lockTapRef.current) lockTapRef.current.scrolled = true;
-      if (!CLICK_TO_INTERACT || !engagedRef.current) return;
+      if (!engagedRef.current) return;
       const t = e.target;
       if (t === document || t === document.documentElement || t === document.body) setEngaged(false);
     };
@@ -680,7 +684,7 @@ export default function Canvas() {
       className="canvas-root"
       ref={rootRef}
       data-fit={fit}
-      data-coop={COOP ? '' : undefined}
+      data-coop={coopView && !engaged ? '' : undefined}
       data-engaged={CLICK_TO_INTERACT && engaged ? '' : undefined}
       data-cv-accent={accent ? accentId : undefined}
       data-cv-bg={bgColor ? 'custom' : undefined}
@@ -704,7 +708,26 @@ export default function Canvas() {
         </>
       )}
       <Lightbox />
-      {COOP && <div className="cv-gesture-hint" ref={hintRef} aria-hidden="true"><span /></div>}
+      {coopView && (
+        /* Bottom-left lock control: locked = the page scrolls past the board;
+           tapping the lock unlocks scroll/one-finger pan (engaged). */
+        <div className="cv-lock" data-unlocked={engaged ? '' : undefined}>
+          <button
+            type="button"
+            className="cv-lock-btn"
+            onClick={() => setEngaged(!engaged)}
+            aria-label={engaged ? 'Disable scroll to pan' : 'Enable scroll to pan'}
+            title={engaged ? 'Disable scroll to pan' : 'Enable scroll to pan'}
+          >
+            {engaged ? (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
+            ) : (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+            )}
+          </button>
+          {!engaged && <span ref={msgRef}>{lockMsg}</span>}
+        </div>
+      )}
       {CLICK_TO_INTERACT && !engaged && (
         /* Locked overlay: swallows board gestures and lets one finger scroll the
            page (touch-action set in CSS). A tap unlocks (tracked via the pointer

@@ -164,7 +164,7 @@ export function CanvasProvider({
   ui = true, // set false to hide the overlay panels (top bar, toolbar, zoom, context menu)
   initialView = null, // 'fit' frames all content on mount instead of restoring the saved pan/zoom
   saveStatus = true, // show the background-save status indicator (bottom-right) while editing
-  cooperativeGestures = !editable, // embedded/read-only boards let the page scroll past: plain wheel scrolls the page (⌘/Ctrl+wheel zooms), one finger scrolls the page (two fingers pan/zoom). Off in edit mode so authoring keeps full control.
+  cooperativeGestures = false, // opt-in: in VIEW mode, let the page scroll past — plain wheel scrolls the page (⌘/Ctrl+wheel zooms), one finger scrolls the page (two fingers pan/zoom). Automatically inactive while EDITING (readOnly false), where authoring needs full gesture control — so a board that toggles between view/edit cooperates only in view mode.
   clickToInteract = false, // gate the board behind a "Click to interact" overlay: locked = the page scrolls past untouched; click unlocks normal pan/zoom; scrolling the page / clicking off / Esc relocks. Supersedes the cooperativeGestures hints.
 }) {
   const EDITABLE = editable;
