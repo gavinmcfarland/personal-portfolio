@@ -74,6 +74,11 @@ export default function Canvas() {
     clearTimeout(msgTimer.current);
     msgTimer.current = setTimeout(() => el.classList.remove('show'), 1400);
   };
+  const hideMsg = () => {
+    const el = msgRef.current;
+    if (el) el.classList.remove('show');
+    clearTimeout(msgTimer.current);
+  };
 
   /* Unlock the click-to-interact overlay only on a genuine tap, never on a
      scroll. Neither `click` nor pointer-move tracking is reliable on touch: the
@@ -142,9 +147,10 @@ export default function Canvas() {
       // In click-to-interact mode this branch only runs once unlocked (the
       // overlay swallows touches while locked), where touch-pan is wanted — so
       // exclude it here. When unlocked via the lock button (engaged), a single
-      // finger pans the board too. A finger landing here is a scroll attempt, so
-      // surface the "use two fingers" message.
-      if (COOP && !CLICK_TO_INTERACT && !engagedRef.current && e.pointerType === 'touch') { flashMsg(); return; }
+      // finger pans the board too. (The "use two fingers" hint is flashed from the
+      // touch tracker below, which knows the finger count, so a real two-finger
+      // pan doesn't trigger it.)
+      if (COOP && !CLICK_TO_INTERACT && !engagedRef.current && e.pointerType === 'touch') return;
       eng.freezeView();
       // Remember media / links under the pointer so a stationary tap opens them.
       const imgEl = e.target.closest && e.target.closest('.node.image,.node.video');
@@ -574,6 +580,7 @@ export default function Canvas() {
        so it can't fight the pinch. */
     const touches = new Map(); // pointerId -> { x, y }
     let pinch = null;          // { dist, cx, cy } baseline from the previous move
+    let flashArm = null;       // pending "use two fingers" hint (armed on the 1st finger)
     const twoPoints = () => { const [a, b] = [...touches.values()]; return [a, b]; };
     const pinchMetrics = () => {
       const [a, b] = twoPoints();
@@ -582,7 +589,18 @@ export default function Canvas() {
     const onTouchDown = (e) => {
       if (e.pointerType !== 'touch') return;
       touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      // Cooperative locked: a lone finger is a page-scroll attempt → hint to use
+      // two fingers. Arm it with a short delay and only fire if a second finger
+      // hasn't joined — so a real two-finger pan (whose first finger lands here
+      // too) never shows the hint.
+      if (touches.size === 1 && COOP && S.readOnly && !engagedRef.current && !CLICK_TO_INTERACT) {
+        clearTimeout(flashArm);
+        flashArm = setTimeout(() => { if (touches.size === 1) flashMsg(); }, 130);
+      }
       if (touches.size === 2) {
+        // Second finger → it's a pinch/two-finger pan, not a scroll: cancel the
+        // pending hint and hide it if it already showed.
+        clearTimeout(flashArm); flashArm = null; hideMsg();
         // Drop the single-finger gesture so it can't fight the pinch. onUp would
         // normally clean these up, but nulling actionRef means it bails — so undo
         // the single-finger visuals here or a tiny marquee/draft is left frozen
@@ -675,6 +693,7 @@ export default function Canvas() {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('paste', onPaste);
+      clearTimeout(flashArm);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

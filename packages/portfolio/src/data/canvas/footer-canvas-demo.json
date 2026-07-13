@@ -6,16 +6,16 @@
       "id": "home",
       "name": "Home",
       "view": {
-        "x": 455.3255489103249,
-        "y": 188.26146278249846,
-        "scale": 0.4388007553022291
+        "x": 157.5622563196108,
+        "y": 203.9563792105232,
+        "scale": 0.6550159892389287
       },
       "nodes": [
         {
           "id": "d-md",
           "type": "md",
-          "x": -271.7373009169884,
-          "y": -93.32231087113901,
+          "x": -247.743576734812,
+          "y": -97.02353881139975,
           "z": 1,
           "w": 330,
           "text": "# This is a canvas 👋\nAn **embeddable** React component — the same engine behind the canvas edition of this site.\n\n- Pan & zoom the board\n- Add notes, text & `markdown`\n- Draw, frame and organise"
