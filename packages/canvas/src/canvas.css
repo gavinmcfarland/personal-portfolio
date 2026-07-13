@@ -119,13 +119,15 @@
 .canvas-root .cv-lock-btn {
   pointer-events: auto;
   flex: none;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
   padding: 0;
-  border: 0;
+  /* Faint light border so the dark pill stays visible against a dark board. */
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   cursor: pointer;
   color: #fff;
@@ -154,6 +156,7 @@
   top: 50%;
   transform: translateY(-50%);
   padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   font-size: 13px;
   font-weight: 500;

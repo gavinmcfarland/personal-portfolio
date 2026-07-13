@@ -61,7 +61,7 @@ export default function Canvas() {
      past the board instead of the board hijacking the wheel/touch; the message
      says so and the lock button toggles it. `engaged` = unlocked = scroll (or a
      single finger) pans the board directly. */
-  const lockMsg = coarsePointer ? 'Use two fingers to move' : 'Scroll to pan is disabled';
+  const lockMsg = coarsePointer ? 'Use two fingers to pan' : 'Drag to pan';
   /* The message only surfaces when the user actually tries to scroll the locked
      board (the lock button stays put); it then fades. Toggling a class keeps it
      off React's render path during a scroll storm. */
