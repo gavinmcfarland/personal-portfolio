@@ -180,6 +180,14 @@ function Code({ node }) {
       clearTimeout(fmtTimer.current);
       return;
     }
+    // A paste (or drag-drop) is a discrete block insertion, not live typing:
+    // reformat it immediately rather than waiting out the type-debounce, so
+    // pasted code snaps to structure at once — and doesn't get skipped if the
+    // user clicks away before the debounce fires.
+    if (it === 'insertFromPaste' || it === 'insertFromDrop') {
+      if (typeFormat) { clearTimeout(fmtTimer.current); runFormat(); }
+      return;
+    }
     scheduleFormat();
   };
 

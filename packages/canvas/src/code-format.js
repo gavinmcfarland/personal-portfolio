@@ -73,8 +73,12 @@ function reindent(src, cursorOffset, plan) {
 }
 
 /* ── Brace languages ─────────────────────────────────────────────── */
+/* Scan one line and return its net bracket change (opens − closes), skipping
+   brackets inside strings, templates and comments. Carries the in-string state
+   (block comment / template literal) across lines. */
 function scanBrace(line, state, slashLine) {
-  let { depth, inBlock, inTpl } = state;
+  let { inBlock, inTpl } = state;
+  let delta = 0;
   const n = line.length;
   let i = 0;
   while (i < n) {
@@ -100,22 +104,40 @@ function scanBrace(line, state, slashLine) {
       }
       continue;
     }
-    if (OPEN[ch]) depth++;
-    else if (CLOSE[ch]) depth--;
+    if (OPEN[ch]) delta++;
+    else if (CLOSE[ch]) delta--;
     i++;
   }
-  return { depth: depth < 0 ? 0 : depth, inBlock, inTpl };
+  return { delta, inBlock, inTpl };
 }
 
 function bracePlanner(slashLine) {
-  let state = { depth: 0, inBlock: false, inTpl: false };
+  // `level` is the visual nesting level (in indent units), NOT the raw open-
+  // bracket count. A line indents its children by at most ONE unit no matter how
+  // many brackets it opens, so `f(` and `f(({ x }) => (` both nest their body a
+  // single step — keeping every level a consistent one-unit indent.
+  let level = 0;
+  let state = { inBlock: false, inTpl: false };
   return (line, content) => {
-    if (state.inBlock || state.inTpl) { state = scanBrace(line, state, slashLine); return { preserve: true }; }
+    if (state.inBlock || state.inTpl) {
+      const r = scanBrace(line, state, slashLine);
+      state = { inBlock: r.inBlock, inTpl: r.inTpl };
+      // Brackets after a template/comment closes on this line still shift nesting.
+      level = Math.max(0, level + (r.delta > 0 ? 1 : r.delta < 0 ? r.delta : 0));
+      return { preserve: true };
+    }
+    // Leading close-brackets dedent THIS line relative to the running level.
     let closers = 0;
     while (closers < content.length && CLOSE[content[closers]]) closers++;
-    const level = Math.max(0, state.depth - closers);
-    state = scanBrace(line, state, slashLine);
-    return { preserve: false, level };
+    const lineLevel = Math.max(0, level - closers);
+    const r = scanBrace(line, state, slashLine);
+    state = { inBlock: r.inBlock, inTpl: r.inTpl };
+    // What the line opens/closes past its leading closers decides the next level:
+    // a net open (tail > 0) nests children one unit deeper (capped at +1); a net
+    // close dedents by that amount.
+    const tail = r.delta + closers;
+    level = Math.max(0, lineLevel + (tail > 0 ? 1 : tail < 0 ? tail : 0));
+    return { preserve: false, level: lineLevel };
   };
 }
 

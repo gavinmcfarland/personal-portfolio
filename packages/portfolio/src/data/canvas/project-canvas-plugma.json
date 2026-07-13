@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": -283.96613702870866,
-        "y": 730.7444643530504,
-        "scale": 0.7092353907257934
+        "x": -310.82860237486227,
+        "y": 697.1478872517283,
+        "scale": 0.8628265789568828
       },
       "nodes": [
         {
@@ -23,8 +23,8 @@
         {
           "id": "note-0",
           "type": "sticky",
-          "x": 1884.1306824504602,
-          "y": -544.5484967665213,
+          "x": 1366.1150538212883,
+          "y": -699.5809045144013,
           "z": 46,
           "color": "yellow",
           "text": "True HMR across the UI and plugin sandbox — no full reloads"
@@ -32,8 +32,8 @@
         {
           "id": "note-1",
           "type": "sticky",
-          "x": 2182.666012217519,
-          "y": -454.1265583404886,
+          "x": 1664.6503835883468,
+          "y": -609.1589660883685,
           "z": 47,
           "color": "blue",
           "text": "Framework-agnostic: React, Svelte and Vue out of the box"
@@ -41,8 +41,8 @@
         {
           "id": "note-2",
           "type": "sticky",
-          "x": 2069.778470327143,
-          "y": -326.7047015670329,
+          "x": 1551.762841697971,
+          "y": -481.7371093149128,
           "z": 5,
           "color": "green",
           "text": "Zero config to start; a single command to build and publish"
@@ -50,8 +50,8 @@
         {
           "id": "n25-tblock",
           "type": "tblock",
-          "x": 2123.4178179687224,
-          "y": -576.5152490566961,
+          "x": 1605.4021893395502,
+          "y": -731.547656804576,
           "z": 45,
           "text": "Features supported",
           "w": 346.4863948419979,
@@ -60,8 +60,8 @@
         {
           "id": "n26-sticky",
           "type": "sticky",
-          "x": 1765.203759845261,
-          "y": -325.92852231162317,
+          "x": 1247.188131216089,
+          "y": -480.9609300595031,
           "z": 52,
           "color": "yellow",
           "text": "Hello"
@@ -69,8 +69,8 @@
         {
           "id": "n27-code",
           "type": "code",
-          "x": 451.4627867210963,
-          "y": -282.0621641791174,
+          "x": 552.7024931692752,
+          "y": -441.22162468312604,
           "z": 54,
           "w": 372.26282295360716,
           "text": "npm create plugma@latest add",
@@ -80,8 +80,8 @@
         {
           "id": "n28-md",
           "type": "md",
-          "x": 1906.7983225505377,
-          "y": -79.4302501920719,
+          "x": 1388.7826939213655,
+          "y": -234.46265793995178,
           "z": 55,
           "w": 454.83307303997344,
           "text": "- `install <pkg-manager?>`: Install dependencies\n- `no-install`: Skip dependency installation\n- `verbose`: Show detailed logs\n- `debug`: Enable debug mode"
@@ -89,8 +89,8 @@
         {
           "id": "n29-tblock",
           "type": "tblock",
-          "x": 1803.7185272364018,
-          "y": -612.4799988616834,
+          "x": 1285.7028986072296,
+          "y": -767.5124066095633,
           "z": 56,
           "text": "Features supported",
           "w": 261.5990091908047,
@@ -99,32 +99,19 @@
         {
           "id": "n30-code",
           "type": "code",
-          "x": 693.4779669366698,
-          "y": -60.25073008643187,
+          "x": 760.2628935415414,
+          "y": -336.64105133970145,
           "z": 57,
           "w": 433.76899830964373,
-          "text": "import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig(({ mode, context }) => (\n    return {\n      plugins: context == \"ui\" ? [react()] : []\n    };\n}))",
+          "text": "import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig(({ mode, context }) => (\n  return {\n    plugins: context == \"ui\" ? [react()] : []\n  };\n}))",
           "lang": "js",
           "wrap": 0
         },
         {
-          "id": "n31-link",
-          "type": "link",
-          "x": 1408.5282382024197,
-          "y": -494.0709701785556,
-          "z": 58,
-          "w": 280,
-          "url": "https://screen.studio/share/neRqmJDi",
-          "title": "Plugma - End-to-end UI testing with Playwright — Screen Studio",
-          "desc": "Plugma - End-to-end UI testing with Playwright — Created and shared with Screen Studio",
-          "image": "/canvas-assets/0494b681d11dc2a9.png",
-          "favicon": "https://screen.studio/icon.png"
-        },
-        {
           "id": "n32-link",
           "type": "link",
-          "x": 1062.093262220163,
-          "y": -485.9861149192087,
+          "x": 1190.9767534767639,
+          "y": -1070.0800342310129,
           "z": 59,
           "w": 280,
           "url": "https://screen.studio/share/4rh7VCM7",
@@ -134,75 +121,48 @@
           "favicon": "https://screen.studio/icon.png"
         },
         {
-          "id": "n33-image",
-          "type": "image",
-          "x": 1270.7852673064513,
-          "y": -802.9175809888598,
-          "z": 60,
-          "w": 233.54163629211575,
-          "h": 251,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/d0dd139fd4d9a410.png",
-              "alt": "image 2.png"
-            },
-            {
-              "kind": "image",
-              "src": "/canvas-assets/c2b5d5fb3c5d5d03.png",
-              "alt": "image 3.png"
-            },
-            {
-              "kind": "image",
-              "src": "/canvas-assets/fa55b672b60d12e8.png",
-              "alt": "image 1.png"
-            },
-            {
-              "kind": "image",
-              "src": "/canvas-assets/8ea4c9c33f5a6974.png",
-              "alt": "Frame 13869.png"
-            }
-          ],
-          "grid": {
-            "colFr": [
-              1.097,
-              0.903
-            ],
-            "rowFr": [
-              1.234,
-              0.766
-            ]
-          }
+          "id": "n39-sound",
+          "type": "sound",
+          "x": 1870.2424357127757,
+          "y": -840.5263856256187,
+          "z": 67,
+          "w": 260,
+          "h": 56,
+          "src": "idb:project-canvas-plugma-media/mmrj9qmi4-1",
+          "name": "Make It From Rectangles",
+          "dur": 175.439979
         },
         {
-          "id": "n34-image",
+          "id": "n40-video",
+          "type": "video",
+          "x": 1907.666227390112,
+          "y": -499.1739156487322,
+          "z": 68,
+          "w": 360,
+          "h": 203,
+          "assets": [
+            {
+              "kind": "video",
+              "src": "/canvas-assets/1f24956e6bbf6ddf.mp4",
+              "alt": "Generate_a_short_video_of_of_m.mp4"
+            }
+          ]
+        },
+        {
+          "id": "n41-image",
           "type": "image",
-          "x": 1544.606903721542,
-          "y": -946.6088942765136,
-          "z": 61,
-          "w": 281.6997203780367,
-          "h": 271,
+          "x": 2119.7228731342293,
+          "y": -732.6193049173854,
+          "z": -1,
+          "w": 360,
+          "h": 360,
           "assets": [
             {
               "kind": "image",
-              "src": "/canvas-assets/c2b5d5fb3c5d5d03.png",
-              "alt": "image 3.png"
-            },
-            {
-              "kind": "image",
-              "src": "/canvas-assets/d0dd139fd4d9a410.png",
-              "alt": "image 2.png"
+              "src": "/canvas-assets/b8b19eca698a008e.png",
+              "alt": "ChatGPT Image Jun 11, 2026, 09_08_39 PM.png"
             }
-          ],
-          "grid": {
-            "colFr": [
-              0.819,
-              1.181
-            ],
-            "rowFr": [
-              1
-            ]
-          }
+          ]
         }
       ],
       "shapes": []
