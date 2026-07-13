@@ -65,20 +65,28 @@ export default function Canvas() {
   const interactLabel = coarsePointer ? 'Tap to interact' : 'Click to interact';
 
   /* Unlock the click-to-interact overlay only on a genuine tap, never on a
-     scroll. A synthesized `click` is unreliable on touch — the browser fires it
-     for gestures it didn't turn into a scroll (page already at its scroll end, a
-     short drag…), which is exactly the flicker: engage → ring → relock. So track
-     the gesture ourselves, mirroring the board's own tap-vs-pan test: engage on
-     pointerup only if the finger barely moved AND a native scroll didn't cancel
-     the gesture (pointercancel fires the moment the page starts scrolling). */
+     scroll. Neither `click` nor pointer-move tracking is reliable on touch: the
+     browser may fire `click` for gestures it didn't scroll, and during a native
+     scroll it often withholds `pointermove` (firing `pointercancel` instead) —
+     and clientX/Y is viewport-relative, so a momentum scroll where the finger is
+     fairly still registers no movement at all. The one unambiguous signal is
+     whether the PAGE scrolled: a tap never moves the scroll position, a scroll
+     always does. So remember the scroll offset on pointerdown and only engage on
+     pointerup if it hasn't changed (and pointercancel — the scroll's own signal —
+     hasn't already dropped the gesture). */
   const lockTapRef = useRef(null);
-  const LOCK_TAP_SLOP = 10;
-  const onLockDown = (e) => { lockTapRef.current = { x: e.clientX, y: e.clientY, moved: false }; };
-  const onLockMove = (e) => {
+  const scrollPos = () => [window.scrollX || window.pageXOffset || 0, window.scrollY || window.pageYOffset || 0];
+  const onLockDown = () => { const [x, y] = scrollPos(); lockTapRef.current = { sx: x, sy: y }; };
+  const onLockUp = () => {
     const t = lockTapRef.current;
-    if (t && Math.abs(e.clientX - t.x) + Math.abs(e.clientY - t.y) > LOCK_TAP_SLOP) t.moved = true;
+    lockTapRef.current = null;
+    if (!t) return; // gesture was cancelled (native scroll took over)
+    const [x, y] = scrollPos();
+    // Engage only if nothing scrolled during the press — the window offset is
+    // unchanged AND no scroll event fired (the latter catches a host that
+    // scrolls a container rather than the window; see onDocScroll).
+    if (!t.scrolled && x === t.sx && y === t.sy) setEngaged(true);
   };
-  const onLockUp = () => { const t = lockTapRef.current; lockTapRef.current = null; if (t && !t.moved) setEngaged(true); };
   const onLockCancel = () => { lockTapRef.current = null; };
   // Keyboard activation (Enter/Space) — pointer handlers don't cover it.
   const onLockKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEngaged(true); } };
@@ -619,6 +627,11 @@ export default function Canvas() {
     // scroll target being the document itself so scrolling an inner card (e.g. a
     // code block) while engaged doesn't relock.
     const onDocScroll = (e) => {
+      // A scroll during a lock-overlay press means the finger was scrolling, not
+      // tapping — flag the in-progress gesture so pointerup won't engage. Runs
+      // for scrolls of any element (capture phase), so it works whether the host
+      // scrolls the window or a container.
+      if (lockTapRef.current) lockTapRef.current.scrolled = true;
       if (!CLICK_TO_INTERACT || !engagedRef.current) return;
       const t = e.target;
       if (t === document || t === document.documentElement || t === document.body) setEngaged(false);
@@ -698,7 +711,6 @@ export default function Canvas() {
           type="button"
           className="cv-interact-lock"
           onPointerDown={onLockDown}
-          onPointerMove={onLockMove}
           onPointerUp={onLockUp}
           onPointerCancel={onLockCancel}
           onKeyDown={onLockKey}
