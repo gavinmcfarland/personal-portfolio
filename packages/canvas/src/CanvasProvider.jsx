@@ -42,14 +42,27 @@ function isSvgSrc(src, alt) {
   return /\.svg$/i.test(alt || '');
 }
 
+/* Normalise one media asset (kind + src + alt + svg flag). */
+function normalizeAsset(a, fallbackKind) {
+  const kind = a.kind === 'video' ? 'video' : 'image';
+  const svg = kind === 'image' && (a.svg != null ? !!a.svg : isSvgSrc(a.src, a.alt));
+  return { kind: a.kind === 'video' || a.kind === 'image' ? a.kind : fallbackKind, src: a.src || '', alt: a.alt || '', svg };
+}
+/* Media nodes hold an `assets` array (a grid of images/gifs/videos). Boards
+   saved before multi-asset support carry a single top-level `src`/`alt`/`svg`;
+   up-convert those into a one-element array so old and new snapshots load alike. */
+function normalizeAssets(n) {
+  if (Array.isArray(n.assets) && n.assets.length) return n.assets.map((a) => normalizeAsset(a, n.type));
+  return [normalizeAsset({ src: n.src, alt: n.alt, svg: n.svg }, n.type)];
+}
+
 function normalizeSaved(n) {
   const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor };
   if (n.type === 'frame') return { ...base, w: n.w || 200, h: n.h || 140, name: n.text || 'Section' };
   if (n.type === 'md') return { ...base, w: n.w || 340, text: n.text || '' };
   if (n.type === 'code') return { ...base, w: n.w || 420, text: n.text || '', lang: n.lang || 'js', ...(n.wrap != null ? { wrap: !!n.wrap } : {}) };
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
-  if (n.type === 'image') return { ...base, w: n.w || 200, h: n.h || 150, src: n.src || '', alt: n.alt || '', svg: n.svg != null ? !!n.svg : isSvgSrc(n.src, n.alt) };
-  if (n.type === 'video') return { ...base, w: n.w || 320, h: n.h || 180, src: n.src || '', alt: n.alt || '' };
+  if (n.type === 'image' || n.type === 'video') return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n) };
   if (n.type === 'sound') return { ...base, w: n.w || 260, h: n.h || 56, src: n.src || '', name: n.name || '', dur: n.dur || 0 };
   if (n.type === 'link') return { ...base, w: n.w || 280, url: n.url || '', title: n.title || '', desc: n.desc || '', image: n.image || '', siteName: n.siteName || '', favicon: n.favicon || '' };
   const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
@@ -220,7 +233,7 @@ export function CanvasProvider({
   const [strokeColor, setStrokeColor] = useState('#7C2D91');
   const [fillColor, setFillColor] = useState('none'); // default fill for new fillable shapes
   const [ctxMenu, setCtxMenu] = useState(null); // {x,y,target:{kind,id}}
-  const [fullscreenId, setFullscreenId] = useState(null); // image node shown in the lightbox
+  const [fullscreen, setFullscreen] = useState(null); // { id, index } of the media asset shown in the lightbox
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
   const [publishState, setPublishState] = useState('idle'); // idle|saving|done|error
   const [recording, setRecording] = useState(null); // {} while capturing mic audio, else null
@@ -296,7 +309,7 @@ export function CanvasProvider({
   S.fillColor = fillColor;
   S.nodes = nodes;
   S.shapes = shapes;
-  S.fullscreenId = fullscreenId;
+  S.fullscreen = fullscreen;
   S.recording = recording;
   S.pages = pages;
   S.activePageId = activePageId;
@@ -747,7 +760,15 @@ export function CanvasProvider({
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
       else if (n.type === 'code') { o.w = n.w; o.text = n.text; o.lang = n.lang; if (n.wrap != null) o.wrap = n.wrap ? 1 : 0; }
-      else if (n.type === 'image' || n.type === 'video') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.alt) o.alt = n.alt; if (n.svg) o.svg = 1; }
+      else if (n.type === 'image' || n.type === 'video') {
+        o.w = n.w; o.h = n.h;
+        o.assets = (n.assets || []).map((a) => {
+          const s = { kind: a.kind, src: a.src };
+          if (a.alt) s.alt = a.alt;
+          if (a.svg) s.svg = 1;
+          return s;
+        });
+      }
       else if (n.type === 'sound') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.name) o.name = n.name; if (n.dur) o.dur = n.dur; }
       else if (n.type === 'link') {
         if (n.w != null) o.w = n.w;
@@ -861,7 +882,7 @@ export function CanvasProvider({
       freezeView();
       snapshotActive();
       const t = pageData[id];
-      deselect(); setEditingId(null); setCtxMenu(null); setFullscreenId(null);
+      deselect(); setEditingId(null); setCtxMenu(null); setFullscreen(null);
       setNodes(t.nodes); setShapes(t.shapes);
       viewRef.x = t.view.x; viewRef.y = t.view.y; viewRef.scale = t.view.scale;
       targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = viewRef.scale;
@@ -976,13 +997,44 @@ export function CanvasProvider({
        first at the drop/paste call sites). */
     const isAudioFile = (f) =>
       !!f && (f.type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|oga|opus|flac|weba)$/i.test(f.name || ''));
-    /* Drop a media node centred on the cursor, scaled to a sane default. */
-    function placeMediaNode(type, src, nat, wx, wy, alt, extra) {
-      const MAX = 360;
-      const k = nat.w > MAX || nat.h > MAX ? MAX / Math.max(nat.w, nat.h) : 1;
-      const w = Math.round(nat.w * k), h = Math.round(nat.h * k);
-      const n = addNode({ id: newId(type), type, x: wx - w / 2, y: wy - h / 2, w, h, src, alt: alt || '', ...extra });
+    /* Strip an ingest-time asset ({ kind, src, alt, svg, nat }) down to the
+       persisted shape ({ kind, src, alt, svg }) — `nat` is only used to size the
+       box on creation. */
+    const cleanAsset = (a) => ({ kind: a.kind, src: a.src, alt: a.alt || '', svg: !!a.svg });
+    const GRID_CELL = 150; // default on-board size of one cell in a fresh multi-asset grid
+    /* Drop a media node holding one or more assets, centred on the cursor. A lone
+       asset sizes the box to its natural aspect (scaled to a sane default); a grid
+       gets a squarish box laid out in ~√n columns. */
+    function createMediaNode(assets, wx, wy) {
+      if (!assets.length) return null;
+      const type = assets[0].kind; // primary kind drives dispatch / resize behaviour
+      let w, h;
+      if (assets.length === 1) {
+        const nat = assets[0].nat || { w: 200, h: 150 };
+        const MAX = 360;
+        const k = nat.w > MAX || nat.h > MAX ? MAX / Math.max(nat.w, nat.h) : 1;
+        w = Math.round(nat.w * k); h = Math.round(nat.h * k);
+      } else {
+        const cols = Math.ceil(Math.sqrt(assets.length));
+        const rows = Math.ceil(assets.length / cols);
+        w = cols * GRID_CELL; h = rows * GRID_CELL;
+      }
+      const n = addNode({ id: newId(type), type, x: wx - w / 2, y: wy - h / 2, w, h, assets: assets.map(cleanAsset) });
       setToolState('select'); selectNode(n.id);
+      return n;
+    }
+    /* Append dropped assets to an existing media node, turning it into (or growing)
+       a grid. The box keeps its size — the grid just reflows to fit more cells. */
+    function appendAssetsToNode(id, assets) {
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || (n.type !== 'image' && n.type !== 'video') || !assets.length) return;
+      updateNode(id, { assets: [...(n.assets || []), ...assets.map(cleanAsset)] });
+      selectNode(id);
+    }
+    /* Legacy single-asset entry point retained for the URL/paste flows: wrap one
+       ingested asset in a fresh node. */
+    function placeMediaNode(type, src, nat, wx, wy, alt, extra) {
+      createMediaNode([{ kind: type, src, alt, nat, svg: !!(extra && extra.svg) }], wx, wy);
     }
     /* Without an upload adapter, media bytes have to live somewhere durable.
        Small images inline as data URLs (portable snapshots); anything bigger —
@@ -1018,11 +1070,11 @@ export function CanvasProvider({
       }
       return mediaUrlCache.get(src);
     }
-    /* Measure/decode via a temporary object URL, resolve the stored src, then
-       drop the node. The bytes pass through untouched, so animated GIFs keep
-       playing. */
-    async function addImageFromFile(file, wx, wy) {
-      if (!EDITABLE || !isImageFile(file)) return;
+    /* Ingest one image file into an asset ({ kind, src, alt, svg, nat }) — measure
+       it, store the bytes durably, and resolve the stored src. The bytes pass
+       through untouched, so animated GIFs keep playing. Returns null on failure. */
+    async function imageFileToAsset(file) {
+      if (!isImageFile(file)) return null;
       try {
         let nat;
         if (isSvgFile(file)) {
@@ -1041,9 +1093,10 @@ export function CanvasProvider({
         } else {
           src = await readDataUrl(file);
         }
-        placeMediaNode('image', src, nat, wx, wy, file.name, isSvgFile(file) ? { svg: true } : null);
+        return { kind: 'image', src, alt: file.name, svg: isSvgFile(file), nat };
       } catch (err) {
-        console.error('[canvas] image drop failed', err);
+        console.error('[canvas] image ingest failed', err);
+        return null;
       }
     }
     /* Same flow for video files, through `onUploadVideo`. Files that arrive
@@ -1051,9 +1104,9 @@ export function CanvasProvider({
        won't content-sniff data:/blob: URLs the way <img> does. QuickTime .mov
        gets the same treatment: browsers play its H.264 bytes fine but only
        under a video/mp4 label, and upload adapters generally don't know
-       video/quicktime either. */
-    async function addVideoFromFile(file, wx, wy) {
-      if (!EDITABLE || !isVideoFile(file)) return;
+       video/quicktime either. Returns null on failure. */
+    async function videoFileToAsset(file) {
+      if (!isVideoFile(file)) return null;
       try {
         const mime = file.type.startsWith('video/') && file.type !== 'video/quicktime'
           ? file.type
@@ -1071,10 +1124,36 @@ export function CanvasProvider({
         } else {
           src = await readDataUrl(typed);
         }
-        placeMediaNode('video', src, nat, wx, wy, file.name);
+        return { kind: 'video', src, alt: file.name, svg: false, nat };
       } catch (err) {
-        console.error('[canvas] video drop failed', err);
+        console.error('[canvas] video ingest failed', err);
+        return null;
       }
+    }
+    const fileToAsset = (file) => (isVideoFile(file) ? videoFileToAsset(file) : imageFileToAsset(file));
+    /* Ingest a batch of image/video files (order preserved). Dropped onto an
+       existing media node (`targetId`) they append to its grid; otherwise they
+       become one new node — a single asset sizes to itself, several form a grid. */
+    async function addMediaFiles(files, wx, wy, targetId) {
+      if (!EDITABLE || S.readOnly) return;
+      const visual = Array.from(files).filter((f) => isImageFile(f) || isVideoFile(f));
+      if (!visual.length) return;
+      const assets = (await Promise.all(visual.map(fileToAsset))).filter(Boolean);
+      if (!assets.length) return;
+      const target = targetId && S.nodes.find((x) => x.id === targetId);
+      if (target && (target.type === 'image' || target.type === 'video')) appendAssetsToNode(targetId, assets);
+      else createMediaNode(assets, wx, wy);
+    }
+    /* Single-file entry points kept for existing callers (URL/paste flows). */
+    async function addImageFromFile(file, wx, wy) {
+      if (!EDITABLE) return;
+      const a = await imageFileToAsset(file);
+      if (a) createMediaNode([a], wx, wy);
+    }
+    async function addVideoFromFile(file, wx, wy) {
+      if (!EDITABLE) return;
+      const a = await videoFileToAsset(file);
+      if (a) createMediaNode([a], wx, wy);
     }
     /* Drop a fixed-size sound player card centred on the cursor. Audio carries no
        intrinsic size, so unlike image/video the box is a constant — only its
@@ -1313,10 +1392,12 @@ export function CanvasProvider({
       }
       files = files.filter((f) => isImageFile(f) || isVideoFile(f) || isAudioFile(f));
       if (files.length) {
-        files.forEach((file, i) => {
-          const add = isVideoFile(file) ? addVideoFromFile : isAudioFile(file) ? addAudioFromFile : addImageFromFile;
-          add(file, wx + i * 24, wy + i * 24);
-        });
+        // Audio has no visual grid — each clip is its own player card. Images and
+        // videos pasted together form one grid node.
+        const audio = files.filter((f) => isAudioFile(f) && !isVideoFile(f));
+        const visual = files.filter((f) => isImageFile(f) || isVideoFile(f));
+        audio.forEach((file, i) => addAudioFromFile(file, wx + i * 24, wy + i * 24));
+        if (visual.length) addMediaFiles(visual, wx, wy);
         return true;
       }
       // Raw SVG source copied as text — wrap it as a file so the image flow
@@ -1330,13 +1411,26 @@ export function CanvasProvider({
     }
 
     /* ── Media lightbox (full-screen viewing) ─────────────────── */
-    function openFullscreen(id) {
+    function openFullscreen(id, index = 0) {
       const n = S.nodes.find((x) => x.id === id);
-      // SVGs are vector art shown at full size on the board — nothing to gain
-      // from a lightbox, so they never open full-screen.
-      if (n && (n.type === 'image' || n.type === 'video') && !n.svg) setFullscreenId(id);
+      if (!n || (n.type !== 'image' && n.type !== 'video')) return;
+      const assets = n.assets || [];
+      // A lone SVG is vector art shown at full size on the board already —
+      // nothing to gain from a lightbox, so it never opens full-screen. (Inside a
+      // grid, an SVG is still part of the gallery.)
+      if (assets.length === 1 && assets[0].svg) return;
+      setFullscreen({ id, index: Math.max(0, Math.min(index, assets.length - 1)) });
     }
-    function closeFullscreen() { setFullscreenId(null); }
+    function closeFullscreen() { setFullscreen(null); }
+    function stepFullscreen(delta) {
+      setFullscreen((f) => {
+        if (!f) return f;
+        const n = S.nodes.find((x) => x.id === f.id);
+        const len = n && n.assets ? n.assets.length : 0;
+        if (len <= 1) return f;
+        return { id: f.id, index: (f.index + delta + len) % len };
+      });
+    }
 
     /* ── Editing text nodes ───────────────────────────────────── */
     function startEditing(id) { setEditingId(id); }
@@ -1355,10 +1449,10 @@ export function CanvasProvider({
       copySelected, paste, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
-      isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
+      isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
       addLinkFromUrl, pasteLink, openLink,
       recordingSupported, startRecording, stopRecording, cancelRecording,
-      openFullscreen, closeFullscreen, startEditing, stopEditing, setChrome,
+      openFullscreen, closeFullscreen, stepFullscreen, startEditing, stopEditing, setChrome,
       nextZ, backZ,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1372,8 +1466,12 @@ export function CanvasProvider({
     if (!EDITABLE || !hasIDB) return;
     const referenced = new Set();
     Object.values(pageData).forEach((p) => p.nodes.forEach((n) => {
-      const ref = eng.parseIdbRef(n.src);
-      if (ref && ref.db === MEDIA_DB) referenced.add(ref.key);
+      // Media nodes hold an assets[] of srcs; sound (and legacy) nodes a single src.
+      const srcs = Array.isArray(n.assets) ? n.assets.map((a) => a.src) : [n.src];
+      srcs.forEach((s) => {
+        const ref = eng.parseIdbRef(s);
+        if (ref && ref.db === MEDIA_DB) referenced.add(ref.key);
+      });
     }));
     listMediaKeys(MEDIA_DB)
       .then((keys) => {
@@ -1482,7 +1580,7 @@ export function CanvasProvider({
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
-    publishState, recording, fullscreenId, pages, activePageId, pageData, bgColor,
+    publishState, recording, fullscreen, pages, activePageId, pageData, bgColor,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,

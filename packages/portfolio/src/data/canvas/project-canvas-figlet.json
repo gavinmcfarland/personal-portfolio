@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 409.298578046112,
-        "y": 248.1005426392967,
-        "scale": 0.6668024574489111
+        "x": 720.3799078977551,
+        "y": 256.74611880415154,
+        "scale": 0.41559155656283403
       },
       "nodes": [
         {
@@ -46,8 +46,18 @@
           "z": 21,
           "w": 899.1718178781017,
           "h": 674,
-          "src": "/canvas-assets/8a75e76177f4496f.mp4",
-          "alt": "Kapture 2025-11-12 at 16.22.29.mp4"
+          "assets": [
+            {
+              "kind": "video",
+              "src": "/canvas-assets/8a75e76177f4496f.mp4",
+              "alt": "Kapture 2025-11-12 at 16.22.29.mp4"
+            },
+            {
+              "kind": "image",
+              "src": "/canvas-assets/edef38d105357e81.jpg",
+              "alt": "BG7A1053.jpg"
+            }
+          ]
         }
       ],
       "shapes": []

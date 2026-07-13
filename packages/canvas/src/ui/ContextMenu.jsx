@@ -22,6 +22,10 @@ export default function ContextMenu() {
   const node = target.kind === 'node' ? nodes.find((n) => n.id === target.id) : null;
   const anchorable = node && node.type !== 'frame';
   const count = target.kind === 'multi' ? selected.length : 1;
+  // A media node opens full-screen unless it's a lone SVG (vector art shown full
+  // size on the board already); a grid of two+ assets always opens the gallery.
+  const isMedia = node && (node.type === 'image' || node.type === 'video');
+  const loneSvg = isMedia && node.assets && node.assets.length === 1 && node.assets[0].svg;
   const x = Math.min(ctxMenu.x, innerWidth - 190);
   const y = Math.min(ctxMenu.y, innerHeight - 190);
 
@@ -29,7 +33,7 @@ export default function ContextMenu() {
 
   return (
     <div className="panel show" id="ctxmenu" style={{ left: x, top: y }}>
-      {node && (node.type === 'image' || node.type === 'video') && !node.svg && (
+      {isMedia && !loneSvg && (
         <>
           <button onClick={run(() => eng.openFullscreen(node.id))}>
             <Maximize />

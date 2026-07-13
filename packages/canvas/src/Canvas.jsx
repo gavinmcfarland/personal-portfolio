@@ -153,9 +153,12 @@ export default function Canvas() {
       if (COOP && !CLICK_TO_INTERACT && !engagedRef.current && e.pointerType === 'touch') return;
       eng.freezeView();
       // Remember media / links under the pointer so a stationary tap opens them.
-      const imgEl = e.target.closest && e.target.closest('.node.image,.node.video');
+      // For a grid, the specific cell (data-media-idx) decides which asset opens.
+      const nodeUnder = e.target.closest && e.target.closest('.node');
+      const isMedia = nodeUnder && (nodeUnder.dataset.type === 'image' || nodeUnder.dataset.type === 'video');
+      const cellEl = e.target.closest && e.target.closest('[data-media-idx]');
       const linkEl = e.target.closest && e.target.closest('.node.link');
-      actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: imgEl ? imgEl.dataset.id : null, linkId: linkEl ? linkEl.dataset.id : null };
+      actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: isMedia ? nodeUnder.dataset.id : null, imgIdx: cellEl ? +cellEl.dataset.mediaIdx : 0, linkId: linkEl ? linkEl.dataset.id : null };
       rootClass('panning', true);
       vp.setPointerCapture(e.pointerId);
       return;
@@ -269,16 +272,25 @@ export default function Canvas() {
     const uri = (dt.getData('text/uri-list') || '').split('\n').find((l) => l.trim() && !l.startsWith('#'));
     return uri ? uri.trim() : '';
   };
+  /* The media node under the drop point (if any) — dropping onto it appends the
+     files to its grid rather than making a new object. Resolved via
+     elementFromPoint since the drop lands on the viewport. */
+  const mediaNodeAt = (x, y) => {
+    const el = document.elementFromPoint(x, y);
+    const nodeEl = el && el.closest && el.closest('.node');
+    return nodeEl && (nodeEl.dataset.type === 'image' || nodeEl.dataset.type === 'video') ? nodeEl.dataset.id : null;
+  };
   const onDrop = (e) => {
     if (!dropActive() || !e.dataTransfer) return;
     const w = eng.screenToWorld(e.clientX, e.clientY);
-    const media = Array.from(e.dataTransfer.files || []).filter((f) => eng.isImageFile(f) || eng.isVideoFile(f) || eng.isAudioFile(f));
-    if (media.length) {
+    const files = Array.from(e.dataTransfer.files || []);
+    const audio = files.filter((f) => eng.isAudioFile(f) && !eng.isVideoFile(f));
+    const visual = files.filter((f) => eng.isImageFile(f) || eng.isVideoFile(f));
+    if (audio.length || visual.length) {
       e.preventDefault();
-      media.forEach((file, i) => {
-        const add = eng.isVideoFile(file) ? eng.addVideoFromFile : eng.isAudioFile(file) ? eng.addAudioFromFile : eng.addImageFromFile;
-        add(file, w.x + i * 24, w.y + i * 24);
-      });
+      // Audio drops stay individual player cards; images/videos become (or join) a grid.
+      audio.forEach((file, i) => eng.addAudioFromFile(file, w.x + i * 24, w.y + i * 24));
+      if (visual.length) eng.addMediaFiles(visual, w.x, w.y, mediaNodeAt(e.clientX, e.clientY));
       return;
     }
     const url = droppedMediaUrl(e.dataTransfer);
@@ -300,7 +312,11 @@ export default function Canvas() {
     if (!nodeEl) return;
     const type = nodeEl.dataset.type;
     const id = nodeEl.dataset.id;
-    if (type === 'image' || type === 'video') { eng.openFullscreen(id); return; }
+    if (type === 'image' || type === 'video') {
+      const cellEl = el.closest('[data-media-idx]');
+      eng.openFullscreen(id, cellEl ? +cellEl.dataset.mediaIdx : 0);
+      return;
+    }
     if (type === 'link') { eng.openLink(id); return; }
     if (type !== 'sticky' && type !== 'tblock' && type !== 'md' && type !== 'code' && type !== 'sound') return;
     eng.setTool('select'); eng.selectNode(id); eng.startEditing(id);
@@ -418,7 +434,7 @@ export default function Canvas() {
       if (!a) return;
       if (a.type === 'pan') {
         rootClass('panning', false);
-        if (a.imgId && !a.moved) eng.openFullscreen(a.imgId); // tap an image/video → full-screen
+        if (a.imgId && !a.moved) eng.openFullscreen(a.imgId, a.imgIdx || 0); // tap an image/video → full-screen
         if (a.linkId && !a.moved) eng.openLink(a.linkId);      // tap a link card → open it
       }
       if (a.type === 'move') {
@@ -479,7 +495,7 @@ export default function Canvas() {
     };
 
     const onWheel = (e) => {
-      if (S.fullscreenId) { e.preventDefault(); return; } // lightbox covers the board
+      if (S.fullscreen) { e.preventDefault(); return; } // lightbox covers the board
       setCtxMenu(null);
       const zoomKey = e.ctrlKey || e.metaKey;
       if (!zoomKey && e.target.closest) {

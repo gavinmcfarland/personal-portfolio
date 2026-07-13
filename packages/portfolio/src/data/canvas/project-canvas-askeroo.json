@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": -2849.8948466567354,
-        "y": -530.3188941816677,
-        "scale": 1.9050819774191219
+        "x": 640.8246065642995,
+        "y": 238.96133515839634,
+        "scale": 0.22565739198613624
       },
       "nodes": [
         {
@@ -64,19 +64,61 @@
           "z": -1,
           "w": 1105.03515625,
           "h": 644,
-          "src": "/canvas-assets/06fb9db1cd6d5b82.mp4",
-          "alt": "plugma-eslint.mp4"
+          "assets": [
+            {
+              "kind": "video",
+              "src": "/canvas-assets/06fb9db1cd6d5b82.mp4",
+              "alt": "plugma-eslint.mp4"
+            }
+          ]
         },
         {
-          "id": "n2-image",
-          "type": "image",
-          "x": 1839.9741025948897,
-          "y": 373.87294786563217,
-          "z": 6,
-          "w": 360,
-          "h": 178,
-          "src": "/canvas-assets/b546b7a85476b163.gif",
-          "alt": "Kapture 2026-07-13 at 11.52.14.gif"
+          "id": "n3-code",
+          "type": "code",
+          "x": -154.42864786851993,
+          "y": 1865.438019953548,
+          "z": 7,
+          "w": 589.4163772377399,
+          "text": "import { ask, group, text, confirm, note } from \"askeroo\";\n\nconst flow = async () => {\n  // Display notes\n  await note(\"[Hello world!]{bgBlue}\");\n\n  // Call prompts on their own\n  const nickname = await text({ label: \"Nickname\" });\n\n  // Group prompts together\n  const profile = await group(async () => {\n      const first = await text({ label: \"First name\" });\n      const last = await text({ label: \"Last name\" });\n      return { first, last };\n  });\n\n  // Create conditional inputs\n  const prefs = await group(\n    async () => {\n      const role = await text({ label: \"Role (user/admin)\" });\n      if (role === \"admin\") {\n        const code = await text({ label: \"Access code\" });\n        return { role, code };\n      }\n      const news = await confirm({ label: \"Subscribe to newsletter?\" });\n      return { role, news };\n    },\n    { label: \"Preferences\" } // Optional group labels\n  );\n\n  // Return structured data your way\n  return { nickname, profile, prefs };\n};\n\nconst result = await ask(flow);\nconsole.log(result);",
+          "lang": "js"
+        },
+        {
+          "id": "n4-code",
+          "type": "code",
+          "x": 2559.0543489042666,
+          "y": 386.8950781541496,
+          "z": 8,
+          "w": 420,
+          "text": "// Your flow function runs multiple times\nconst flow = async () => {\n  const role = await radio({\n      label: \"Select your role\",\n      options: [\"Developer\", \"Designer\"],\n  });\n\n  if (role === \"Developer\") {\n    const language = await radio({\n        label: \"Preferred language\",\n        options: [\"TypeScript\", \"JavaScript\"],\n    });\n    return { role, language };\n  }\n\n  const tool = await radio({\n      label: \"Design tool\",\n      options: [\"Figma\", \"Sketch\"],\n  });\n  return { role, tool };\n};",
+          "lang": "js"
+        },
+        {
+          "id": "n6-md",
+          "type": "md",
+          "x": 2864.843837802862,
+          "y": 814.7817461996874,
+          "z": 10,
+          "w": 340,
+          "text": "You can make prompts conditional by guarding them with conditions. In this example, the \"Preferred language\" prompt will only get shown if the \"Developer\" role is chosen."
+        },
+        {
+          "id": "n7-code",
+          "type": "code",
+          "x": 1833.758226216242,
+          "y": 375.5380559320989,
+          "z": 11,
+          "w": 420,
+          "text": "const flow = async () => {\n  const name = await text({\n      message: \"Name\",\n  });\n  return { name };\n}\n\nconst result = await ask(flow);",
+          "lang": "js"
+        },
+        {
+          "id": "n8-md",
+          "type": "md",
+          "x": 2110.8460706210167,
+          "y": 549.920815443601,
+          "z": 12,
+          "w": 340,
+          "text": "A flow is simply an object made up of prompts. Run these prompts by calling the object with `ask()`."
         }
       ],
       "shapes": []

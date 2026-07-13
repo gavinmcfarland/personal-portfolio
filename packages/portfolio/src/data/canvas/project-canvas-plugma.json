@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 577.83917301763,
-        "y": 221.48045854188953,
-        "scale": 1.864660541306445
+        "x": -2234.391486360464,
+        "y": 99.94503409003775,
+        "scale": 1.6994353516585672
       },
       "nodes": [
         {
@@ -132,6 +132,37 @@
           "desc": "Plugma | Getting Started — Created and shared with Screen Studio",
           "image": "/canvas-assets/0cd418f06ae4e506.png",
           "favicon": "https://screen.studio/icon.png"
+        },
+        {
+          "id": "n33-image",
+          "type": "image",
+          "x": 1519.1252371242354,
+          "y": -52.37500317186243,
+          "z": 60,
+          "w": 378.31164422056065,
+          "h": 407,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/d0dd139fd4d9a410.png",
+              "alt": "image 2.png"
+            },
+            {
+              "kind": "image",
+              "src": "/canvas-assets/c2b5d5fb3c5d5d03.png",
+              "alt": "image 3.png"
+            },
+            {
+              "kind": "image",
+              "src": "/canvas-assets/fa55b672b60d12e8.png",
+              "alt": "image 1.png"
+            },
+            {
+              "kind": "image",
+              "src": "/canvas-assets/8ea4c9c33f5a6974.png",
+              "alt": "Frame 13869.png"
+            }
+          ]
         }
       ],
       "shapes": []

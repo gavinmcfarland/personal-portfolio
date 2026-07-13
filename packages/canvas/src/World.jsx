@@ -3,8 +3,7 @@ import EditableNode from './nodes/EditableNode';
 import Markdown from './nodes/Markdown';
 import Code from './nodes/Code';
 import Frame from './nodes/Frame';
-import ImageNode from './nodes/Image';
-import VideoNode from './nodes/Video';
+import MediaNode from './nodes/Media';
 import SoundNode from './nodes/Sound';
 import LinkCard from './nodes/Link';
 import Shape from './Shape';
@@ -17,8 +16,8 @@ const BUILTIN_TYPES = {
   md: Markdown,
   code: Code,
   frame: Frame,
-  image: ImageNode,
-  video: VideoNode,
+  image: MediaNode,
+  video: MediaNode,
   sound: SoundNode,
   link: LinkCard,
 };

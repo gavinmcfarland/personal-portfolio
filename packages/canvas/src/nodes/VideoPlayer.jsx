@@ -1,31 +1,27 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Play, Pause } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
-import { useRegister, useMediaSrc } from './common';
 
-/* Dropped video object. Plays automatically on the board (muted + looped, which
-   keeps browser autoplay policies happy — same feel as an animated GIF).
-   Hovering reveals a play/pause + scrub bar overlay; it stops pointer
-   propagation so using it never drags the node (edit) or pans / opens the
-   lightbox (read-only). Double-click opens the lightbox, where the video gets
-   native controls and sound. */
-function VideoNode({ node }) {
-  const { eng, mediaEls } = useCanvas();
-  const { setRef, dataProps, style } = useRegister(node);
+/* One playing <video> for a media asset. Plays automatically (muted + looped,
+   which keeps browser autoplay policies happy — same feel as an animated GIF).
+   As a standalone media node it shows a hover play/pause + scrub overlay; inside
+   a grid it renders `bare` (no overlay — click opens the full-screen gallery,
+   which has native controls). Either way it publishes its element into `mediaEls`
+   under `mediaKey` so the lightbox can hand playback position off both ways. */
+export default function VideoPlayer({ src, alt, mediaKey, bare }) {
+  const { mediaEls } = useCanvas();
   const vidRef = useRef(null);
-  /* Publish this element so the lightbox can pick up (and hand back) the live
-     playback position — full-screen viewing resumes instead of restarting. */
-  const setVid = (el) => {
-    vidRef.current = el;
-    if (el) mediaEls.set(node.id, el); else mediaEls.delete(node.id);
-  };
   const fillRef = useRef(null);
   const scrub = useRef(null); // {wasPlaying} while dragging the bar
   const [playing, setPlaying] = useState(true);
-  const src = useMediaSrc(node.src);
-  const s = { ...style, width: (node.w || 320) + 'px', height: (node.h || 180) + 'px' };
 
-  /* `playing` mirrors the element (autoplay can be blocked; loops fire events). */
+  const setVid = (el) => {
+    vidRef.current = el;
+    if (el) mediaEls.set(mediaKey, el); else mediaEls.delete(mediaKey);
+  };
+
+  /* `playing` mirrors the element (autoplay can be blocked; loops fire events),
+     and MediaRecorder WebMs need the over-seek duration fix so scrubbing works. */
   useEffect(() => {
     const v = vidRef.current;
     if (!v) return undefined;
@@ -51,11 +47,12 @@ function VideoNode({ node }) {
       v.removeEventListener('pause', onPause);
       v.removeEventListener('loadedmetadata', onMeta);
     };
-  }, []);
+  }, [src]);
 
   /* Progress fill is driven outside React (rAF + direct style write) so
      playback never causes re-renders and the bar moves at frame rate. */
   useEffect(() => {
+    if (bare) return undefined;
     let raf = 0;
     const tick = () => {
       const v = vidRef.current, fill = fillRef.current;
@@ -66,7 +63,7 @@ function VideoNode({ node }) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [bare]);
 
   const toggle = () => {
     const v = vidRef.current;
@@ -98,34 +95,28 @@ function VideoNode({ node }) {
   };
 
   return (
-    <div
-      ref={setRef}
-      className="node video"
-      {...dataProps}
-      style={s}
-      onDoubleClick={(e) => { e.stopPropagation(); eng.openFullscreen(node.id); }}
-    >
-      <video ref={setVid} src={src || undefined} autoPlay muted loop playsInline aria-label={node.alt || ''} />
-      <div
-        className="vctrl"
-        onPointerDown={(e) => e.stopPropagation()}
-        onDoubleClick={(e) => e.stopPropagation()}
-      >
-        <button className="vplay" title={playing ? 'Pause' : 'Play'} onClick={toggle}>
-          {playing ? <Pause /> : <Play />}
-        </button>
+    <>
+      <video ref={setVid} src={src || undefined} autoPlay muted loop playsInline aria-label={alt || ''} />
+      {!bare && (
         <div
-          className="vbar"
-          onPointerDown={onScrubDown}
-          onPointerMove={onScrubMove}
-          onPointerUp={onScrubUp}
-          onPointerCancel={onScrubUp}
+          className="vctrl"
+          onPointerDown={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
         >
-          <div className="vtrack"><div className="vfill" ref={fillRef} /></div>
+          <button className="vplay" title={playing ? 'Pause' : 'Play'} onClick={toggle}>
+            {playing ? <Pause /> : <Play />}
+          </button>
+          <div
+            className="vbar"
+            onPointerDown={onScrubDown}
+            onPointerMove={onScrubMove}
+            onPointerUp={onScrubUp}
+            onPointerCancel={onScrubUp}
+          >
+            <div className="vtrack"><div className="vfill" ref={fillRef} /></div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
-
-export default memo(VideoNode);
