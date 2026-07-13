@@ -152,11 +152,18 @@
   cursor: pointer;
   background: rgba(12, 12, 14, 0.04);
   touch-action: pan-x pan-y;
-  /* No grey tap flash while a finger scrolls past the locked board on mobile. */
+  /* No grey tap flash / callout / press outline while a finger scrolls past the
+     locked board on mobile — only a keyboard focus shows a ring (below). */
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  outline: none;
   user-select: none;
   -webkit-user-select: none;
   transition: background 0.15s ease;
+}
+.canvas-root .cv-interact-lock:focus-visible > span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .dark .canvas-root .cv-interact-lock,
 .canvas-root.dark .cv-interact-lock {

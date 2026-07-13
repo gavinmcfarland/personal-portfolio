@@ -75,17 +75,20 @@ export default function Canvas() {
      pointerup if it hasn't changed (and pointercancel — the scroll's own signal —
      hasn't already dropped the gesture). */
   const lockTapRef = useRef(null);
+  const LOCK_TAP_SLOP = 10;
   const scrollPos = () => [window.scrollX || window.pageXOffset || 0, window.scrollY || window.pageYOffset || 0];
-  const onLockDown = () => { const [x, y] = scrollPos(); lockTapRef.current = { sx: x, sy: y }; };
-  const onLockUp = () => {
+  const onLockDown = (e) => { const [sx, sy] = scrollPos(); lockTapRef.current = { x: e.clientX, y: e.clientY, sx, sy, scrolled: false }; };
+  const onLockUp = (e) => {
     const t = lockTapRef.current;
     lockTapRef.current = null;
     if (!t) return; // gesture was cancelled (native scroll took over)
     const [x, y] = scrollPos();
-    // Engage only if nothing scrolled during the press — the window offset is
-    // unchanged AND no scroll event fired (the latter catches a host that
-    // scrolls a container rather than the window; see onDocScroll).
-    if (!t.scrolled && x === t.sx && y === t.sy) setEngaged(true);
+    // Engage only for a real tap — the finger came up within ~10px of where it
+    // went down (pointerup carries the final position even when the browser
+    // withheld pointermove during a scroll), and nothing scrolled. The last two
+    // checks also catch a flick, whose momentum scroll lands after touchend.
+    const moved = Math.abs(e.clientX - t.x) + Math.abs(e.clientY - t.y) > LOCK_TAP_SLOP;
+    if (!moved && !t.scrolled && x === t.sx && y === t.sy) setEngaged(true);
   };
   const onLockCancel = () => { lockTapRef.current = null; };
   // Keyboard activation (Enter/Space) — pointer handlers don't cover it.
