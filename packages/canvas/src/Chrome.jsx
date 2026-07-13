@@ -28,7 +28,18 @@ function FrameLabel({ node }) {
   };
 
   const onPointerDown = (e) => {
-    if (readOnly || e.button !== 0 || renaming) return;
+    if (e.button !== 0 || renaming) return;
+    // Read-only: the label is just chrome floating over the board, but it sits
+    // outside .cv-viewport so the viewport's pan handler never sees a touch that
+    // lands on it — leaving the label un-pannable (worst on mobile, where labels
+    // are big and bare board is scarce). Start the same pan gesture here; the
+    // window-level move/up handlers drive it off actionRef, so no capture needed.
+    if (readOnly) {
+      e.stopPropagation();
+      eng.freezeView();
+      actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y };
+      return;
+    }
     e.stopPropagation();
     eng.freezeView();
     if (e.shiftKey) { eng.toggleSelect('node', node.id); return; }
