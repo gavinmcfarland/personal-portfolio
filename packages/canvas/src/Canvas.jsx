@@ -63,6 +63,25 @@ export default function Canvas() {
   // Touch-primary devices "tap"; everything else "clicks".
   const coarsePointer = typeof matchMedia !== 'undefined' && matchMedia('(hover: none)').matches;
   const interactLabel = coarsePointer ? 'Tap to interact' : 'Click to interact';
+
+  /* Unlock the click-to-interact overlay only on a genuine tap, never on a
+     scroll. A synthesized `click` is unreliable on touch — the browser fires it
+     for gestures it didn't turn into a scroll (page already at its scroll end, a
+     short drag…), which is exactly the flicker: engage → ring → relock. So track
+     the gesture ourselves, mirroring the board's own tap-vs-pan test: engage on
+     pointerup only if the finger barely moved AND a native scroll didn't cancel
+     the gesture (pointercancel fires the moment the page starts scrolling). */
+  const lockTapRef = useRef(null);
+  const LOCK_TAP_SLOP = 10;
+  const onLockDown = (e) => { lockTapRef.current = { x: e.clientX, y: e.clientY, moved: false }; };
+  const onLockMove = (e) => {
+    const t = lockTapRef.current;
+    if (t && Math.abs(e.clientX - t.x) + Math.abs(e.clientY - t.y) > LOCK_TAP_SLOP) t.moved = true;
+  };
+  const onLockUp = () => { const t = lockTapRef.current; lockTapRef.current = null; if (t && !t.moved) setEngaged(true); };
+  const onLockCancel = () => { lockTapRef.current = null; };
+  // Keyboard activation (Enter/Space) — pointer handlers don't cover it.
+  const onLockKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEngaged(true); } };
   const flashHint = (msg) => {
     const el = hintRef.current;
     if (!el) return;
@@ -672,12 +691,18 @@ export default function Canvas() {
       {COOP && <div className="cv-gesture-hint" ref={hintRef} aria-hidden="true"><span /></div>}
       {CLICK_TO_INTERACT && !engaged && (
         /* Locked overlay: swallows board gestures and lets one finger scroll the
-           page (touch-action set in CSS). A tap unlocks; the board relocks on
-           page-scroll / off-board click / Esc (handled by the window listeners).
-           Engage on `click`, not `pointerdown`: the browser only fires a click
-           when the touch didn't turn into a scroll, so scrolling past the board
-           (finger held down) never engages it and flashes the live-state ring. */
-        <button type="button" className="cv-interact-lock" onClick={() => setEngaged(true)}>
+           page (touch-action set in CSS). A tap unlocks (tracked via the pointer
+           handlers so a scroll-past never engages it); the board relocks on
+           page-scroll / off-board click / Esc (handled by the window listeners). */
+        <button
+          type="button"
+          className="cv-interact-lock"
+          onPointerDown={onLockDown}
+          onPointerMove={onLockMove}
+          onPointerUp={onLockUp}
+          onPointerCancel={onLockCancel}
+          onKeyDown={onLockKey}
+        >
           <span>{interactLabel}</span>
         </button>
       )}
