@@ -152,14 +152,15 @@
   cursor: pointer;
   background: rgba(12, 12, 14, 0.04);
   touch-action: pan-x pan-y;
+  /* No grey tap flash while a finger scrolls past the locked board on mobile. */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
   transition: background 0.15s ease;
 }
 .dark .canvas-root .cv-interact-lock,
 .canvas-root.dark .cv-interact-lock {
   background: rgba(0, 0, 0, 0.14);
-}
-.canvas-root .cv-interact-lock:hover {
-  background: rgba(12, 12, 14, 0.07);
 }
 .canvas-root .cv-interact-lock > span {
   padding: 9px 16px;
@@ -178,9 +179,16 @@
     transform 0.15s ease,
     opacity 0.15s ease;
 }
-.canvas-root .cv-interact-lock:hover > span {
-  opacity: 1;
-  transform: translateY(0);
+/* Hover lift only on devices that truly hover — a touch press (which happens
+   incidentally while scrolling past) must not animate the pill. */
+@media (hover: hover) {
+  .canvas-root .cv-interact-lock:hover {
+    background: rgba(12, 12, 14, 0.07);
+  }
+  .canvas-root .cv-interact-lock:hover > span {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 /* Faint accent ring while engaged, so it reads as live once unlocked. */
 .canvas-root[data-engaged]::after {

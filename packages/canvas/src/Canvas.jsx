@@ -672,9 +672,12 @@ export default function Canvas() {
       {COOP && <div className="cv-gesture-hint" ref={hintRef} aria-hidden="true"><span /></div>}
       {CLICK_TO_INTERACT && !engaged && (
         /* Locked overlay: swallows board gestures and lets one finger scroll the
-           page (touch-action set in CSS). Clicking unlocks; the board relocks on
-           page-scroll / off-board click / Esc (handled by the window listeners). */
-        <button type="button" className="cv-interact-lock" onPointerDown={(e) => { e.stopPropagation(); setEngaged(true); }}>
+           page (touch-action set in CSS). A tap unlocks; the board relocks on
+           page-scroll / off-board click / Esc (handled by the window listeners).
+           Engage on `click`, not `pointerdown`: the browser only fires a click
+           when the touch didn't turn into a scroll, so scrolling past the board
+           (finger held down) never engages it and flashes the live-state ring. */
+        <button type="button" className="cv-interact-lock" onClick={() => setEngaged(true)}>
           <span>{interactLabel}</span>
         </button>
       )}
