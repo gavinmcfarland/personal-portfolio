@@ -1,6 +1,109 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { useCanvas } from './CanvasProvider';
+import { resolveGrid } from './nodes/common';
+
+/* Screen-space dividers for editing a media grid's proportions. Rendered in the
+   chrome layer (not inside the zoomed node) so each divider keeps a constant
+   stroke thickness at any zoom; the engine's placeGridEdit() positions them on
+   the node's on-screen rect. Dragging one shifts the fraction between the two
+   adjacent tracks — the node's cells resize live (imperative style write) and
+   the value commits to node.grid on release. */
+function GridDividers() {
+  const { gridEditId, nodes, eng, nodeEls } = useCanvas();
+  const wrapRef = useCallback((el) => eng.setChrome('grid', el), [eng]);
+  const drag = useRef(null);
+  const node = gridEditId ? nodes.find((n) => n.id === gridEditId) : null;
+  const g = node ? resolveGrid(node) : null;
+  const colKey = g ? g.colFr.join(',') : '';
+  const rowKey = g ? g.rowFr.join(',') : '';
+
+  // Publish geometry for placeGridEdit and reposition whenever it changes.
+  useEffect(() => {
+    eng.setGridEditGeom(node && g ? { id: node.id, colFr: g.colFr, rowFr: g.rowFr } : null);
+    eng.syncChrome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [node && node.id, colKey, rowKey]);
+
+  if (!node || !g) return null;
+
+  const onDown = (axis, k) => (e) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    const el = nodeEls.get(node.id);
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const fr = axis === 'col' ? g.colFr : g.rowFr;
+    // Map pointer delta to fractions over the track area (box minus the gaps and
+    // padding, which don't scale with the fractions), matching placeGridEdit.
+    const s = eng.viewRef.scale;
+    const cs = getComputedStyle(el);
+    const gap = (parseFloat(axis === 'col' ? cs.columnGap : cs.rowGap) || 0) * s;
+    const pad = axis === 'col'
+      ? ((parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0)) * s
+      : ((parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0)) * s;
+    const full = axis === 'col' ? rect.width : rect.height;
+    drag.current = {
+      axis, k,
+      size: Math.max(1, full - pad - gap * (fr.length - 1)),
+      start: axis === 'col' ? e.clientX : e.clientY,
+      a0: fr[k], b0: fr[k + 1],
+      col: [...g.colFr], row: [...g.rowFr],
+      live: null,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onMove = (e) => {
+    const d = drag.current;
+    if (!d) return;
+    const base = d.axis === 'col' ? d.col : d.row;
+    const total = base.reduce((a, b) => a + b, 0);
+    const pos = d.axis === 'col' ? e.clientX : e.clientY;
+    const dFr = ((pos - d.start) / d.size) * total;
+    const pairSum = d.a0 + d.b0;
+    const minFr = pairSum * 0.1; // each side keeps ≥10% of the pair
+    const a = Math.min(pairSum - minFr, Math.max(minFr, d.a0 + dFr));
+    const arr = [...base];
+    arr[d.k] = a;
+    arr[d.k + 1] = pairSum - a;
+    d.live = arr;
+    // Resize the node's cells live (world layer) …
+    const el = nodeEls.get(node.id);
+    if (el) {
+      const tmpl = arr.map((f) => `${f}fr`).join(' ');
+      if (d.axis === 'col') el.style.gridTemplateColumns = tmpl; else el.style.gridTemplateRows = tmpl;
+    }
+    // … and move the screen-space divider to follow.
+    eng.setGridEditGeom({ id: node.id, colFr: d.axis === 'col' ? arr : d.col, rowFr: d.axis === 'row' ? arr : d.row });
+    eng.syncChrome();
+  };
+  const onUp = (e) => {
+    const d = drag.current;
+    if (!d) return;
+    drag.current = null;
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch { /* already released */ }
+    if (!d.live) return;
+    const grid = d.axis === 'col' ? { colFr: d.live, rowFr: d.row } : { colFr: d.col, rowFr: d.live };
+    eng.updateNode(node.id, { grid });
+  };
+
+  const line = (axis, k) => (
+    <div
+      key={`${axis}${k}`}
+      className={`cv-grid-line cv-grid-line--${axis}`}
+      data-axis={axis}
+      data-k={k}
+      onPointerDown={onDown(axis, k)}
+      onPointerMove={onMove}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+    />
+  );
+  const lines = [];
+  for (let k = 0; k < g.cols - 1; k += 1) lines.push(line('col', k));
+  for (let k = 0; k < g.rows - 1; k += 1) lines.push(line('row', k));
+  return <div className="cv-grid-edit" ref={wrapRef}>{lines}</div>;
+}
 
 /* Screen-space frame label: title, drag handle, jump-to button. Positioned by
    the engine's syncChrome() via the frameLabelEls map. Double-click renames it
@@ -139,6 +242,7 @@ export default function Chrome() {
         <Pencil />
       </div>
       <div className="cv-rz" ref={rzRef} onPointerDown={onResizeDown} />
+      <GridDividers />
       {nodes.filter((n) => n.type === 'frame').map((n) => <FrameLabel key={n.id} node={n} />)}
     </div>
   );

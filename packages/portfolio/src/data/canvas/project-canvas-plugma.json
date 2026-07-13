@@ -6,25 +6,25 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": -2234.391486360464,
-        "y": 99.94503409003775,
-        "scale": 1.6994353516585672
+        "x": -450.2884937781391,
+        "y": 2135.174100101249,
+        "scale": 2.1384670000669725
       },
       "nodes": [
         {
           "id": "intro",
           "type": "md",
-          "x": -211.7868099100778,
-          "y": -738.9264166410173,
-          "z": 1,
+          "x": -97.36485417860456,
+          "y": -1005.4350580188495,
+          "z": 62,
           "w": 340,
           "text": "# Plugma\n\nA zero-config CLI for building Figma plugins, with hot-module reloading that actually works.\n\n[Node.js] [TypeScript] [Vite] [React] [Svelte] [Vue]"
         },
         {
           "id": "note-0",
           "type": "sticky",
-          "x": 366.5904649710787,
-          "y": -304.90202431382124,
+          "x": 1946.0440255252918,
+          "y": -505.49491460741626,
           "z": 46,
           "color": "yellow",
           "text": "True HMR across the UI and plugin sandbox — no full reloads"
@@ -32,8 +32,8 @@
         {
           "id": "note-1",
           "type": "sticky",
-          "x": 665.1257947381375,
-          "y": -214.48008588778853,
+          "x": 2244.5793552923506,
+          "y": -415.0729761813836,
           "z": 47,
           "color": "blue",
           "text": "Framework-agnostic: React, Svelte and Vue out of the box"
@@ -41,8 +41,8 @@
         {
           "id": "note-2",
           "type": "sticky",
-          "x": 552.2382528477617,
-          "y": -87.05822911433279,
+          "x": 2131.6918134019747,
+          "y": -287.6511194079278,
           "z": 5,
           "color": "green",
           "text": "Zero config to start; a single command to build and publish"
@@ -50,8 +50,8 @@
         {
           "id": "n25-tblock",
           "type": "tblock",
-          "x": 605.8776004893407,
-          "y": -336.868776603996,
+          "x": 2185.331161043554,
+          "y": -537.461666897591,
           "z": 45,
           "text": "Features supported",
           "w": 346.4863948419979,
@@ -60,8 +60,8 @@
         {
           "id": "n26-sticky",
           "type": "sticky",
-          "x": 247.66354236587955,
-          "y": -86.28204985892307,
+          "x": 1827.1171029200925,
+          "y": -286.8749401525181,
           "z": 52,
           "color": "yellow",
           "text": "Hello"
@@ -69,8 +69,8 @@
         {
           "id": "n27-code",
           "type": "code",
-          "x": -324.247578122257,
-          "y": -117.925489616031,
+          "x": -424.14887386601475,
+          "y": -419.947586678471,
           "z": 54,
           "w": 372.26282295360716,
           "text": "npm create plugma@latest add",
@@ -80,8 +80,8 @@
         {
           "id": "n28-md",
           "type": "md",
-          "x": 389.25810507115614,
-          "y": 160.2162222606282,
+          "x": 1968.7116656253693,
+          "y": -40.37666803296685,
           "z": 55,
           "w": 454.83307303997344,
           "text": "- `install <pkg-manager?>`: Install dependencies\n- `no-install`: Skip dependency installation\n- `verbose`: Show detailed logs\n- `debug`: Enable debug mode"
@@ -89,8 +89,8 @@
         {
           "id": "n29-tblock",
           "type": "tblock",
-          "x": 286.17830975702043,
-          "y": -372.83352640898323,
+          "x": 1865.6318703112333,
+          "y": -573.4264167025783,
           "z": 56,
           "text": "Features supported",
           "w": 261.5990091908047,
@@ -99,8 +99,8 @@
         {
           "id": "n30-code",
           "type": "code",
-          "x": -242.13618967012312,
-          "y": -8.878405167960693,
+          "x": -182.1336936504413,
+          "y": -198.13615258578542,
           "z": 57,
           "w": 433.76899830964373,
           "text": "import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig(({ mode, context }) => (\n    return {\n      plugins: context == \"ui\" ? [react()] : []\n    };\n}))",
@@ -110,8 +110,8 @@
         {
           "id": "n31-link",
           "type": "link",
-          "x": 1383.795648899776,
-          "y": -452.7571592588324,
+          "x": 1408.5282382024197,
+          "y": -494.0709701785556,
           "z": 58,
           "w": 280,
           "url": "https://screen.studio/share/neRqmJDi",
@@ -123,8 +123,8 @@
         {
           "id": "n32-link",
           "type": "link",
-          "x": 1038.8208440449428,
-          "y": -454.9988750655923,
+          "x": 1062.093262220163,
+          "y": -485.9861149192087,
           "z": 59,
           "w": 280,
           "url": "https://screen.studio/share/4rh7VCM7",
@@ -136,11 +136,11 @@
         {
           "id": "n33-image",
           "type": "image",
-          "x": 1519.1252371242354,
-          "y": -52.37500317186243,
+          "x": 395.17360671934017,
+          "y": -940.8030034882133,
           "z": 60,
-          "w": 378.31164422056065,
-          "h": 407,
+          "w": 233.54163629211575,
+          "h": 251,
           "assets": [
             {
               "kind": "image",
@@ -162,11 +162,50 @@
               "src": "/canvas-assets/8ea4c9c33f5a6974.png",
               "alt": "Frame 13869.png"
             }
-          ]
+          ],
+          "grid": {
+            "colFr": [
+              1.097,
+              0.903
+            ],
+            "rowFr": [
+              1.234,
+              0.766
+            ]
+          }
+        },
+        {
+          "id": "n34-image",
+          "type": "image",
+          "x": 1116.213174606344,
+          "y": -921.6091758555128,
+          "z": 61,
+          "w": 281.6997203780367,
+          "h": 271,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/c2b5d5fb3c5d5d03.png",
+              "alt": "image 3.png"
+            },
+            {
+              "kind": "image",
+              "src": "/canvas-assets/d0dd139fd4d9a410.png",
+              "alt": "image 2.png"
+            }
+          ],
+          "grid": {
+            "colFr": [
+              0.819,
+              1.181
+            ],
+            "rowFr": [
+              1
+            ]
+          }
         }
       ],
       "shapes": []
     }
-  ],
-  "bgColor": "#7C2D91"
+  ]
 }

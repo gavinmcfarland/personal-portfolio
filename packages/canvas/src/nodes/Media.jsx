@@ -1,13 +1,15 @@
 import { memo } from 'react';
-import { useCanvas } from '../CanvasProvider';
-import { useRegister, useMediaSrc } from './common';
+import { useRegister, useMediaSrc, resolveGrid } from './common';
 import VideoPlayer from './VideoPlayer';
 
 /* One media node holds an `assets` array — a grid of images, gifs and videos.
    A lone asset renders exactly as before (a plain image, a vector SVG, or a
    video with hover controls); two or more lay out in a grid of cover-cropped
-   cells. Double-clicking / tapping a cell opens it in the full-screen gallery.
-   Files dropped onto the node append to its grid (see addMediaFiles). */
+   cells whose track sizes come from the node's grid layout. Double-clicking /
+   tapping a cell opens it in the full-screen gallery (read-only), or — in edit
+   mode — enters proportion-editing, where the screen-space dividers (drawn in
+   the chrome layer, see Chrome.jsx) resize the tracks. Files dropped onto the
+   node append to its grid (see addMediaFiles). */
 
 /* Resolve one asset's stored src and render it (image or a playing video). */
 function MediaContent({ nodeId, asset, index, bare }) {
@@ -19,7 +21,6 @@ function MediaContent({ nodeId, asset, index, bare }) {
 }
 
 function MediaNode({ node }) {
-  const { eng } = useCanvas();
   const { setRef, dataProps, style } = useRegister(node);
   // Legacy nodes that predate `assets` still carry a single top-level src.
   const assets = node.assets && node.assets.length
@@ -33,34 +34,29 @@ function MediaNode({ node }) {
     const a = assets[0];
     const cls = a.kind === 'video' ? 'node video' : a.svg ? 'node image svg' : 'node image';
     return (
-      <div
-        ref={setRef}
-        className={cls}
-        {...dataProps}
-        style={{ ...style, width: w, height: h }}
-        onDoubleClick={(e) => { e.stopPropagation(); eng.openFullscreen(node.id, 0); }}
-      >
+      <div ref={setRef} className={cls} {...dataProps} style={{ ...style, width: w, height: h }}>
         <MediaContent nodeId={node.id} asset={a} index={0} bare={false} />
       </div>
     );
   }
 
-  // Grid: ~√n columns of cover-cropped cells.
-  const cols = Math.ceil(Math.sqrt(assets.length));
+  // Grid: fractional tracks (see resolveGrid); the resize dividers live in chrome.
+  const { colFr, rowFr } = resolveGrid(node);
   return (
     <div
       ref={setRef}
       className="node media"
       {...dataProps}
-      style={{ ...style, width: w, height: h, '--cols': cols }}
+      style={{
+        ...style,
+        width: w,
+        height: h,
+        gridTemplateColumns: colFr.map((f) => `${f}fr`).join(' '),
+        gridTemplateRows: rowFr.map((f) => `${f}fr`).join(' '),
+      }}
     >
       {assets.map((a, i) => (
-        <div
-          key={i}
-          className={a.svg ? 'media-cell svg' : 'media-cell'}
-          data-media-idx={i}
-          onDoubleClick={(e) => { e.stopPropagation(); eng.openFullscreen(node.id, i); }}
-        >
+        <div key={i} className={a.svg ? 'media-cell svg' : 'media-cell'} data-media-idx={i}>
           <MediaContent nodeId={node.id} asset={a} index={i} bare />
         </div>
       ))}

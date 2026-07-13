@@ -168,6 +168,12 @@ export default function Canvas() {
       const editingEl = nodeEls.get(S.editingId);
       if (editingEl && editingEl.contains(e.target)) return; // let text editing work
     }
+    // A press outside the grid being proportion-edited leaves that mode (a press
+    // inside — on a divider or cell — keeps it; dividers stop propagation anyway).
+    if (S.gridEditId) {
+      const gEl = nodeEls.get(S.gridEditId);
+      if (!(gEl && gEl.contains(e.target))) eng.exitGridEdit();
+    }
     eng.freezeView();
 
     const nodeEl = e.target.closest('.node');
@@ -313,6 +319,10 @@ export default function Canvas() {
     const type = nodeEl.dataset.type;
     const id = nodeEl.dataset.id;
     if (type === 'image' || type === 'video') {
+      // A multi-asset grid edits its proportions on double-click; a single asset
+      // still opens full-screen. (Full-screen for a grid stays on the context menu.)
+      const n = S.nodes.find((x) => x.id === id);
+      if (n && n.assets && n.assets.length > 1) { eng.enterGridEdit(id); return; }
       const cellEl = el.closest('[data-media-idx]');
       eng.openFullscreen(id, cellEl ? +cellEl.dataset.mediaIdx : 0);
       return;
@@ -566,6 +576,7 @@ export default function Canvas() {
       if (k === 's' && !e.metaKey && !e.ctrlKey && !S.readOnly && !S.recording) eng.startRecording();
       if (e.key === 'Escape') {
         if (S.recording) eng.cancelRecording();
+        eng.exitGridEdit();
         eng.deselect(); setCtxMenu(null); eng.stopEditing();
         if (CLICK_TO_INTERACT && engagedRef.current) setEngaged(false);
       }

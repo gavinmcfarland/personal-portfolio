@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 679.4559555784635,
-        "y": 310.32515459074256,
-        "scale": 0.2789863496398953
+        "x": 1121.2779783304813,
+        "y": 439.86486486486484,
+        "scale": 0.5864864864864865
       },
       "nodes": [
         {
@@ -105,9 +105,14 @@
           "z": 14,
           "w": 320,
           "h": 230,
-          "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='460' viewBox='0 0 640 460'> <rect width='640' height='460' fill='%23EEF2F7'/> <rect x='5' y='5' width='630' height='450' rx='10' fill='none' stroke='%238A94A6' stroke-width='2.5' stroke-dasharray='10 8'/> <rect x='286' y='188' width='68' height='52' rx='6' fill='none' stroke='%238A94A6' stroke-width='3'/> <circle cx='306' cy='204' r='7' fill='%238A94A6'/> <path d='M 290 236 L 316 214 L 332 228 L 342 220 L 350 236 Z' fill='%238A94A6'/> <text x='320' y='26' text-anchor='middle' font-family='system-ui,sans-serif' font-size='11' letter-spacing='2' font-weight='600' fill='%238A94A6'>IMAGE PLACEHOLDER</text> <text x='320' y='274' text-anchor='middle' font-family='system-ui,sans-serif' font-size='15' fill='%233F4855'>Same icon: crisp at 256px, mush at 16px</text> <text x='320' y='446' text-anchor='middle' font-family='system-ui,sans-serif' font-size='12' fill='%238A94A6'>drag a image here, then delete me</text> </svg>",
-          "alt": "Placeholder — Same icon: crisp at 256px, mush at 16px",
-          "svg": 1
+          "assets": [
+            {
+              "kind": "image",
+              "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='460' viewBox='0 0 640 460'> <rect width='640' height='460' fill='%23EEF2F7'/> <rect x='5' y='5' width='630' height='450' rx='10' fill='none' stroke='%238A94A6' stroke-width='2.5' stroke-dasharray='10 8'/> <rect x='286' y='188' width='68' height='52' rx='6' fill='none' stroke='%238A94A6' stroke-width='3'/> <circle cx='306' cy='204' r='7' fill='%238A94A6'/> <path d='M 290 236 L 316 214 L 332 228 L 342 220 L 350 236 Z' fill='%238A94A6'/> <text x='320' y='26' text-anchor='middle' font-family='system-ui,sans-serif' font-size='11' letter-spacing='2' font-weight='600' fill='%238A94A6'>IMAGE PLACEHOLDER</text> <text x='320' y='274' text-anchor='middle' font-family='system-ui,sans-serif' font-size='15' fill='%233F4855'>Same icon: crisp at 256px, mush at 16px</text> <text x='320' y='446' text-anchor='middle' font-family='system-ui,sans-serif' font-size='12' fill='%238A94A6'>drag a image here, then delete me</text> </svg>",
+              "alt": "Placeholder — Same icon: crisp at 256px, mush at 16px",
+              "svg": 1
+            }
+          ]
         },
         {
           "id": "i-note",
@@ -144,9 +149,14 @@
           "z": 18,
           "w": 520,
           "h": 300,
-          "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1040' height='600' viewBox='0 0 1040 600'> <rect width='1040' height='600' fill='%23EEF2F7'/> <rect x='5' y='5' width='1030' height='590' rx='10' fill='none' stroke='%238A94A6' stroke-width='2.5' stroke-dasharray='10 8'/> <circle cx='520' cy='286' r='30' fill='none' stroke='%238A94A6' stroke-width='3'/> <path d='M 512 272 L 534 286 L 512 300 Z' fill='%238A94A6'/> <text x='520' y='26' text-anchor='middle' font-family='system-ui,sans-serif' font-size='11' letter-spacing='2' font-weight='600' fill='%238A94A6'>VIDEO PLACEHOLDER</text> <text x='520' y='344' text-anchor='middle' font-family='system-ui,sans-serif' font-size='15' fill='%233F4855'>Demo — editing the icon while every size updates live</text> <text x='520' y='586' text-anchor='middle' font-family='system-ui,sans-serif' font-size='12' fill='%238A94A6'>drag a video here, then delete me</text> </svg>",
-          "alt": "Video placeholder — Demo — editing the icon while every size updates live",
-          "svg": 1
+          "assets": [
+            {
+              "kind": "image",
+              "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1040' height='600' viewBox='0 0 1040 600'> <rect width='1040' height='600' fill='%23EEF2F7'/> <rect x='5' y='5' width='1030' height='590' rx='10' fill='none' stroke='%238A94A6' stroke-width='2.5' stroke-dasharray='10 8'/> <circle cx='520' cy='286' r='30' fill='none' stroke='%238A94A6' stroke-width='3'/> <path d='M 512 272 L 534 286 L 512 300 Z' fill='%238A94A6'/> <text x='520' y='26' text-anchor='middle' font-family='system-ui,sans-serif' font-size='11' letter-spacing='2' font-weight='600' fill='%238A94A6'>VIDEO PLACEHOLDER</text> <text x='520' y='344' text-anchor='middle' font-family='system-ui,sans-serif' font-size='15' fill='%233F4855'>Demo — editing the icon while every size updates live</text> <text x='520' y='586' text-anchor='middle' font-family='system-ui,sans-serif' font-size='12' fill='%238A94A6'>drag a video here, then delete me</text> </svg>",
+              "alt": "Video placeholder — Demo — editing the icon while every size updates live",
+              "svg": 1
+            }
+          ]
         },
         {
           "id": "h-steps",
@@ -165,9 +175,14 @@
           "z": 20,
           "w": 340,
           "h": 180,
-          "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='680' height='360' viewBox='0 0 680 360'> <rect width='680' height='360' fill='%23EEF2F7'/> <rect x='5' y='5' width='670' height='350' rx='10' fill='none' stroke='%238A94A6' stroke-width='2.5' stroke-dasharray='10 8'/> <rect x='306' y='138' width='68' height='52' rx='6' fill='none' stroke='%238A94A6' stroke-width='3'/> <circle cx='326' cy='154' r='7' fill='%238A94A6'/> <path d='M 310 186 L 336 164 L 352 178 L 362 170 L 370 186 Z' fill='%238A94A6'/> <text x='340' y='26' text-anchor='middle' font-family='system-ui,sans-serif' font-size='11' letter-spacing='2' font-weight='600' fill='%238A94A6'>IMAGE PLACEHOLDER</text> <text x='340' y='224' text-anchor='middle' font-family='system-ui,sans-serif' font-size='15' fill='%233F4855'>The preview grid — web / iOS / Android</text> <text x='340' y='346' text-anchor='middle' font-family='system-ui,sans-serif' font-size='12' fill='%238A94A6'>drag a image here, then delete me</text> </svg>",
-          "alt": "Placeholder — The preview grid — web / iOS / Android",
-          "svg": 1
+          "assets": [
+            {
+              "kind": "image",
+              "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='680' height='360' viewBox='0 0 680 360'> <rect width='680' height='360' fill='%23EEF2F7'/> <rect x='5' y='5' width='670' height='350' rx='10' fill='none' stroke='%238A94A6' stroke-width='2.5' stroke-dasharray='10 8'/> <rect x='306' y='138' width='68' height='52' rx='6' fill='none' stroke='%238A94A6' stroke-width='3'/> <circle cx='326' cy='154' r='7' fill='%238A94A6'/> <path d='M 310 186 L 336 164 L 352 178 L 362 170 L 370 186 Z' fill='%238A94A6'/> <text x='340' y='26' text-anchor='middle' font-family='system-ui,sans-serif' font-size='11' letter-spacing='2' font-weight='600' fill='%238A94A6'>IMAGE PLACEHOLDER</text> <text x='340' y='224' text-anchor='middle' font-family='system-ui,sans-serif' font-size='15' fill='%233F4855'>The preview grid — web / iOS / Android</text> <text x='340' y='346' text-anchor='middle' font-family='system-ui,sans-serif' font-size='12' fill='%238A94A6'>drag a image here, then delete me</text> </svg>",
+              "alt": "Placeholder — The preview grid — web / iOS / Android",
+              "svg": 1
+            }
+          ]
         },
         {
           "id": "h-note",
@@ -213,9 +228,14 @@
           "z": 25,
           "w": 320,
           "h": 180,
-          "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='360' viewBox='0 0 640 360'> <rect width='640' height='360' fill='%23EEF2F7'/> <rect x='5' y='5' width='630' height='350' rx='10' fill='none' stroke='%238A94A6' stroke-width='2.5' stroke-dasharray='10 8'/> <rect x='286' y='138' width='68' height='52' rx='6' fill='none' stroke='%238A94A6' stroke-width='3'/> <circle cx='306' cy='154' r='7' fill='%238A94A6'/> <path d='M 290 186 L 316 164 L 332 178 L 342 170 L 350 186 Z' fill='%238A94A6'/> <text x='320' y='26' text-anchor='middle' font-family='system-ui,sans-serif' font-size='11' letter-spacing='2' font-weight='600' fill='%238A94A6'>IMAGE PLACEHOLDER</text> <text x='320' y='224' text-anchor='middle' font-family='system-ui,sans-serif' font-size='15' fill='%233F4855'>Plugin cover art from the Community page</text> <text x='320' y='346' text-anchor='middle' font-family='system-ui,sans-serif' font-size='12' fill='%238A94A6'>drag a image here, then delete me</text> </svg>",
-          "alt": "Placeholder — Plugin cover art from the Community page",
-          "svg": 1
+          "assets": [
+            {
+              "kind": "image",
+              "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='360' viewBox='0 0 640 360'> <rect width='640' height='360' fill='%23EEF2F7'/> <rect x='5' y='5' width='630' height='350' rx='10' fill='none' stroke='%238A94A6' stroke-width='2.5' stroke-dasharray='10 8'/> <rect x='286' y='138' width='68' height='52' rx='6' fill='none' stroke='%238A94A6' stroke-width='3'/> <circle cx='306' cy='154' r='7' fill='%238A94A6'/> <path d='M 290 186 L 316 164 L 332 178 L 342 170 L 350 186 Z' fill='%238A94A6'/> <text x='320' y='26' text-anchor='middle' font-family='system-ui,sans-serif' font-size='11' letter-spacing='2' font-weight='600' fill='%238A94A6'>IMAGE PLACEHOLDER</text> <text x='320' y='224' text-anchor='middle' font-family='system-ui,sans-serif' font-size='15' fill='%233F4855'>Plugin cover art from the Community page</text> <text x='320' y='346' text-anchor='middle' font-family='system-ui,sans-serif' font-size='12' fill='%238A94A6'>drag a image here, then delete me</text> </svg>",
+              "alt": "Placeholder — Plugin cover art from the Community page",
+              "svg": 1
+            }
+          ]
         },
         {
           "id": "t-md",
@@ -243,8 +263,13 @@
           "z": 46,
           "w": 360,
           "h": 299,
-          "src": "/canvas-assets/7e2654cd6d9e5a5e.png",
-          "alt": "Screenshot 2026-07-10 at 15.57.06 1.png"
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/7e2654cd6d9e5a5e.png",
+              "alt": "Screenshot 2026-07-10 at 15.57.06 1.png"
+            }
+          ]
         }
       ],
       "shapes": [

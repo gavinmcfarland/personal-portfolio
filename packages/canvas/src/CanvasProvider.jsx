@@ -55,6 +55,20 @@ function normalizeAssets(n) {
   if (Array.isArray(n.assets) && n.assets.length) return n.assets.map((a) => normalizeAsset(a, n.type));
   return [normalizeAsset({ src: n.src, alt: n.alt, svg: n.svg }, n.type)];
 }
+/* Clean a saved grid layout ({ colFr, rowFr }) — the fractional row/column track
+   sizes set by the proportion editor. Bad/missing arrays drop the layout so the
+   grid falls back to equal tracks. */
+function normalizeFrArray(arr) {
+  if (!Array.isArray(arr) || !arr.length) return null;
+  const out = arr.map((v) => (typeof v === 'number' && isFinite(v) && v > 0 ? v : 1));
+  return out;
+}
+function normalizeGrid(g) {
+  if (!g) return null;
+  const colFr = normalizeFrArray(g.colFr);
+  const rowFr = normalizeFrArray(g.rowFr);
+  return colFr || rowFr ? { colFr: colFr || [], rowFr: rowFr || [] } : null;
+}
 
 function normalizeSaved(n) {
   const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor };
@@ -62,7 +76,10 @@ function normalizeSaved(n) {
   if (n.type === 'md') return { ...base, w: n.w || 340, text: n.text || '' };
   if (n.type === 'code') return { ...base, w: n.w || 420, text: n.text || '', lang: n.lang || 'js', ...(n.wrap != null ? { wrap: !!n.wrap } : {}) };
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
-  if (n.type === 'image' || n.type === 'video') return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n) };
+  if (n.type === 'image' || n.type === 'video') {
+    const grid = normalizeGrid(n.grid);
+    return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n), ...(grid ? { grid } : {}) };
+  }
   if (n.type === 'sound') return { ...base, w: n.w || 260, h: n.h || 56, src: n.src || '', name: n.name || '', dur: n.dur || 0 };
   if (n.type === 'link') return { ...base, w: n.w || 280, url: n.url || '', title: n.title || '', desc: n.desc || '', image: n.image || '', siteName: n.siteName || '', favicon: n.favicon || '' };
   const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
@@ -234,6 +251,7 @@ export function CanvasProvider({
   const [fillColor, setFillColor] = useState('none'); // default fill for new fillable shapes
   const [ctxMenu, setCtxMenu] = useState(null); // {x,y,target:{kind,id}}
   const [fullscreen, setFullscreen] = useState(null); // { id, index } of the media asset shown in the lightbox
+  const [gridEditId, setGridEditId] = useState(null); // media node whose grid proportions are being edited
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
   const [publishState, setPublishState] = useState('idle'); // idle|saving|done|error
   const [recording, setRecording] = useState(null); // {} while capturing mic audio, else null
@@ -256,8 +274,9 @@ export function CanvasProvider({
   const viewportRef = useRef(null);
   const worldRef = useRef(null);
   const zoomLabelRef = useRef(null);
-  const chromeRef = useRef({ sel: null, del: null, edit: null, rz: null, hov: null, marq: null });
+  const chromeRef = useRef({ sel: null, del: null, edit: null, rz: null, hov: null, marq: null, grid: null });
   const chrome = chromeRef.current;
+  const gridGeomRef = useRef(null); // { id, colFr, rowFr } of the grid being proportion-edited
   const nodeEls = useRef(new Map()).current; // id → element
   const mediaEls = useRef(new Map()).current; // id → inline <video> element (for lightbox playback hand-off)
   const shapeEls = useRef(new Map()).current; // id → shape svg child (.shape)
@@ -310,6 +329,7 @@ export function CanvasProvider({
   S.nodes = nodes;
   S.shapes = shapes;
   S.fullscreen = fullscreen;
+  S.gridEditId = gridEditId;
   S.recording = recording;
   S.pages = pages;
   S.activePageId = activePageId;
@@ -491,6 +511,54 @@ export function CanvasProvider({
       S.hoverId = next;
       placeHover();
     }
+    /* Position the media grid's proportion-editing dividers. Drawn in the
+       screen-space chrome layer (not inside the zoomed node) so the divider
+       stroke keeps a constant thickness at any zoom. Each divider tracks a
+       fraction boundary of the node's on-screen rect. */
+    function setGridEditGeom(geom) { gridGeomRef.current = geom; }
+    function placeGridEdit() {
+      const wrap = chrome.grid; if (!wrap) return;
+      const geom = gridGeomRef.current;
+      const el = geom ? nodeEls.get(geom.id) : null;
+      if (!geom || !el || S.readOnly) { wrap.style.display = 'none'; return; }
+      const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth, h = el.offsetHeight;
+      const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s, sw = w * s, sh = h * s;
+      wrap.style.display = 'block';
+      const totalC = geom.colFr.reduce((a, b) => a + b, 0) || 1;
+      const totalR = geom.rowFr.reduce((a, b) => a + b, 0) || 1;
+      const cols = geom.colFr.length, rows = geom.rowFr.length;
+      // CSS grid lays the fractional tracks inside the box *after* subtracting the
+      // gaps (and any padding); the divider must sit in the middle of the actual
+      // gap, not at the plain fraction split of the whole box — otherwise it drifts
+      // off the gap as the tracks become unequal. Read the live gap/padding and
+      // place each divider at its gap centre.
+      const cs = getComputedStyle(el);
+      const gapX = (parseFloat(cs.columnGap) || 0) * s, gapY = (parseFloat(cs.rowGap) || 0) * s;
+      const padL = (parseFloat(cs.paddingLeft) || 0) * s, padT = (parseFloat(cs.paddingTop) || 0) * s;
+      const padR = (parseFloat(cs.paddingRight) || 0) * s, padB = (parseFloat(cs.paddingBottom) || 0) * s;
+      const trackW = sw - padL - padR - gapX * (cols - 1);
+      const trackH = sh - padT - padB - gapY * (rows - 1);
+      // Match the selection outline, which sits SEL_PAD px outside the node rect
+      // (see placeSel) — so each divider spans the full outlined box, edge to edge.
+      // Everything is sized/centred explicitly here (no CSS transform) so the two
+      // axes stay symmetric and a divider can't be shifted by a stray transform.
+      const SEL_PAD = 4;
+      const HIT = 15; // grab-strip thickness
+      for (const child of wrap.children) {
+        const axis = child.dataset.axis, k = +child.dataset.k;
+        if (axis === 'col') {
+          let acc = 0; for (let i = 0; i <= k; i += 1) acc += geom.colFr[i];
+          const cx = sx + padL + (acc / totalC) * trackW + k * gapX + gapX / 2;
+          child.style.left = (cx - HIT / 2) + 'px'; child.style.width = HIT + 'px';
+          child.style.top = (sy - SEL_PAD) + 'px'; child.style.height = (sh + SEL_PAD * 2) + 'px';
+        } else {
+          let acc = 0; for (let i = 0; i <= k; i += 1) acc += geom.rowFr[i];
+          const cy = sy + padT + (acc / totalR) * trackH + k * gapY + gapY / 2;
+          child.style.top = (cy - HIT / 2) + 'px'; child.style.height = HIT + 'px';
+          child.style.left = (sx - SEL_PAD) + 'px'; child.style.width = (sw + SEL_PAD * 2) + 'px';
+        }
+      }
+    }
     function syncChrome() {
       const s = viewRef.scale;
       frameLabelEls.forEach((label, id) => {
@@ -499,6 +567,7 @@ export function CanvasProvider({
         label.style.top = (viewRef.y + +f.dataset.y * s - 28) + 'px';
       });
       placeHover();
+      placeGridEdit();
       if (!S.selected.length || !chrome.sel) { hideSelChrome(); return; }
       // One box around the union of everything selected.
       let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, any = false;
@@ -693,7 +762,7 @@ export function CanvasProvider({
     // another canvas instance, so we don't persist/re-emit and loop.
     function setMode(ro, broadcast = true) {
       setReadOnlyState(ro);
-      if (ro) { deselect(); setCtxMenu(null); setToolState((t) => (t === 'select' || t === 'hand' ? t : 'select')); }
+      if (ro) { deselect(); setCtxMenu(null); setGridEditId(null); setToolState((t) => (t === 'select' || t === 'hand' ? t : 'select')); }
       if (EDITABLE && broadcast) {
         try { localStorage.setItem(GLOBAL_MODE_KEY, ro ? 'view' : 'edit'); } catch { /* storage unavailable */ }
         try { window.dispatchEvent(new CustomEvent(MODE_EVENT, { detail: ro })); } catch { /* no window */ }
@@ -768,6 +837,11 @@ export function CanvasProvider({
           if (a.svg) s.svg = 1;
           return s;
         });
+        // Custom grid proportions (rounded to keep the snapshot compact).
+        if (n.grid && (n.grid.colFr || n.grid.rowFr)) {
+          const round = (arr) => (arr || []).map((v) => Math.round(v * 1000) / 1000);
+          o.grid = { colFr: round(n.grid.colFr), rowFr: round(n.grid.rowFr) };
+        }
       }
       else if (n.type === 'sound') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.name) o.name = n.name; if (n.dur) o.dur = n.dur; }
       else if (n.type === 'link') {
@@ -882,7 +956,7 @@ export function CanvasProvider({
       freezeView();
       snapshotActive();
       const t = pageData[id];
-      deselect(); setEditingId(null); setCtxMenu(null); setFullscreen(null);
+      deselect(); setEditingId(null); setCtxMenu(null); setFullscreen(null); setGridEditId(null);
       setNodes(t.nodes); setShapes(t.shapes);
       viewRef.x = t.view.x; viewRef.y = t.view.y; viewRef.scale = t.view.scale;
       targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = viewRef.scale;
@@ -1422,6 +1496,18 @@ export function CanvasProvider({
       setFullscreen({ id, index: Math.max(0, Math.min(index, assets.length - 1)) });
     }
     function closeFullscreen() { setFullscreen(null); }
+    /* ── Media grid proportion editing ────────────────────────────
+       Double-clicking a multi-asset grid (in edit mode) enters this mode instead
+       of the lightbox: draggable dividers let the user resize the row/column
+       tracks so one asset can take more space than another. */
+    function enterGridEdit(id) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || (n.type !== 'image' && n.type !== 'video') || !n.assets || n.assets.length < 2) return;
+      selectNode(id);
+      setGridEditId(id);
+    }
+    function exitGridEdit() { setGridEditId(null); }
     function stepFullscreen(delta) {
       setFullscreen((f) => {
         if (!f) return f;
@@ -1441,7 +1527,7 @@ export function CanvasProvider({
 
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
-      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel, setHover,
+      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel, setHover, setGridEditGeom,
       selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
@@ -1452,7 +1538,7 @@ export function CanvasProvider({
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
       addLinkFromUrl, pasteLink, openLink,
       recordingSupported, startRecording, stopRecording, cancelRecording,
-      openFullscreen, closeFullscreen, stepFullscreen, startEditing, stopEditing, setChrome,
+      openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startEditing, stopEditing, setChrome,
       nextZ, backZ,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1580,7 +1666,7 @@ export function CanvasProvider({
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
-    publishState, recording, fullscreen, pages, activePageId, pageData, bgColor,
+    publishState, recording, fullscreen, gridEditId, pages, activePageId, pageData, bgColor,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,

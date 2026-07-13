@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 640.8246065642995,
-        "y": 238.96133515839634,
-        "scale": 0.22565739198613624
+        "x": 507.6924007429998,
+        "y": 156.46965969179377,
+        "scale": 0.29598858183929183
       },
       "nodes": [
         {
@@ -55,22 +55,6 @@
           "z": 5,
           "color": "green",
           "text": "Built-in task runners for long-running steps"
-        },
-        {
-          "id": "n1-video",
-          "type": "video",
-          "x": -49.81660028283852,
-          "y": -103.03685783966168,
-          "z": -1,
-          "w": 1105.03515625,
-          "h": 644,
-          "assets": [
-            {
-              "kind": "video",
-              "src": "/canvas-assets/06fb9db1cd6d5b82.mp4",
-              "alt": "plugma-eslint.mp4"
-            }
-          ]
         },
         {
           "id": "n3-code",

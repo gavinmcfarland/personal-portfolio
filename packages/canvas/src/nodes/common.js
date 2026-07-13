@@ -17,6 +17,25 @@ export function useMediaSrc(src) {
   return url;
 }
 
+/* Resolve a media node's grid into concrete column/row track sizes, reconciled
+   with the current asset count. A custom layout ({ colFr, rowFr } set by the
+   proportion editor) keeps its ratios and just pads with equal tracks (fr = 1)
+   as more assets are appended; otherwise the grid defaults to ~√n equal columns.
+   Shared by the node renderer and the screen-space divider chrome so both agree. */
+export function resolveGrid(node) {
+  const n = node.assets && node.assets.length ? node.assets.length : 1;
+  const stored = node.grid;
+  let cols = stored && stored.colFr && stored.colFr.length ? stored.colFr.length : Math.ceil(Math.sqrt(n));
+  cols = Math.max(1, Math.min(cols, n));
+  const rows = Math.ceil(n / cols);
+  const fit = (arr, len) => {
+    const out = [];
+    for (let i = 0; i < len; i += 1) out.push(arr && arr[i] > 0 ? arr[i] : 1);
+    return out;
+  };
+  return { cols, rows, colFr: fit(stored && stored.colFr, cols), rowFr: fit(stored && stored.rowFr, rows) };
+}
+
 /* Shared node wiring: register the DOM element into the engine's id→el map and
    emit the data-* attributes the imperative engine (drag/chrome/fit/save) reads. */
 export function useRegister(node) {

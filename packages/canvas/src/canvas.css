@@ -551,7 +551,7 @@
    with a gap between them so the rounding reads. */
 .canvas-root .node.media {
   display: grid;
-  grid-template-columns: repeat(var(--cols, 2), 1fr);
+  /* grid-template-columns / -rows come from the node's fractional tracks (inline) */
   gap: 6px;
 }
 .canvas-root .node.media .media-cell {
@@ -583,6 +583,7 @@
 .canvas-root.read-only .node.media .media-cell {
   cursor: zoom-in;
 }
+
 
 /* Sound object — a fixed-size audio player card (play / name / scrub bar) */
 .canvas-root .node.sound {
@@ -1426,6 +1427,55 @@
   display: none;
   box-sizing: border-box;
   pointer-events: auto;
+}
+/* Media grid proportion-editing dividers — screen-space, so the accent stroke
+   stays a constant 2px at any zoom. The wide strip is the grab target; the
+   ::after line is what's drawn. Positioned by placeGridEdit(). */
+.canvas-root .cv-grid-edit {
+  display: none;
+}
+.canvas-root .cv-grid-line {
+  position: absolute;
+  /* Reset margin/padding: these overlays live in a host page whose global CSS
+     could otherwise leak onto them (the axis classes are namespaced for the same
+     reason — a bare `.row`/`.col` would collide with grid-system utilities). */
+  margin: 0;
+  padding: 0;
+  pointer-events: auto;
+  touch-action: none;
+}
+/* Size + centring are set by placeGridEdit() in JS (no transform), so the two
+   axes stay symmetric and can't be shifted by a stray transform. */
+.canvas-root .cv-grid-line--col {
+  cursor: col-resize;
+}
+.canvas-root .cv-grid-line--row {
+  cursor: row-resize;
+}
+.canvas-root .cv-grid-line::after {
+  content: '';
+  position: absolute;
+  background: var(--accent);
+  border-radius: 2px;
+  opacity: 0.9;
+  transition: opacity 0.12s ease;
+}
+.canvas-root .cv-grid-line:hover::after {
+  opacity: 1;
+}
+.canvas-root .cv-grid-line--col::after {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+}
+.canvas-root .cv-grid-line--row::after {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
 }
 .canvas-root .cv-chrome .frame-label {
   display: inline-flex;
