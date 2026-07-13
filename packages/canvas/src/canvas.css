@@ -197,16 +197,6 @@
     transform: translateY(0);
   }
 }
-/* Faint accent ring while engaged, so it reads as live once unlocked. */
-.canvas-root[data-engaged]::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 46;
-  pointer-events: none;
-  box-shadow: inset 0 0 0 2px var(--accent);
-  opacity: 0.45;
-}
 /* Fullscreen mode: cover the browser viewport regardless of the host layout. */
 .canvas-root[data-fit="fullscreen"] {
   position: fixed;
