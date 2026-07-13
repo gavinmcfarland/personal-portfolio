@@ -47,7 +47,7 @@ const Footer = () => (
           fit="contain"
           initialView="fit"
           accent={ACCENT}
-          editable
+          editable={import.meta.env.DEV}
           base={demoBase}
           storageKey="footer-canvas-demo"
           initialState={publishedBoard("footer-canvas-demo")}
