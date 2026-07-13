@@ -6,16 +6,16 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": -450.2884937781391,
-        "y": 2135.174100101249,
-        "scale": 2.1384670000669725
+        "x": -283.96613702870866,
+        "y": 730.7444643530504,
+        "scale": 0.7092353907257934
       },
       "nodes": [
         {
           "id": "intro",
           "type": "md",
-          "x": -97.36485417860456,
-          "y": -1005.4350580188495,
+          "x": 778.2468064085065,
+          "y": -867.549635519496,
           "z": 62,
           "w": 340,
           "text": "# Plugma\n\nA zero-config CLI for building Figma plugins, with hot-module reloading that actually works.\n\n[Node.js] [TypeScript] [Vite] [React] [Svelte] [Vue]"
@@ -23,8 +23,8 @@
         {
           "id": "note-0",
           "type": "sticky",
-          "x": 1946.0440255252918,
-          "y": -505.49491460741626,
+          "x": 1884.1306824504602,
+          "y": -544.5484967665213,
           "z": 46,
           "color": "yellow",
           "text": "True HMR across the UI and plugin sandbox — no full reloads"
@@ -32,8 +32,8 @@
         {
           "id": "note-1",
           "type": "sticky",
-          "x": 2244.5793552923506,
-          "y": -415.0729761813836,
+          "x": 2182.666012217519,
+          "y": -454.1265583404886,
           "z": 47,
           "color": "blue",
           "text": "Framework-agnostic: React, Svelte and Vue out of the box"
@@ -41,8 +41,8 @@
         {
           "id": "note-2",
           "type": "sticky",
-          "x": 2131.6918134019747,
-          "y": -287.6511194079278,
+          "x": 2069.778470327143,
+          "y": -326.7047015670329,
           "z": 5,
           "color": "green",
           "text": "Zero config to start; a single command to build and publish"
@@ -50,8 +50,8 @@
         {
           "id": "n25-tblock",
           "type": "tblock",
-          "x": 2185.331161043554,
-          "y": -537.461666897591,
+          "x": 2123.4178179687224,
+          "y": -576.5152490566961,
           "z": 45,
           "text": "Features supported",
           "w": 346.4863948419979,
@@ -60,8 +60,8 @@
         {
           "id": "n26-sticky",
           "type": "sticky",
-          "x": 1827.1171029200925,
-          "y": -286.8749401525181,
+          "x": 1765.203759845261,
+          "y": -325.92852231162317,
           "z": 52,
           "color": "yellow",
           "text": "Hello"
@@ -69,8 +69,8 @@
         {
           "id": "n27-code",
           "type": "code",
-          "x": -424.14887386601475,
-          "y": -419.947586678471,
+          "x": 451.4627867210963,
+          "y": -282.0621641791174,
           "z": 54,
           "w": 372.26282295360716,
           "text": "npm create plugma@latest add",
@@ -80,8 +80,8 @@
         {
           "id": "n28-md",
           "type": "md",
-          "x": 1968.7116656253693,
-          "y": -40.37666803296685,
+          "x": 1906.7983225505377,
+          "y": -79.4302501920719,
           "z": 55,
           "w": 454.83307303997344,
           "text": "- `install <pkg-manager?>`: Install dependencies\n- `no-install`: Skip dependency installation\n- `verbose`: Show detailed logs\n- `debug`: Enable debug mode"
@@ -89,8 +89,8 @@
         {
           "id": "n29-tblock",
           "type": "tblock",
-          "x": 1865.6318703112333,
-          "y": -573.4264167025783,
+          "x": 1803.7185272364018,
+          "y": -612.4799988616834,
           "z": 56,
           "text": "Features supported",
           "w": 261.5990091908047,
@@ -99,8 +99,8 @@
         {
           "id": "n30-code",
           "type": "code",
-          "x": -182.1336936504413,
-          "y": -198.13615258578542,
+          "x": 693.4779669366698,
+          "y": -60.25073008643187,
           "z": 57,
           "w": 433.76899830964373,
           "text": "import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig(({ mode, context }) => (\n    return {\n      plugins: context == \"ui\" ? [react()] : []\n    };\n}))",
@@ -136,8 +136,8 @@
         {
           "id": "n33-image",
           "type": "image",
-          "x": 395.17360671934017,
-          "y": -940.8030034882133,
+          "x": 1270.7852673064513,
+          "y": -802.9175809888598,
           "z": 60,
           "w": 233.54163629211575,
           "h": 251,
@@ -177,8 +177,8 @@
         {
           "id": "n34-image",
           "type": "image",
-          "x": 1116.213174606344,
-          "y": -921.6091758555128,
+          "x": 1544.606903721542,
+          "y": -946.6088942765136,
           "z": 61,
           "w": 281.6997203780367,
           "h": 271,

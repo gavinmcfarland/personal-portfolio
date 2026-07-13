@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 545.9102290337945,
-        "y": 303.6646599615151,
-        "scale": 0.4498877154650939
+        "x": 521.8502367771789,
+        "y": 307.64467287272794,
+        "scale": 0.8268350472366498
       },
       "nodes": [
         {
@@ -37,36 +37,6 @@
           "z": 26,
           "color": "yellow",
           "text": "Figma kindly awarded me a grant to build this Plugin."
-        },
-        {
-          "id": "n1-video",
-          "type": "video",
-          "x": 179.45597495731468,
-          "y": -204.34746330115468,
-          "z": 21,
-          "w": 899.1718178781017,
-          "h": 674,
-          "assets": [
-            {
-              "kind": "video",
-              "src": "/canvas-assets/8a75e76177f4496f.mp4",
-              "alt": "Kapture 2025-11-12 at 16.22.29.mp4"
-            },
-            {
-              "kind": "image",
-              "src": "/canvas-assets/edef38d105357e81.jpg",
-              "alt": "BG7A1053.jpg"
-            }
-          ],
-          "grid": {
-            "colFr": [
-              1.12,
-              0.88
-            ],
-            "rowFr": [
-              1
-            ]
-          }
         }
       ],
       "shapes": []
