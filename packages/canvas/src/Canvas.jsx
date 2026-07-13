@@ -580,7 +580,12 @@ export default function Canvas() {
        so it can't fight the pinch. */
     const touches = new Map(); // pointerId -> { x, y }
     let pinch = null;          // { dist, cx, cy } baseline from the previous move
-    let flashArm = null;       // pending "use two fingers" hint (armed on the 1st finger)
+    // "Use two fingers to pan" hint is a teaching nudge, not a per-gesture label:
+    // suppress it until this time. Showing it, and every two-finger gesture, pushes
+    // the window out — so once the user demonstrates the two-finger pan it goes
+    // quiet, and only resurfaces after a stretch of single-finger-only use.
+    let hintQuietUntil = 0;
+    const HINT_COOLDOWN = 8000;
     const twoPoints = () => { const [a, b] = [...touches.values()]; return [a, b]; };
     const pinchMetrics = () => {
       const [a, b] = twoPoints();
@@ -590,17 +595,14 @@ export default function Canvas() {
       if (e.pointerType !== 'touch') return;
       touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
       // Cooperative locked: a lone finger is a page-scroll attempt → hint to use
-      // two fingers. Arm it with a short delay and only fire if a second finger
-      // hasn't joined — so a real two-finger pan (whose first finger lands here
-      // too) never shows the hint.
+      // two fingers, unless we're in the quiet window.
       if (touches.size === 1 && COOP && S.readOnly && !engagedRef.current && !CLICK_TO_INTERACT) {
-        clearTimeout(flashArm);
-        flashArm = setTimeout(() => { if (touches.size === 1) flashMsg(); }, 130);
+        if (performance.now() >= hintQuietUntil) { flashMsg(); hintQuietUntil = performance.now() + HINT_COOLDOWN; }
       }
       if (touches.size === 2) {
-        // Second finger → it's a pinch/two-finger pan, not a scroll: cancel the
-        // pending hint and hide it if it already showed.
-        clearTimeout(flashArm); flashArm = null; hideMsg();
+        // Two fingers → it's a pan, not a scroll: hide the hint the first finger
+        // may have just flashed, and dampen it (they clearly know the gesture).
+        hideMsg(); hintQuietUntil = performance.now() + HINT_COOLDOWN;
         // Drop the single-finger gesture so it can't fight the pinch. onUp would
         // normally clean these up, but nulling actionRef means it bails — so undo
         // the single-finger visuals here or a tiny marquee/draft is left frozen
@@ -693,7 +695,6 @@ export default function Canvas() {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('paste', onPaste);
-      clearTimeout(flashArm);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
