@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": -683.9873133717745,
-        "y": 1066.6325284497736,
-        "scale": 0.8028786104173441
+        "x": -1289.8917733277515,
+        "y": 975.1314309367035,
+        "scale": 0.9110878628862874
       },
       "nodes": [
         {
@@ -18,7 +18,7 @@
           "y": -1277.2099528199608,
           "z": 62,
           "w": 340,
-          "text": "# Plugma\n\nA zero-config CLI for building Figma plugins, with hot-module reloading that actually works.\n\n[Node.js] [TypeScript] [Vite] [React] [Svelte] [Vue]"
+          "text": "# Plugma\n\nA zero-config CLI for building Figma plugins, with hot-module reloading that actually works.\n\n[Plugma.dev](http://plugma.dev)\n\n[Node.js] [TypeScript] [Vite] [React] [Svelte] [Vue]"
         },
         {
           "id": "n28-md",
@@ -43,8 +43,8 @@
         {
           "id": "n32-link",
           "type": "link",
-          "x": 2618.301836572342,
-          "y": -1090.6824971315084,
+          "x": 1987.0785860123265,
+          "y": -1112.1631401517864,
           "z": 59,
           "w": 280,
           "url": "https://screen.studio/share/4rh7VCM7",
@@ -56,8 +56,8 @@
         {
           "id": "n33-tblock",
           "type": "tblock",
-          "x": 1390.8798110217117,
-          "y": -1196.0467054241074,
+          "x": 1382.5680226559916,
+          "y": -1270.1548294642407,
           "z": 63,
           "text": "Features",
           "fontSize": 42,
@@ -66,8 +66,8 @@
         {
           "id": "n37-sticky",
           "type": "sticky",
-          "x": 1387.3804822142379,
-          "y": -1092.3288426140855,
+          "x": 1378.6809320422137,
+          "y": -1166.6331285091728,
           "z": 67,
           "color": "yellow",
           "text": "Zero config"
@@ -75,8 +75,8 @@
         {
           "id": "n39-sticky",
           "type": "sticky",
-          "x": 1497.8800755863062,
-          "y": -964.3609241283707,
+          "x": 1489.5682872205862,
+          "y": -1038.469048168504,
           "z": 69,
           "color": "pink",
           "text": "HMR that actually works"
@@ -84,8 +84,8 @@
         {
           "id": "n40-sticky",
           "type": "sticky",
-          "x": 1388.4295918465882,
-          "y": -887.431704239697,
+          "x": 1380.1178034808681,
+          "y": -961.5398282798302,
           "z": 70,
           "color": "blue",
           "text": "React · Svelte · Vue"
@@ -93,8 +93,8 @@
         {
           "id": "n41-sticky",
           "type": "sticky",
-          "x": 1647.8068207111926,
-          "y": -861.2413472184279,
+          "x": 1639.4950323454725,
+          "y": -935.3494712585612,
           "z": 71,
           "color": "green",
           "text": "Powered by Vite"
@@ -102,8 +102,8 @@
         {
           "id": "n42-sticky",
           "type": "sticky",
-          "x": 1732.106098748792,
-          "y": -735.9624409999578,
+          "x": 1723.794310383072,
+          "y": -810.0705650400911,
           "z": 72,
           "color": "purple",
           "text": "dev · build · release"
@@ -111,33 +111,34 @@
         {
           "id": "n43-tblock",
           "type": "tblock",
-          "x": 2630.1357492007373,
-          "y": -1197.1550175886534,
+          "x": 1998.9124986407219,
+          "y": -1218.6356606089314,
           "z": 73,
           "text": "Links",
           "fontSize": 42,
           "font": "script"
         },
         {
-          "id": "n44-sound",
-          "type": "sound",
-          "x": 1691.982855678993,
-          "y": -1116.6672946056253,
-          "z": 74,
-          "w": 260,
-          "h": 56,
-          "src": "idb:project-canvas-plugma-media/mmrjb06zs-1",
-          "name": "Recording",
-          "dur": 3.600016
+          "id": "n45-link",
+          "type": "link",
+          "x": 2303.9782100194648,
+          "y": -1107.9181096278157,
+          "z": 75,
+          "w": 280,
+          "url": "https://screen.studio/share/neRqmJDi",
+          "title": "Plugma - End-to-end UI testing with Playwright — Screen Studio",
+          "desc": "Plugma - End-to-end UI testing with Playwright — Created and shared with Screen Studio",
+          "image": "/canvas-assets/0494b681d11dc2a9.png",
+          "favicon": "https://screen.studio/icon.png"
         },
         {
-          "id": "n45-video",
+          "id": "n46-video",
           "type": "video",
-          "x": 1924.3321231257407,
-          "y": -1038.2336769672127,
-          "z": 75,
-          "w": 574.8665022478638,
-          "h": 323,
+          "x": 2074.041721148539,
+          "y": -694.6646417099851,
+          "z": 76,
+          "w": 515.1201928563493,
+          "h": 289,
           "assets": [
             {
               "kind": "video",
@@ -150,5 +151,5 @@
       "shapes": []
     }
   ],
-  "savedAt": 1783952094851
+  "savedAt": 1783953021548
 }

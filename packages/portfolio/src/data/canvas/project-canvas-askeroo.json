@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": -648.8954110830524,
-        "y": -2277.2428280610684,
-        "scale": 2.8466609842122104
+        "x": 154.74509614628104,
+        "y": 302.29082883795337,
+        "scale": 0.643333348107334
       },
       "nodes": [
         {
@@ -73,7 +73,7 @@
           "y": 934.0370813787082,
           "z": 10,
           "w": 340,
-          "text": "## Conditional Prompts\n\nYou can make prompts conditional by guarding them with conditions. In this example, the \"Preferred language\" prompt will only get shown if the \"Developer\" role is chosen."
+          "text": "## Testing\n\nYou can make prompts conditional by guarding them with conditions. In this example, the \"Preferred language\" prompt will only get shown if the \"Developer\" role is chosen."
         },
         {
           "id": "n7-code",
@@ -298,5 +298,5 @@
       ]
     }
   ],
-  "savedAt": 1783952453092
+  "savedAt": 1783953062945
 }

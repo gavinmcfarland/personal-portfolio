@@ -916,7 +916,9 @@
 .canvas-root .md-render h1,
 .canvas-root .md-render h2,
 .canvas-root .md-render h3,
-.canvas-root .md-render h4 {
+.canvas-root .md-render h4,
+.canvas-root .md-render h5,
+.canvas-root .md-render h6 {
   font-family: var(--sans);
   font-weight: 700;
   line-height: 1.2;
@@ -924,16 +926,25 @@
   letter-spacing: -0.01em;
 }
 .canvas-root .md-render h1 {
-  font-size: 1.55rem;
+  font-size: 2rem;
 }
 .canvas-root .md-render h2 {
-  font-size: 1.28rem;
+  font-size: 1.6rem;
 }
 .canvas-root .md-render h3 {
-  font-size: 1.08rem;
+  font-size: 1.3rem;
 }
 .canvas-root .md-render h4 {
-  font-size: 0.95rem;
+  font-size: 1.08rem;
+}
+.canvas-root .md-render h5 {
+  font-size: 0.92rem;
+}
+.canvas-root .md-render h6 {
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted, var(--ink));
 }
 .canvas-root .md-render p {
   margin: 0.55em 0;
