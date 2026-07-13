@@ -48,7 +48,7 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, COOP, fit, ui, bgColor, accent } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, fit, ui, bgColor, accent } = ctx;
 
   /* Cooperative-gesture hint. When a wheel/touch is allowed to pass through to
      the host page (so the page scrolls instead of the board hijacking it), flash
@@ -60,6 +60,9 @@ export default function Canvas() {
   const isApple = typeof navigator !== 'undefined' && /Mac|iP(hone|ad|od)/.test(navigator.platform || navigator.userAgent || '');
   const HINT_ZOOM = `Hold ${isApple ? '⌘' : 'Ctrl'} to zoom`;
   const HINT_TOUCH = 'Use two fingers to move';
+  // Touch-primary devices "tap"; everything else "clicks".
+  const coarsePointer = typeof matchMedia !== 'undefined' && matchMedia('(hover: none)').matches;
+  const interactLabel = coarsePointer ? 'Tap to interact' : 'Click to interact';
   const flashHint = (msg) => {
     const el = hintRef.current;
     if (!el) return;
@@ -104,7 +107,10 @@ export default function Canvas() {
       // Cooperative gestures: a single finger belongs to the page (native
       // scroll). Don't start a board pan on touch — two fingers pan/zoom via the
       // pinch handler. Mouse drag-pan is left alone (a drag never traps scroll).
-      if (COOP && e.pointerType === 'touch') return;
+      // In click-to-interact mode this branch only runs once unlocked (the
+      // overlay swallows touches while locked), where touch-pan is wanted — so
+      // exclude it here.
+      if (COOP && !CLICK_TO_INTERACT && e.pointerType === 'touch') return;
       eng.freezeView();
       // Remember media / links under the pointer so a stationary tap opens them.
       const imgEl = e.target.closest && e.target.closest('.node.image,.node.video');
@@ -446,10 +452,17 @@ export default function Canvas() {
           if ((oy === 'auto' || oy === 'scroll') && ta.scrollHeight > ta.clientHeight) return;
         }
       }
-      // Cooperative gestures: a plain wheel scrolls the host page (don't
-      // preventDefault); only ⌘/Ctrl+wheel zooms the board. Flash the hint so the
-      // zoom affordance is discoverable.
-      if (COOP && !zoomKey) { flashHint(HINT_ZOOM); return; }
+      // Click-to-interact: while locked the wheel belongs to the page; once
+      // unlocked the board behaves greedily (normal pan + ⌘/Ctrl zoom). The
+      // overlay is the affordance, so no wheel hint here.
+      if (CLICK_TO_INTERACT) {
+        if (!engagedRef.current) return; // locked → page scrolls past
+      } else if (COOP && !zoomKey) {
+        // Cooperative gestures: a plain wheel scrolls the host page (don't
+        // preventDefault); only ⌘/Ctrl+wheel zooms. Flash the hint so the zoom
+        // affordance is discoverable.
+        flashHint(HINT_ZOOM); return;
+      }
       e.preventDefault();
       if (zoomKey) {
         const d = Math.max(-ZOOM.deltaClamp, Math.min(ZOOM.deltaClamp, e.deltaY));
@@ -496,6 +509,7 @@ export default function Canvas() {
       if (e.key === 'Escape') {
         if (S.recording) eng.cancelRecording();
         eng.deselect(); setCtxMenu(null); eng.stopEditing();
+        if (CLICK_TO_INTERACT && engagedRef.current) setEngaged(false);
       }
     };
     const onKeyUp = (e) => {
@@ -551,8 +565,9 @@ export default function Canvas() {
       if (e.pointerType !== 'touch' || !touches.has(e.pointerId)) return;
       touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
       // One finger dragging in cooperative mode: the page is scrolling, not the
-      // board — nudge the user toward the two-finger gesture.
-      if (COOP && touches.size === 1) { flashHint(HINT_TOUCH); return; }
+      // board — nudge the user toward the two-finger gesture. (Skip in
+      // click-to-interact mode, which uses the overlay instead of hints.)
+      if (COOP && !CLICK_TO_INTERACT && touches.size === 1) { flashHint(HINT_TOUCH); return; }
       if (touches.size !== 2 || !pinch) return;
       e.preventDefault();
       const m = pinchMetrics();
@@ -575,11 +590,24 @@ export default function Canvas() {
     // keyboard shortcuts keep working once the cursor moves off the board);
     // clicking anywhere else on the host page releases it.
     const onDocDown = (e) => {
-      activeInsideRef.current = !!(rootRef.current && rootRef.current.contains(e.target));
+      const inside = !!(rootRef.current && rootRef.current.contains(e.target));
+      activeInsideRef.current = inside;
+      // Click-to-interact: a press anywhere off the board relocks it.
+      if (CLICK_TO_INTERACT && engagedRef.current && !inside) setEngaged(false);
+    };
+
+    // Click-to-interact: scrolling the host page relocks the board. Guard on the
+    // scroll target being the document itself so scrolling an inner card (e.g. a
+    // code block) while engaged doesn't relock.
+    const onDocScroll = (e) => {
+      if (!CLICK_TO_INTERACT || !engagedRef.current) return;
+      const t = e.target;
+      if (t === document || t === document.documentElement || t === document.body) setEngaged(false);
     };
 
     const vp = rootRef.current;
     window.addEventListener('pointerdown', onDocDown, true);
+    window.addEventListener('scroll', onDocScroll, true);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     // Finalize (and clear actionRef) if the OS/browser cancels the gesture — e.g.
@@ -596,6 +624,7 @@ export default function Canvas() {
     window.addEventListener('paste', onPaste);
     return () => {
       window.removeEventListener('pointerdown', onDocDown, true);
+      window.removeEventListener('scroll', onDocScroll, true);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
@@ -617,6 +646,7 @@ export default function Canvas() {
       ref={rootRef}
       data-fit={fit}
       data-coop={COOP ? '' : undefined}
+      data-engaged={CLICK_TO_INTERACT && engaged ? '' : undefined}
       data-cv-accent={accent ? accentId : undefined}
       data-cv-bg={bgColor ? 'custom' : undefined}
       style={bgStyle}
@@ -640,6 +670,14 @@ export default function Canvas() {
       )}
       <Lightbox />
       {COOP && <div className="cv-gesture-hint" ref={hintRef} aria-hidden="true"><span /></div>}
+      {CLICK_TO_INTERACT && !engaged && (
+        /* Locked overlay: swallows board gestures and lets one finger scroll the
+           page (touch-action set in CSS). Clicking unlocks; the board relocks on
+           page-scroll / off-board click / Esc (handled by the window listeners). */
+        <button type="button" className="cv-interact-lock" onPointerDown={(e) => { e.stopPropagation(); setEngaged(true); }}>
+          <span>{interactLabel}</span>
+        </button>
+      )}
     </div>
   );
 }

@@ -165,9 +165,11 @@ export function CanvasProvider({
   initialView = null, // 'fit' frames all content on mount instead of restoring the saved pan/zoom
   saveStatus = true, // show the background-save status indicator (bottom-right) while editing
   cooperativeGestures = !editable, // embedded/read-only boards let the page scroll past: plain wheel scrolls the page (⌘/Ctrl+wheel zooms), one finger scrolls the page (two fingers pan/zoom). Off in edit mode so authoring keeps full control.
+  clickToInteract = false, // gate the board behind a "Click to interact" overlay: locked = the page scrolls past untouched; click unlocks normal pan/zoom; scrolling the page / clicking off / Esc relocks. Supersedes the cooperativeGestures hints.
 }) {
   const EDITABLE = editable;
   const COOP = cooperativeGestures;
+  const CLICK_TO_INTERACT = clickToInteract;
   const HOME_ID = homeId;
   const STORE = storageKey;
   const MEDIA_DB = storageKey + '-media';
@@ -197,6 +199,10 @@ export function CanvasProvider({
     try { return localStorage.getItem(GLOBAL_MODE_KEY) === 'view'; } catch { return false; }
   });
   const [editingId, setEditingId] = useState(null);
+  // Click-to-interact engagement: false = locked (page scrolls past), true =
+  // unlocked (normal pan/zoom). Mirrored to engagedRef so the imperative window
+  // gesture handlers (bound once) read the live value.
+  const [engaged, setEngagedState] = useState(false);
   // Global format-on-type preference: seeded from the persisted user pref, else
   // the prop default. Toggling it from any code object updates them all.
   const [formatOnType, setFormatOnTypeState] = useState(() => {
@@ -230,6 +236,10 @@ export function CanvasProvider({
   const rootRef = useRef(null);          // the scoped `.canvas-root` wrapper
   const hoverInsideRef = useRef(false);  // pointer is over this canvas (gates keyboard shortcuts)
   const activeInsideRef = useRef(false); // canvas was the last thing interacted with (also gates shortcuts)
+  const engagedRef = useRef(false);      // live mirror of `engaged` for the window gesture handlers
+  // Single setter keeps the ref and state in lockstep (ref for the imperative
+  // handlers, state to re-render the overlay).
+  const setEngaged = (v) => { engagedRef.current = v; setEngagedState(v); };
   const viewportRef = useRef(null);
   const worldRef = useRef(null);
   const zoomLabelRef = useRef(null);
@@ -1472,11 +1482,11 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     publishState, recording, fullscreenId, pages, activePageId, pageData, bgColor,
-    brand: init.brand, EDITABLE, COOP, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
+    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
-    setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState,
+    setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
     // refs
-    rootRef, hoverInsideRef, activeInsideRef, viewportRef, worldRef, zoomLabelRef, nodeEls, shapeEls, frameLabelEls, actionRef, panKey, S,
+    rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, worldRef, zoomLabelRef, nodeEls, shapeEls, frameLabelEls, actionRef, panKey, S,
     // engine
     eng,
   };
