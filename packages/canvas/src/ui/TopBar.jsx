@@ -16,10 +16,16 @@ const THEME = {
 };
 
 export default function TopBar() {
-  const { brand, readOnly, EDITABLE, eng, theme } = useCanvas();
+  const { brand, readOnly, EDITABLE, eng, theme, pages } = useCanvas();
   const mode = theme?.mode;
   const toggleTheme = theme?.toggle;
   const th = THEME[mode] || THEME.system;
+
+  // Nothing renders for a plain read-only single-page board (no edit chip, no
+  // theme toggle, and PageTabs bails for one page) — so don't paint an empty
+  // panel (the stray little square). Mirror the child visibility conditions.
+  const hasContent = EDITABLE || !!theme || pages.length > 1;
+  if (!hasContent) return null;
 
   return (
     <div className="ui panel" id="topbar">
