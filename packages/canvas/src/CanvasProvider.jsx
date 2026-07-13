@@ -164,8 +164,10 @@ export function CanvasProvider({
   ui = true, // set false to hide the overlay panels (top bar, toolbar, zoom, context menu)
   initialView = null, // 'fit' frames all content on mount instead of restoring the saved pan/zoom
   saveStatus = true, // show the background-save status indicator (bottom-right) while editing
+  cooperativeGestures = !editable, // embedded/read-only boards let the page scroll past: plain wheel scrolls the page (⌘/Ctrl+wheel zooms), one finger scrolls the page (two fingers pan/zoom). Off in edit mode so authoring keeps full control.
 }) {
   const EDITABLE = editable;
+  const COOP = cooperativeGestures;
   const HOME_ID = homeId;
   const STORE = storageKey;
   const MEDIA_DB = storageKey + '-media';
@@ -1470,7 +1472,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     publishState, recording, fullscreenId, pages, activePageId, pageData, bgColor,
-    brand: init.brand, EDITABLE, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
+    brand: init.brand, EDITABLE, COOP, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState,
     // refs

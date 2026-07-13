@@ -1,4 +1,4 @@
-import { useEffect, useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { useCanvas } from './CanvasProvider';
 import { ZOOM, PAN, DRAW_TOOLS, FILLABLE_SHAPES } from './constants';
 import World from './World';
@@ -48,7 +48,27 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, fit, ui, bgColor, accent } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, EDITABLE, COOP, fit, ui, bgColor, accent } = ctx;
+
+  /* Cooperative-gesture hint. When a wheel/touch is allowed to pass through to
+     the host page (so the page scrolls instead of the board hijacking it), flash
+     a transient centred label so the interaction stays discoverable. Toggling a
+     class on the element (rather than React state) keeps it off the render path
+     during a scroll storm. `⌘` on Apple, `Ctrl` elsewhere. */
+  const hintRef = useRef(null);
+  const hintTimer = useRef(null);
+  const isApple = typeof navigator !== 'undefined' && /Mac|iP(hone|ad|od)/.test(navigator.platform || navigator.userAgent || '');
+  const HINT_ZOOM = `Hold ${isApple ? '⌘' : 'Ctrl'} to zoom`;
+  const HINT_TOUCH = 'Use two fingers to move';
+  const flashHint = (msg) => {
+    const el = hintRef.current;
+    if (!el) return;
+    const span = el.firstChild;
+    if (span) span.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(hintTimer.current);
+    hintTimer.current = setTimeout(() => el.classList.remove('show'), 1200);
+  };
 
   /* A chosen board colour is exposed as `--bg-pick`; canvas.css blends it a
      short way into the base (`--bg-base`) the way a shape fill composites over
@@ -81,6 +101,10 @@ export default function Canvas() {
       // cards un-pannable on touch, where cards fill the screen and there's little
       // bare board to grab.
       if (e.target.closest && e.target.closest('button, select')) return;
+      // Cooperative gestures: a single finger belongs to the page (native
+      // scroll). Don't start a board pan on touch — two fingers pan/zoom via the
+      // pinch handler. Mouse drag-pan is left alone (a drag never traps scroll).
+      if (COOP && e.pointerType === 'touch') return;
       eng.freezeView();
       // Remember media / links under the pointer so a stationary tap opens them.
       const imgEl = e.target.closest && e.target.closest('.node.image,.node.video');
@@ -422,6 +446,10 @@ export default function Canvas() {
           if ((oy === 'auto' || oy === 'scroll') && ta.scrollHeight > ta.clientHeight) return;
         }
       }
+      // Cooperative gestures: a plain wheel scrolls the host page (don't
+      // preventDefault); only ⌘/Ctrl+wheel zooms the board. Flash the hint so the
+      // zoom affordance is discoverable.
+      if (COOP && !zoomKey) { flashHint(HINT_ZOOM); return; }
       e.preventDefault();
       if (zoomKey) {
         const d = Math.max(-ZOOM.deltaClamp, Math.min(ZOOM.deltaClamp, e.deltaY));
@@ -522,6 +550,9 @@ export default function Canvas() {
     const onTouchMove = (e) => {
       if (e.pointerType !== 'touch' || !touches.has(e.pointerId)) return;
       touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      // One finger dragging in cooperative mode: the page is scrolling, not the
+      // board — nudge the user toward the two-finger gesture.
+      if (COOP && touches.size === 1) { flashHint(HINT_TOUCH); return; }
       if (touches.size !== 2 || !pinch) return;
       e.preventDefault();
       const m = pinchMetrics();
@@ -585,6 +616,7 @@ export default function Canvas() {
       className="canvas-root"
       ref={rootRef}
       data-fit={fit}
+      data-coop={COOP ? '' : undefined}
       data-cv-accent={accent ? accentId : undefined}
       data-cv-bg={bgColor ? 'custom' : undefined}
       style={bgStyle}
@@ -607,6 +639,7 @@ export default function Canvas() {
         </>
       )}
       <Lightbox />
+      {COOP && <div className="cv-gesture-hint" ref={hintRef} aria-hidden="true"><span /></div>}
     </div>
   );
 }
