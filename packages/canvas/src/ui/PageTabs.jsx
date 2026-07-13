@@ -80,8 +80,9 @@ export default function PageTabs() {
 
   const active = pages.find((p) => p.id === activePageId) || pages[0];
 
-  // Viewers can't add pages, so a single-page board has nothing to navigate.
-  if (!editing && pages.length <= 1) return null;
+  // Viewers can't add pages, so a single-page board only has something to
+  // navigate if that page has sections to jump to.
+  if (!editing && pages.length <= 1 && sectionsFor(active ? active.id : activePageId).length === 0) return null;
 
   const commitRename = () => {
     const v = inputRef.current ? inputRef.current.value : '';

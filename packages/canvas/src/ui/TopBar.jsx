@@ -16,15 +16,18 @@ const THEME = {
 };
 
 export default function TopBar() {
-  const { brand, readOnly, EDITABLE, eng, theme, pages } = useCanvas();
+  const { brand, readOnly, EDITABLE, eng, theme, pages, nodes } = useCanvas();
   const mode = theme?.mode;
   const toggleTheme = theme?.toggle;
   const th = THEME[mode] || THEME.system;
 
   // Nothing renders for a plain read-only single-page board (no edit chip, no
-  // theme toggle, and PageTabs bails for one page) — so don't paint an empty
-  // panel (the stray little square). Mirror the child visibility conditions.
-  const hasContent = EDITABLE || !!theme || pages.length > 1;
+  // theme toggle, and PageTabs bails for one page with no sections) — so don't
+  // paint an empty panel (the stray little square). Mirror the child visibility
+  // conditions. A single page is always the active one, so its sections live in
+  // `nodes`.
+  const hasSections = nodes.some((n) => n.type === "frame" || n.anchor);
+  const hasContent = EDITABLE || !!theme || pages.length > 1 || hasSections;
   if (!hasContent) return null;
 
   return (
