@@ -559,6 +559,11 @@ export default function Canvas() {
       if (e.metaKey || e.ctrlKey) {
         const mk = e.key.toLowerCase();
         if (mk === '0') { e.preventDefault(); eng.zoomTo(1); return; }
+        // Undo / redo (⌘Z / ⇧⌘Z, plus Ctrl+Y for redo on Windows). Only in edit
+        // mode; while a field/text node is focused this handler has already
+        // bailed above, so the browser's native field undo still wins there.
+        if (mk === 'z') { if (!S.readOnly) { e.preventDefault(); if (e.shiftKey) eng.redo(); else eng.undo(); } return; }
+        if (mk === 'y') { if (!S.readOnly) { e.preventDefault(); eng.redo(); } return; }
         if (mk === 'c') { if (S.selected.length) { e.preventDefault(); eng.copySelected(); } return; }
         // Paste is handled by the native `paste` event (below) so it can also
         // pull image/gif/svg/video off the system clipboard — don't preventDefault

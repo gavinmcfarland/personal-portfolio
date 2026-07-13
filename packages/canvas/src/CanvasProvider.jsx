@@ -288,6 +288,14 @@ export function CanvasProvider({
      React state above; the others are parked here until switched to. */
   const pageData = useRef(init.pagesData).current;
 
+  /* Undo / redo. History is kept per page (each board undoes independently) and
+     tracks only the content model (nodes + shapes) — the model is treated
+     immutably throughout the engine (every mutation replaces the array and the
+     changed objects), so a snapshot is just the current array references, no
+     deep copy needed. `restoring` guards the recorder while an undo/redo applies
+     its snapshot so the restore itself isn't recorded as a new change. */
+  const history = useRef({ byPage: {}, restoring: false }).current;
+
   const viewRef = useRef({ ...active0.view }).current;
   const targetRef = useRef({ ...active0.view }).current;
   const actionRef = useRef(null);
@@ -818,6 +826,76 @@ export function CanvasProvider({
       } else {
         flyTo(id);
       }
+    }
+
+    /* ── Undo / redo ──────────────────────────────────────────────
+       The recorder (recordHistory, driven by an effect on nodes/shapes) captures
+       one entry per committed change; undo/redo swap snapshots in and out. Text
+       typing fires a state change per keystroke, so consecutive edits that touch
+       only a single node's text are coalesced into a single undo step. */
+    const HISTORY_MAX = 100;
+    function histFor(pageId) {
+      return history.byPage[pageId] || (history.byPage[pageId] = { undo: [], redo: [], base: null, coalesceKey: null });
+    }
+    /* If the transition from `base` to the current model changes nothing but one
+       node's `text`, return a stable key for that node so successive keystrokes
+       collapse into one history entry; otherwise null (each change stands alone). */
+    function coalesceKeyFor(base, curNodes, curShapes) {
+      if (base.shapes !== curShapes || base.nodes.length !== curNodes.length) return null;
+      const bMap = new Map(base.nodes.map((n) => [n.id, n]));
+      let changed = null;
+      for (const n of curNodes) {
+        const b = bMap.get(n.id);
+        if (!b) return null;              // id set changed (add/remove/replace)
+        if (b !== n) { if (changed) return null; changed = [b, n]; } // >1 node changed
+      }
+      if (!changed) return null;
+      const [b, n] = changed;
+      if (b.type !== n.type || b.text === n.text) return null;
+      for (const k in b) { if (k !== 'text' && b[k] !== n[k]) return null; }
+      for (const k in n) { if (k !== 'text' && b[k] !== n[k]) return null; }
+      return 'text:' + n.id;
+    }
+    function recordHistory(curNodes, curShapes, pageId) {
+      const h = histFor(pageId);
+      if (history.restoring) { h.base = { nodes: curNodes, shapes: curShapes }; history.restoring = false; return; }
+      if (!h.base) { h.base = { nodes: curNodes, shapes: curShapes }; return; } // first sight of this page
+      if (h.base.nodes === curNodes && h.base.shapes === curShapes) return;     // no-op render / page revisit
+      const key = coalesceKeyFor(h.base, curNodes, curShapes);
+      if (key !== null && key === h.coalesceKey) {
+        // Same text field still being edited: advance the baseline but keep the
+        // pre-edit snapshot already on the stack as the single undo target.
+        h.base = { nodes: curNodes, shapes: curShapes };
+        return;
+      }
+      h.undo.push(h.base);
+      if (h.undo.length > HISTORY_MAX) h.undo.shift();
+      h.redo.length = 0;
+      h.base = { nodes: curNodes, shapes: curShapes };
+      h.coalesceKey = key;
+    }
+    function applyHistorySnapshot(snap) {
+      history.restoring = true;
+      setNodes(snap.nodes); setShapes(snap.shapes);
+      deselect(); setEditingId(null); setCtxMenu(null); setGridEditId(null); setFullscreen(null);
+    }
+    function undo() {
+      if (!EDITABLE || S.readOnly) return;
+      const h = histFor(S.activePageId);
+      if (!h.undo.length) return;
+      h.redo.push({ nodes: S.nodes, shapes: S.shapes });
+      const snap = h.undo.pop();
+      h.base = snap; h.coalesceKey = null;
+      applyHistorySnapshot(snap);
+    }
+    function redo() {
+      if (!EDITABLE || S.readOnly) return;
+      const h = histFor(S.activePageId);
+      if (!h.redo.length) return;
+      h.undo.push({ nodes: S.nodes, shapes: S.shapes });
+      const snap = h.redo.pop();
+      h.base = snap; h.coalesceKey = null;
+      applyHistorySnapshot(snap);
     }
 
     /* ── Persistence ──────────────────────────────────────────── */
@@ -1539,6 +1617,7 @@ export function CanvasProvider({
       addLinkFromUrl, pasteLink, openLink,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startEditing, stopEditing, setChrome,
+      recordHistory, undo, redo,
       nextZ, backZ,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1618,6 +1697,11 @@ export function CanvasProvider({
 
   /* ── Keep chrome + persistence in sync with the model ───────── */
   useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, eng]);
+
+  /* ── Record undo/redo history on every committed content change ──
+     One entry per change (bursts of typing coalesce, see recordHistory). Keyed
+     on the model only — selection/view changes aren't undoable. */
+  useEffect(() => { eng.recordHistory(nodes, shapes, activePageId); }, [nodes, shapes, activePageId, eng]);
 
   /* ── Background auto-publish on content changes ──────────────
      Persists edits through the host adapter without a save button. Keyed on

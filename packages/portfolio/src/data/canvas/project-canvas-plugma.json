@@ -6,103 +6,36 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": -310.82860237486227,
-        "y": 697.1478872517283,
-        "scale": 0.8628265789568828
+        "x": -331.4298795240361,
+        "y": 1010.9794130574885,
+        "scale": 0.7348820509209771
       },
       "nodes": [
         {
           "id": "intro",
           "type": "md",
-          "x": 778.2468064085065,
-          "y": -867.549635519496,
+          "x": 919.5954468290698,
+          "y": -1277.2099528199608,
           "z": 62,
           "w": 340,
           "text": "# Plugma\n\nA zero-config CLI for building Figma plugins, with hot-module reloading that actually works.\n\n[Node.js] [TypeScript] [Vite] [React] [Svelte] [Vue]"
         },
         {
-          "id": "note-0",
-          "type": "sticky",
-          "x": 1366.1150538212883,
-          "y": -699.5809045144013,
-          "z": 46,
-          "color": "yellow",
-          "text": "True HMR across the UI and plugin sandbox — no full reloads"
-        },
-        {
-          "id": "note-1",
-          "type": "sticky",
-          "x": 1664.6503835883468,
-          "y": -609.1589660883685,
-          "z": 47,
-          "color": "blue",
-          "text": "Framework-agnostic: React, Svelte and Vue out of the box"
-        },
-        {
-          "id": "note-2",
-          "type": "sticky",
-          "x": 1551.762841697971,
-          "y": -481.7371093149128,
-          "z": 5,
-          "color": "green",
-          "text": "Zero config to start; a single command to build and publish"
-        },
-        {
-          "id": "n25-tblock",
-          "type": "tblock",
-          "x": 1605.4021893395502,
-          "y": -731.547656804576,
-          "z": 45,
-          "text": "Features supported",
-          "w": 346.4863948419979,
-          "font": "script"
-        },
-        {
-          "id": "n26-sticky",
-          "type": "sticky",
-          "x": 1247.188131216089,
-          "y": -480.9609300595031,
-          "z": 52,
-          "color": "yellow",
-          "text": "Hello"
-        },
-        {
-          "id": "n27-code",
-          "type": "code",
-          "x": 552.7024931692752,
-          "y": -441.22162468312604,
-          "z": 54,
-          "w": 372.26282295360716,
-          "text": "npm create plugma@latest add",
-          "lang": "bash",
-          "wrap": 0
-        },
-        {
           "id": "n28-md",
           "type": "md",
-          "x": 1388.7826939213655,
-          "y": -234.46265793995178,
+          "x": 960.9134108730175,
+          "y": -595.3256980751557,
           "z": 55,
           "w": 454.83307303997344,
           "text": "- `install <pkg-manager?>`: Install dependencies\n- `no-install`: Skip dependency installation\n- `verbose`: Show detailed logs\n- `debug`: Enable debug mode"
         },
         {
-          "id": "n29-tblock",
-          "type": "tblock",
-          "x": 1285.7028986072296,
-          "y": -767.5124066095633,
-          "z": 56,
-          "text": "Features supported",
-          "w": 261.5990091908047,
-          "font": "script"
-        },
-        {
           "id": "n30-code",
           "type": "code",
-          "x": 760.2628935415414,
-          "y": -336.64105133970145,
+          "x": 755.9825118961913,
+          "y": -939.6921352985527,
           "z": 57,
-          "w": 433.76899830964373,
+          "w": 460.1035974634269,
           "text": "import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig(({ mode, context }) => (\n  return {\n    plugins: context == \"ui\" ? [react()] : []\n  };\n}))",
           "lang": "js",
           "wrap": 0
@@ -110,8 +43,8 @@
         {
           "id": "n32-link",
           "type": "link",
-          "x": 1190.9767534767639,
-          "y": -1070.0800342310129,
+          "x": 1918.592163876875,
+          "y": -1103.127949495479,
           "z": 59,
           "w": 280,
           "url": "https://screen.studio/share/4rh7VCM7",
@@ -121,48 +54,23 @@
           "favicon": "https://screen.studio/icon.png"
         },
         {
-          "id": "n39-sound",
-          "type": "sound",
-          "x": 1870.2424357127757,
-          "y": -840.5263856256187,
+          "id": "n33-tblock",
+          "type": "tblock",
+          "x": 1872.7801155907523,
+          "y": -1189.7510554008365,
+          "z": 63,
+          "text": "Links",
+          "fontSize": 42,
+          "font": "script"
+        },
+        {
+          "id": "n37-sticky",
+          "type": "sticky",
+          "x": 1387.3804822142379,
+          "y": -1092.3288426140855,
           "z": 67,
-          "w": 260,
-          "h": 56,
-          "src": "idb:project-canvas-plugma-media/mmrj9qmi4-1",
-          "name": "Make It From Rectangles",
-          "dur": 175.439979
-        },
-        {
-          "id": "n40-video",
-          "type": "video",
-          "x": 1907.666227390112,
-          "y": -499.1739156487322,
-          "z": 68,
-          "w": 360,
-          "h": 203,
-          "assets": [
-            {
-              "kind": "video",
-              "src": "/canvas-assets/1f24956e6bbf6ddf.mp4",
-              "alt": "Generate_a_short_video_of_of_m.mp4"
-            }
-          ]
-        },
-        {
-          "id": "n41-image",
-          "type": "image",
-          "x": 2119.7228731342293,
-          "y": -732.6193049173854,
-          "z": -1,
-          "w": 360,
-          "h": 360,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/b8b19eca698a008e.png",
-              "alt": "ChatGPT Image Jun 11, 2026, 09_08_39 PM.png"
-            }
-          ]
+          "color": "yellow",
+          "text": "Zero config"
         }
       ],
       "shapes": []
