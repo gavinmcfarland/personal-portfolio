@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": -331.4298795240361,
-        "y": 1010.9794130574885,
-        "scale": 0.7348820509209771
+        "x": -603.6196572979686,
+        "y": 1359.2436818198662,
+        "scale": 0.9941733374719344
       },
       "nodes": [
         {
@@ -43,7 +43,7 @@
         {
           "id": "n32-link",
           "type": "link",
-          "x": 1918.592163876875,
+          "x": 2097.5146330962743,
           "y": -1103.127949495479,
           "z": 59,
           "w": 280,
@@ -56,10 +56,10 @@
         {
           "id": "n33-tblock",
           "type": "tblock",
-          "x": 1872.7801155907523,
-          "y": -1189.7510554008365,
+          "x": 1390.8798110217117,
+          "y": -1196.0467054241074,
           "z": 63,
-          "text": "Links",
+          "text": "Features",
           "fontSize": 42,
           "font": "script"
         },
@@ -71,9 +71,56 @@
           "z": 67,
           "color": "yellow",
           "text": "Zero config"
+        },
+        {
+          "id": "n39-sticky",
+          "type": "sticky",
+          "x": 1497.8800755863062,
+          "y": -964.3609241283707,
+          "z": 69,
+          "color": "pink",
+          "text": "HMR that actually works"
+        },
+        {
+          "id": "n40-sticky",
+          "type": "sticky",
+          "x": 1388.4295918465882,
+          "y": -887.431704239697,
+          "z": 70,
+          "color": "blue",
+          "text": "React · Svelte · Vue"
+        },
+        {
+          "id": "n41-sticky",
+          "type": "sticky",
+          "x": 1647.8068207111926,
+          "y": -861.2413472184279,
+          "z": 71,
+          "color": "green",
+          "text": "Powered by Vite"
+        },
+        {
+          "id": "n42-sticky",
+          "type": "sticky",
+          "x": 1732.106098748792,
+          "y": -735.9624409999578,
+          "z": 72,
+          "color": "purple",
+          "text": "dev · build · release"
+        },
+        {
+          "id": "n43-tblock",
+          "type": "tblock",
+          "x": 2109.3485457246697,
+          "y": -1209.600469952624,
+          "z": 73,
+          "text": "Links",
+          "fontSize": 42,
+          "font": "script"
         }
       ],
       "shapes": []
     }
-  ]
+  ],
+  "savedAt": 1783952016736
 }

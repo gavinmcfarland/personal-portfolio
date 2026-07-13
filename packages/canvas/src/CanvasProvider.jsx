@@ -152,11 +152,18 @@ function freshState(base, homeId) {
 function loadInitial({ base, initialState, editable, storageKey, homeId, managedTypes }) {
   const usable = (s) => s && (Array.isArray(s.nodes) || Array.isArray(s.pages));
 
-  // Unpublished edits take precedence so you can keep iterating in edit mode.
+  // Unpublished edits take precedence so you can keep iterating in edit mode —
+  // unless the committed file carries a newer `savedAt`, which means it was
+  // edited outside this browser (e.g. in code) after the last autosave. In that
+  // case the file wins so those edits aren't shadowed by stale localStorage.
   if (editable) {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
-      if (usable(saved)) return buildFromSaved(base, saved, homeId, managedTypes);
+      if (usable(saved)) {
+        const committedNewer =
+          usable(initialState) && (initialState.savedAt || 0) > (saved.savedAt || 0);
+        if (!committedNewer) return buildFromSaved(base, saved, homeId, managedTypes);
+      }
     } catch {
       /* ignore corrupt storage */
     }
@@ -967,6 +974,10 @@ export function CanvasProvider({
       });
       const snap = { version: 2, activePage: S.activePageId, pages: out };
       if (S.bgColor) snap.bgColor = S.bgColor;
+      // Stamp when this snapshot was produced so loadInitial can tell an
+      // in-code edit of the committed file apart from a stale localStorage
+      // autosave (see the savedAt comparison there).
+      snap.savedAt = Date.now();
       return snap;
     }
     /* Board-wide background colour override; null restores the theme default. */
