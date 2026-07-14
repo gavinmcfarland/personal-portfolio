@@ -5,6 +5,7 @@ import Projects from "./components/Projects";
 import Experience from "./components/Experience";
 import Awards from "./components/Awards";
 import Education from "./components/Education";
+import PastExperience from "./components/PastExperience";
 import Connect from "./components/Connect";
 
 function App() {
@@ -16,6 +17,8 @@ function App() {
           <Intro />
           <Projects />
           <Awards />
+
+          <PastExperience />
 
           <Connect />
         </main>
