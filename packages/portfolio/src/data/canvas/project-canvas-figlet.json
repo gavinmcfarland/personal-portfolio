@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 521.8502367771789,
-        "y": 307.64467287272794,
-        "scale": 0.8268350472366498
+        "x": 355.72658630445864,
+        "y": 402.04127391090896,
+        "scale": 0.4881541381209683
       },
       "nodes": [
         {
@@ -37,10 +37,59 @@
           "z": 26,
           "color": "yellow",
           "text": "Figma kindly awarded me a grant to build this Plugin."
+        },
+        {
+          "id": "n5-image",
+          "type": "image",
+          "x": 149.55959694999137,
+          "y": -204.2701487696579,
+          "z": -1,
+          "w": 600,
+          "h": 450,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/7f1d6506ba25e361.png",
+              "alt": "Slide 4_3 - 4.png"
+            }
+          ]
+        },
+        {
+          "id": "n6-image",
+          "type": "image",
+          "x": 1974.1326454515138,
+          "y": -181.2915376231234,
+          "z": 32,
+          "w": 600,
+          "h": 450,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/df0004e0ca480b6c.png",
+              "alt": "Slide 4_3 - 7.png"
+            }
+          ]
+        },
+        {
+          "id": "n7-image",
+          "type": "image",
+          "x": 2665.618166060244,
+          "y": -183.89813885862043,
+          "z": 33,
+          "w": 600,
+          "h": 450,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/0dffe4bda16d8715.png",
+              "alt": "Slide 4_3 - 6.png"
+            }
+          ]
         }
       ],
       "shapes": []
     }
   ],
-  "bgColor": "#F5A524"
+  "bgColor": "#F5A524",
+  "savedAt": 1784123106517
 }

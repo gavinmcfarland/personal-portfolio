@@ -1174,7 +1174,7 @@ export function CanvasProvider({
       let w, h;
       if (assets.length === 1) {
         const nat = assets[0].nat || { w: 200, h: 150 };
-        const MAX = 360;
+        const MAX = 600;
         const k = nat.w > MAX || nat.h > MAX ? MAX / Math.max(nat.w, nat.h) : 1;
         w = Math.round(nat.w * k); h = Math.round(nat.h * k);
       } else {
@@ -1193,6 +1193,34 @@ export function CanvasProvider({
       if (!n || (n.type !== 'image' && n.type !== 'video') || !assets.length) return;
       updateNode(id, { assets: [...(n.assets || []), ...assets.map(cleanAsset)] });
       selectNode(id);
+    }
+    /* Restore a lone-asset media node to its natural pixel size, uncapped. `nat`
+       isn't persisted, so re-measure from the stored bytes. Grids have no single
+       original size, so multi-asset nodes are skipped. The box grows/shrinks
+       around its centre. */
+    async function resetMediaSize(id) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || (n.type !== 'image' && n.type !== 'video') || !n.assets || n.assets.length !== 1) return;
+      const a = n.assets[0];
+      try {
+        const src = await resolveMediaSrc(a.src);
+        if (!src) return;
+        let nat;
+        if (a.kind === 'video') nat = await measureVideo(src);
+        else if (a.svg) nat = measureSvgText(await (await fetch(src)).text());
+        else nat = await measure(src);
+        const cur = S.nodes.find((x) => x.id === id); // re-read: measuring is async
+        if (!cur || !nat.w || !nat.h) return;
+        updateNode(id, {
+          x: Math.round(cur.x + (cur.w - nat.w) / 2),
+          y: Math.round(cur.y + (cur.h - nat.h) / 2),
+          w: nat.w, h: nat.h,
+        });
+        selectNode(id);
+      } catch (err) {
+        console.error('[canvas] reset media size failed', err);
+      }
     }
     /* Legacy single-asset entry point retained for the URL/paste flows: wrap one
        ingested asset in a fresh node. */
@@ -1624,7 +1652,7 @@ export function CanvasProvider({
       copySelected, paste, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
-      isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
+      isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
       addLinkFromUrl, pasteLink, openLink,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startEditing, stopEditing, setChrome,

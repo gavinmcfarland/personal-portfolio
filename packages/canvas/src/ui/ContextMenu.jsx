@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Maximize, Copy, CopyPlus, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
+import { Maximize, Scaling, Copy, CopyPlus, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
@@ -25,7 +25,8 @@ export default function ContextMenu() {
   // A media node opens full-screen unless it's a lone SVG (vector art shown full
   // size on the board already); a grid of two+ assets always opens the gallery.
   const isMedia = node && (node.type === 'image' || node.type === 'video');
-  const loneSvg = isMedia && node.assets && node.assets.length === 1 && node.assets[0].svg;
+  const singleAsset = isMedia && node.assets && node.assets.length === 1;
+  const loneSvg = singleAsset && node.assets[0].svg;
   const x = Math.min(ctxMenu.x, innerWidth - 190);
   const y = Math.min(ctxMenu.y, innerHeight - 190);
 
@@ -33,12 +34,20 @@ export default function ContextMenu() {
 
   return (
     <div className="panel show" id="ctxmenu" style={{ left: x, top: y }}>
-      {isMedia && !loneSvg && (
+      {isMedia && (!loneSvg || singleAsset) && (
         <>
-          <button onClick={run(() => eng.openFullscreen(node.id))}>
-            <Maximize />
-            View full screen
-          </button>
+          {!loneSvg && (
+            <button onClick={run(() => eng.openFullscreen(node.id))}>
+              <Maximize />
+              View full screen
+            </button>
+          )}
+          {singleAsset && (
+            <button onClick={run(() => eng.resetMediaSize(node.id))}>
+              <Scaling />
+              Set to original size
+            </button>
+          )}
           <div className="ctxsep" />
         </>
       )}
