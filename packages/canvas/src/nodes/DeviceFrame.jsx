@@ -49,9 +49,9 @@ function BrowserBar({ node }) {
         <i />
       </span>
       <span className="cv-df-nav">
-        <ChevronLeft />
-        <ChevronRight />
-        <RotateCw />
+        <ChevronLeft strokeWidth={2.2} />
+        <ChevronRight strokeWidth={2.2} />
+        <RotateCw strokeWidth={2.2} />
       </span>
       <div className="cv-df-url">
         <FrameField node={node} field="frameUrl" value={node.frameUrl || 'example.com'} placeholder="example.com" className="cv-df-url-field" />
@@ -66,17 +66,20 @@ function PluginBar({ node }) {
   return (
     <div className="cv-df-bar cv-df-bar--plugin">
       <span className="cv-df-icon">
-        <Code />
+        <Code strokeWidth={2.2} />
       </span>
       <FrameField node={node} field="frameTitle" value={node.frameTitle || 'Plugin'} placeholder="Plugin" className="cv-df-title" />
       <span className="cv-df-close">
-        <X />
+        <X strokeWidth={2.2} />
       </span>
     </div>
   );
 }
 
 export default function DeviceFrame({ node, children }) {
+  // --cv-df-bar (the chrome-bar height, and the unit every chrome metric derives
+  // from) is set on the node element by MediaNode so the node's corner radius can
+  // scale off it too; here it's just inherited.
   return (
     <div className={`cv-df cv-df--${node.frame}`}>
       {node.frame === 'plugin' ? <PluginBar node={node} /> : <BrowserBar node={node} />}

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { useCanvas } from './CanvasProvider';
 import { resolveGrid } from './nodes/common';
+import { frameBarH } from './constants';
 
 /* Screen-space dividers for editing a media grid's proportions. Rendered in the
    chrome layer (not inside the zoomed node) so each divider keeps a constant
@@ -254,9 +255,15 @@ export default function Chrome() {
         };
       }
     }
+    // A fixed-height chrome bar means aspect-lock must preserve the media's ratio
+    // (box minus bar), not the box's. In scale mode the bar is a constant
+    // fraction of the box, so the plain box ratio already keeps the media's —
+    // frameBar 0.
+    const frameBar = n.frame && !n.frameScale ? frameBarH(n.frame) : 0;
     actionRef.current = {
       type: 'resize', id: n.id, corner, sx: e.clientX, sy: e.clientY,
-      ox: +n.x, oy: +n.y, ow, oh: +n.h, ofs, mdType: n.type, loneSvg, crop,
+      ox: +n.x, oy: +n.y, ow, oh: +n.h, ofs, mdType: n.type, loneSvg, crop, frameBar,
+      frameScale: n.frameScale || 0,
     };
   };
 

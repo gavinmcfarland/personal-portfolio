@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { useRegister, useMediaSrc, resolveGrid } from './common';
+import { frameBarH } from '../constants';
 import VideoPlayer from './VideoPlayer';
 import DeviceFrame from './DeviceFrame';
 
@@ -52,8 +53,14 @@ function MediaNode({ node }) {
     // which renders as transparent vector art with no card to frame.
     const framed = node.frame && !a.svg;
     const media = <MediaContent nodeId={node.id} asset={a} index={0} bare={false} mediaStyle={mediaStyle} />;
+    // The chrome-bar height (--cv-df-bar) lives on the node so both the frame
+    // (which inherits it) and the node's own corner radius scale off it. Fixed
+    // mode: a constant world-px bar; scale mode: a fraction of the node height.
+    const barStyle = framed
+      ? { '--cv-df-bar': `${node.frameScale ? Math.max(1, (node.h || 0) * node.frameScale) : frameBarH(node.frame)}px` }
+      : null;
     return (
-      <div ref={setRef} className={framed ? `${cls} framed` : cls} {...dataProps} style={{ ...style, width: w, height: h }}>
+      <div ref={setRef} className={framed ? `${cls} framed` : cls} {...dataProps} style={{ ...style, width: w, height: h, ...barStyle }}>
         {framed ? <DeviceFrame node={node}>{media}</DeviceFrame> : media}
       </div>
     );

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Maximize, Scaling, AppWindow, Puzzle, SquareX, Copy, CopyPlus, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
+import { Maximize, Scaling, AppWindow, Puzzle, SquareX, Expand, Copy, CopyPlus, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
@@ -58,6 +58,12 @@ export default function ContextMenu() {
                 <Puzzle />
                 Plugin frame
               </button>
+              {node.frame && (
+                <button className={node.frameScale ? 'active' : ''} onClick={run(() => eng.toggleFrameScale(node.id))}>
+                  <Expand />
+                  Scale with object
+                </button>
+              )}
               {node.frame && (
                 <button onClick={run(() => eng.toggleFrame(node.id, node.frame))}>
                   <SquareX />

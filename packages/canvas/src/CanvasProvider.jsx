@@ -91,7 +91,7 @@ function normalizeSaved(n) {
   if (n.type === 'image' || n.type === 'video') {
     const grid = normalizeGrid(n.grid);
     const crop = normalizeCrop(n.crop);
-    return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n), ...(grid ? { grid } : {}), ...(crop ? { crop } : {}), ...(n.frame ? { frame: n.frame } : {}), ...(n.frameUrl ? { frameUrl: n.frameUrl } : {}), ...(n.frameTitle ? { frameTitle: n.frameTitle } : {}) };
+    return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n), ...(grid ? { grid } : {}), ...(crop ? { crop } : {}), ...(n.frame ? { frame: n.frame } : {}), ...(n.frameUrl ? { frameUrl: n.frameUrl } : {}), ...(n.frameTitle ? { frameTitle: n.frameTitle } : {}), ...(n.frameScale ? { frameScale: n.frameScale } : {}) };
   }
   if (n.type === 'sound') return { ...base, w: n.w || 260, h: n.h || 56, src: n.src || '', name: n.name || '', dur: n.dur || 0 };
   if (n.type === 'link') return { ...base, w: n.w || 280, url: n.url || '', title: n.title || '', desc: n.desc || '', image: n.image || '', siteName: n.siteName || '', favicon: n.favicon || '' };
@@ -866,8 +866,28 @@ export function CanvasProvider({
       const newBar = next ? frameBarH(next) : 0;
       updateNode(id, {
         frame: next || undefined,
+        // Dropping the frame also drops any scale setting.
+        ...(next ? {} : { frameScale: undefined }),
         h: Math.max(newBar + 20, +n.h - oldBar + newBar),
       });
+      selectNode(id);
+    }
+    /* Toggle whether a frame's chrome scales with the object. Off (fixed): the
+       bar is a constant world-px height. On: the bar is stored as a fraction of
+       the node height (captured now, so enabling doesn't jump), and tracks the
+       media size as it's resized. Disabling restores the fixed bar while keeping
+       the media's current size, mirroring toggleFrame's height bookkeeping. */
+    function toggleFrameScale(id) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || !n.frame) return;
+      if (n.frameScale) {
+        const oldBar = +n.h * n.frameScale;
+        const newBar = frameBarH(n.frame);
+        updateNode(id, { frameScale: undefined, h: Math.max(newBar + 20, +n.h - oldBar + newBar) });
+      } else {
+        updateNode(id, { frameScale: frameBarH(n.frame) / +n.h });
+      }
       selectNode(id);
     }
     function deleteSelected() {
@@ -1091,6 +1111,7 @@ export function CanvasProvider({
         if (n.frame) o.frame = n.frame;
         if (n.frameUrl) o.frameUrl = n.frameUrl;
         if (n.frameTitle) o.frameTitle = n.frameTitle;
+        if (n.frameScale) o.frameScale = Math.round(n.frameScale * 10000) / 10000;
       }
       else if (n.type === 'sound') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.name) o.name = n.name; if (n.dur) o.dur = n.dur; }
       else if (n.type === 'link') {
@@ -1376,10 +1397,13 @@ export function CanvasProvider({
         else nat = await measure(src);
         const cur = S.nodes.find((x) => x.id === id); // re-read: measuring is async
         if (!cur || !nat.w || !nat.h) return;
-        // A device frame's chrome bar sits above the media, so size the box to
-        // the media's natural extent plus the bar to keep the media itself 1:1.
-        const bar = cur.frame ? frameBarH(cur.frame) : 0;
-        const w = nat.w, h = nat.h + bar;
+        // A device frame's chrome bar sits above the media, so size the box so
+        // the media area equals its natural size. In scale mode the bar is a
+        // fraction of the box (media = box·(1−f)); otherwise it's a fixed px bar.
+        const w = nat.w;
+        const h = cur.frameScale
+          ? Math.round(nat.h / (1 - cur.frameScale))
+          : nat.h + (cur.frame ? frameBarH(cur.frame) : 0);
         updateNode(id, {
           x: Math.round(cur.x + (cur.w - w) / 2),
           y: Math.round(cur.y + (cur.h - h) / 2),
@@ -1816,7 +1840,7 @@ export function CanvasProvider({
       selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, setSnapGuides,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
-      bringFront, sendBack, toggleAnchor, toggleFrame, deleteSelected, deleteTarget,
+      bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, deleteSelected, deleteTarget,
       copySelected, paste, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,

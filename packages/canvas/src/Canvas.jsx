@@ -490,8 +490,14 @@ export default function Canvas() {
           // Aspect-locked unless freed. Multi-asset grids (no crop context)
           // also free-resize under Cmd — their cover-cropped cells absorb the
           // aspect change. A freed lone SVG letterboxes (it renders `contain`).
+          // A device frame's chrome bar (a.frameBar) is fixed height, so lock the
+          // media's ratio — box minus bar — and add the bar back, else the media
+          // gets clipped as the box ratio drifts from the media's.
           const free = e.shiftKey || ((e.metaKey || e.ctrlKey) && !a.loneSvg && !a.crop);
-          h = free ? Math.max(40, hRaw) : Math.max(1, Math.round(w * (a.oh / a.ow)));
+          const bar = a.frameBar || 0;
+          h = free
+            ? Math.max(40, hRaw)
+            : bar + Math.max(1, Math.round(w * ((a.oh - bar) / a.ow)));
         } else if (a.mdType !== 'md' && a.mdType !== 'tblock' && a.mdType !== 'code' && a.mdType !== 'link') {
           if (e.shiftKey) {
             // Shift locks the box aspect, following the dominant drag axis.
@@ -504,6 +510,10 @@ export default function Canvas() {
         }
         el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
         if (h != null) { el.style.height = h + 'px'; el.dataset.h = h; a.h = h; }
+        // Scale-mode frame: grow the chrome bar (and thus the whole chrome + the
+        // node's corner radius, which derive from --cv-df-bar on the node) live
+        // with the box — React only recomputes it on release.
+        if (a.frameScale && h != null) el.style.setProperty('--cv-df-bar', h * a.frameScale + 'px');
         // Anchor: centered resizes mirror around the box middle; otherwise
         // left/top handles pin the opposite corner. Height-auto nodes keep
         // their top edge.
