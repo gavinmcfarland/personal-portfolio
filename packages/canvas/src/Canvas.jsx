@@ -366,9 +366,16 @@ export default function Canvas() {
         eng.applyView(); eng.markActive(); return;
       }
       if (a.type === 'move') {
-        const dx = (e.clientX - a.sx) / scale(), dy = (e.clientY - a.sy) / scale();
-        a.dx = dx; a.dy = dy;
+        let dx = (e.clientX - a.sx) / scale(), dy = (e.clientY - a.sy) / scale();
         if (Math.abs(dx) + Math.abs(dy) > 2) a.moved = 1;
+        // Snap to nearby objects' edges/centres once the drag is real (guides
+        // draw in the chrome layer); holding Cmd/Ctrl drags freely.
+        if (a.moved && !(e.metaKey || e.ctrlKey)) {
+          const snapped = eng.snapMoveDelta(a.items, dx, dy);
+          dx = snapped.dx; dy = snapped.dy;
+          eng.setSnapGuides(snapped.guides);
+        } else eng.setSnapGuides(null);
+        a.dx = dx; a.dy = dy;
         // Alt-drag: the instant the drag begins, drop a copy at the origin so the
         // original stays visible while the dragged items carry on. Selection stays
         // on the dragged items (select:false) so they remain the ones being moved.
@@ -448,6 +455,7 @@ export default function Canvas() {
         if (a.linkId && !a.moved) eng.openLink(a.linkId);      // tap a link card → open it
       }
       if (a.type === 'move') {
+        eng.setSnapGuides(null);
         const nodePatches = {}, shapePatches = {};
         for (const it of a.items) {
           if (it.kind === 'node') {

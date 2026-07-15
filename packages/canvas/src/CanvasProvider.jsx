@@ -281,7 +281,7 @@ export function CanvasProvider({
   const viewportRef = useRef(null);
   const worldRef = useRef(null);
   const zoomLabelRef = useRef(null);
-  const chromeRef = useRef({ sel: null, del: null, edit: null, rz: null, hov: null, marq: null, grid: null });
+  const chromeRef = useRef({ sel: null, del: null, edit: null, rz: null, hov: null, marq: null, grid: null, guides: null });
   const chrome = chromeRef.current;
   const gridGeomRef = useRef(null); // { id, colFr, rowFr } of the grid being proportion-edited
   const nodeEls = useRef(new Map()).current; // id → element
@@ -583,6 +583,7 @@ export function CanvasProvider({
       });
       placeHover();
       placeGridEdit();
+      placeSnapGuides();
       if (!S.selected.length || !chrome.sel) { hideSelChrome(); return; }
       // One box around the union of everything selected.
       let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, any = false;
@@ -662,6 +663,123 @@ export function CanvasProvider({
           return { kind: 'shape', id: it.id, el };
         })
         .filter(Boolean);
+    }
+
+    /* ── Snap-to-align while dragging ─────────────────────────────
+       A move gesture's items snap, as one bounding box, to the edges and
+       centres of the other on-screen objects; every alignment shows as a guide
+       line in the chrome layer. The snap radius is constant in screen pixels
+       so the pull feels the same at any zoom. */
+    const SNAP_PX = 8; // snap radius, screen px
+    const SNAP_EPS = 0.5; // world-unit tolerance when collecting aligned guides
+    let snapGuides = null; // [{axis:'v'|'h', v, a, b}] world coords, or null
+    /* Union bbox (world) of a move gesture's items at their grab position.
+       getBBox ignores a shape's transient mid-drag translate, so node and shape
+       boxes both come out at the un-dragged origin. */
+    function moveBBox(items) {
+      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+      for (const it of items) {
+        let bx, by, bw, bh;
+        if (it.kind === 'node') { bx = it.ox; by = it.oy; bw = it.el.offsetWidth; bh = it.el.offsetHeight; }
+        else { const bb = it.el.getBBox(); bx = bb.x; by = bb.y; bw = bb.width; bh = bb.height; }
+        x0 = Math.min(x0, bx); y0 = Math.min(y0, by);
+        x1 = Math.max(x1, bx + bw); y1 = Math.max(y1, by + bh);
+      }
+      return x0 > x1 ? null : { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+    }
+    /* Nudge a move delta so the dragged bbox lands exactly on a nearby object's
+       edge or centre (each of left/centre/right can meet each of the target's,
+       per axis), and describe the resulting alignments as guide lines. Only
+       on-screen objects attract — matching what the user can see line up.
+       Returns { dx, dy, guides }. */
+    function snapMoveDelta(items, dx, dy) {
+      const box = moveBBox(items);
+      if (!box) return { dx, dy, guides: null };
+      const movingN = new Set(), movingS = new Set();
+      for (const it of items) (it.kind === 'node' ? movingN : movingS).add(it.id);
+      const r = viewportRef.current.getBoundingClientRect();
+      const tl = screenToWorld(r.left, r.top), br = screenToWorld(r.right, r.bottom);
+      const targets = [];
+      const addTarget = (x, y, w, h) => {
+        if (x + w < tl.x || x > br.x || y + h < tl.y || y > br.y) return;
+        targets.push({ xs: [x, x + w / 2, x + w], ys: [y, y + h / 2, y + h] });
+      };
+      nodeEls.forEach((el, id) => {
+        if (!movingN.has(id)) addTarget(+el.dataset.x, +el.dataset.y, el.offsetWidth, el.offsetHeight);
+      });
+      shapeEls.forEach((el, id) => {
+        if (movingS.has(id)) return;
+        const bb = el.getBBox();
+        addTarget(bb.x, bb.y, bb.width, bb.height);
+      });
+      if (!targets.length) return { dx, dy, guides: null };
+      const T = SNAP_PX / viewRef.scale;
+      // Smallest shift (per axis) that lands a dragged edge/centre on a target's.
+      const best = (dragVals, key) => {
+        let b = null;
+        for (const t of targets) for (const tv of t[key]) for (const dv of dragVals) {
+          const d = tv - dv;
+          if (Math.abs(d) <= T && (b === null || Math.abs(d) < Math.abs(b))) b = d;
+        }
+        return b;
+      };
+      const vals = (o, axis) => (axis === 'x'
+        ? [box.x + o, box.x + o + box.w / 2, box.x + o + box.w]
+        : [box.y + o, box.y + o + box.h / 2, box.y + o + box.h]);
+      const bdx = best(vals(dx, 'x'), 'xs'), bdy = best(vals(dy, 'y'), 'ys');
+      const sdx = dx + (bdx || 0), sdy = dy + (bdy || 0);
+      /* Guides: at the (possibly snapped) position, every target line a dragged
+         edge/centre sits on — including alignments the user dragged into without
+         a nudge — spanning from the dragged box to the furthest aligned target. */
+      const fx = vals(sdx, 'x'), fy = vals(sdy, 'y');
+      const guides = [], seen = new Set();
+      const collect = (axis, dragVals, key, lo, hi) => {
+        for (const v of dragVals) {
+          const dedup = axis + Math.round(v * 2);
+          if (seen.has(dedup)) continue;
+          let a = lo, b = hi, hit = false;
+          for (const t of targets) if (t[key].some((tv) => Math.abs(tv - v) < SNAP_EPS)) {
+            hit = true;
+            const span = key === 'xs' ? t.ys : t.xs;
+            a = Math.min(a, span[0]); b = Math.max(b, span[2]);
+          }
+          if (hit) { seen.add(dedup); guides.push({ axis, v, a, b }); }
+        }
+      };
+      collect('v', fx, 'xs', fy[0], fy[2]);
+      collect('h', fy, 'ys', fx[0], fx[2]);
+      return { dx: sdx, dy: sdy, guides };
+    }
+    /* Show/refresh the guide lines. Like the rest of the drag path this is
+       imperative per-pointermove chrome, not React state. */
+    function setSnapGuides(guides) {
+      snapGuides = guides && guides.length ? guides : null;
+      placeSnapGuides();
+    }
+    function placeSnapGuides() {
+      const wrap = chrome.guides; if (!wrap) return;
+      if (!snapGuides) { wrap.style.display = 'none'; return; }
+      wrap.style.display = 'block';
+      while (wrap.children.length > snapGuides.length) wrap.removeChild(wrap.lastChild);
+      while (wrap.children.length < snapGuides.length) {
+        const d = document.createElement('div');
+        d.className = 'cv-guide';
+        wrap.appendChild(d);
+      }
+      const s = viewRef.scale, EXT = 4; // guides overshoot the aligned boxes a touch
+      snapGuides.forEach((g, i) => {
+        const el = wrap.children[i];
+        const at = (g.axis === 'v' ? viewRef.x : viewRef.y) + g.v * s - 0.5;
+        const lo = (g.axis === 'v' ? viewRef.y : viewRef.x) + g.a * s - EXT;
+        const len = (g.b - g.a) * s + EXT * 2;
+        if (g.axis === 'v') {
+          el.style.left = at + 'px'; el.style.top = lo + 'px';
+          el.style.width = '1px'; el.style.height = len + 'px';
+        } else {
+          el.style.top = at + 'px'; el.style.left = lo + 'px';
+          el.style.height = '1px'; el.style.width = len + 'px';
+        }
+      });
     }
 
     /* ── Node / shape mutations ───────────────────────────────── */
@@ -1645,7 +1763,7 @@ export function CanvasProvider({
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
       zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel, setHover, setGridEditGeom,
-      selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor,
+      selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, setSnapGuides,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,

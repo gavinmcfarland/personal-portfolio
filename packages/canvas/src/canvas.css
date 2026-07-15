@@ -25,6 +25,7 @@
   /* Derived from --accent so overriding the accent alone (e.g. the `accent`
      prop) re-tints every accent-soft surface with no extra tokens to set. */
   --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+  --snap-guide: #f5317f;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.09);
   --ui-bg: rgba(255, 255, 255, 0.82);
   --ui-border: rgba(0, 0, 0, 0.1);
@@ -53,6 +54,7 @@
   --line-strong: rgba(242, 242, 239, 0.32);
   --accent: #c88be8;
   --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
+  --snap-guide: #ff6ba3;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.5);
   --ui-bg: rgba(22, 22, 25, 0.82);
   --ui-border: rgba(255, 255, 255, 0.12);
@@ -1401,6 +1403,17 @@
   background: var(--accent-soft);
   display: none;
   box-sizing: border-box;
+}
+/* Snap-alignment guides — 1px lines shown while a drag lines up with another
+   object's edge or centre. The wrapper spans the viewport; the engine's
+   placeSnapGuides() positions the child lines in screen space. */
+.canvas-root .cv-guides {
+  display: none;
+  inset: 0;
+}
+.canvas-root .cv-guide {
+  position: absolute;
+  background: var(--snap-guide);
 }
 .canvas-root .cbtn {
   width: 22px;

@@ -6,43 +6,34 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 355.72658630445864,
-        "y": 402.04127391090896,
-        "scale": 0.4881541381209683
+        "x": -306.295869216267,
+        "y": -349.85165162992257,
+        "scale": 0.730311151907734
       },
       "nodes": [
         {
           "id": "intro",
           "type": "md",
-          "x": -118.42158921110058,
-          "y": -282.07502742040447,
+          "x": -600.4471578107143,
+          "y": 18.05673300102319,
           "z": 25,
           "w": 340,
           "text": "# Figlet\n\nA browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup.\n\n[JavaScript] [Figma API] [Svelte]"
         },
         {
-          "id": "stack",
-          "type": "md",
-          "x": 15.279878525043813,
-          "y": 495.71114565114937,
-          "z": 2,
-          "w": 300,
-          "text": "**Built with**\n\nJavaScript  ·  Figma API  ·  Svelte"
-        },
-        {
           "id": "note-0",
           "type": "sticky",
-          "x": 913.8210691000011,
-          "y": 367.30140149896545,
-          "z": 26,
+          "x": 1070.2200288048548,
+          "y": 311.245978775509,
+          "z": 44,
           "color": "yellow",
           "text": "Figma kindly awarded me a grant to build this Plugin."
         },
         {
           "id": "n5-image",
           "type": "image",
-          "x": 149.55959694999137,
-          "y": -204.2701487696579,
+          "x": 466.507222549185,
+          "y": 970.5776408902022,
           "z": -1,
           "w": 600,
           "h": 450,
@@ -57,8 +48,8 @@
         {
           "id": "n6-image",
           "type": "image",
-          "x": 1974.1326454515138,
-          "y": -181.2915376231234,
+          "x": 2390.8808166419844,
+          "y": -48.754021224490955,
           "z": 32,
           "w": 600,
           "h": 450,
@@ -73,8 +64,8 @@
         {
           "id": "n7-image",
           "type": "image",
-          "x": 2665.618166060244,
-          "y": -183.89813885862043,
+          "x": 2990.8808166419844,
+          "y": 812.3981733073439,
           "z": 33,
           "w": 600,
           "h": 450,
@@ -85,11 +76,131 @@
               "alt": "Slide 4_3 - 6.png"
             }
           ]
+        },
+        {
+          "id": "n9-image",
+          "type": "image",
+          "x": 1494.4017700012907,
+          "y": -48.754021224490955,
+          "z": 35,
+          "w": 600,
+          "h": 450,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/d8a4707a38ee2080.png",
+              "alt": "Slide 4_3 - 1.png"
+            }
+          ]
+        },
+        {
+          "id": "n10-image",
+          "type": "image",
+          "x": 2836.0583742507047,
+          "y": 1374.9201522474018,
+          "z": 36,
+          "w": 600,
+          "h": 450,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/b345cd708ec9d6fb.png",
+              "alt": "Slide 4_3 - 5.png"
+            }
+          ]
+        },
+        {
+          "id": "n11-image",
+          "type": "image",
+          "x": 525.3558420967614,
+          "y": -48.75402122449094,
+          "z": 37,
+          "w": 600,
+          "h": 450,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/321dd865b075e89b.png",
+              "alt": "Slide 4_3 - 8.png"
+            }
+          ]
+        },
+        {
+          "id": "n12-md",
+          "type": "md",
+          "x": 2207.009664356443,
+          "y": -102.75402122449096,
+          "z": 38,
+          "w": 340,
+          "text": "As you get more experienced you can share your own snippets with the community. Other's can then star your figlets and run then in their own files."
+        },
+        {
+          "id": "n13-md",
+          "type": "md",
+          "x": 248.50722254918497,
+          "y": 843.4006468980965,
+          "z": 39,
+          "w": 340,
+          "text": "Space is precious inside Figma so I wanted to be able to expand and collapse the plugin UI when it felt appropriate. Pages such as list views, settings, and logout collapse automatically, while code views expand automatically."
+        },
+        {
+          "id": "n14-tblock",
+          "type": "tblock",
+          "x": 137.27955344821984,
+          "y": -280.9125565061052,
+          "z": 40,
+          "text": "What is Figlet?",
+          "fontSize": 52,
+          "font": "script"
+        },
+        {
+          "id": "n15-image",
+          "type": "image",
+          "x": 1194.4017700012907,
+          "y": 970.5776408902018,
+          "z": 41,
+          "w": 600,
+          "h": 450,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/0dffe4bda16d8715.png",
+              "alt": "Slide 4_3 - 6.png"
+            }
+          ]
+        },
+        {
+          "id": "n16-tblock",
+          "type": "tblock",
+          "x": 137.27955344821984,
+          "y": 668.1160208534303,
+          "z": 42,
+          "text": "Dynamic window widths",
+          "fontSize": 52,
+          "font": "script"
+        },
+        {
+          "id": "n17-md",
+          "type": "md",
+          "x": 1214.4569573289195,
+          "y": -102.75402122449096,
+          "z": 43,
+          "w": 340,
+          "text": "If you want to learn how Figma plugin's work there is are interactive tutorials that walk you through how plugins work."
+        },
+        {
+          "id": "n18-md",
+          "type": "md",
+          "x": 255.27955344821987,
+          "y": -102.75402122449096,
+          "z": 45,
+          "w": 340,
+          "text": "Figlet lets you run Figma API code inside Figma requiring no local setup."
         }
       ],
       "shapes": []
     }
   ],
-  "bgColor": "#F5A524",
-  "savedAt": 1784123106517
+  "bgColor": "#7C2D91",
+  "savedAt": 1784125134763
 }

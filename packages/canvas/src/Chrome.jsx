@@ -209,6 +209,7 @@ export default function Chrome() {
   const editRef = useCallback((el) => eng.setChrome('edit', el), [eng]);
   const rzRef = useCallback((el) => eng.setChrome('rz', el), [eng]);
   const marqRef = useCallback((el) => eng.setChrome('marq', el), [eng]);
+  const guidesRef = useCallback((el) => eng.setChrome('guides', el), [eng]);
 
   // Edit / resize affordances only apply to a single selected node.
   const single = selected.length === 1 && selected[0].kind === 'node' ? selected[0] : null;
@@ -229,6 +230,7 @@ export default function Chrome() {
 
   return (
     <div className="cv-chrome">
+      <div className="cv-guides" ref={guidesRef} />
       <div className="cv-hov" ref={hovRef} />
       <div className="cv-sel" ref={selRef} />
       <div className="cv-marquee" ref={marqRef} />
