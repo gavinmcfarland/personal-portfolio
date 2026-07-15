@@ -563,6 +563,156 @@
   background: #fff;
 }
 
+/* Device frame — a CSS chrome wrapped around a single image / video (see
+   DeviceFrame.jsx). The frame fills the node box as a flex column: a fixed
+   world-px chrome bar on top, the media filling the rest, so the frame grows to
+   whatever size the media is. The per-style --cv-df-bar mirrors FRAME_BARS in
+   constants.js. */
+.canvas-root .node.image.framed,
+.canvas-root .node.video.framed {
+  background: var(--surface);
+}
+.canvas-root .cv-df {
+  --cv-df-bar: 36px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.canvas-root .cv-df--browser { --cv-df-bar: 36px; }
+.canvas-root .cv-df--plugin { --cv-df-bar: 36px; }
+.canvas-root .cv-df-screen {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg-base);
+}
+/* Chrome bar — shared by every frame style (same height, colours, padding); only
+   the controls inside differ. Inert to pointers so grabbing it still drags the
+   node; an editable field re-enables its own so it can be edited (it stops the
+   drag itself). */
+.canvas-root .cv-df-bar {
+  flex: none;
+  height: var(--cv-df-bar);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: color-mix(in srgb, var(--surface) 82%, var(--ink));
+  border-bottom: 1px solid var(--line);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Editable frame label (browser URL / plugin title), committed on blur. */
+.canvas-root .cv-df-field-text,
+.canvas-root .cv-df-field-input {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.canvas-root .cv-df-field-input {
+  pointer-events: auto;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  outline: none;
+  cursor: text;
+}
+.canvas-root .cv-df-field-input::placeholder { color: var(--muted); opacity: 0.7; }
+
+/* Browser chrome */
+.canvas-root .cv-df-dots {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+.canvas-root .cv-df-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff5f57;
+}
+.canvas-root .cv-df-dots i:nth-child(2) { background: #febc2e; }
+.canvas-root .cv-df-dots i:nth-child(3) { background: #28c840; }
+.canvas-root .cv-df-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  color: var(--muted);
+  opacity: 0.75;
+}
+.canvas-root .cv-df-nav svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
+}
+.canvas-root .cv-df-nav svg:last-child {
+  width: 13px;
+  height: 13px;
+  margin-left: 4px;
+}
+.canvas-root .cv-df-url {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--bg-base);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--sans, system-ui);
+  font-size: 12px;
+}
+.canvas-root .cv-df-url .cv-df-field-text { width: 100%; }
+.canvas-root .cv-df-url .cv-df-field-input { width: 100%; color: var(--ink); }
+
+/* Plugin window — app icon + name on the left, close button on the right. Same
+   bar height / colours / text size as the browser chrome; only the controls
+   differ. */
+.canvas-root .cv-df-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--ink);
+  color: var(--surface);
+}
+.canvas-root .cv-df-icon svg {
+  width: 10px;
+  height: 10px;
+  stroke-width: 2.2;
+}
+.canvas-root .cv-df-title {
+  flex: 1;
+  font-family: var(--sans, system-ui);
+  font-size: 12px;
+  color: var(--ink);
+}
+.canvas-root .cv-df-close {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  opacity: 0.75;
+}
+.canvas-root .cv-df-close svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
+}
+
 /* Multi-asset media grid — a node holding several images / gifs / videos laid
    out in ~√n columns, each cell cover-cropped to fill its square. Each asset is
    its own rounded, shadowed tile (the chrome lives on the cells, not the node),
@@ -2138,6 +2288,10 @@
   cursor: pointer;
 }
 .canvas-root #ctxmenu button:hover {
+  background: var(--accent-soft);
+}
+.canvas-root #ctxmenu button.active {
+  color: var(--accent);
   background: var(--accent-soft);
 }
 .canvas-root #ctxmenu button.danger {

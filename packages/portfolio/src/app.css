@@ -28,6 +28,11 @@
   --accent-soft: rgba(30, 122, 77, 0.10);
 }
 
+.test {
+  width: 600px;
+  padding-bottom: 30px;
+}
+
 .dark {
   --bg: #0C0C0D;
   --surface: #17171A;

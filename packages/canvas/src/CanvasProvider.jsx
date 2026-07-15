@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, useRef, useState, useEffect, useLayoutEffect } from 'react';
-import { ZOOM, PAN, RASTER, GRID, clampScale } from './constants';
+import { ZOOM, PAN, RASTER, GRID, frameBarH, clampScale } from './constants';
 import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
 
 /* Default localStorage key for the dev autosave. Override with the `storageKey`
@@ -91,7 +91,7 @@ function normalizeSaved(n) {
   if (n.type === 'image' || n.type === 'video') {
     const grid = normalizeGrid(n.grid);
     const crop = normalizeCrop(n.crop);
-    return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n), ...(grid ? { grid } : {}), ...(crop ? { crop } : {}) };
+    return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n), ...(grid ? { grid } : {}), ...(crop ? { crop } : {}), ...(n.frame ? { frame: n.frame } : {}), ...(n.frameUrl ? { frameUrl: n.frameUrl } : {}), ...(n.frameTitle ? { frameTitle: n.frameTitle } : {}) };
   }
   if (n.type === 'sound') return { ...base, w: n.w || 260, h: n.h || 56, src: n.src || '', name: n.name || '', dur: n.dur || 0 };
   if (n.type === 'link') return { ...base, w: n.w || 280, url: n.url || '', title: n.title || '', desc: n.desc || '', image: n.image || '', siteName: n.siteName || '', favicon: n.favicon || '' };
@@ -850,6 +850,26 @@ export function CanvasProvider({
       const n = S.nodes.find((x) => x.id === id); if (!n) return;
       updateNode(id, { anchor: !n.anchor });
     }
+    /* Add / switch / remove a device frame (browser chrome, plugin window, …) on
+       a single-asset photo/video. Each style's chrome bar has its own height, so
+       the box grows/shrinks by the bar delta to keep the media's own size stable
+       — clicking the active style again removes it. A lone SVG has no card to
+       frame, so it's ignored. */
+    function toggleFrame(id, style = 'browser') {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || (n.type !== 'image' && n.type !== 'video') || !n.assets || n.assets.length !== 1) return;
+      if (n.assets[0].svg) return;
+      const prev = n.frame || null;
+      const next = prev === style ? null : style; // re-selecting the active style removes it
+      const oldBar = prev ? frameBarH(prev) : 0;
+      const newBar = next ? frameBarH(next) : 0;
+      updateNode(id, {
+        frame: next || undefined,
+        h: Math.max(newBar + 20, +n.h - oldBar + newBar),
+      });
+      selectNode(id);
+    }
     function deleteSelected() {
       if (!S.selected.length) return;
       deleteItems(S.selected);
@@ -1067,6 +1087,10 @@ export function CanvasProvider({
           const r4 = (v) => Math.round((v || 0) * 10000) / 10000;
           o.crop = { x: r4(n.crop.x), y: r4(n.crop.y), w: r4(n.crop.w), h: r4(n.crop.h) };
         }
+        // Device frame (browser chrome, plugin window, …) and its editable label.
+        if (n.frame) o.frame = n.frame;
+        if (n.frameUrl) o.frameUrl = n.frameUrl;
+        if (n.frameTitle) o.frameTitle = n.frameTitle;
       }
       else if (n.type === 'sound') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.name) o.name = n.name; if (n.dur) o.dur = n.dur; }
       else if (n.type === 'link') {
@@ -1352,10 +1376,14 @@ export function CanvasProvider({
         else nat = await measure(src);
         const cur = S.nodes.find((x) => x.id === id); // re-read: measuring is async
         if (!cur || !nat.w || !nat.h) return;
+        // A device frame's chrome bar sits above the media, so size the box to
+        // the media's natural extent plus the bar to keep the media itself 1:1.
+        const bar = cur.frame ? frameBarH(cur.frame) : 0;
+        const w = nat.w, h = nat.h + bar;
         updateNode(id, {
-          x: Math.round(cur.x + (cur.w - nat.w) / 2),
-          y: Math.round(cur.y + (cur.h - nat.h) / 2),
-          w: nat.w, h: nat.h,
+          x: Math.round(cur.x + (cur.w - w) / 2),
+          y: Math.round(cur.y + (cur.h - h) / 2),
+          w, h,
         });
         selectNode(id);
       } catch (err) {
@@ -1788,7 +1816,7 @@ export function CanvasProvider({
       selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, setSnapGuides,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
-      bringFront, sendBack, toggleAnchor, deleteSelected, deleteTarget,
+      bringFront, sendBack, toggleAnchor, toggleFrame, deleteSelected, deleteTarget,
       copySelected, paste, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,

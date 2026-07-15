@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Maximize, Scaling, Copy, CopyPlus, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
+import { Maximize, Scaling, AppWindow, Puzzle, SquareX, Copy, CopyPlus, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
@@ -47,6 +47,24 @@ export default function ContextMenu() {
               <Scaling />
               Set to original size
             </button>
+          )}
+          {singleAsset && !loneSvg && (
+            <>
+              <button className={node.frame === 'browser' ? 'active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'browser'))}>
+                <AppWindow />
+                Browser frame
+              </button>
+              <button className={node.frame === 'plugin' ? 'active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'plugin'))}>
+                <Puzzle />
+                Plugin frame
+              </button>
+              {node.frame && (
+                <button onClick={run(() => eng.toggleFrame(node.id, node.frame))}>
+                  <SquareX />
+                  Remove frame
+                </button>
+              )}
+            </>
           )}
           <div className="ctxsep" />
         </>

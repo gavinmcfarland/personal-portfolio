@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 291.75144926582294,
-        "y": 168.95960571797792,
-        "scale": 0.48571988884666567
+        "x": 1869.8728682277474,
+        "y": -254.86146763274022,
+        "scale": 0.8698883933694432
       },
       "nodes": [
         {
@@ -16,47 +16,9 @@
           "type": "sticky",
           "x": 1736.8198087696042,
           "y": -101.86647210151659,
-          "z": 44,
+          "z": 63,
           "color": "yellow",
           "text": "Figma kindly awarded me a grant to build this Plugin."
-        },
-        {
-          "id": "n5-image",
-          "type": "image",
-          "x": 137.27955344821984,
-          "y": 870.2274523479325,
-          "z": -1,
-          "w": 600,
-          "h": 450,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/7f1d6506ba25e361.png",
-              "alt": "Slide 4_3 - 4.png"
-            }
-          ]
-        },
-        {
-          "id": "n6-image",
-          "type": "image",
-          "x": 1465.5728348631,
-          "y": -49.38080419069599,
-          "z": 32,
-          "w": 291.5523266948099,
-          "h": 450,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/df0004e0ca480b6c.png",
-              "alt": "Slide 4_3 - 7.png"
-            }
-          ],
-          "crop": {
-            "x": 0.257,
-            "y": 0,
-            "w": 0.4859,
-            "h": 1
-          }
         },
         {
           "id": "n9-image",
@@ -95,7 +57,7 @@
           "type": "md",
           "x": 1566.8198087696042,
           "y": 358.619195809304,
-          "z": 38,
+          "z": 64,
           "w": 340,
           "text": "As you get more experienced you can share your own snippets with the community. Other's can then star your figlets and run then in their own files."
         },
@@ -176,6 +138,70 @@
           "z": 60,
           "w": 340,
           "text": "# What is Figlet\n\nFiglet lets you run Figma API code inside Figma requiring no local setup."
+        },
+        {
+          "id": "n24-image",
+          "type": "image",
+          "x": 1465.5728348631,
+          "y": -49.38080419069599,
+          "z": 62,
+          "w": 291.5523266948099,
+          "h": 450,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/df0004e0ca480b6c.png",
+              "alt": "Slide 4_3 - 7.png"
+            }
+          ],
+          "crop": {
+            "x": 0.257,
+            "y": 0,
+            "w": 0.4859,
+            "h": 1
+          }
+        },
+        {
+          "id": "n25-video",
+          "type": "video",
+          "x": -1611.0369530064615,
+          "y": 726.7306251236391,
+          "z": 65,
+          "w": 416.2497237943917,
+          "h": 366.8468765743075,
+          "assets": [
+            {
+              "kind": "video",
+              "src": "/canvas-assets/a2b00a3c3dafd2a4.mp4",
+              "alt": "Generate_a_video_of_my_dream_w.mp4"
+            }
+          ],
+          "crop": {
+            "x": 0.3961,
+            "y": 0.0829,
+            "w": 0.4974,
+            "h": 0.6922
+          },
+          "frame": "browser",
+          "frameUrl": "example.com"
+        },
+        {
+          "id": "n27-image",
+          "type": "image",
+          "x": -1167.0899696720803,
+          "y": 726.7306251236391,
+          "z": 67,
+          "w": 484.40599955162816,
+          "h": 399,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/ab4f2b0dc3fc005f.png",
+              "alt": "home-20260715-135253-096-view@3x.png"
+            }
+          ],
+          "frame": "plugin",
+          "frameTitle": "Figlet"
         }
       ],
       "shapes": [
@@ -279,5 +305,5 @@
       ]
     }
   ],
-  "savedAt": 1784137349209
+  "savedAt": 1784156273953
 }

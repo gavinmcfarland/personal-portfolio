@@ -233,9 +233,11 @@ export default function Chrome() {
     // the media's full rendered extent at the current box size — from the stored
     // crop if there is one, else the cover fit over the natural dimensions. The
     // drag trims/reveals against this fixed extent (see Canvas.jsx).
+    // A device frame reserves a chrome bar, so the media no longer fills the box
+    // — the cover/crop math below assumes it does. Skip cropping while framed.
     let crop = null;
     const assetCount = n.assets && n.assets.length ? n.assets.length : 1;
-    if ((n.type === 'image' || n.type === 'video') && assetCount === 1 && !loneSvg && el) {
+    if ((n.type === 'image' || n.type === 'video') && assetCount === 1 && !loneSvg && !n.frame && el) {
       const media = el.querySelector('img, video');
       const nw = media ? media.naturalWidth || media.videoWidth || 0 : 0;
       const nh = media ? media.naturalHeight || media.videoHeight || 0 : 0;

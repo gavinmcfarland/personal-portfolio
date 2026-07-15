@@ -10,6 +10,12 @@ export const ZOOM = {
 	donePan: 0.12,
 };
 export const PAN = { wheelSpeed: 1.4 }; // multiplier for scroll-wheel / trackpad panning
+/* Height (world px) of each device frame's chrome bar, keyed by style. Toggling
+   a frame grows / shrinks the node box by this so the media keeps its size; a
+   switch between styles adjusts by the delta. Kept in sync with the per-style
+   `--cv-df-bar` CSS tokens in canvas.css. */
+export const FRAME_BARS = { browser: 36, plugin: 36 };
+export const frameBarH = (style) => FRAME_BARS[style] || FRAME_BARS.browser;
 export const RASTER = { blur: 1.1 }; // re-rasterize once the composited layer drifts past this
 export const GRID = 28;
 

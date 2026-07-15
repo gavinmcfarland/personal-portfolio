@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { useRegister, useMediaSrc, resolveGrid } from './common';
 import VideoPlayer from './VideoPlayer';
+import DeviceFrame from './DeviceFrame';
 
 /* One media node holds an `assets` array — a grid of images, gifs and videos.
    A lone asset renders exactly as before (a plain image, a vector SVG, or a
@@ -47,9 +48,13 @@ function MediaNode({ node }) {
         transform: `translate(${-(crop.x || 0) * 100}%,${-(crop.y || 0) * 100}%)`,
       }
       : undefined;
+    // A device frame (browser chrome, …) wraps a photo/video — never a lone SVG,
+    // which renders as transparent vector art with no card to frame.
+    const framed = node.frame && !a.svg;
+    const media = <MediaContent nodeId={node.id} asset={a} index={0} bare={false} mediaStyle={mediaStyle} />;
     return (
-      <div ref={setRef} className={cls} {...dataProps} style={{ ...style, width: w, height: h }}>
-        <MediaContent nodeId={node.id} asset={a} index={0} bare={false} mediaStyle={mediaStyle} />
+      <div ref={setRef} className={framed ? `${cls} framed` : cls} {...dataProps} style={{ ...style, width: w, height: h }}>
+        {framed ? <DeviceFrame node={node}>{media}</DeviceFrame> : media}
       </div>
     );
   }
