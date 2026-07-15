@@ -186,7 +186,8 @@ function FrameLabel({ node }) {
         e.preventDefault();
         e.stopPropagation();
         eng.selectNode(node.id);
-        setCtxMenu({ x: e.clientX, y: e.clientY, target: { kind: 'node', id: node.id } });
+        const w = eng.screenToWorld(e.clientX, e.clientY);
+        setCtxMenu({ x: e.clientX, y: e.clientY, wx: w.x, wy: w.y, target: { kind: 'node', id: node.id } });
       }}
     >
       <span className="txt">{node.name || 'Section'}</span>

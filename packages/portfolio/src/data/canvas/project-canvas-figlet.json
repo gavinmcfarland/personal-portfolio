@@ -6,61 +6,11 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": -348.05584902393156,
-        "y": -756.58703862852,
-        "scale": 0.9840380994327976
+        "x": -312.40387686735824,
+        "y": -219.52382561844303,
+        "scale": 0.5509530446977158
       },
       "nodes": [
-        {
-          "id": "note-0",
-          "type": "sticky",
-          "x": 1736.8198087696042,
-          "y": -101.86647210151659,
-          "z": 63,
-          "color": "yellow",
-          "text": "Figma kindly awarded me a grant to build this Plugin."
-        },
-        {
-          "id": "n9-image",
-          "type": "image",
-          "x": 797.3376959304435,
-          "y": -49.38080419069597,
-          "z": 35,
-          "w": 600,
-          "h": 450,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/d8a4707a38ee2080.png",
-              "alt": "Slide 4_3 - 1.png"
-            }
-          ]
-        },
-        {
-          "id": "n11-image",
-          "type": "image",
-          "x": 137.27955344821987,
-          "y": -49.38080419069599,
-          "z": 37,
-          "w": 600,
-          "h": 450,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/321dd865b075e89b.png",
-              "alt": "Slide 4_3 - 8.png"
-            }
-          ]
-        },
-        {
-          "id": "n12-md",
-          "type": "md",
-          "x": 1566.8198087696042,
-          "y": 358.619195809304,
-          "z": 64,
-          "w": 340,
-          "text": "As you get more experienced you can share your own snippets with the community. Other's can then star your figlets and run then in their own files."
-        },
         {
           "id": "n13-md",
           "type": "md",
@@ -71,102 +21,21 @@
           "text": "Space is precious inside Figma so I wanted to be able to expand and collapse the plugin UI when it felt appropriate. Pages such as list views, settings, and logout collapse automatically, while code views expand automatically."
         },
         {
-          "id": "n14-tblock",
-          "type": "tblock",
-          "x": 137.27955344821984,
-          "y": -280.9125565061052,
-          "z": 40,
-          "text": "What is Figlet?",
-          "fontSize": 52,
-          "font": "sans"
-        },
-        {
-          "id": "n16-tblock",
-          "type": "tblock",
-          "x": -309.96896137068177,
-          "y": 754.479635364108,
-          "z": 42,
-          "text": "Dynamic window widths",
-          "fontSize": 52,
-          "font": "sans"
-        },
-        {
-          "id": "n17-md",
-          "type": "md",
-          "x": 1097.3376959304435,
-          "y": 358.619195809304,
-          "z": 43,
-          "w": 340,
-          "text": "If you want to learn how Figma plugin's work there is are interactive tutorials that walk you through how plugins work."
-        },
-        {
-          "id": "n18-md",
-          "type": "md",
-          "x": 437.2795534482199,
-          "y": 358.619195809304,
-          "z": 45,
-          "w": 340,
-          "text": "Figlet lets you run Figma API code inside Figma requiring no local setup."
-        },
-        {
-          "id": "n22-image",
-          "type": "image",
-          "x": 2365.823098606179,
-          "y": 1671.4548910924611,
-          "z": -3,
-          "w": 308.18959503941954,
-          "h": 449.9999999999998,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/b345cd708ec9d6fb.png",
-              "alt": "Slide 4_3 - 5.png"
-            }
-          ],
-          "crop": {
-            "x": 0.2432,
-            "y": 0,
-            "w": 0.5136,
-            "h": 1
-          }
-        },
-        {
-          "id": "n24-image",
-          "type": "image",
-          "x": 1465.5728348631,
-          "y": -49.38080419069599,
-          "z": 62,
-          "w": 291.5523266948099,
-          "h": 450,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/df0004e0ca480b6c.png",
-              "alt": "Slide 4_3 - 7.png"
-            }
-          ],
-          "crop": {
-            "x": 0.257,
-            "y": 0,
-            "w": 0.4859,
-            "h": 1
-          }
-        },
-        {
           "id": "n31-image",
           "type": "image",
-          "x": 585.0157427945045,
+          "x": 730.5221025549619,
           "y": 890.6828367768258,
           "z": 71,
           "w": 600,
-          "h": 450,
+          "h": 486,
           "assets": [
             {
               "kind": "image",
               "src": "/canvas-assets/122b0af0b96563fb.png",
               "alt": "home-20260715-135245-324-view@3x.png"
             }
-          ]
+          ],
+          "frame": "plugin"
         },
         {
           "id": "n32-image",
@@ -206,22 +75,50 @@
         {
           "id": "n34-image",
           "type": "image",
-          "x": 1291.6238472728,
+          "x": 1436.8198087696042,
           "y": 890.6828367768258,
           "z": 76,
           "w": 299.792394122885,
-          "h": 450,
+          "h": 486,
           "assets": [
             {
               "kind": "image",
               "src": "/canvas-assets/c58f4e1ee3901a68.png",
               "alt": "Group 2.png"
             }
-          ]
+          ],
+          "frame": "plugin"
+        },
+        {
+          "id": "n35-tblock",
+          "type": "tblock",
+          "x": -309.96896137068177,
+          "y": 754.479635364108,
+          "z": 77,
+          "text": "Dynamic window widths",
+          "fontSize": 52,
+          "font": "sans"
+        },
+        {
+          "id": "n36-image",
+          "type": "image",
+          "x": 2148.343205593982,
+          "y": 890.6828367768256,
+          "z": 78,
+          "w": 600,
+          "h": 486,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/7df5bd7ce20fc383.png",
+              "alt": "home-20260715-140121-414-view@3x 2.png"
+            }
+          ],
+          "frame": "plugin"
         }
       ],
       "shapes": []
     }
   ],
-  "savedAt": 1784158847922
+  "savedAt": 1784159631889
 }

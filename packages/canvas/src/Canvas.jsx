@@ -337,13 +337,22 @@ export default function Canvas() {
     e.preventDefault();
     const nodeEl = e.target.closest('.node');
     const shapeEl = e.target.closest('.shape');
-    if (!nodeEl && !shapeEl) { setCtxMenu(null); return; }
+    // Empty space → a canvas menu whose only action is Paste, dropped at the
+    // click point (world coords captured now so a later paste lands where the
+    // user right-clicked, not the viewport centre).
+    if (!nodeEl && !shapeEl) {
+      const w = eng.screenToWorld(e.clientX, e.clientY);
+      setCtxMenu({ x: e.clientX, y: e.clientY, target: { kind: 'canvas', wx: w.x, wy: w.y } });
+      return;
+    }
     const kind = nodeEl ? 'node' : 'shape';
     const id = (nodeEl || shapeEl).dataset.id;
     // Right-clicking inside a multi-selection keeps it and targets the group.
     const inMulti = S.selected.length > 1 && eng.isSelected(kind, id);
     if (!inMulti) (kind === 'node' ? eng.selectNode : eng.selectShape)(id);
-    setCtxMenu({ x: e.clientX, y: e.clientY, target: inMulti ? { kind: 'multi' } : { kind, id } });
+    // World coords under the cursor so "Paste here" lands at the click point.
+    const w = eng.screenToWorld(e.clientX, e.clientY);
+    setCtxMenu({ x: e.clientX, y: e.clientY, wx: w.x, wy: w.y, target: inMulti ? { kind: 'multi' } : { kind, id } });
   };
 
   /* Native window listeners: move / up / wheel / keyboard. */

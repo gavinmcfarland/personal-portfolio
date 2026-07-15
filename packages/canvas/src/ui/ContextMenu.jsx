@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Maximize, Scaling, AppWindow, Puzzle, SquareX, Expand, Copy, CopyPlus, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
+import { Maximize, Scaling, AppWindow, Puzzle, SquareX, Expand, Copy, CopyPlus, ClipboardPaste, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
@@ -18,7 +18,24 @@ export default function ContextMenu() {
   }, [ctxMenu, setCtxMenu]);
 
   if (!ctxMenu) return null;
-  const { target } = ctxMenu; // {kind:'node'|'shape', id} or {kind:'multi'} → whole selection
+  const { target } = ctxMenu; // {kind:'node'|'shape', id}, {kind:'multi'} → whole selection, or {kind:'canvas'} → empty space
+  const run = (fn) => () => { fn(); setCtxMenu(null); };
+
+  // Right-click on empty canvas: the only action is Paste, dropped at the click
+  // point captured when the menu opened.
+  if (target.kind === 'canvas') {
+    const cx = Math.min(ctxMenu.x, innerWidth - 190);
+    const cy = Math.min(ctxMenu.y, innerHeight - 60);
+    return (
+      <div className="panel show" id="ctxmenu" style={{ left: cx, top: cy }}>
+        <button onClick={run(() => eng.pasteFromMenu(target.wx, target.wy))}>
+          <ClipboardPaste />
+          Paste here
+        </button>
+      </div>
+    );
+  }
+
   const node = target.kind === 'node' ? nodes.find((n) => n.id === target.id) : null;
   const anchorable = node && node.type !== 'frame';
   const count = target.kind === 'multi' ? selected.length : 1;
@@ -29,8 +46,6 @@ export default function ContextMenu() {
   const loneSvg = singleAsset && node.assets[0].svg;
   const x = Math.min(ctxMenu.x, innerWidth - 190);
   const y = Math.min(ctxMenu.y, innerHeight - 190);
-
-  const run = (fn) => () => { fn(); setCtxMenu(null); };
 
   return (
     <div className="panel show" id="ctxmenu" style={{ left: x, top: y }}>
@@ -82,6 +97,10 @@ export default function ContextMenu() {
       <button onClick={run(() => eng.duplicateTarget(target))}>
         <CopyPlus />
         {count > 1 ? `Duplicate ${count} objects` : 'Duplicate'}
+      </button>
+      <button onClick={run(() => eng.pasteFromMenu(ctxMenu.wx, ctxMenu.wy))}>
+        <ClipboardPaste />
+        Paste here
       </button>
       <div className="ctxsep" />
       <button onClick={run(() => eng.bringFront(target))}>

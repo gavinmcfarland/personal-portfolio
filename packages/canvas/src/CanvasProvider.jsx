@@ -985,6 +985,67 @@ export function CanvasProvider({
       const created = clip.map((it) => addClone(it.kind, it.data, off, off));
       setSelectedState(created);
     }
+    /* Anything in the internal node clipboard? Gates the right-click Paste item. */
+    function hasClipboard() { return !!(clipboard.current && clipboard.current.length); }
+    /* World-space bounds of a clipboard snapshot, so a cursor paste can centre the
+       whole group on the click point instead of offsetting from the originals. */
+    function clipboardBounds(clip) {
+      let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+      clip.forEach(({ kind, data }) => {
+        if (kind === 'node') {
+          const x = +data.x, y = +data.y, w = +data.w || 0, h = +data.h || 0;
+          minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x + w); maxY = Math.max(maxY, y + h);
+        } else if (data.type === 'pen') {
+          data.points.forEach(([px, py]) => { minX = Math.min(minX, px); minY = Math.min(minY, py); maxX = Math.max(maxX, px); maxY = Math.max(maxY, py); });
+        } else {
+          minX = Math.min(minX, data.x1, data.x2); minY = Math.min(minY, data.y1, data.y2);
+          maxX = Math.max(maxX, data.x1, data.x2); maxY = Math.max(maxY, data.y1, data.y2);
+        }
+      });
+      return { minX, minY, maxX, maxY };
+    }
+    /* Paste the internal clipboard at a world point (right-click paste), the
+       group's top-left corner landing under the cursor, rather than the
+       cascading offset of a keyboard paste. */
+    function pasteAt(wx, wy) {
+      const clip = clipboard.current;
+      if (!clip || !clip.length) return false;
+      const b = clipboardBounds(clip);
+      const dx = wx - b.minX;
+      const dy = wy - b.minY;
+      const created = clip.map((it) => addClone(it.kind, it.data, dx, dy));
+      setSelectedState(created);
+      pasteCount.current = 0; // placed at cursor — restart the keyboard cascade
+      return true;
+    }
+    /* Right-click "Paste": pull media/link off the system clipboard first (mirrors
+       the Cmd+V flow), then fall back to the internal node clipboard. Reading the
+       system clipboard is async and permission-gated, so failures fall through
+       silently to the internal paste. */
+    async function pasteFromMenu(wx, wy) {
+      if (!EDITABLE || S.readOnly) return;
+      let items = null;
+      try { if (navigator.clipboard && navigator.clipboard.read) items = await navigator.clipboard.read(); } catch { items = null; }
+      if (items) {
+        for (const item of items) {
+          const imgType = item.types.find((t) => t.startsWith('image/'));
+          if (imgType) {
+            try {
+              const blob = await item.getType(imgType);
+              const ext = imgType.split('/')[1] || 'png';
+              addMediaFiles([new File([blob], `pasted.${ext}`, { type: imgType })], wx, wy);
+              return;
+            } catch { /* fall through to text / internal */ }
+          }
+        }
+      }
+      let text = '';
+      try { if (navigator.clipboard && navigator.clipboard.readText) text = await navigator.clipboard.readText(); } catch { text = ''; }
+      const svg = pickSvgMarkup(text);
+      if (svg) { addImageFromFile(new File([svg], 'pasted.svg', { type: 'image/svg+xml' }), wx, wy); return; }
+      if (asLinkUrl(text)) { addLinkFromUrl(text, wx, wy); return; }
+      pasteAt(wx, wy);
+    }
 
     /* ── Tools / mode ─────────────────────────────────────────── */
     function setTool(t) { setToolState(t); deselect(); }
@@ -1881,7 +1942,7 @@ export function CanvasProvider({
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, deleteSelected, deleteTarget,
-      copySelected, paste, duplicateSelected, duplicateTarget, duplicateItemsAt,
+      copySelected, paste, pasteAt, pasteFromMenu, hasClipboard, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
