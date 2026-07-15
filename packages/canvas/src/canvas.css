@@ -462,10 +462,15 @@
   display: block;
   width: 100%;
   height: 100%;
+  /* Host pages commonly reset img/video to max-width:100% (e.g. Tailwind
+     preflight). A crop sizes the media PAST its box on purpose — the clamp
+     would squash it back and leave background showing. */
+  max-width: none;
+  max-height: none;
   object-fit: cover;
-  /* Anchor top-left so cmd-resize cropping trims the right/bottom edges —
-     the sides the corner handle pulls. No effect while the box keeps the
-     media's own aspect (cover fits exactly then). */
+  /* Anchor top-left so any box/media aspect mismatch clips the right/bottom —
+     the sides the corner handle pulls. A cmd-drag crop sizes the media past the
+     box with an inline style (see Media.jsx); the node's overflow:hidden trims it. */
   object-position: left top;
   user-select: none;
   -webkit-user-drag: none;
@@ -478,6 +483,8 @@
   display: block;
   width: 100%;
   height: 100%;
+  max-width: none; /* see .node.image img — host resets would squash the crop */
+  max-height: none;
   object-fit: cover;
   object-position: left top; /* crop trims right/bottom — see .node.image img */
   user-select: none;
@@ -1448,15 +1455,32 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* Resize handles: the .cv-rz container tracks the selection rect (placed by
+   placeSel) and stays click-through; the four corner squares inside it are the
+   actual grab targets. Each sticks out diagonally past its corner. */
 .canvas-root .cv-rz {
+  display: none;
+  pointer-events: none;
+}
+.canvas-root .cv-rz .cv-rz-h {
+  position: absolute;
   width: 14px;
   height: 14px;
   background: var(--surface);
   border: 2px solid var(--accent);
-  display: none;
   box-sizing: border-box;
   pointer-events: auto;
 }
+.canvas-root .cv-rz .cv-rz-nw { left: -10px; top: -10px; cursor: nwse-resize; }
+.canvas-root .cv-rz .cv-rz-ne { left: calc(100% - 4px); top: -10px; cursor: nesw-resize; }
+.canvas-root .cv-rz .cv-rz-sw { left: -10px; top: calc(100% - 4px); cursor: nesw-resize; }
+.canvas-root .cv-rz .cv-rz-se { left: calc(100% - 4px); top: calc(100% - 4px); cursor: nwse-resize; }
+/* Width-only nodes (markdown, code, text, link) resize horizontally: the two
+   bottom handles cover left/right growth, and hiding the top pair keeps the
+   ne corner clear of the edit-pencil button that floats there. */
+.canvas-root .cv-rz[data-mode='ew'] .cv-rz-h { cursor: ew-resize; }
+.canvas-root .cv-rz[data-mode='ew'] .cv-rz-nw,
+.canvas-root .cv-rz[data-mode='ew'] .cv-rz-ne { display: none; }
 /* Media grid proportion-editing dividers — screen-space, so the accent stroke
    stays a constant 2px at any zoom. The wide strip is the grab target; the
    ::after line is what's drawn. Positioned by placeGridEdit(). */

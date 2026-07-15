@@ -11,13 +11,14 @@ import VideoPlayer from './VideoPlayer';
    the chrome layer, see Chrome.jsx) resize the tracks. Files dropped onto the
    node append to its grid (see addMediaFiles). */
 
-/* Resolve one asset's stored src and render it (image or a playing video). */
-function MediaContent({ nodeId, asset, index, bare }) {
+/* Resolve one asset's stored src and render it (image or a playing video).
+   `mediaStyle` carries the crop sizing (see MediaNode) onto the img/video. */
+function MediaContent({ nodeId, asset, index, bare, mediaStyle }) {
   const src = useMediaSrc(asset.src);
   if (asset.kind === 'video') {
-    return <VideoPlayer src={src} alt={asset.alt} mediaKey={`${nodeId}:${index}`} bare={bare} />;
+    return <VideoPlayer src={src} alt={asset.alt} mediaKey={`${nodeId}:${index}`} bare={bare} mediaStyle={mediaStyle} />;
   }
-  return <img src={src || undefined} alt={asset.alt || ''} draggable={false} />;
+  return <img src={src || undefined} alt={asset.alt || ''} draggable={false} style={mediaStyle} />;
 }
 
 function MediaNode({ node }) {
@@ -33,9 +34,22 @@ function MediaNode({ node }) {
   if (assets.length === 1) {
     const a = assets[0];
     const cls = a.kind === 'video' ? 'node video' : a.svg ? 'node image svg' : 'node image';
+    // A cmd-drag crop shows a sub-window of the media: render the full media at
+    // 1/crop of the box, shifted so the window's top-left lands on the box's
+    // (translate % is self-relative, so the offset fractions map directly), and
+    // let overflow:hidden trim the rest. Fractions keep the framing stable
+    // through aspect-locked resizes.
+    const crop = node.crop && node.crop.w > 0 && node.crop.h > 0 && !a.svg ? node.crop : null;
+    const mediaStyle = crop
+      ? {
+        width: `${100 / crop.w}%`,
+        height: `${100 / crop.h}%`,
+        transform: `translate(${-(crop.x || 0) * 100}%,${-(crop.y || 0) * 100}%)`,
+      }
+      : undefined;
     return (
       <div ref={setRef} className={cls} {...dataProps} style={{ ...style, width: w, height: h }}>
-        <MediaContent nodeId={node.id} asset={a} index={0} bare={false} />
+        <MediaContent nodeId={node.id} asset={a} index={0} bare={false} mediaStyle={mediaStyle} />
       </div>
     );
   }

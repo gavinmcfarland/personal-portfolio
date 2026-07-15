@@ -214,7 +214,7 @@ export default function Chrome() {
   // Edit / resize affordances only apply to a single selected node.
   const single = selected.length === 1 && selected[0].kind === 'node' ? selected[0] : null;
 
-  const onResizeDown = (e) => {
+  const onResizeDown = (corner) => (e) => {
     if (e.button !== 0 || !single) return;
     e.stopPropagation();
     eng.freezeView();
@@ -229,7 +229,33 @@ export default function Chrome() {
     // apply — it would letterbox, not crop. Legacy nodes carry a top-level svg flag.
     const loneSvg = n.type === 'image' &&
       (n.assets && n.assets.length ? n.assets.length === 1 && !!n.assets[0].svg : !!n.svg);
-    actionRef.current = { type: 'resize', id: n.id, sx: e.clientX, sy: e.clientY, ow, oh: +n.h, ofs, mdType: n.type, loneSvg };
+    // Cmd-drag crop context for a single image/video (grids and SVGs excluded):
+    // the media's full rendered extent at the current box size — from the stored
+    // crop if there is one, else the cover fit over the natural dimensions. The
+    // drag trims/reveals against this fixed extent (see Canvas.jsx).
+    let crop = null;
+    const assetCount = n.assets && n.assets.length ? n.assets.length : 1;
+    if ((n.type === 'image' || n.type === 'video') && assetCount === 1 && !loneSvg && el) {
+      const media = el.querySelector('img, video');
+      const nw = media ? media.naturalWidth || media.videoWidth || 0 : 0;
+      const nh = media ? media.naturalHeight || media.videoHeight || 0 : 0;
+      const c0 = n.crop && n.crop.w > 0 && n.crop.h > 0 ? n.crop : null;
+      let cw, ch;
+      if (c0) { cw = ow / c0.w; ch = +n.h / c0.h; }
+      else if (nw && nh) { const s = Math.max(ow / nw, +n.h / nh); cw = nw * s; ch = nh * s; }
+      else { cw = ow; ch = +n.h; } // dimensions not loaded yet: crop can only trim
+      if (media) {
+        crop = {
+          el: media, cw, ch,
+          x0: c0 ? c0.x || 0 : 0, y0: c0 ? c0.y || 0 : 0, // crop offset at drag start
+          mw0: media.style.width, mh0: media.style.height, mt0: media.style.transform,
+        };
+      }
+    }
+    actionRef.current = {
+      type: 'resize', id: n.id, corner, sx: e.clientX, sy: e.clientY,
+      ox: +n.x, oy: +n.y, ow, oh: +n.h, ofs, mdType: n.type, loneSvg, crop,
+    };
   };
 
   return (
@@ -247,7 +273,11 @@ export default function Chrome() {
       >
         <Pencil />
       </div>
-      <div className="cv-rz" ref={rzRef} onPointerDown={onResizeDown} />
+      <div className="cv-rz" ref={rzRef}>
+        {['nw', 'ne', 'sw', 'se'].map((c) => (
+          <div key={c} className={`cv-rz-h cv-rz-${c}`} onPointerDown={onResizeDown(c)} />
+        ))}
+      </div>
       <GridDividers />
       {nodes.filter((n) => n.type === 'frame').map((n) => <FrameLabel key={n.id} node={n} />)}
     </div>

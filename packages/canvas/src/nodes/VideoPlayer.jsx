@@ -8,7 +8,7 @@ import { useCanvas } from '../CanvasProvider';
    a grid it renders `bare` (no overlay — click opens the full-screen gallery,
    which has native controls). Either way it publishes its element into `mediaEls`
    under `mediaKey` so the lightbox can hand playback position off both ways. */
-export default function VideoPlayer({ src, alt, mediaKey, bare }) {
+export default function VideoPlayer({ src, alt, mediaKey, bare, mediaStyle }) {
   const { mediaEls } = useCanvas();
   const vidRef = useRef(null);
   const fillRef = useRef(null);
@@ -96,7 +96,7 @@ export default function VideoPlayer({ src, alt, mediaKey, bare }) {
 
   return (
     <>
-      <video ref={setVid} src={src || undefined} autoPlay muted loop playsInline aria-label={alt || ''} />
+      <video ref={setVid} src={src || undefined} autoPlay muted loop playsInline aria-label={alt || ''} style={mediaStyle} />
       {!bare && (
         <div
           className="vctrl"

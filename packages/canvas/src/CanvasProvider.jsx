@@ -69,6 +69,18 @@ function normalizeGrid(g) {
   const rowFr = normalizeFrArray(g.rowFr);
   return colFr || rowFr ? { colFr: colFr || [], rowFr: rowFr || [] } : null;
 }
+/* Clean a saved cmd-drag crop — the visible window into the media's extent as
+   fractions ({ x, y, w, h }, window within [0,1]²). Crops saved before offset
+   support carry only { w, h } and load anchored top-left. Bad values, or a crop
+   showing (nearly) everything, drop back to uncropped. */
+function normalizeCrop(c) {
+  if (!c) return null;
+  const x = Math.max(0, +c.x || 0), y = Math.max(0, +c.y || 0);
+  const w = +c.w, h = +c.h;
+  if (!isFinite(w) || !isFinite(h) || w <= 0 || h <= 0 || x + w > 1.001 || y + h > 1.001) return null;
+  if (w >= 0.999 && h >= 0.999) return null;
+  return { x, y, w, h };
+}
 
 function normalizeSaved(n) {
   const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor };
@@ -78,7 +90,8 @@ function normalizeSaved(n) {
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
   if (n.type === 'image' || n.type === 'video') {
     const grid = normalizeGrid(n.grid);
-    return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n), ...(grid ? { grid } : {}) };
+    const crop = normalizeCrop(n.crop);
+    return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n), ...(grid ? { grid } : {}), ...(crop ? { crop } : {}) };
   }
   if (n.type === 'sound') return { ...base, w: n.w || 260, h: n.h || 56, src: n.src || '', name: n.name || '', dur: n.dur || 0 };
   if (n.type === 'link') return { ...base, w: n.w || 280, url: n.url || '', title: n.title || '', desc: n.desc || '', image: n.image || '', siteName: n.siteName || '', favicon: n.favicon || '' };
@@ -501,8 +514,12 @@ export function CanvasProvider({
         chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
       } else chrome.edit.style.display = 'none';
       if ((type === 'frame' || type === 'md' || type === 'code' || type === 'tblock' || type === 'image' || type === 'video' || type === 'link') && !editing) {
-        chrome.rz.style.display = 'block'; chrome.rz.style.left = (sx + sw - 4) + 'px'; chrome.rz.style.top = (sy + sh - 4) + 'px';
-        chrome.rz.style.cursor = type === 'md' || type === 'code' || type === 'tblock' || type === 'link' ? 'ew-resize' : 'nwse-resize';
+        // The rz container spans the node's screen rect; CSS pins a handle to
+        // each corner (see .cv-rz-h). data-mode drives the handle cursors.
+        chrome.rz.style.display = 'block';
+        chrome.rz.style.left = sx + 'px'; chrome.rz.style.top = sy + 'px';
+        chrome.rz.style.width = sw + 'px'; chrome.rz.style.height = sh + 'px';
+        chrome.rz.dataset.mode = type === 'md' || type === 'code' || type === 'tblock' || type === 'link' ? 'ew' : 'xy';
       } else chrome.rz.style.display = 'none';
     }
     /* Faint hover outline for the node under the cursor (edit mode only). Drawn
@@ -1044,6 +1061,11 @@ export function CanvasProvider({
         if (n.grid && (n.grid.colFr || n.grid.rowFr)) {
           const round = (arr) => (arr || []).map((v) => Math.round(v * 1000) / 1000);
           o.grid = { colFr: round(n.grid.colFr), rowFr: round(n.grid.rowFr) };
+        }
+        // Cmd-drag crop: the visible window into the media's extent.
+        if (n.crop && n.crop.w > 0 && n.crop.h > 0) {
+          const r4 = (v) => Math.round((v || 0) * 10000) / 10000;
+          o.crop = { x: r4(n.crop.x), y: r4(n.crop.y), w: r4(n.crop.w), h: r4(n.crop.h) };
         }
       }
       else if (n.type === 'sound') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.name) o.name = n.name; if (n.dur) o.dur = n.dur; }

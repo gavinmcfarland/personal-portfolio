@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 105.62357786630785,
-        "y": 299.6407654419731,
-        "scale": 0.5108570479900256
+        "x": -1806.6228527291848,
+        "y": 1052.096928535854,
+        "scale": 1.6374823326417465
       },
       "nodes": [
         {
@@ -145,22 +145,6 @@
           "font": "script"
         },
         {
-          "id": "n15-image",
-          "type": "image",
-          "x": 1313.9646399774322,
-          "y": 857.4953386612893,
-          "z": 41,
-          "w": 600,
-          "h": 450,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/0dffe4bda16d8715.png",
-              "alt": "Slide 4_3 - 6.png"
-            }
-          ]
-        },
-        {
           "id": "n16-tblock",
           "type": "tblock",
           "x": 137.27955344821984,
@@ -187,11 +171,55 @@
           "z": 45,
           "w": 340,
           "text": "Figlet lets you run Figma API code inside Figma requiring no local setup."
+        },
+        {
+          "id": "n19-image",
+          "type": "image",
+          "x": 1380.7988867352271,
+          "y": 873.7444752158702,
+          "z": 46,
+          "w": 306.900549337111,
+          "h": 369.1964018836585,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/0dffe4bda16d8715.png",
+              "alt": "Slide 4_3 - 6.png"
+            }
+          ],
+          "crop": {
+            "x": 0.1923,
+            "y": 0.0361,
+            "w": 0.5115,
+            "h": 0.8205
+          }
+        },
+        {
+          "id": "n21-image",
+          "type": "image",
+          "x": 1382.5570163911088,
+          "y": -631.4125565061053,
+          "z": 48,
+          "w": 240.82586569264413,
+          "h": 363.04388439294405,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/df0004e0ca480b6c.png",
+              "alt": "Slide 4_3 - 7.png"
+            }
+          ],
+          "crop": {
+            "x": 0.284,
+            "y": 0.0155,
+            "w": 0.436,
+            "h": 0.8763
+          }
         }
       ],
       "shapes": []
     }
   ],
   "bgColor": "#7C2D91",
-  "savedAt": 1784125480791
+  "savedAt": 1784131956885
 }

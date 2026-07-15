@@ -415,32 +415,70 @@ export default function Canvas() {
       }
       if (a.type === 'resize') {
         const el = nodeEls.get(a.id); if (!el) return;
+        // Which edges this corner handle drags; the opposite corner stays anchored.
+        const fromLeft = a.corner === 'nw' || a.corner === 'sw';
+        const fromTop = a.corner === 'nw' || a.corner === 'ne';
+        const dx = (e.clientX - a.sx) / scale();
+        const dy = (e.clientY - a.sy) / scale();
+        const R = a.ox + a.ow, B = a.oy + a.oh; // fixed right/bottom edges when dragging left/top
         // Cmd-drag on a text block scales the font instead of the box width. The
         // scale tracks how far the handle would have stretched the box: font grows
-        // in proportion to (ow + dx) / ow, keeping the stored width untouched.
+        // in proportion to the stretched width / ow, keeping the stored width untouched.
         if (a.mdType === 'tblock' && (e.metaKey || e.ctrlKey)) {
-          const dx = (e.clientX - a.sx) / scale();
-          const f = Math.max(8, Math.round(a.ofs * (a.ow + dx) / a.ow));
+          const f = Math.max(8, Math.round(a.ofs * (a.ow + (fromLeft ? -dx : dx)) / a.ow));
           el.style.fontSize = f + 'px'; a.fontSize = f;
           eng.syncChrome(); return;
         }
-        const minW = a.mdType === 'md' ? 160 : a.mdType === 'code' ? 200 : a.mdType === 'tblock' ? 120 : a.mdType === 'link' ? 200 : 60;
-        const w = Math.max(minW, a.ow + (e.clientX - a.sx) / scale());
-        el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
-        if (a.mdType === 'image' || a.mdType === 'video') {
-          // Cmd-drag crops instead of scaling: both axes follow the pointer and
-          // the media (object-fit: cover, anchored top-left) is clipped to the
-          // box, so pulling the corner handle trims the right/bottom. Releasing
-          // Cmd mid-drag snaps back to the aspect-locked scale. Lone SVGs render
-          // `contain` (vector art), so they always keep the lock.
-          const h = (e.metaKey || e.ctrlKey) && !a.loneSvg
-            ? Math.max(40, a.oh + (e.clientY - a.sy) / scale())
-            : Math.max(1, Math.round(w * (a.oh / a.ow))); // lock aspect ratio
+        // Cmd-drag on a single image/video crops instead of scaling: the media
+        // freezes at its rendered extent (captured in Chrome.jsx) while the box
+        // follows the pointer and clips it, so each handle trims — or re-reveals —
+        // the edges it drags. Clamped to the media's extent: growing past it is a
+        // normal (aspect-locked) resize. Releasing Cmd mid-drag snaps back to the
+        // aspect-locked scale.
+        if ((a.mdType === 'image' || a.mdType === 'video') && a.crop && (e.metaKey || e.ctrlKey)) {
+          const c = a.crop;
+          // The media's world origin — the box slides over this fixed rect.
+          const MX = a.ox - c.x0 * c.cw, MY = a.oy - c.y0 * c.ch;
+          const minW = Math.min(60, c.cw), minH = Math.min(40, c.ch);
+          let x = a.ox, y = a.oy, w, h;
+          if (fromLeft) { x = Math.max(MX, Math.min(R - minW, a.ox + dx)); w = R - x; }
+          else w = Math.min(MX + c.cw - a.ox, Math.max(minW, a.ow + dx));
+          if (fromTop) { y = Math.max(MY, Math.min(B - minH, a.oy + dy)); h = B - y; }
+          else h = Math.min(MY + c.ch - a.oy, Math.max(minH, a.oh + dy));
+          el.style.transform = `translate(${x}px,${y}px)`; el.dataset.x = x; el.dataset.y = y; a.x = x; a.y = y;
+          el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
           el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
-        } else if (a.mdType !== 'md' && a.mdType !== 'tblock' && a.mdType !== 'code' && a.mdType !== 'link') {
-          const h = Math.max(40, a.oh + (e.clientY - a.sy) / scale());
-          el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
+          c.el.style.width = c.cw + 'px'; c.el.style.height = c.ch + 'px';
+          c.el.style.transform = `translate(${MX - x}px,${MY - y}px)`;
+          a.cropRect = { x: (x - MX) / c.cw, y: (y - MY) / c.ch, w: w / c.cw, h: h / c.ch };
+          eng.syncChrome(); return;
         }
+        if (a.crop && a.cropRect) {
+          // Cmd released mid-drag: undo the freeze so the media re-fits the box.
+          a.cropRect = null;
+          a.crop.el.style.width = a.crop.mw0; a.crop.el.style.height = a.crop.mh0;
+          a.crop.el.style.transform = a.crop.mt0;
+        }
+        const minW = a.mdType === 'md' ? 160 : a.mdType === 'code' ? 200 : a.mdType === 'tblock' ? 120 : a.mdType === 'link' ? 200 : 60;
+        const w = Math.max(minW, a.ow + (fromLeft ? -dx : dx));
+        el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
+        let h = null;
+        if (a.mdType === 'image' || a.mdType === 'video') {
+          // Multi-asset grids (no crop context) still free-resize under Cmd —
+          // their cover-cropped cells absorb the aspect change. Lone SVGs render
+          // `contain` (vector art), so they always keep the lock.
+          h = (e.metaKey || e.ctrlKey) && !a.loneSvg && !a.crop
+            ? Math.max(40, a.oh + (fromTop ? -dy : dy))
+            : Math.max(1, Math.round(w * (a.oh / a.ow))); // lock aspect ratio
+        } else if (a.mdType !== 'md' && a.mdType !== 'tblock' && a.mdType !== 'code' && a.mdType !== 'link') {
+          h = Math.max(40, a.oh + (fromTop ? -dy : dy));
+        }
+        if (h != null) { el.style.height = h + 'px'; el.dataset.h = h; a.h = h; }
+        // Left/top handles grow the box leftward/upward: shift the origin so the
+        // opposite corner stays put. Height-auto nodes keep their top edge.
+        const x = fromLeft ? R - w : a.ox;
+        const y = fromTop && h != null ? B - h : a.oy;
+        el.style.transform = `translate(${x}px,${y}px)`; el.dataset.x = x; el.dataset.y = y; a.x = x; a.y = y;
         eng.syncChrome(); return;
       }
       if (a.type === 'frameDraw') {
@@ -506,9 +544,27 @@ export default function Canvas() {
       }
       if (a.type === 'resize') {
         const patch = {};
+        if (a.x != null) patch.x = a.x;
+        if (a.y != null) patch.y = a.y;
         if (a.w != null) patch.w = a.w;
         if (a.h != null) patch.h = a.h;
         if (a.fontSize != null) patch.fontSize = a.fontSize;
+        if (a.cropRect) {
+          // Commit the crop as fractions of the media's extent (relative, so
+          // later aspect-locked scaling keeps the same framing). Dragged back
+          // out to the full media → drop the crop entirely.
+          const r4 = (v) => Math.round(Math.max(0, v) * 10000) / 10000;
+          patch.crop = a.cropRect.w >= 0.999 && a.cropRect.h >= 0.999
+            ? null
+            : { x: r4(a.cropRect.x), y: r4(a.cropRect.y), w: r4(a.cropRect.w), h: r4(a.cropRect.h) };
+          // Swap the drag's px freeze for the same geometry in relative units:
+          // React may skip re-writing a value-identical style prop, and stale
+          // px sizing wouldn't track later box resizes.
+          const m = a.crop.el;
+          m.style.width = patch.crop ? `${100 / patch.crop.w}%` : '';
+          m.style.height = patch.crop ? `${100 / patch.crop.h}%` : '';
+          m.style.transform = patch.crop ? `translate(${-patch.crop.x * 100}%,${-patch.crop.y * 100}%)` : '';
+        }
         if (Object.keys(patch).length) eng.updateNode(a.id, patch);
       }
       if (a.type === 'frameDraw') {
