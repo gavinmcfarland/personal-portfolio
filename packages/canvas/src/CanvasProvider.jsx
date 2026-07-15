@@ -709,26 +709,34 @@ export function CanvasProvider({
        per axis), and describe the resulting alignments as guide lines. Only
        on-screen objects attract — matching what the user can see line up.
        Returns { dx, dy, guides }. */
+    /* On-screen objects a gesture can align to: each contributes its three
+       vertical (left/centre/right) and three horizontal (top/centre/bottom)
+       lines. Nodes/shapes named in the skip sets are excluded (they're the ones
+       being moved or resized). Only objects within the viewport attract. */
+    function snapTargets(skipN, skipS) {
+      const r = viewportRef.current.getBoundingClientRect();
+      const tl = screenToWorld(r.left, r.top), br = screenToWorld(r.right, r.bottom);
+      const targets = [];
+      const add = (x, y, w, h) => {
+        if (x + w < tl.x || x > br.x || y + h < tl.y || y > br.y) return;
+        targets.push({ xs: [x, x + w / 2, x + w], ys: [y, y + h / 2, y + h] });
+      };
+      nodeEls.forEach((el, id) => {
+        if (!skipN || !skipN.has(id)) add(+el.dataset.x, +el.dataset.y, el.offsetWidth, el.offsetHeight);
+      });
+      shapeEls.forEach((el, id) => {
+        if (skipS && skipS.has(id)) return;
+        const bb = el.getBBox();
+        add(bb.x, bb.y, bb.width, bb.height);
+      });
+      return targets;
+    }
     function snapMoveDelta(items, dx, dy) {
       const box = moveBBox(items);
       if (!box) return { dx, dy, guides: null };
       const movingN = new Set(), movingS = new Set();
       for (const it of items) (it.kind === 'node' ? movingN : movingS).add(it.id);
-      const r = viewportRef.current.getBoundingClientRect();
-      const tl = screenToWorld(r.left, r.top), br = screenToWorld(r.right, r.bottom);
-      const targets = [];
-      const addTarget = (x, y, w, h) => {
-        if (x + w < tl.x || x > br.x || y + h < tl.y || y > br.y) return;
-        targets.push({ xs: [x, x + w / 2, x + w], ys: [y, y + h / 2, y + h] });
-      };
-      nodeEls.forEach((el, id) => {
-        if (!movingN.has(id)) addTarget(+el.dataset.x, +el.dataset.y, el.offsetWidth, el.offsetHeight);
-      });
-      shapeEls.forEach((el, id) => {
-        if (movingS.has(id)) return;
-        const bb = el.getBBox();
-        addTarget(bb.x, bb.y, bb.width, bb.height);
-      });
+      const targets = snapTargets(movingN, movingS);
       if (!targets.length) return { dx, dy, guides: null };
       const T = SNAP_PX / viewRef.scale;
       // Smallest shift (per axis) that lands a dragged edge/centre on a target's.
@@ -766,6 +774,38 @@ export function CanvasProvider({
       collect('v', fx, 'xs', fy[0], fy[2]);
       collect('h', fy, 'ys', fx[0], fx[2]);
       return { dx: sdx, dy: sdy, guides };
+    }
+    /* Snap-to-align while resizing. `cand` carries the world coords of the edges
+       this corner drags — the vertical edge (x) and/or horizontal edge (y), null
+       on an axis not in play. For each, returns the nearest target line within
+       range as { v: snapped coord, d: correction (v − cand), guide } or null;
+       `box` (the pre-snap box) only sets each guide's span. The caller decides
+       how to apply them — a free resize takes both, an aspect-locked one takes
+       whichever pulls least and scales the box to it. */
+    function snapResize(id, cand, box) {
+      const targets = snapTargets(new Set([id]), null);
+      if (!targets.length) return { x: null, y: null };
+      const T = SNAP_PX / viewRef.scale;
+      const solve = (val, key, axis, lo, hi) => {
+        if (val == null) return null;
+        let d = null;
+        for (const t of targets) for (const tv of t[key]) {
+          const dd = tv - val;
+          if (Math.abs(dd) <= T && (d === null || Math.abs(dd) < Math.abs(d))) d = dd;
+        }
+        if (d === null) return null;
+        const v = val + d;
+        let a = lo, b = hi;
+        for (const t of targets) if (t[key].some((tv) => Math.abs(tv - v) < SNAP_EPS)) {
+          const span = key === 'xs' ? t.ys : t.xs;
+          a = Math.min(a, span[0]); b = Math.max(b, span[2]);
+        }
+        return { v, d, guide: { axis, v, a, b } };
+      };
+      return {
+        x: solve(cand.x, 'xs', 'v', box.y, box.y + box.h),
+        y: solve(cand.y, 'ys', 'h', box.x, box.x + box.w),
+      };
     }
     /* Show/refresh the guide lines. Like the rest of the drag path this is
        imperative per-pointermove chrome, not React state. */
@@ -1837,7 +1877,7 @@ export function CanvasProvider({
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
       zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel, setHover, setGridEditGeom,
-      selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, setSnapGuides,
+      selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, snapResize, setSnapGuides,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, deleteSelected, deleteTarget,

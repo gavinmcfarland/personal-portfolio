@@ -418,8 +418,8 @@ export default function Canvas() {
         // Which edges this corner handle drags; the opposite corner stays anchored.
         const fromLeft = a.corner === 'nw' || a.corner === 'sw';
         const fromTop = a.corner === 'nw' || a.corner === 'ne';
-        const dx = (e.clientX - a.sx) / scale();
-        const dy = (e.clientY - a.sy) / scale();
+        let dx = (e.clientX - a.sx) / scale();
+        let dy = (e.clientY - a.sy) / scale();
         const R = a.ox + a.ow, B = a.oy + a.oh; // fixed right/bottom edges when dragging left/top
         // Cmd-drag on a text block scales the font instead of the box width. The
         // scale tracks how far the handle would have stretched the box: font grows
@@ -427,7 +427,7 @@ export default function Canvas() {
         if (a.mdType === 'tblock' && (e.metaKey || e.ctrlKey)) {
           const f = Math.max(8, Math.round(a.ofs * (a.ow + (fromLeft ? -dx : dx)) / a.ow));
           el.style.fontSize = f + 'px'; a.fontSize = f;
-          eng.syncChrome(); return;
+          eng.setSnapGuides(null); eng.syncChrome(); return;
         }
         // Cmd-drag on a single image/video crops instead of scaling: the media
         // freezes at its rendered extent (captured in Chrome.jsx) while the box
@@ -469,7 +469,7 @@ export default function Canvas() {
           c.el.style.width = c.cw + 'px'; c.el.style.height = c.ch + 'px';
           c.el.style.transform = `translate(${MX - x}px,${MY - y}px)`;
           a.cropRect = { x: (x - MX) / c.cw, y: (y - MY) / c.ch, w: w / c.cw, h: h / c.ch };
-          eng.syncChrome(); return;
+          eng.setSnapGuides(null); eng.syncChrome(); return;
         }
         if (a.crop && a.cropRect) {
           // Cmd released mid-drag: undo the freeze so the media re-fits the box.
@@ -478,6 +478,47 @@ export default function Canvas() {
           a.crop.el.style.transform = a.crop.mt0;
         }
         const minW = a.mdType === 'md' ? 160 : a.mdType === 'code' ? 200 : a.mdType === 'tblock' ? 120 : a.mdType === 'link' ? 200 : 60;
+        // Snap the dragged edge(s) to nearby objects' edges/centres — the same
+        // pull and guide lines a move gets. Centered (Alt) and free (Cmd) resizes
+        // opt out.
+        if (!e.altKey && !(e.metaKey || e.ctrlKey)) {
+          const box = { x: a.ox, y: a.oy, w: a.ow, h: a.oh };
+          const guides = [];
+          // Aspect-locked media scales as one: snapping either the vertical or the
+          // horizontal edge sets a target width; we take whichever pulls least and
+          // scale the whole box to it, so the bottom/side lines up even though only
+          // one axis is "dragged".
+          const aspectLocked = (a.mdType === 'image' || a.mdType === 'video') && !e.shiftKey;
+          if (aspectLocked) {
+            const bar = a.frameBar || 0;
+            const w0 = Math.max(minW, a.ow + (fromLeft ? -dx : dx));
+            const hOf = (w) => bar + w * (a.oh - bar) / a.ow; // box height at width w
+            const snap = eng.snapResize(a.id,
+              { x: fromLeft ? R - w0 : a.ox + w0, y: fromTop ? B - hOf(w0) : a.oy + hOf(w0) }, box);
+            const cands = [];
+            if (snap.x) cands.push({ w: fromLeft ? R - snap.x.v : snap.x.v - a.ox, d: Math.abs(snap.x.d), guide: snap.x.guide });
+            if (snap.y) { const h = fromTop ? B - snap.y.v : snap.y.v - a.oy; cands.push({ w: (h - bar) * a.ow / (a.oh - bar), d: Math.abs(snap.y.d), guide: snap.y.guide }); }
+            cands.sort((p, q) => p.d - q.d);
+            if (cands.length && cands[0].w >= minW) {
+              dx = fromLeft ? a.ow - cands[0].w : cands[0].w - a.ow;
+              guides.push(cands[0].guide);
+            }
+          } else {
+            // Independent edges. A text block's height is auto (no vertical edge);
+            // a Shift-locked non-media box scales on its dominant axis only.
+            let freeX = true, freeY = true;
+            if (a.mdType === 'md' || a.mdType === 'tblock' || a.mdType === 'code' || a.mdType === 'link') freeY = false;
+            else if (e.shiftKey && a.mdType !== 'image' && a.mdType !== 'video') {
+              if (Math.abs(dx) >= Math.abs(dy)) freeY = false; else freeX = false;
+            }
+            const ex = (fromLeft ? a.ox : R) + dx; // dragged vertical edge, world x
+            const ey = (fromTop ? a.oy : B) + dy;  // dragged horizontal edge, world y
+            const snap = eng.snapResize(a.id, { x: freeX ? ex : null, y: freeY ? ey : null }, box);
+            if (snap.x) { dx += snap.x.d; guides.push(snap.x.guide); }
+            if (snap.y) { dy += snap.y.d; guides.push(snap.y.guide); }
+          }
+          eng.setSnapGuides(guides);
+        } else eng.setSnapGuides(null);
         // Plain-resize modifiers (live, like the crop ones): Alt mirrors the
         // drag around the box center, Shift flips the aspect default — freeing
         // images/videos, locking everything else.
@@ -584,6 +625,7 @@ export default function Canvas() {
         }
       }
       if (a.type === 'resize') {
+        eng.setSnapGuides(null);
         const patch = {};
         if (a.x != null) patch.x = a.x;
         if (a.y != null) patch.y = a.y;

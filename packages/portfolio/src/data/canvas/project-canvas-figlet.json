@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": -378.3930812224669,
-        "y": -830.4133309365587,
-        "scale": 1.126526194899517
+        "x": -348.05584902393156,
+        "y": -756.58703862852,
+        "scale": 0.9840380994327976
       },
       "nodes": [
         {
@@ -64,8 +64,8 @@
         {
           "id": "n13-md",
           "type": "md",
-          "x": 152.51317147745715,
-          "y": 1335.8618429664111,
+          "x": -403.81357405580763,
+          "y": 1323.861842966411,
           "z": 73,
           "w": 340,
           "text": "Space is precious inside Figma so I wanted to be able to expand and collapse the plugin UI when it felt appropriate. Pages such as list views, settings, and logout collapse automatically, while code views expand automatically."
@@ -78,13 +78,13 @@
           "z": 40,
           "text": "What is Figlet?",
           "fontSize": 52,
-          "font": "script"
+          "font": "sans"
         },
         {
           "id": "n16-tblock",
           "type": "tblock",
-          "x": -319.22044655178024,
-          "y": 739.1323560458908,
+          "x": -309.96896137068177,
+          "y": 754.479635364108,
           "z": 42,
           "text": "Dynamic window widths",
           "fontSize": 52,
@@ -131,15 +131,6 @@
           }
         },
         {
-          "id": "n23-md",
-          "type": "md",
-          "x": -286.403754192615,
-          "y": -95.38080419069598,
-          "z": 60,
-          "w": 340,
-          "text": "# What is Figlet\n\nFiglet lets you run Figma API code inside Figma requiring no local setup."
-        },
-        {
           "id": "n24-image",
           "type": "image",
           "x": 1465.5728348631,
@@ -162,51 +153,26 @@
           }
         },
         {
-          "id": "n25-video",
-          "type": "video",
-          "x": -968.0239572965447,
-          "y": 890.6828367768259,
-          "z": 65,
-          "w": 578.1697264577356,
-          "h": 485,
-          "assets": [
-            {
-              "kind": "video",
-              "src": "/canvas-assets/a2b00a3c3dafd2a4.mp4",
-              "alt": "Generate_a_video_of_my_dream_w.mp4"
-            }
-          ],
-          "crop": {
-            "x": 0.3961,
-            "y": 0.0829,
-            "w": 0.4974,
-            "h": 0.6922
-          },
-          "frame": "browser",
-          "frameUrl": "example.com"
-        },
-        {
           "id": "n31-image",
           "type": "image",
-          "x": -319.22044655178024,
-          "y": 890.6828367768259,
+          "x": 585.0157427945045,
+          "y": 890.6828367768258,
           "z": 71,
           "w": 600,
-          "h": 486,
+          "h": 450,
           "assets": [
             {
               "kind": "image",
               "src": "/canvas-assets/122b0af0b96563fb.png",
               "alt": "home-20260715-135245-324-view@3x.png"
             }
-          ],
-          "frame": "plugin"
+          ]
         },
         {
           "id": "n32-image",
           "type": "image",
-          "x": 667.3376959304435,
-          "y": 889.6828367768259,
+          "x": -309.96896137068177,
+          "y": 890.6828367768258,
           "z": -5,
           "w": 600,
           "h": 486,
@@ -222,11 +188,11 @@
         {
           "id": "n33-image",
           "type": "image",
-          "x": 1416.788601106472,
-          "y": 1048.6828367768258,
+          "x": 238.53103862931823,
+          "y": 1252.861842966411,
           "z": 75,
-          "w": 103.47330351218773,
-          "h": 168,
+          "w": 156.29442813720397,
+          "h": 254,
           "assets": [
             {
               "kind": "image",
@@ -236,10 +202,26 @@
           ],
           "frame": "plugin",
           "frameScale": 0.0741
+        },
+        {
+          "id": "n34-image",
+          "type": "image",
+          "x": 1291.6238472728,
+          "y": 890.6828367768258,
+          "z": 76,
+          "w": 299.792394122885,
+          "h": 450,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/c58f4e1ee3901a68.png",
+              "alt": "Group 2.png"
+            }
+          ]
         }
       ],
       "shapes": []
     }
   ],
-  "savedAt": 1784157885793
+  "savedAt": 1784158847922
 }
