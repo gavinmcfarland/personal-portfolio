@@ -4,7 +4,7 @@ import {
   Slash, ArrowUpRight, Square, Circle, Mic,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
-import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES, FONTS } from '../constants';
+import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, themeInk } from '../constants';
 
 /* Vector shape tools grouped behind a single dropdown button in the toolbar. */
 const SHAPE_TOOLS = [
@@ -208,7 +208,8 @@ function Swatches() {
             <button
               key={hex}
               className={`swatch${curStroke === hex ? ' active' : ''}`}
-              style={{ background: hex }}
+              // Black flips to white in dark mode so the chip matches the stroke it draws.
+              style={{ background: themeInk(hex) }}
               onClick={() => pickStroke(hex)}
             />
           ))}
@@ -223,9 +224,10 @@ function Swatches() {
               <button
                 key={hex}
                 className={`swatch${none ? ' swatch-none' : ''}${curFill === hex ? ' active' : ''}`}
-                // Composite the translucent fill over white so the chip looks
-                // the same in both themes (on the board it sits over the actual bg).
-                style={none ? undefined : { backgroundColor: '#fff', backgroundImage: `linear-gradient(${hex},${hex})` }}
+                // Composite the translucent fill over white so the chip reads the
+                // same over any board bg. Black flips to white in dark mode (themeInk)
+                // to match the fill it draws.
+                style={none ? undefined : { backgroundColor: '#fff', backgroundImage: `linear-gradient(${themeInk(hex)},${themeInk(hex)})` }}
                 title={none ? name : undefined}
                 onClick={() => pickFill(hex)}
               />

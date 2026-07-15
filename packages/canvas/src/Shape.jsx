@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 import { useCanvas } from './CanvasProvider';
+import { themeInk } from './constants';
 
 /* One freehand / vector drawing, rendered as its own overlaid SVG (matching the
    mockup so each shape keeps an independent z-index in the shared stack). */
@@ -13,12 +14,15 @@ function Shape({ shape, draft }) {
     [shape.id, shapeEls, draft]
   );
 
-  const stroke = shape.stroke;
+  // Black stroke/fill flip to white in dark mode (themeInk maps them to theme
+  // tokens); every other hue passes through unchanged. The arrow marker reuses
+  // the resolved stroke below so its head matches.
+  const stroke = themeInk(shape.stroke);
   const width = shape.width || 3;
   const common = { className: 'shape', stroke, strokeWidth: width, 'data-id': shape.id, ref: setRef };
   // Inline style wins over the `.shape.fillable` CSS rule, so a per-shape fill
   // (or 'none' for a hollow shape) is the source of truth for rect/ellipse.
-  const fillStyle = { fill: shape.fill && shape.fill !== 'none' ? shape.fill : 'none' };
+  const fillStyle = { fill: shape.fill && shape.fill !== 'none' ? themeInk(shape.fill) : 'none' };
 
   let el = null;
   let defs = null;

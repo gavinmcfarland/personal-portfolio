@@ -67,3 +67,19 @@ export const COLORS = {
    and a dark, hue-tinted board in dark mode, never a washed-out light hue.
    The blend amount is the per-theme `--bg-tint` token (see canvas.css). */
 export const BG_COLORS = ['#787880', '#7C2D91', '#E5484D', '#2E7D32', '#1565C0', '#F5A524'];
+
+/* The palette's "black" stroke and fill are the only colours tied to the board's
+   ink: on a dark board they'd vanish, so they flip to white. Every other hue
+   reads fine in both themes and passes through unchanged. Rather than rewrite the
+   stored value (which stays the light-mode black, so swatches still match), map it
+   at render time to the theme-reactive --ink / --ink-fill tokens (canvas.css) —
+   the flip then follows a live theme toggle with no re-render. */
+export const INK_STROKE = '#141417';
+export const INK_FILL = '#1414174D';
+export function themeInk(color) {
+	if (!color) return color;
+	const c = color.toLowerCase();
+	if (c === INK_STROKE.toLowerCase()) return 'var(--ink)';
+	if (c === INK_FILL.toLowerCase()) return 'var(--ink-fill)';
+	return color;
+}

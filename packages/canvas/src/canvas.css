@@ -17,6 +17,9 @@
   --grid-strong: rgba(0, 0, 0, 0.12);
   --surface: #ffffff;
   --ink: #141417;
+  /* Translucent "black" shape fill — flips to translucent white in dark mode so
+     ink-filled shapes stay legible on a dark board (see themeInk in Shape.jsx). */
+  --ink-fill: #1414174d;
   --muted: #3c3c42;
   --faint: #8b8b91;
   --line: rgba(0, 0, 0, 0.11);
@@ -48,6 +51,7 @@
   --grid-strong: rgba(255, 255, 255, 0.1);
   --surface: #161619;
   --ink: #f2f2ef;
+  --ink-fill: #f2f2ef4d;
   --muted: #b4b4b9;
   --faint: #6c6c72;
   --line: rgba(242, 242, 239, 0.12);

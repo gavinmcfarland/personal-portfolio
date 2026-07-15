@@ -432,19 +432,37 @@ export default function Canvas() {
         // Cmd-drag on a single image/video crops instead of scaling: the media
         // freezes at its rendered extent (captured in Chrome.jsx) while the box
         // follows the pointer and clips it, so each handle trims — or re-reveals —
-        // the edges it drags. Clamped to the media's extent: growing past it is a
-        // normal (aspect-locked) resize. Releasing Cmd mid-drag snaps back to the
-        // aspect-locked scale.
+        // the edges it drags. Modifiers compose (and apply live mid-drag):
+        // Alt crops from the center (both sides move symmetrically) and Shift
+        // keeps the box's aspect ratio, following the dominant drag axis.
+        // Clamped to the media's extent: growing past it is a normal
+        // (aspect-locked) resize. Releasing Cmd mid-drag snaps back to that.
         if ((a.mdType === 'image' || a.mdType === 'video') && a.crop && (e.metaKey || e.ctrlKey)) {
           const c = a.crop;
           // The media's world origin — the box slides over this fixed rect.
           const MX = a.ox - c.x0 * c.cw, MY = a.oy - c.y0 * c.ch;
           const minW = Math.min(60, c.cw), minH = Math.min(40, c.ch);
-          let x = a.ox, y = a.oy, w, h;
-          if (fromLeft) { x = Math.max(MX, Math.min(R - minW, a.ox + dx)); w = R - x; }
-          else w = Math.min(MX + c.cw - a.ox, Math.max(minW, a.ow + dx));
-          if (fromTop) { y = Math.max(MY, Math.min(B - minH, a.oy + dy)); h = B - y; }
-          else h = Math.min(MY + c.ch - a.oy, Math.max(minH, a.oh + dy));
+          const center = e.altKey, aspect = e.shiftKey;
+          const CX = a.ox + a.ow / 2, CY = a.oy + a.oh / 2;
+          // Pointer-driven target sizes, and the media-extent ceiling for each
+          // axis: centered growth stops at the nearer media edge, anchored
+          // growth at the edge the handle drags toward.
+          let w = center ? a.ow + 2 * (fromLeft ? -dx : dx) : fromLeft ? R - (a.ox + dx) : a.ow + dx;
+          let h = center ? a.oh + 2 * (fromTop ? -dy : dy) : fromTop ? B - (a.oy + dy) : a.oh + dy;
+          const availW = center ? 2 * Math.min(CX - MX, MX + c.cw - CX) : fromLeft ? R - MX : MX + c.cw - a.ox;
+          const availH = center ? 2 * Math.min(CY - MY, MY + c.ch - CY) : fromTop ? B - MY : MY + c.ch - a.oy;
+          if (aspect) {
+            const k = Math.abs(dx) >= Math.abs(dy) ? w / a.ow : h / a.oh;
+            const kMin = Math.max(minW / a.ow, minH / a.oh);
+            const kMax = Math.min(availW / a.ow, availH / a.oh);
+            const kk = Math.min(kMax, Math.max(kMin, k));
+            w = a.ow * kk; h = a.oh * kk;
+          } else {
+            w = Math.min(availW, Math.max(minW, w));
+            h = Math.min(availH, Math.max(minH, h));
+          }
+          const x = center ? CX - w / 2 : fromLeft ? R - w : a.ox;
+          const y = center ? CY - h / 2 : fromTop ? B - h : a.oy;
           el.style.transform = `translate(${x}px,${y}px)`; el.dataset.x = x; el.dataset.y = y; a.x = x; a.y = y;
           el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
           el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
@@ -460,24 +478,37 @@ export default function Canvas() {
           a.crop.el.style.transform = a.crop.mt0;
         }
         const minW = a.mdType === 'md' ? 160 : a.mdType === 'code' ? 200 : a.mdType === 'tblock' ? 120 : a.mdType === 'link' ? 200 : 60;
-        const w = Math.max(minW, a.ow + (fromLeft ? -dx : dx));
-        el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
+        // Plain-resize modifiers (live, like the crop ones): Alt mirrors the
+        // drag around the box center, Shift flips the aspect default — freeing
+        // images/videos, locking everything else.
+        const center = e.altKey;
+        const wRaw = a.ow + (center ? 2 : 1) * (fromLeft ? -dx : dx);
+        const hRaw = a.oh + (center ? 2 : 1) * (fromTop ? -dy : dy);
+        let w = Math.max(minW, wRaw);
         let h = null;
         if (a.mdType === 'image' || a.mdType === 'video') {
-          // Multi-asset grids (no crop context) still free-resize under Cmd —
-          // their cover-cropped cells absorb the aspect change. Lone SVGs render
-          // `contain` (vector art), so they always keep the lock.
-          h = (e.metaKey || e.ctrlKey) && !a.loneSvg && !a.crop
-            ? Math.max(40, a.oh + (fromTop ? -dy : dy))
-            : Math.max(1, Math.round(w * (a.oh / a.ow))); // lock aspect ratio
+          // Aspect-locked unless freed. Multi-asset grids (no crop context)
+          // also free-resize under Cmd — their cover-cropped cells absorb the
+          // aspect change. A freed lone SVG letterboxes (it renders `contain`).
+          const free = e.shiftKey || ((e.metaKey || e.ctrlKey) && !a.loneSvg && !a.crop);
+          h = free ? Math.max(40, hRaw) : Math.max(1, Math.round(w * (a.oh / a.ow)));
         } else if (a.mdType !== 'md' && a.mdType !== 'tblock' && a.mdType !== 'code' && a.mdType !== 'link') {
-          h = Math.max(40, a.oh + (fromTop ? -dy : dy));
+          if (e.shiftKey) {
+            // Shift locks the box aspect, following the dominant drag axis.
+            const k = Math.abs(dx) >= Math.abs(dy) ? wRaw / a.ow : hRaw / a.oh;
+            w = Math.max(minW, a.ow * k);
+            h = Math.max(40, Math.round(w * (a.oh / a.ow)));
+          } else {
+            h = Math.max(40, hRaw);
+          }
         }
+        el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
         if (h != null) { el.style.height = h + 'px'; el.dataset.h = h; a.h = h; }
-        // Left/top handles grow the box leftward/upward: shift the origin so the
-        // opposite corner stays put. Height-auto nodes keep their top edge.
-        const x = fromLeft ? R - w : a.ox;
-        const y = fromTop && h != null ? B - h : a.oy;
+        // Anchor: centered resizes mirror around the box middle; otherwise
+        // left/top handles pin the opposite corner. Height-auto nodes keep
+        // their top edge.
+        const x = center ? a.ox + (a.ow - w) / 2 : fromLeft ? R - w : a.ox;
+        const y = h == null ? a.oy : center ? a.oy + (a.oh - h) / 2 : fromTop ? B - h : a.oy;
         el.style.transform = `translate(${x}px,${y}px)`; el.dataset.x = x; el.dataset.y = y; a.x = x; a.y = y;
         eng.syncChrome(); return;
       }
