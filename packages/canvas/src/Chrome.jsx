@@ -225,7 +225,11 @@ export default function Chrome() {
     const ow = n.w != null ? +n.w : el ? el.offsetWidth : 0;
     // Original font size, for cmd-drag text scaling (falls back to the rendered CSS size).
     const ofs = n.fontSize != null ? +n.fontSize : el ? parseFloat(getComputedStyle(el).fontSize) : 24;
-    actionRef.current = { type: 'resize', id: n.id, sx: e.clientX, sy: e.clientY, ow, oh: +n.h, ofs, mdType: n.type };
+    // A lone SVG renders `contain` (vector art), so cmd-drag cropping doesn't
+    // apply — it would letterbox, not crop. Legacy nodes carry a top-level svg flag.
+    const loneSvg = n.type === 'image' &&
+      (n.assets && n.assets.length ? n.assets.length === 1 && !!n.assets[0].svg : !!n.svg);
+    actionRef.current = { type: 'resize', id: n.id, sx: e.clientX, sy: e.clientY, ow, oh: +n.h, ofs, mdType: n.type, loneSvg };
   };
 
   return (

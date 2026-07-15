@@ -428,7 +428,14 @@ export default function Canvas() {
         const w = Math.max(minW, a.ow + (e.clientX - a.sx) / scale());
         el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
         if (a.mdType === 'image' || a.mdType === 'video') {
-          const h = Math.max(1, Math.round(w * (a.oh / a.ow))); // lock aspect ratio
+          // Cmd-drag crops instead of scaling: both axes follow the pointer and
+          // the media (object-fit: cover, anchored top-left) is clipped to the
+          // box, so pulling the corner handle trims the right/bottom. Releasing
+          // Cmd mid-drag snaps back to the aspect-locked scale. Lone SVGs render
+          // `contain` (vector art), so they always keep the lock.
+          const h = (e.metaKey || e.ctrlKey) && !a.loneSvg
+            ? Math.max(40, a.oh + (e.clientY - a.sy) / scale())
+            : Math.max(1, Math.round(w * (a.oh / a.ow))); // lock aspect ratio
           el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
         } else if (a.mdType !== 'md' && a.mdType !== 'tblock' && a.mdType !== 'code' && a.mdType !== 'link') {
           const h = Math.max(40, a.oh + (e.clientY - a.sy) / scale());
