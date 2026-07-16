@@ -57,6 +57,27 @@ function resolveAnchor(spec) {
   return { ax: ax == null ? 0.5 : ax, ay: ay == null ? 0.5 : ay };
 }
 
+/* Normalise a `scaleWithContainer` spec into a mode string (or null = off).
+   `true` → 'min' (contain-like: keeps the same region framed as the box grows
+   or shrinks); an explicit 'width' | 'height' | 'min' | 'max' picks which
+   axis-ratio drives the zoom. */
+function resolveScaleMode(spec) {
+  if (spec === true) return 'min';
+  if (spec === 'width' || spec === 'height' || spec === 'min' || spec === 'max') return spec;
+  return null;
+}
+
+/* The zoom factor to apply for a container size change (old W0×H0 → new W×H),
+   given a scale mode. 1 = no zoom. */
+function resizeScaleFactor(mode, W0, H0, W, H) {
+  const rw = W0 ? W / W0 : 1;
+  const rh = H0 ? H / H0 : 1;
+  if (mode === 'width') return rw;
+  if (mode === 'height') return rh;
+  if (mode === 'max') return Math.max(rw, rh);
+  return Math.min(rw, rh); // 'min' (default): contain-like
+}
+
 /* Normalise a persisted (serialised) annotation node back into the live model. */
 /* Recognise an SVG from a node's stored src/alt, so boards saved before the
    `svg` flag existed still render without the photo card chrome. An `idb:` ref
@@ -244,6 +265,7 @@ export function CanvasProvider({
   ui = true, // set false to hide the overlay panels (top bar, toolbar, zoom, context menu)
   initialView = null, // 'fit' frames all content on mount instead of restoring the saved pan/zoom
   resizeAnchor = 'top-left', // which point of the board stays fixed when the container resizes: one of the 9 named points ('top-left','top','top-right','left','center','right','bottom-left','bottom','bottom-right') or an { x, y } fraction pair. 'top-left' = the historical behaviour.
+  scaleWithContainer = false, // zoom the board in/out as the container grows/shrinks (scaling about `resizeAnchor`). false = constant zoom; true = 'min' (contain-like, keeps the same region framed); or pick the driving axis-ratio with 'width' | 'height' | 'min' | 'max'.
   saveStatus = true, // show the background-save status indicator (bottom-right) while editing
   cooperativeGestures = false, // opt-in: in VIEW mode, let the page scroll past — plain wheel scrolls the page (⌘/Ctrl+wheel zooms), one finger scrolls the page (two fingers pan/zoom). Automatically inactive while EDITING (readOnly false), where authoring needs full gesture control — so a board that toggles between view/edit cooperates only in view mode.
   clickToInteract = false, // gate the board behind a "Click to interact" overlay: locked = the page scrolls past untouched; click unlocks normal pan/zoom; scrolling the page / clicking off / Esc relocks. Supersedes the cooperativeGestures hints.
@@ -353,6 +375,7 @@ export function CanvasProvider({
   // Where the board scales from on a container resize, and the last measured
   // viewport size to diff against. Captured once, like the other view config.
   const RESIZE_ANCHOR = useRef(resolveAnchor(resizeAnchor)).current;
+  const SCALE_MODE = useRef(resolveScaleMode(scaleWithContainer)).current;
   const lastVpSize = useRef(null);
   const actionRef = useRef(null);
   const zoomRAF = useRef(0);
@@ -449,23 +472,37 @@ export function CanvasProvider({
     function vpW() { const el = viewportRef.current; return el ? el.clientWidth : 0; }
     function vpH() { const el = viewportRef.current; return el ? el.clientHeight : 0; }
 
-    /* Called whenever the container resizes. The world transform is anchored at
-       the viewport's top-left, so left unadjusted the board stays pinned there
-       as the box grows/shrinks. To keep a different point fixed (per
-       `resizeAnchor`), shift the view by the size delta times the anchor
-       fraction: 0 (left/top) = no shift, 0.5 = follow the centre, 1 = pin the
-       right/bottom edge. The first call just records the baseline size. */
+    /* Called whenever the container resizes. Two behaviours compose here, both
+       pivoting about `resizeAnchor` (ax, ay as viewport fractions):
+
+         • Reposition — the world transform is anchored at the viewport's
+           top-left, so left unadjusted the board stays pinned there as the box
+           grows/shrinks. The anchor fraction decides which point stays put:
+           0 (left/top) = no shift, 0.5 = follow the centre, 1 = pin the
+           right/bottom edge.
+         • Rescale — when `scaleWithContainer` is on, the zoom tracks the size
+           change (factor `f`) so the board grows/shrinks with its container,
+           scaling about that same anchor point.
+
+       Both reduce to one pivot formula: keep the world point under the anchor
+       fixed while the box goes prev→new and the scale goes s0→s1. The first
+       call just records the baseline size. */
     function reframeOnResize() {
       const W = vpW(), H = vpH();
       if (!W || !H) return; // not laid out yet — wait for a real measurement
       const prev = lastVpSize.current;
       lastVpSize.current = { w: W, h: H };
       if (!prev) return; // baseline captured; nothing to reframe against yet
-      const dx = RESIZE_ANCHOR.ax * (W - prev.w);
-      const dy = RESIZE_ANCHOR.ay * (H - prev.h);
-      if (!dx && !dy) { syncChrome(); return; }
-      viewRef.x += dx; viewRef.y += dy;
-      targetRef.x += dx; targetRef.y += dy;
+      const { ax, ay } = RESIZE_ANCHOR;
+      const s0 = viewRef.scale;
+      const f = SCALE_MODE ? resizeScaleFactor(SCALE_MODE, prev.w, prev.h, W, H) : 1;
+      const s1 = SCALE_MODE ? clampScale(s0 * f) : s0;
+      const k = s1 / s0; // effective factor after zoom clamping (1 when scaling off)
+      const nx = ax * W - (ax * prev.w - viewRef.x) * k;
+      const ny = ay * H - (ay * prev.h - viewRef.y) * k;
+      if (nx === viewRef.x && ny === viewRef.y && s1 === s0) { syncChrome(); return; }
+      viewRef.x = nx; viewRef.y = ny; viewRef.scale = s1;
+      targetRef.x = nx; targetRef.y = ny; targetRef.scale = s1;
       applyView(); // repaints the transform + chrome (and persists in edit mode)
     }
 
