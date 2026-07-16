@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": -2779.705442286147,
-        "y": -1689.8938422823483,
-        "scale": 1.857359667814892
+        "x": -1653.948387510473,
+        "y": -392.5468137091017,
+        "scale": 0.8504426373588047
       },
       "nodes": [
         {
@@ -19,24 +19,6 @@
           "z": 73,
           "w": 340,
           "text": "Space is precious inside Figma so I wanted to be able to expand and collapse the plugin UI when it felt appropriate. Pages such as list views, settings, and logout collapse automatically, while code views expand automatically."
-        },
-        {
-          "id": "n31-image",
-          "type": "image",
-          "x": 508.40660659259504,
-          "y": 890.6828367768259,
-          "z": 71,
-          "w": 600,
-          "h": 486,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/122b0af0b96563fb.png",
-              "alt": "home-20260715-135245-324-view@3x.png"
-            }
-          ],
-          "frame": "plugin",
-          "frameTitle": "Figlet"
         },
         {
           "id": "n32-image",
@@ -137,15 +119,44 @@
           "z": 81,
           "text": "Settings",
           "font": "serif"
+        },
+        {
+          "id": "n40-image",
+          "type": "image",
+          "x": 508.40660659259504,
+          "y": 890.6828367768259,
+          "z": 82,
+          "w": 600,
+          "h": 486,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/122b0af0b96563fb.png",
+              "alt": "home-20260715-135245-324-view@3x.png"
+            }
+          ],
+          "frame": "plugin",
+          "frameTitle": "Figlet"
+        },
+        {
+          "id": "n43-html",
+          "type": "html",
+          "x": 2398.860618472322,
+          "y": 890.6828367768258,
+          "z": 85,
+          "w": 598.4282738878301,
+          "h": 483.9167586779017,
+          "src": "/canvas-assets/e78e73c09ea2496f.html",
+          "name": "home-20260716-195259-815.html",
+          "frame": "plugin"
         }
       ],
       "shapes": []
     }
   ],
-  "gridHidden": true,
   "viewport": {
-    "w": 2070,
-    "h": 887
+    "w": 1751,
+    "h": 884
   },
-  "savedAt": 1784210194291
+  "savedAt": 1784235691273
 }

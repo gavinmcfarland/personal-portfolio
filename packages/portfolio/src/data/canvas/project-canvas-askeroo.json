@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 290.1675213179793,
-        "y": 238.77050723514313,
-        "scale": 1.0091951360256743
+        "x": 378.9197039578016,
+        "y": 284.19495413253264,
+        "scale": 0.9378779612821333
       },
       "nodes": [
         {
@@ -95,11 +95,21 @@
           "text": "A flow is simply an object made up of prompts. Run these prompts by calling the object with `ask()`."
         },
         {
-          "id": "n9-video",
+          "id": "n10-tblock",
+          "type": "tblock",
+          "x": 1028.6700162478833,
+          "y": -248.08737159719826,
+          "z": 16,
+          "text": "Some stuff",
+          "fontSize": 59,
+          "font": "script"
+        },
+        {
+          "id": "n11-video",
           "type": "video",
           "x": 58.66033935546875,
           "y": -107.38295977269374,
-          "z": 13,
+          "z": 17,
           "w": 925.2572303409027,
           "h": 527,
           "assets": [
@@ -110,16 +120,6 @@
             }
           ],
           "frame": "terminal"
-        },
-        {
-          "id": "n10-tblock",
-          "type": "tblock",
-          "x": 1028.6700162478833,
-          "y": -248.08737159719826,
-          "z": 16,
-          "text": "Some stuff",
-          "fontSize": 59,
-          "font": "script"
         }
       ],
       "shapes": [
@@ -299,9 +299,10 @@
       ]
     }
   ],
+  "gridHidden": true,
   "viewport": {
-    "w": 1728,
-    "h": 842
+    "w": 1751,
+    "h": 910
   },
-  "savedAt": 1784200480512
+  "savedAt": 1784224550800
 }

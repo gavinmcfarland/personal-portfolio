@@ -499,6 +499,40 @@
   pointer-events: none;
 }
 
+/* HTML document node — a dropped/pasted .html file rendered live in a sandboxed
+   iframe. The iframe is inert (pointer-events:none) until the node goes live
+   (double-click in edit mode / tap in view mode — see Canvas.jsx), so drags and
+   pans over it behave like any other node; the shield is the explicit hit
+   surface on top while inert. */
+.canvas-root .node.html {
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  background: var(--surface);
+}
+.canvas-root .node.html .cv-html-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  max-width: none; /* host resets (see .node.image img) must not squash it */
+  background: #fff; /* documents assume an opaque page behind them */
+  pointer-events: none;
+  user-select: none;
+}
+.canvas-root .node.html .cv-html-shield {
+  position: absolute;
+  inset: 0;
+}
+/* Live: the iframe takes the pointer; an accent outline says "interactive". */
+.canvas-root .node.html.live .cv-html-frame {
+  pointer-events: auto;
+}
+.canvas-root .node.html.live {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* Video playback controls — revealed on hover. Pointer events are stopped
    inside, so the bar never starts a node drag / pan / lightbox tap. */
 .canvas-root .node.video .vctrl {
@@ -580,7 +614,8 @@
    1px at the 36px baseline) so the whole frame — bar, text, icons, radius —
    scales as one unit. */
 .canvas-root .node.image.framed,
-.canvas-root .node.video.framed {
+.canvas-root .node.video.framed,
+.canvas-root .node.html.framed {
   background: var(--surface);
   /* Card outline matching the code node (1px solid --line), scaled off the bar
      so it tracks the frame in scale mode (--cv-df-u isn't defined on the node). */

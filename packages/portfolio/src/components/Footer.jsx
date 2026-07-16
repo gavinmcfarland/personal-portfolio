@@ -55,6 +55,7 @@ const Footer = () => (
           onPublish={boardSaver("footer-canvas-demo")}
           onUploadImage={uploadMedia}
           onUploadVideo={uploadMedia}
+          onUploadHtml={uploadMedia}
           onUnfurl={unfurlLink}
         />
       </div>

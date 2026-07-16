@@ -132,6 +132,13 @@ export default function Canvas() {
     if (e.button === 2) return;
     const vp = viewportRef.current;
 
+    // A press outside the live html node re-shields it (presses inside land in
+    // the iframe and never reach us). Applies in both edit and view mode.
+    if (S.htmlActiveId) {
+      const hEl = nodeEls.get(S.htmlActiveId);
+      if (!(hEl && hEl.contains(e.target))) eng.setHtmlActive(null);
+    }
+
     if (S.readOnly) {
       // Only genuine interactive controls (in read-only, just the code card's
       // copy button) swallow the gesture so a tap operates them. Everything else —
@@ -158,7 +165,8 @@ export default function Canvas() {
       const isMedia = nodeUnder && (nodeUnder.dataset.type === 'image' || nodeUnder.dataset.type === 'video');
       const cellEl = e.target.closest && e.target.closest('[data-media-idx]');
       const linkEl = e.target.closest && e.target.closest('.node.link');
-      actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: isMedia ? nodeUnder.dataset.id : null, imgIdx: cellEl ? +cellEl.dataset.mediaIdx : 0, linkId: linkEl ? linkEl.dataset.id : null };
+      const htmlEl = e.target.closest && e.target.closest('.node.html');
+      actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: isMedia ? nodeUnder.dataset.id : null, imgIdx: cellEl ? +cellEl.dataset.mediaIdx : 0, linkId: linkEl ? linkEl.dataset.id : null, htmlId: htmlEl ? htmlEl.dataset.id : null };
       rootClass('panning', true);
       vp.setPointerCapture(e.pointerId);
       return;
@@ -292,10 +300,13 @@ export default function Canvas() {
     const files = Array.from(e.dataTransfer.files || []);
     const audio = files.filter((f) => eng.isAudioFile(f) && !eng.isVideoFile(f));
     const visual = files.filter((f) => eng.isImageFile(f) || eng.isVideoFile(f));
-    if (audio.length || visual.length) {
+    const html = files.filter((f) => eng.isHtmlFile(f));
+    if (audio.length || visual.length || html.length) {
       e.preventDefault();
-      // Audio drops stay individual player cards; images/videos become (or join) a grid.
+      // Audio drops stay individual player cards; images/videos become (or join)
+      // a grid; HTML documents each become their own live iframe node.
       audio.forEach((file, i) => eng.addAudioFromFile(file, w.x + i * 24, w.y + i * 24));
+      html.forEach((file, i) => eng.addHtmlFromFile(file, w.x + i * 24, w.y + i * 24));
       if (visual.length) eng.addMediaFiles(visual, w.x, w.y, mediaNodeAt(e.clientX, e.clientY));
       return;
     }
@@ -328,6 +339,7 @@ export default function Canvas() {
       return;
     }
     if (type === 'link') { eng.openLink(id); return; }
+    if (type === 'html') { eng.setHtmlActive(id); return; } // go live: the iframe takes the pointer
     if (type !== 'sticky' && type !== 'tblock' && type !== 'md' && type !== 'code' && type !== 'sound') return;
     eng.setTool('select'); eng.selectNode(id); eng.startEditing(id);
   };
@@ -489,7 +501,7 @@ export default function Canvas() {
           a.crop.el.style.width = a.crop.mw0; a.crop.el.style.height = a.crop.mh0;
           a.crop.el.style.transform = a.crop.mt0;
         }
-        const minW = a.mdType === 'md' ? 160 : a.mdType === 'code' ? 200 : a.mdType === 'tblock' ? 120 : a.mdType === 'link' ? 200 : 60;
+        const minW = a.mdType === 'md' ? 160 : a.mdType === 'code' ? 200 : a.mdType === 'tblock' ? 120 : a.mdType === 'link' ? 200 : a.mdType === 'html' ? 200 : 60;
         // Snap the dragged edge(s) to nearby objects' edges/centres — the same
         // pull and guide lines a move gets. Centered (Alt) and free (Cmd) resizes
         // opt out.
@@ -500,7 +512,7 @@ export default function Canvas() {
           // horizontal edge sets a target width; we take whichever pulls least and
           // scale the whole box to it, so the bottom/side lines up even though only
           // one axis is "dragged".
-          const aspectLocked = (a.mdType === 'image' || a.mdType === 'video') && !e.shiftKey;
+          const aspectLocked = (a.mdType === 'image' || a.mdType === 'video' || a.mdType === 'html') && !e.shiftKey;
           if (aspectLocked) {
             const bar = a.frameBar || 0;
             const w0 = Math.max(minW, a.ow + (fromLeft ? -dx : dx));
@@ -539,10 +551,11 @@ export default function Canvas() {
         const hRaw = a.oh + (center ? 2 : 1) * (fromTop ? -dy : dy);
         let w = Math.max(minW, wRaw);
         let h = null;
-        if (a.mdType === 'image' || a.mdType === 'video') {
+        if (a.mdType === 'image' || a.mdType === 'video' || a.mdType === 'html') {
           // Aspect-locked unless freed. Multi-asset grids (no crop context)
           // also free-resize under Cmd — their cover-cropped cells absorb the
-          // aspect change. A freed lone SVG letterboxes (it renders `contain`).
+          // aspect change (html nodes likewise: no crop, so Cmd frees them).
+          // A freed lone SVG letterboxes (it renders `contain`).
           // A device frame's chrome bar (a.frameBar) is fixed height, so lock the
           // media's ratio — box minus bar — and add the bar back, else the media
           // gets clipped as the box ratio drifts from the media's.
@@ -592,6 +605,7 @@ export default function Canvas() {
         rootClass('panning', false);
         if (a.imgId && !a.moved) eng.openFullscreen(a.imgId, a.imgIdx || 0); // tap an image/video → full-screen
         if (a.linkId && !a.moved) eng.openLink(a.linkId);      // tap a link card → open it
+        if (a.htmlId && !a.moved) eng.setHtmlActive(a.htmlId); // tap an html demo → make it interactive
       }
       if (a.type === 'move') {
         eng.setSnapGuides(null);
@@ -749,6 +763,7 @@ export default function Canvas() {
       if (e.key === 'Escape') {
         if (S.recording) eng.cancelRecording();
         eng.exitGridEdit();
+        eng.setHtmlActive(null);
         eng.deselect(); setCtxMenu(null); eng.stopEditing();
         if (CLICK_TO_INTERACT && engagedRef.current) setEngaged(false);
       }

@@ -94,14 +94,22 @@ function TerminalBar({ node }) {
 
 const BARS = { plugin: PluginBar, terminal: TerminalBar };
 
+/* Just the chrome bar for `node.frame`'s style — for nodes that keep their own
+   stable wrapper structure (the html node renders its cv-df/cv-df-screen
+   skeleton permanently so toggling the frame never re-parents its iframe,
+   which would reload the document). */
+export function FrameBar({ node }) {
+  const Bar = BARS[node.frame] || BrowserBar;
+  return <Bar node={node} />;
+}
+
 export default function DeviceFrame({ node, children }) {
   // --cv-df-bar (the chrome-bar height, and the unit every chrome metric derives
   // from) is set on the node element by MediaNode so the node's corner radius can
   // scale off it too; here it's just inherited.
-  const Bar = BARS[node.frame] || BrowserBar;
   return (
     <div className={`cv-df cv-df--${node.frame}`}>
-      <Bar node={node} />
+      <FrameBar node={node} />
       <div className="cv-df-screen">{children}</div>
     </div>
   );

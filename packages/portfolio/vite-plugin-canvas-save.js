@@ -18,6 +18,7 @@ const KEY_RE = /^[a-zA-Z0-9_-]+$/;
 const EXT = {
   'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp', 'image/svg+xml': 'svg', 'image/avif': 'avif',
   'video/mp4': 'mp4', 'video/webm': 'webm', 'video/ogg': 'ogv', 'video/quicktime': 'mov',
+  'text/html': 'html',
 };
 function decodeDataUrl(dataUrl) {
   const m = /^data:([^;]+);base64,(.+)$/s.exec(dataUrl || '');
@@ -29,12 +30,13 @@ function decodeDataUrl(dataUrl) {
 
 /* Only our content-hash-named files are eligible for pruning — anything else in
    the folder (manually added images) is left untouched. */
-const ASSET_RE = /^[0-9a-f]{16}\.(?:png|jpg|gif|webp|svg|avif|mp4|webm|ogv|mov)$/;
+const ASSET_RE = /^[0-9a-f]{16}\.(?:png|jpg|gif|webp|svg|avif|mp4|webm|ogv|mov|html)$/;
 
 /* Content types for assets we serve directly (see the /canvas-assets handler). */
 const MIME = {
   png: 'image/png', jpg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml', avif: 'image/avif',
   mp4: 'video/mp4', webm: 'video/webm', ogv: 'video/ogg', mov: 'video/quicktime',
+  html: 'text/html',
 };
 
 /* Every node across a snapshot, whether it's the legacy single-board shape
@@ -59,6 +61,8 @@ function assetRefs(data) {
         if (a) { add(a.src); add(a.srcDark); }
       }
     }
+    // HTML nodes reference their document as a committed asset.
+    if (n && n.type === 'html') add(n.src);
     // Link cards bake their unfurled OG image in as a committed asset.
     if (n && n.type === 'link' && typeof n.image === 'string' && n.image.startsWith('/canvas-assets/')) {
       refs.add(n.image.slice('/canvas-assets/'.length));

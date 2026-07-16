@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Maximize, Scaling, AppWindow, Puzzle, Terminal, SquareX, Expand, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Trash2, Sun, Moon } from 'lucide-react';
+import { Maximize, Scaling, AppWindow, Puzzle, Terminal, SquareX, Expand, ExternalLink, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Trash2, Sun, Moon } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
@@ -55,8 +55,39 @@ export default function ContextMenu() {
   const themeAsset = isMedia && node.assets && node.assets[mediaIdx] && node.assets[mediaIdx].kind === 'image'
     ? node.assets[mediaIdx]
     : null;
+  const isHtml = node && node.type === 'html';
   const x = Math.min(ctxMenu.x, innerWidth - 190);
   const y = Math.min(ctxMenu.y, innerHeight - 190);
+
+  // Device-frame toggles, shared by single-asset photos/videos and html nodes.
+  const frameButtons = node && (
+    <>
+      <button className={node.frame === 'browser' ? 'active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'browser'))}>
+        <AppWindow />
+        Browser frame
+      </button>
+      <button className={node.frame === 'plugin' ? 'active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'plugin'))}>
+        <Puzzle />
+        Plugin frame
+      </button>
+      <button className={node.frame === 'terminal' ? 'active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'terminal'))}>
+        <Terminal />
+        Terminal frame
+      </button>
+      {node.frame && (
+        <button className={node.frameScale ? 'active' : ''} onClick={run(() => eng.toggleFrameScale(node.id))}>
+          <Expand />
+          Scale with object
+        </button>
+      )}
+      {node.frame && (
+        <button onClick={run(() => eng.toggleFrame(node.id, node.frame))}>
+          <SquareX />
+          Remove frame
+        </button>
+      )}
+    </>
+  );
 
   return (
     <div className="panel show" id="ctxmenu" style={{ left: x, top: y }}>
@@ -74,34 +105,7 @@ export default function ContextMenu() {
               Set to original size
             </button>
           )}
-          {singleAsset && !loneSvg && (
-            <>
-              <button className={node.frame === 'browser' ? 'active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'browser'))}>
-                <AppWindow />
-                Browser frame
-              </button>
-              <button className={node.frame === 'plugin' ? 'active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'plugin'))}>
-                <Puzzle />
-                Plugin frame
-              </button>
-              <button className={node.frame === 'terminal' ? 'active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'terminal'))}>
-                <Terminal />
-                Terminal frame
-              </button>
-              {node.frame && (
-                <button className={node.frameScale ? 'active' : ''} onClick={run(() => eng.toggleFrameScale(node.id))}>
-                  <Expand />
-                  Scale with object
-                </button>
-              )}
-              {node.frame && (
-                <button onClick={run(() => eng.toggleFrame(node.id, node.frame))}>
-                  <SquareX />
-                  Remove frame
-                </button>
-              )}
-            </>
-          )}
+          {singleAsset && !loneSvg && frameButtons}
           {themeAsset && (
             <>
               <button onClick={run(() => eng.pickThemeImage(node.id, mediaIdx, 'light'))}>
@@ -120,6 +124,16 @@ export default function ContextMenu() {
               )}
             </>
           )}
+          <div className="ctxsep" />
+        </>
+      )}
+      {isHtml && (
+        <>
+          <button onClick={run(() => eng.openHtml(node.id))}>
+            <ExternalLink />
+            Open in new tab
+          </button>
+          {frameButtons}
           <div className="ctxsep" />
         </>
       )}

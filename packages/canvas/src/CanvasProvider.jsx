@@ -143,6 +143,7 @@ function normalizeSaved(n) {
     return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n), ...(grid ? { grid } : {}), ...(crop ? { crop } : {}), ...(n.frame ? { frame: n.frame } : {}), ...(n.frameUrl ? { frameUrl: n.frameUrl } : {}), ...(n.frameTitle ? { frameTitle: n.frameTitle } : {}), ...(n.frameScale ? { frameScale: n.frameScale } : {}) };
   }
   if (n.type === 'sound') return { ...base, w: n.w || 260, h: n.h || 56, src: n.src || '', name: n.name || '', dur: n.dur || 0 };
+  if (n.type === 'html') return { ...base, w: n.w || 800, h: n.h || 500, src: n.src || '', name: n.name || '', ...(n.frame ? { frame: n.frame } : {}), ...(n.frameUrl ? { frameUrl: n.frameUrl } : {}), ...(n.frameTitle ? { frameTitle: n.frameTitle } : {}), ...(n.frameScale ? { frameScale: n.frameScale } : {}) };
   if (n.type === 'link') return { ...base, w: n.w || 280, url: n.url || '', title: n.title || '', desc: n.desc || '', image: n.image || '', siteName: n.siteName || '', favicon: n.favicon || '' };
   const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
   const ff = n.font ? { font: n.font } : null; // serif | sans | mono | script
@@ -263,6 +264,7 @@ export function CanvasProvider({
   onUploadImage = null,
   onUploadVideo = null,
   onUploadAudio = null,
+  onUploadHtml = null,
   onUnfurl = null, // optional (url) => { url, title, description, image, siteName, favicon } for pasted-link cards
   onChange = null,
   theme = null, // optional { mode, toggle } — renders a theme button in the top bar
@@ -331,6 +333,7 @@ export function CanvasProvider({
   const [ctxMenu, setCtxMenu] = useState(null); // {x,y,target:{kind,id}}
   const [fullscreen, setFullscreen] = useState(null); // { id, index } of the media asset shown in the lightbox
   const [gridEditId, setGridEditId] = useState(null); // media node whose grid proportions are being edited
+  const [htmlActiveId, setHtmlActiveId] = useState(null); // html node whose iframe is live (receives pointer events)
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
   const [gridHidden, setGridHidden] = useState(init.gridHidden || false); // board-wide dot-grid toggle (false = grid shown)
   const [publishState, setPublishState] = useState('idle'); // idle|saving|done|error
@@ -440,6 +443,7 @@ export function CanvasProvider({
   S.shapes = shapes;
   S.fullscreen = fullscreen;
   S.gridEditId = gridEditId;
+  S.htmlActiveId = htmlActiveId;
   S.recording = recording;
   S.pages = pages;
   S.activePageId = activePageId;
@@ -649,7 +653,7 @@ export function CanvasProvider({
       if ((type === 'md' || type === 'code') && !editing) {
         chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
       } else chrome.edit.style.display = 'none';
-      if ((type === 'frame' || type === 'md' || type === 'code' || type === 'tblock' || type === 'image' || type === 'video' || type === 'link') && !editing) {
+      if ((type === 'frame' || type === 'md' || type === 'code' || type === 'tblock' || type === 'image' || type === 'video' || type === 'link' || type === 'html') && !editing) {
         // The rz container spans the node's screen rect; CSS pins a handle to
         // each corner (see .cv-rz-h). data-mode drives the handle cursors.
         chrome.rz.style.display = 'block';
@@ -1034,8 +1038,12 @@ export function CanvasProvider({
     function toggleFrame(id, style = 'browser') {
       if (!EDITABLE || S.readOnly) return;
       const n = S.nodes.find((x) => x.id === id);
-      if (!n || (n.type !== 'image' && n.type !== 'video') || !n.assets || n.assets.length !== 1) return;
-      if (n.assets[0].svg) return;
+      // Framable: a single-asset photo/video, or an html node (its iframe fills
+      // the screen area under the chrome bar the same way media does).
+      if (!n) return;
+      if (n.type === 'html') { /* no asset constraints */ }
+      else if ((n.type !== 'image' && n.type !== 'video') || !n.assets || n.assets.length !== 1) return;
+      else if (n.assets[0].svg) return;
       const prev = n.frame || null;
       const next = prev === style ? null : style; // re-selecting the active style removes it
       const oldBar = prev ? frameBarH(prev) : 0;
@@ -1400,6 +1408,15 @@ export function CanvasProvider({
         if (n.frameScale) o.frameScale = Math.round(n.frameScale * 10000) / 10000;
       }
       else if (n.type === 'sound') { o.w = n.w; o.h = n.h; o.src = n.src; if (n.name) o.name = n.name; if (n.dur) o.dur = n.dur; }
+      else if (n.type === 'html') {
+        o.w = n.w; o.h = n.h; o.src = n.src;
+        if (n.name) o.name = n.name;
+        // Device frame, same fields as media.
+        if (n.frame) o.frame = n.frame;
+        if (n.frameUrl) o.frameUrl = n.frameUrl;
+        if (n.frameTitle) o.frameTitle = n.frameTitle;
+        if (n.frameScale) o.frameScale = Math.round(n.frameScale * 10000) / 10000;
+      }
       else if (n.type === 'link') {
         if (n.w != null) o.w = n.w;
         o.url = n.url;
@@ -1652,6 +1669,10 @@ export function CanvasProvider({
        first at the drop/paste call sites). */
     const isAudioFile = (f) =>
       !!f && (f.type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|oga|opus|flac|weba)$/i.test(f.name || ''));
+    /* An HTML document file — rendered live on the board inside a sandboxed
+       iframe (see nodes/Html.jsx). */
+    const isHtmlFile = (f) =>
+      !!f && (f.type === 'text/html' || /\.html?$/i.test(f.name || ''));
     /* Strip an ingest-time asset ({ kind, src, alt, svg, nat }) down to the
        persisted shape ({ kind, src, alt, svg }) — `nat` is only used to size the
        box on creation. */
@@ -1918,6 +1939,94 @@ export function CanvasProvider({
         console.error('[canvas] audio drop failed', err);
       }
     }
+    /* Theme-sync bridge baked into every ingested HTML document. The host page
+       can't reach into the iframe (opaque origin) and can't flip its
+       `prefers-color-scheme` (that tracks the OS alone), so the node posts
+       { type: 'canvas-theme', theme } into the frame (see nodes/Html.jsx) and
+       this script applies it: it rewrites the document's prefers-color-scheme
+       media rules to match the board's theme — so a document themed purely
+       with those media queries follows the host's theme switcher untouched —
+       and toggles a `dark` class on <html> for scripts/styles that want it.
+       Compound queries (`(prefers-color-scheme: dark) and (max-width: …)`)
+       lose their other conditions once flipped — acceptable for demo docs. */
+    const THEME_SYNC = `<script data-cv-theme-sync>(() => {
+  const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
+  const walk = (rules, dark) => {
+    for (const r of rules) {
+      // A rewritten rule's mediaText no longer mentions prefers-color-scheme,
+      // so membership in the flipped map must count as a match too or it
+      // would only ever flip once.
+      if (r.media && (flipped.has(r) || /prefers-color-scheme/i.test(r.media.mediaText))) {
+        if (!flipped.has(r)) flipped.set(r, /prefers-color-scheme:\\s*dark/i.test(r.media.mediaText));
+        r.media.mediaText = flipped.get(r) === dark ? 'all' : 'not all';
+      } else if (r.cssRules) walk(r.cssRules, dark);
+    }
+  };
+  const apply = (dark) => {
+    document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.style.colorScheme = dark ? 'dark' : 'light'; // UA defaults (bg, controls) follow too
+    for (const sheet of document.styleSheets) {
+      try { walk(sheet.cssRules, dark); } catch { /* unreadable sheet */ }
+    }
+  };
+  addEventListener('message', (e) => {
+    const d = e.data;
+    if (d && d.type === 'canvas-theme' && (d.theme === 'dark' || d.theme === 'light')) apply(d.theme === 'dark');
+  });
+  // Boot theme from the URL hash (set by the host, see nodes/Html.jsx): applied
+  // synchronously — this script sits at the end of <head>, after the document's
+  // styles but before any rendering — so the first paint is already themed; the
+  // message path only lands after load and would flash the OS theme first.
+  // Re-applied at DOMContentLoaded for any stylesheets later in the body.
+  const boot = /cv-theme=(dark|light)/.exec(location.hash || '');
+  if (boot) {
+    apply(boot[1] === 'dark');
+    addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
+  }
+})()</` + 'script>';
+    /* Inject the bridge at the end of <head> — after the document's own styles
+       (so the boot apply() sees them) yet before the body renders (else after
+       the head/html open tag, else prepended). Skipped when the document
+       already carries one (re-ingesting an exported asset). */
+    function injectThemeSync(html) {
+      if (html.includes('data-cv-theme-sync')) return html;
+      const close = /<\/head\s*>/i.exec(html);
+      if (close) return html.slice(0, close.index) + THEME_SYNC + html.slice(close.index);
+      const m = /<head[^>]*>/i.exec(html) || /<html[^>]*>/i.exec(html);
+      if (m) return html.slice(0, m.index + m[0].length) + THEME_SYNC + html.slice(m.index + m[0].length);
+      return THEME_SYNC + html;
+    }
+    /* Drop an HTML document as a live iframe node, centred on the cursor. HTML
+       has no intrinsic size, so the box starts at a desktop-ish default and
+       resizes freely. Storage mirrors the media flow: through `onUploadHtml`,
+       else IndexedDB past the inline cap, else a data URL — all of which work
+       as an iframe src (data:/blob: documents run as an opaque origin anyway). */
+    const HTML_W = 800, HTML_H = 500;
+    async function addHtmlFromFile(file, wx, wy) {
+      if (!EDITABLE || S.readOnly || !isHtmlFile(file)) return;
+      try {
+        // The stored copy carries the theme-sync bridge (and a text/html type —
+        // files synthesized from pasted text arrive typed, drag sources may not).
+        const typed = new Blob([injectThemeSync(await readText(file))], { type: 'text/html' });
+        let src;
+        if (onUploadHtml) {
+          src = await onUploadHtml(file, await readDataUrl(typed));
+          if (!src) throw new Error('onUploadHtml returned no src');
+        } else if (hasIDB && file.size > INLINE_MAX) {
+          src = await storeMediaBlob(typed);
+        } else {
+          src = await readDataUrl(typed);
+        }
+        const n = addNode({
+          id: newId('html'), type: 'html',
+          x: wx - HTML_W / 2, y: wy - HTML_H / 2, w: HTML_W, h: HTML_H,
+          src, name: file.name || 'document.html',
+        });
+        setToolState('select'); selectNode(n.id);
+      } catch (err) {
+        console.error('[canvas] html drop failed', err);
+      }
+    }
 
     /* ── Microphone recording ─────────────────────────────────────
        Recording lives in the engine (not a node) so its MediaRecorder survives
@@ -2102,6 +2211,13 @@ export function CanvasProvider({
       const m = /<svg[\s>][\s\S]*<\/svg\s*>/i.exec(str);
       return m ? m[0] : '';
     }
+    /* A pasted COMPLETE html document — source starting with a doctype or <html>
+       root. Deliberately strict: fragments and ordinary text (and the text/html
+       flavour every rich-text copy carries) must never turn into an html node. */
+    function pickHtmlDoc(str) {
+      const t = (str || '').replace(/^﻿/, '').trimStart();
+      return /^(?:<!doctype\s+html[\s>]|<html[\s>])/i.test(t) ? str : '';
+    }
     /* Paste image / gif / svg / video from the system clipboard, mirroring the
        drop flow. Returns true if it consumed the clipboard so the caller can
        fall back to the internal node clipboard when it didn't. Decoding/storage
@@ -2118,14 +2234,26 @@ export function CanvasProvider({
           .map((it) => it.getAsFile())
           .filter(Boolean);
       }
-      files = files.filter((f) => isImageFile(f) || isVideoFile(f) || isAudioFile(f));
+      files = files.filter((f) => isImageFile(f) || isVideoFile(f) || isAudioFile(f) || isHtmlFile(f));
       if (files.length) {
         // Audio has no visual grid — each clip is its own player card. Images and
-        // videos pasted together form one grid node.
+        // videos pasted together form one grid node. HTML documents each become
+        // their own live iframe node.
         const audio = files.filter((f) => isAudioFile(f) && !isVideoFile(f));
         const visual = files.filter((f) => isImageFile(f) || isVideoFile(f));
+        const html = files.filter(isHtmlFile);
         audio.forEach((file, i) => addAudioFromFile(file, wx + i * 24, wy + i * 24));
+        html.forEach((file, i) => addHtmlFromFile(file, wx + i * 24, wy + i * 24));
         if (visual.length) addMediaFiles(visual, wx, wy);
+        return true;
+      }
+      // A complete HTML document pasted as source text — wrap it as a file and
+      // render it live. Checked on text/plain only (the text/html flavour is
+      // populated by every rich-text copy) and BEFORE the SVG branch, so a
+      // document containing an inline <svg> doesn't become an image.
+      const doc = pickHtmlDoc(cd.getData('text/plain'));
+      if (doc) {
+        addHtmlFromFile(new File([doc], 'pasted.html', { type: 'text/html' }), wx, wy);
         return true;
       }
       // Raw SVG source copied as text — wrap it as a file so the image flow
@@ -2162,6 +2290,23 @@ export function CanvasProvider({
       setGridEditId(id);
     }
     function exitGridEdit() { setGridEditId(null); }
+    /* ── HTML node activation ─────────────────────────────────────
+       While an html node is "live" its shield drops and the sandboxed iframe
+       receives pointer events directly (see nodes/Html.jsx). Works in view mode
+       too — visitors can interact with a demo. Deactivated by a press outside
+       the node or Escape (see Canvas.jsx). */
+    function setHtmlActive(id) { setHtmlActiveId(id || null); }
+    /* Open an html node's document in a new tab (idb: refs resolve to an object
+       URL first). Sync window.open where possible so popup blockers stay calm. */
+    function openHtml(id) {
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || n.type !== 'html' || !n.src) return;
+      if (parseIdbRef(n.src)) {
+        resolveMediaSrc(n.src).then((u) => { if (u) window.open(u, '_blank', 'noopener,noreferrer'); });
+      } else {
+        window.open(n.src, '_blank', 'noopener,noreferrer');
+      }
+    }
     function stepFullscreen(delta) {
       setFullscreen((f) => {
         if (!f) return f;
@@ -2191,6 +2336,7 @@ export function CanvasProvider({
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
+      isHtmlFile, addHtmlFromFile, setHtmlActive, openHtml,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startEditing, stopEditing, setChrome,
       recordHistory, undo, redo,
@@ -2335,7 +2481,7 @@ export function CanvasProvider({
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
-    publishState, recording, fullscreen, gridEditId, pages, activePageId, pageData, bgColor, gridHidden,
+    publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
