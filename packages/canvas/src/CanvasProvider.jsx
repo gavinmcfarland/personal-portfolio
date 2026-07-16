@@ -392,6 +392,11 @@ export function CanvasProvider({
       : null
   );
   const reframing = useRef(false); // true while reframeOnResize applies, so applyView doesn't re-capture the base
+  // The container size the *persisted* view was framed at. Only edit-mode
+  // framings update it; view-mode carries it forward untouched — otherwise a
+  // view-mode autosave (which keeps the old edit-mode view, see snapshotActive)
+  // would pair that view with the current window size and corrupt the reference.
+  const framedVpSize = useRef(init.savedViewport ? { ...init.savedViewport } : null);
   const actionRef = useRef(null);
   const zoomRAF = useRef(0);
   const waTimer = useRef(0);
@@ -453,6 +458,10 @@ export function CanvasProvider({
       if (!reframing.current && lastVpSize.current) {
         resizeBase.current = { w: lastVpSize.current.w, h: lastVpSize.current.h, x: viewRef.x, y: viewRef.y, scale: viewRef.scale };
       }
+      // In edit mode the displayed view IS the view that gets persisted, so the
+      // current container size is its true framing size. In view mode the
+      // persisted view is the stale edit-mode one — leave framedVpSize alone.
+      if (!S.readOnly && lastVpSize.current) framedVpSize.current = { ...lastVpSize.current };
       w.style.transform = `translate(${viewRef.x}px,${viewRef.y}px) scale(${viewRef.scale})`;
       const step = GRID * viewRef.scale;
       vp.style.setProperty('--gx', (viewRef.x % step) + 'px');
@@ -1434,8 +1443,13 @@ export function CanvasProvider({
       if (S.gridHidden) snap.gridHidden = true;
       // Record the container size these views were framed at, so a later load
       // can reframe the pan/zoom relative to whatever size the board opens at.
-      const vw = vpW(), vh = vpH();
-      if (vw && vh) snap.viewport = { w: vw, h: vh };
+      // Use the framing size that matches the persisted view (see framedVpSize),
+      // NOT the live window size — in view mode the two differ and pairing the
+      // stale view with the current size would corrupt the reference. Fall back
+      // to the live size only in edit mode, where the view IS the current one.
+      let fv = framedVpSize.current;
+      if ((!fv || !fv.w || !fv.h) && !S.readOnly) { const vw = vpW(), vh = vpH(); if (vw && vh) fv = { w: vw, h: vh }; }
+      if (fv && fv.w > 0 && fv.h > 0) snap.viewport = { w: fv.w, h: fv.h };
       // Stamp when this snapshot was produced so loadInitial can tell an
       // in-code edit of the committed file apart from a stale localStorage
       // autosave (see the savedAt comparison there).
