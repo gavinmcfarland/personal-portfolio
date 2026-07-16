@@ -383,20 +383,23 @@ export function CanvasProvider({
   const RESIZE_ANCHOR = useRef(resolveAnchor(resizeAnchor)).current;
   const SCALE_MODE = useRef(resolveScaleMode(scaleWithContainer)).current;
   const lastVpSize = useRef(null); // latest measured container size {w,h}
-  // Reference {w,h,x,y,scale} that resize scaling/anchoring is computed from.
-  // Seeded from the saved viewport size so a reload reframes the persisted view
-  // to the current container; re-captured on user pan/zoom (see applyView).
-  const resizeBase = useRef(
+  const reframing = useRef(false); // true while reframeOnResize applies, so applyView doesn't re-capture the reference
+  // The CANONICAL reference {w,h,x,y,scale}: the container size + view of the
+  // last deliberate framing (edit-mode pan/zoom/fit, or the loaded snapshot).
+  // Resizes reframe the DISPLAY from this but never overwrite it, so:
+  //   • the persisted view stays anchored to the size it was framed at, and a
+  //     shrink → refresh → grow round-trips back to the exact same zoom (a
+  //     re-baseline at the shrunken size would let 'min'/'max' pick a different
+  //     axis on the way back and drift, e.g. 112% → 88%);
+  //   • a scale that clamped at a tiny size still recovers, since we recompute
+  //     from the reference, not the clamped value.
+  // Seeded from the saved viewport size so a reload reframes to the current
+  // container; re-captured on genuine edit-mode framings (see applyView).
+  const framedRef = useRef(
     init.savedViewport
       ? { w: init.savedViewport.w, h: init.savedViewport.h, x: active0.view.x, y: active0.view.y, scale: active0.view.scale }
       : null
   );
-  const reframing = useRef(false); // true while reframeOnResize applies, so applyView doesn't re-capture the base
-  // The container size the *persisted* view was framed at. Only edit-mode
-  // framings update it; view-mode carries it forward untouched — otherwise a
-  // view-mode autosave (which keeps the old edit-mode view, see snapshotActive)
-  // would pair that view with the current window size and corrupt the reference.
-  const framedVpSize = useRef(init.savedViewport ? { ...init.savedViewport } : null);
   const actionRef = useRef(null);
   const zoomRAF = useRef(0);
   const waTimer = useRef(0);
@@ -451,17 +454,15 @@ export function CanvasProvider({
     function applyView() {
       const w = worldRef.current, vp = viewportRef.current;
       if (!w || !vp) return;
-      // Any non-resize view change (user pan/zoom, fit, boot) becomes the new
-      // reference the next container resize is measured against — so scaling and
-      // anchoring track the latest intent and stay reversible across a
-      // shrink-then-grow. Uses the cached size (no layout read on the pan path).
-      if (!reframing.current && lastVpSize.current) {
-        resizeBase.current = { w: lastVpSize.current.w, h: lastVpSize.current.h, x: viewRef.x, y: viewRef.y, scale: viewRef.scale };
+      // A deliberate framing (user pan/zoom, fit) at the current size becomes the
+      // canonical reference that later resizes reframe from — and that gets
+      // persisted. Captured only in edit mode (in view mode the persisted view is
+      // the stale edit-mode one, and visitor pans are transient) and never during
+      // a resize reframe (that would re-baseline and break reversibility). Uses
+      // the cached size, so no layout read on the pan path.
+      if (!S.readOnly && !reframing.current && lastVpSize.current) {
+        framedRef.current = { w: lastVpSize.current.w, h: lastVpSize.current.h, x: viewRef.x, y: viewRef.y, scale: viewRef.scale };
       }
-      // In edit mode the displayed view IS the view that gets persisted, so the
-      // current container size is its true framing size. In view mode the
-      // persisted view is the stale edit-mode one — leave framedVpSize alone.
-      if (!S.readOnly && lastVpSize.current) framedVpSize.current = { ...lastVpSize.current };
       w.style.transform = `translate(${viewRef.x}px,${viewRef.y}px) scale(${viewRef.scale})`;
       const step = GRID * viewRef.scale;
       vp.style.setProperty('--gx', (viewRef.x % step) + 'px');
@@ -477,8 +478,10 @@ export function CanvasProvider({
       // View-mode pan/zoom is transient (snapshotActive keeps the saved view),
       // so only edit-mode view changes need to hit the autosave. Also commit the
       // new framing to the published snapshot in the background — but not on the
-      // boot-time apply, which would rewrite the board on every load.
-      if (!S.readOnly) {
+      // boot-time apply, which would rewrite the board on every load. Resize
+      // reframes are skipped too (reframing): they don't change the canonical
+      // reference, so there's nothing new to persist.
+      if (!S.readOnly && !reframing.current) {
         scheduleSave();
         if (booted.current) schedulePublish();
       }
@@ -515,20 +518,22 @@ export function CanvasProvider({
          • Rescale — when `scaleWithContainer` is on, the zoom tracks the size
            change (factor `f`) so the board grows/shrinks with its container.
 
-       Both reduce to one pivot formula, computed against the reference `base`
-       (its size + view), NOT the previous frame. Deriving from a fixed reference
-       keeps it reversible — shrinking one axis to nothing and growing it back
-       returns to exactly the base view (an incremental min/max ratio would pick
-       a different axis on the way back and never undo) — and clamp-safe: a scale
-       that saturated at a tiny size still recovers, since we recompute from the
-       base rather than the clamped value. The base is re-captured on any user
-       pan/zoom (see applyView); the first call just seeds it. */
+       Both reduce to one pivot formula, computed against the canonical
+       reference `base` (framedRef: its size + view), NOT the previous frame and
+       NOT the reframed display. Deriving from a reference that resizes never
+       move keeps it reversible — shrinking one axis to nothing and growing it
+       back returns to exactly the reference view, even across a page refresh
+       (a re-baseline at the shrunken size would let 'min'/'max' pick a different
+       axis on the way back and drift) — and clamp-safe: a scale that saturated
+       at a tiny size still recovers, since we recompute from the reference
+       rather than the clamped value. The reference is (re)captured only on
+       genuine edit-mode framings (see applyView); the first call just seeds it. */
     function reframeOnResize() {
       const W = vpW(), H = vpH();
       if (!W || !H) return; // not laid out yet — wait for a real measurement
       lastVpSize.current = { w: W, h: H };
-      const base = resizeBase.current;
-      if (!base) { resizeBase.current = { w: W, h: H, x: viewRef.x, y: viewRef.y, scale: viewRef.scale }; return; }
+      const base = framedRef.current;
+      if (!base) { framedRef.current = { w: W, h: H, x: viewRef.x, y: viewRef.y, scale: viewRef.scale }; return; }
       const { ax, ay } = RESIZE_ANCHOR;
       const f = SCALE_MODE ? resizeScaleFactor(SCALE_MODE, base.w, base.h, W, H) : 1;
       const s1 = SCALE_MODE ? clampScale(base.scale * f) : base.scale;
@@ -536,10 +541,10 @@ export function CanvasProvider({
       const nx = ax * W - (ax * base.w - base.x) * k;
       const ny = ay * H - (ay * base.h - base.y) * k;
       if (nx === viewRef.x && ny === viewRef.y && s1 === viewRef.scale) { syncChrome(); return; }
-      reframing.current = true; // this view change derives FROM the base — don't let applyView overwrite it
+      reframing.current = true; // this view derives FROM the reference — don't let applyView overwrite it
       viewRef.x = nx; viewRef.y = ny; viewRef.scale = s1;
       targetRef.x = nx; targetRef.y = ny; targetRef.scale = s1;
-      applyView(); // repaints the transform + chrome (and persists in edit mode)
+      applyView(); // repaints the transform + chrome
       reframing.current = false;
     }
 
@@ -1418,11 +1423,16 @@ export function CanvasProvider({
        started panning/zooming. */
     function snapshotActive() {
       const prev = pageData[S.activePageId];
-      pageData[S.activePageId] = {
-        nodes: S.nodes,
-        shapes: S.shapes,
-        view: S.readOnly && prev ? prev.view : { x: viewRef.x, y: viewRef.y, scale: viewRef.scale },
-      };
+      // Persist the CANONICAL framing (framedRef), not the reframed display — so
+      // the saved view is always paired with the size it was framed at (see
+      // serialize's viewport) and a load reframes it correctly. View mode keeps
+      // the stale edit-mode view (reader pan/zoom is transient); fall back to the
+      // live view only before the reference exists (fresh board, edit mode).
+      const fr = framedRef.current;
+      const view = S.readOnly && prev ? prev.view
+        : fr ? { x: fr.x, y: fr.y, scale: fr.scale }
+        : { x: viewRef.x, y: viewRef.y, scale: viewRef.scale };
+      pageData[S.activePageId] = { nodes: S.nodes, shapes: S.shapes, view };
     }
     /* Serialise every page into the compact multi-page snapshot shared by the dev
        localStorage autosave and the committed canvasState.json. */
@@ -1443,13 +1453,13 @@ export function CanvasProvider({
       if (S.gridHidden) snap.gridHidden = true;
       // Record the container size these views were framed at, so a later load
       // can reframe the pan/zoom relative to whatever size the board opens at.
-      // Use the framing size that matches the persisted view (see framedVpSize),
-      // NOT the live window size — in view mode the two differ and pairing the
-      // stale view with the current size would corrupt the reference. Fall back
-      // to the live size only in edit mode, where the view IS the current one.
-      let fv = framedVpSize.current;
-      if ((!fv || !fv.w || !fv.h) && !S.readOnly) { const vw = vpW(), vh = vpH(); if (vw && vh) fv = { w: vw, h: vh }; }
-      if (fv && fv.w > 0 && fv.h > 0) snap.viewport = { w: fv.w, h: fv.h };
+      // This is the canonical reference's size (framedRef) — it always matches
+      // the view snapshotActive persisted. Fall back to the live size only
+      // before the reference exists (fresh board, edit mode).
+      const fr = framedRef.current;
+      let fv = fr && fr.w > 0 && fr.h > 0 ? { w: fr.w, h: fr.h } : null;
+      if (!fv && !S.readOnly) { const vw = vpW(), vh = vpH(); if (vw && vh) fv = { w: vw, h: vh }; }
+      if (fv) snap.viewport = fv;
       // Stamp when this snapshot was produced so loadInitial can tell an
       // in-code edit of the committed file apart from a stale localStorage
       // autosave (see the savedAt comparison there).
@@ -2255,14 +2265,14 @@ export function CanvasProvider({
       if (!init.hadSaved) eng.saveNow();
       // Drop any saved-size seed: the reference is the freshly fitted view at
       // the current size (the first resize callback re-captures it).
-      resizeBase.current = null;
+      framedRef.current = null;
     } else {
       eng.applyView(); // paint the saved view
       // If we recorded the container size the view was framed at, reframe it to
       // the size the board actually opened at — so a reload on a different
       // screen / window size shows the zoom relative to the current container,
       // matching how a live resize behaves. A no-op when the sizes match.
-      if (resizeBase.current) eng.reframeOnResize();
+      if (framedRef.current) eng.reframeOnResize();
     }
     // From here on, view changes are user-driven and should publish.
     booted.current = true;
