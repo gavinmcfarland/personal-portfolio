@@ -9,9 +9,9 @@ import { useCanvas } from '../CanvasProvider';
    still drags the node; only an editable field re-enables its own pointer so it
    can be edited without starting a drag.
 
-   `node.frame` names the style. Two exist today — an abstract browser chrome and
-   a Figma-style plugin window; more (phone, tablet, …) can slot in as another
-   bar renderer + a `.cv-df--<style>` CSS block. */
+   `node.frame` names the style. Three exist today — an abstract browser chrome, a
+   Figma-style plugin window, and a macOS-style terminal; more (phone, tablet, …)
+   can slot in as another bar renderer + a `.cv-df--<style>` CSS block. */
 
 /* A committed-on-blur text field shared by the frame labels (browser URL /
    plugin title). Read-only boards show static text; editing never starts a node
@@ -76,13 +76,32 @@ function PluginBar({ node }) {
   );
 }
 
+/* macOS-style terminal: traffic-light dots on the left, a centred monospace
+   title. The spacer mirrors the dots' width so the title stays truly centred. */
+function TerminalBar({ node }) {
+  return (
+    <div className="cv-df-bar cv-df-bar--terminal">
+      <span className="cv-df-dots">
+        <i />
+        <i />
+        <i />
+      </span>
+      <FrameField node={node} field="frameTitle" value={node.frameTitle || 'bash'} placeholder="bash" className="cv-df-termtitle" />
+      <span className="cv-df-termspacer" />
+    </div>
+  );
+}
+
+const BARS = { plugin: PluginBar, terminal: TerminalBar };
+
 export default function DeviceFrame({ node, children }) {
   // --cv-df-bar (the chrome-bar height, and the unit every chrome metric derives
   // from) is set on the node element by MediaNode so the node's corner radius can
   // scale off it too; here it's just inherited.
+  const Bar = BARS[node.frame] || BrowserBar;
   return (
     <div className={`cv-df cv-df--${node.frame}`}>
-      {node.frame === 'plugin' ? <PluginBar node={node} /> : <BrowserBar node={node} />}
+      <Bar node={node} />
       <div className="cv-df-screen">{children}</div>
     </div>
   );

@@ -726,6 +726,21 @@
   height: calc(var(--cv-df-u) * 16);
 }
 
+/* Terminal window — traffic-light dots on the left, a centred monospace title.
+   Same bar as the others; the spacer balances the dots so the title centres. */
+.canvas-root .cv-df-termtitle {
+  flex: 1;
+  text-align: center;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: calc(var(--cv-df-u) * 12);
+  color: var(--muted);
+}
+.canvas-root .cv-df-termspacer {
+  flex: none;
+  /* Match the dots block: 3 dots (u·10) + 2 gaps (u·6) = u·42. */
+  width: calc(var(--cv-df-u) * 42);
+}
+
 /* Multi-asset media grid — a node holding several images / gifs / videos laid
    out in ~√n columns, each cell cover-cropped to fill its square. Each asset is
    its own rounded, shadowed tile (the chrome lives on the cells, not the node),
