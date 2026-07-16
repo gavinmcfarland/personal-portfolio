@@ -67,7 +67,7 @@ export default function ProjectCanvas({ project }) {
     <Canvas
       key={project.id}
       fit="contain"
-      initialView="fit"
+      resizeAnchor="center"
       accent={ACCENT}
       editable={import.meta.env.DEV}
       saveStatus

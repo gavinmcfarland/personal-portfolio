@@ -36,6 +36,27 @@ export const useCanvas = () => {
 
 const defaultView = () => ({ x: 0, y: 0, scale: 1 });
 
+/* Resolve a `resizeAnchor` spec into {ax, ay} fractions (0..1) of the viewport —
+   the point that stays put when the container resizes (e.g. the browser window).
+   'top-left' keeps the top-left corner fixed (the historical behaviour), 'center'
+   scales symmetrically from the middle, 'bottom-right' pins the bottom-right, etc.
+   Accepts any of the 9 named points (single-axis words like 'top' or 'right'
+   centre the other axis) or an explicit { x, y } fraction pair. */
+const H_FRAC = { left: 0, center: 0.5, middle: 0.5, right: 1 };
+const V_FRAC = { top: 0, center: 0.5, middle: 0.5, bottom: 1 };
+const clamp01 = (n) => Math.max(0, Math.min(1, Number(n) || 0));
+function resolveAnchor(spec) {
+  if (spec && typeof spec === 'object') return { ax: clamp01(spec.x), ay: clamp01(spec.y) };
+  let ax = null, ay = null;
+  for (const p of String(spec || 'top-left').toLowerCase().split(/[\s\-_]+/).filter(Boolean)) {
+    if (p === 'top' || p === 'bottom') ay = V_FRAC[p];
+    else if (p === 'left' || p === 'right') ax = H_FRAC[p];
+    else if (p === 'center' || p === 'middle') { if (ax == null) ax = 0.5; if (ay == null) ay = 0.5; }
+  }
+  // A single-axis word (e.g. 'top') leaves the other axis centred.
+  return { ax: ax == null ? 0.5 : ax, ay: ay == null ? 0.5 : ay };
+}
+
 /* Normalise a persisted (serialised) annotation node back into the live model. */
 /* Recognise an SVG from a node's stored src/alt, so boards saved before the
    `svg` flag existed still render without the photo card chrome. An `idb:` ref
@@ -222,6 +243,7 @@ export function CanvasProvider({
   fit = 'contain', // 'contain' fills the parent box; 'fullscreen' covers the browser viewport
   ui = true, // set false to hide the overlay panels (top bar, toolbar, zoom, context menu)
   initialView = null, // 'fit' frames all content on mount instead of restoring the saved pan/zoom
+  resizeAnchor = 'top-left', // which point of the board stays fixed when the container resizes: one of the 9 named points ('top-left','top','top-right','left','center','right','bottom-left','bottom','bottom-right') or an { x, y } fraction pair. 'top-left' = the historical behaviour.
   saveStatus = true, // show the background-save status indicator (bottom-right) while editing
   cooperativeGestures = false, // opt-in: in VIEW mode, let the page scroll past — plain wheel scrolls the page (⌘/Ctrl+wheel zooms), one finger scrolls the page (two fingers pan/zoom). Automatically inactive while EDITING (readOnly false), where authoring needs full gesture control — so a board that toggles between view/edit cooperates only in view mode.
   clickToInteract = false, // gate the board behind a "Click to interact" overlay: locked = the page scrolls past untouched; click unlocks normal pan/zoom; scrolling the page / clicking off / Esc relocks. Supersedes the cooperativeGestures hints.
@@ -328,6 +350,10 @@ export function CanvasProvider({
 
   const viewRef = useRef({ ...active0.view }).current;
   const targetRef = useRef({ ...active0.view }).current;
+  // Where the board scales from on a container resize, and the last measured
+  // viewport size to diff against. Captured once, like the other view config.
+  const RESIZE_ANCHOR = useRef(resolveAnchor(resizeAnchor)).current;
+  const lastVpSize = useRef(null);
   const actionRef = useRef(null);
   const zoomRAF = useRef(0);
   const waTimer = useRef(0);
@@ -422,6 +448,26 @@ export function CanvasProvider({
     }
     function vpW() { const el = viewportRef.current; return el ? el.clientWidth : 0; }
     function vpH() { const el = viewportRef.current; return el ? el.clientHeight : 0; }
+
+    /* Called whenever the container resizes. The world transform is anchored at
+       the viewport's top-left, so left unadjusted the board stays pinned there
+       as the box grows/shrinks. To keep a different point fixed (per
+       `resizeAnchor`), shift the view by the size delta times the anchor
+       fraction: 0 (left/top) = no shift, 0.5 = follow the centre, 1 = pin the
+       right/bottom edge. The first call just records the baseline size. */
+    function reframeOnResize() {
+      const W = vpW(), H = vpH();
+      if (!W || !H) return; // not laid out yet — wait for a real measurement
+      const prev = lastVpSize.current;
+      lastVpSize.current = { w: W, h: H };
+      if (!prev) return; // baseline captured; nothing to reframe against yet
+      const dx = RESIZE_ANCHOR.ax * (W - prev.w);
+      const dy = RESIZE_ANCHOR.ay * (H - prev.h);
+      if (!dx && !dy) { syncChrome(); return; }
+      viewRef.x += dx; viewRef.y += dy;
+      targetRef.x += dx; targetRef.y += dy;
+      applyView(); // repaints the transform + chrome (and persists in edit mode)
+    }
 
     /* smooth zoom glide */
     function markActive() {
@@ -2004,7 +2050,7 @@ export function CanvasProvider({
 
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
-      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, hideSelChrome, placeSel, setHover, setGridEditGeom,
+      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, reframeOnResize, hideSelChrome, placeSel, setHover, setGridEditGeom,
       selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, snapResize, setSnapGuides,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
@@ -2132,16 +2178,17 @@ export function CanvasProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* Re-sync chrome whenever the container resizes (section reflow, window
-     resize, sidebar toggles, …) — measured on the viewport, not the window. */
+  /* Reframe (per `resizeAnchor`) and re-sync chrome whenever the container
+     resizes (section reflow, window resize, sidebar toggles, …) — measured on
+     the viewport, not the window. */
   useEffect(() => {
     const vp = viewportRef.current;
     if (!vp || typeof ResizeObserver === 'undefined') {
-      const onResize = () => eng.syncChrome();
+      const onResize = () => eng.reframeOnResize();
       window.addEventListener('resize', onResize);
       return () => window.removeEventListener('resize', onResize);
     }
-    const ro = new ResizeObserver(() => eng.syncChrome());
+    const ro = new ResizeObserver(() => eng.reframeOnResize());
     ro.observe(vp);
     return () => ro.disconnect();
   }, [eng]);
