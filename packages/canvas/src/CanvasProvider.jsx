@@ -15,6 +15,13 @@ const DEFAULT_HOME_ID = 'home'; // id of the first page
 const GLOBAL_MODE_KEY = 'canvas-global-mode';
 const MODE_EVENT = 'canvas:mode';
 
+/* Marker written to the system clipboard on an in-canvas Copy. A later paste
+   uses it to tell "the user just copied a canvas object" apart from a stale
+   image/link left on the OS clipboard, so the internal node clipboard wins
+   instead of the last thing copied elsewhere. Carried in text/html (an invisible
+   attribute) so a plain-text paste into another app still gets the node's text. */
+const CLIP_MARK = 'data-canvas-clip';
+
 /* Format-on-type is likewise a single global preference shared by every code
    object on the page (and across tabs), not stored per-node. */
 const FORMAT_KEY = 'canvas-format-on-type';
@@ -974,11 +981,57 @@ export function CanvasProvider({
     function duplicateItemsAt(items, dx, dy) { duplicateItems(items, dx, dy, false); }
     /* Snapshot the current selection into the clipboard (deep-copied so later
        edits to the originals don't leak into a paste). */
-    function copySelected() {
-      const items = S.selected.map((it) => { const d = itemData(it); return d ? { kind: it.kind, data: JSON.parse(JSON.stringify(d)) } : null; }).filter(Boolean);
-      if (!items.length) return;
+    function copyItems(sel) {
+      const items = sel.map((it) => { const d = itemData(it); return d ? { kind: it.kind, data: JSON.parse(JSON.stringify(d)) } : null; }).filter(Boolean);
+      if (!items.length) return false;
       clipboard.current = items;
       pasteCount.current = 0;
+      stampClipboard(items);
+      return true;
+    }
+    function copySelected() { copyItems(S.selected); }
+    /* Cut = copy then remove. Snapshots to the clipboard first so a following
+       paste restores what was cut. */
+    function cutTarget(target) {
+      const items = targetsOf(target);
+      if (!copyItems(items)) return;
+      deleteItems(items);
+      deselect();
+    }
+    function cutSelected() { if (S.selected.length) cutTarget({ kind: 'multi' }); }
+    /* Overwrite the OS clipboard with a marker (and any node text) so a following
+       paste knows this in-canvas Copy is fresher than whatever the OS clipboard
+       held before. Best-effort: clipboard writes are gesture-scoped and
+       permission-gated, so failures are ignored — the paste side also falls back
+       to the internal clipboard when no marker is found. */
+    function stampClipboard(items) {
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.write || typeof ClipboardItem === 'undefined') return;
+        const plain = items.map(({ data }) => (data && typeof data.text === 'string' ? data.text : '')).filter(Boolean).join('\n\n');
+        const html = `<div ${CLIP_MARK}="1"></div>`;
+        const ci = new ClipboardItem({
+          'text/plain': new Blob([plain], { type: 'text/plain' }),
+          'text/html': new Blob([html], { type: 'text/html' }),
+        });
+        navigator.clipboard.write([ci]).catch(() => {});
+      } catch { /* clipboard unavailable */ }
+    }
+    /* Does a paste-event's clipboard carry our copy marker? Sync so the native
+       `paste` handler can decide before reaching for OS media. */
+    function systemClipIsMine(cd) {
+      if (!cd) return false;
+      const html = cd.getData('text/html');
+      return !!html && html.includes(CLIP_MARK);
+    }
+    /* Same check for the async right-click paste, which reads ClipboardItems. */
+    async function readClipItemsAreMine(clipItems) {
+      if (!clipItems) return false;
+      for (const item of clipItems) {
+        if (item.types.includes('text/html')) {
+          try { const html = await (await item.getType('text/html')).text(); if (html.includes(CLIP_MARK)) return true; } catch { /* unreadable */ }
+        }
+      }
+      return false;
     }
     /* Paste the clipboard, cascading each successive paste so copies don't stack. */
     function paste() {
@@ -1022,14 +1075,17 @@ export function CanvasProvider({
       pasteCount.current = 0; // placed at cursor — restart the keyboard cascade
       return true;
     }
-    /* Right-click "Paste": pull media/link off the system clipboard first (mirrors
-       the Cmd+V flow), then fall back to the internal node clipboard. Reading the
-       system clipboard is async and permission-gated, so failures fall through
-       silently to the internal paste. */
+    /* Right-click "Paste": if the OS clipboard carries our copy marker, an
+       in-canvas Copy is the freshest thing on it → paste that. Otherwise pull
+       media/link off the system clipboard (mirrors the Cmd+V flow) before
+       finally falling back to the internal node clipboard. Reading the system
+       clipboard is async and permission-gated, so failures fall through silently
+       to the internal paste. */
     async function pasteFromMenu(wx, wy) {
       if (!EDITABLE || S.readOnly) return;
       let items = null;
       try { if (navigator.clipboard && navigator.clipboard.read) items = await navigator.clipboard.read(); } catch { items = null; }
+      if (await readClipItemsAreMine(items)) { pasteAt(wx, wy); return; }
       if (items) {
         for (const item of items) {
           const imgType = item.types.find((t) => t.startsWith('image/'));
@@ -1953,7 +2009,7 @@ export function CanvasProvider({
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, deleteSelected, deleteTarget,
-      copySelected, paste, pasteAt, pasteFromMenu, hasClipboard, duplicateSelected, duplicateTarget, duplicateItemsAt,
+      copySelected, cutSelected, cutTarget, paste, pasteAt, pasteFromMenu, hasClipboard, systemClipIsMine, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, toggleGrid, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,

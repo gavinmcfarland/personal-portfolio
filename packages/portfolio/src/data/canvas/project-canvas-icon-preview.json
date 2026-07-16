@@ -1,108 +1,119 @@
 {
   "version": 2,
-  "activePage": "home",
+  "activePage": "pg1",
   "pages": [
     {
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 1127.3615384615384,
-        "y": 42.57179487179487,
-        "scale": 1.0474358974358975
+        "x": 746.9689522182704,
+        "y": 419.09071846916515,
+        "scale": 0.2885641286433893
+      },
+      "nodes": [],
+      "shapes": []
+    },
+    {
+      "id": "pg1",
+      "name": "Page 2",
+      "view": {
+        "x": 549.405657496033,
+        "y": 265.4278188523267,
+        "scale": 0.27882915330820024
       },
       "nodes": [
         {
-          "id": "f-problem",
+          "id": "n29-frame",
           "type": "frame",
-          "x": -880,
-          "y": -660,
-          "z": 1,
+          "x": 301,
+          "y": -144.3984375,
+          "z": 29,
           "w": 800,
           "h": 540,
           "text": "The problem"
         },
         {
-          "id": "f-idea",
+          "id": "n30-frame",
           "type": "frame",
-          "x": 40,
-          "y": -660,
-          "z": 2,
+          "x": 1221,
+          "y": -144.3984375,
+          "z": 30,
           "w": 620,
           "h": 540,
           "text": "The idea"
         },
         {
-          "id": "f-how",
+          "id": "n31-frame",
           "type": "frame",
-          "x": 120,
-          "y": 40,
-          "z": 3,
+          "x": 1301,
+          "y": 555.6015625,
+          "z": 31,
           "w": 900,
           "h": 600,
           "text": "How it works"
         },
         {
-          "id": "f-details",
+          "id": "n32-frame",
           "type": "frame",
-          "x": -620,
-          "y": 60,
-          "z": 4,
+          "x": 561,
+          "y": 575.6015625,
+          "z": 32,
           "w": 660,
           "h": 520,
           "text": "Details that matter"
         },
         {
-          "id": "f-try",
+          "id": "n33-frame",
           "type": "frame",
-          "x": -1360,
-          "y": 60,
-          "z": 5,
+          "x": -179,
+          "y": 575.6015625,
+          "z": 33,
           "w": 640,
           "h": 520,
           "text": "Try it"
         },
         {
-          "id": "intro",
+          "id": "n34-md",
           "type": "md",
-          "x": -1360,
-          "y": -560,
-          "z": 10,
+          "x": -179,
+          "y": -44.3984375,
+          "z": 34,
           "w": 380,
           "text": "# Icon Preview\n\nA Figma plugin that renders the icon you’re editing **live, at every size that matters** — web, iOS and Android.\n\n[Figma plugin] [Live preview] [Icons]\n\n*Follow the arrows →*"
         },
         {
-          "id": "p-why",
+          "id": "n35-md",
           "type": "md",
-          "x": -850,
-          "y": -610,
-          "z": 11,
+          "x": 331,
+          "y": -94.3984375,
+          "z": 35,
           "w": 310,
           "text": "**Icons lie at full size.**\n\nDrawn at 256px, an icon looks crisp on the canvas. Scaled to 16px, strokes blur, counters clog and detail disappears."
         },
         {
-          "id": "p-note1",
+          "id": "n36-sticky",
           "type": "sticky",
-          "x": -500,
-          "y": -620,
-          "z": 12,
+          "x": 681,
+          "y": -104.3984375,
+          "z": 36,
           "color": "pink",
           "text": "Checking sizes meant duplicating the icon 6+ times by hand"
         },
         {
-          "id": "p-note2",
+          "id": "n37-sticky",
           "type": "sticky",
-          "x": -320,
-          "y": -420,
-          "z": 13,
+          "x": 861,
+          "y": 95.6015625,
+          "z": 37,
           "color": "yellow",
           "text": "Every tweak: re-scale, re-check. A minutes-long feedback loop"
         },
         {
-          "id": "p-img",
+          "id": "n38-image",
           "type": "image",
-          "x": -850,
-          "y": -400,
-          "z": 14,
+          "x": 331,
+          "y": 115.6015625,
+          "z": 38,
           "w": 320,
           "h": 230,
           "assets": [
@@ -115,38 +126,38 @@
           ]
         },
         {
-          "id": "i-note",
+          "id": "n39-sticky",
           "type": "sticky",
-          "x": 90,
-          "y": -620,
-          "z": 15,
+          "x": 1271,
+          "y": -104.3984375,
+          "z": 39,
           "color": "purple",
           "text": "What if the preview just… followed you while you edit?"
         },
         {
-          "id": "i-note2",
+          "id": "n40-sticky",
           "type": "sticky",
-          "x": 380,
-          "y": -560,
-          "z": 16,
+          "x": 1561,
+          "y": -44.3984375,
+          "z": 40,
           "color": "blue",
           "text": "No setup — it detects the icon you’re working on"
         },
         {
-          "id": "i-md",
+          "id": "n41-md",
           "type": "md",
-          "x": 90,
-          "y": -380,
-          "z": 17,
+          "x": 1271,
+          "y": 135.6015625,
+          "z": 41,
           "w": 400,
           "text": "**One window, every size.**\n\nSelect any icon and Icon Preview picks it up, rendering a live grid across the preset sizes used on web, iOS and Android."
         },
         {
-          "id": "h-video",
+          "id": "n42-image",
           "type": "image",
-          "x": 160,
-          "y": 90,
-          "z": 18,
+          "x": 1341,
+          "y": 605.6015625,
+          "z": 42,
           "w": 520,
           "h": 300,
           "assets": [
@@ -159,20 +170,20 @@
           ]
         },
         {
-          "id": "h-steps",
+          "id": "n43-md",
           "type": "md",
-          "x": 710,
-          "y": 90,
-          "z": 19,
+          "x": 1891,
+          "y": 605.6015625,
+          "z": 43,
           "w": 290,
           "text": "**The loop**\n\n1. Select an icon (frame or group) and run the plugin\n2. It renders at every preset web, iOS & Android size\n3. Edit, hit **Refresh** — all sizes update\n4. Swap icons from the picker — no relaunch"
         },
         {
-          "id": "h-grid",
+          "id": "n44-image",
           "type": "image",
-          "x": 160,
-          "y": 430,
-          "z": 20,
+          "x": 1341,
+          "y": 945.6015625,
+          "z": 44,
           "w": 340,
           "h": 180,
           "assets": [
@@ -185,47 +196,47 @@
           ]
         },
         {
-          "id": "h-note",
+          "id": "n45-sticky",
           "type": "sticky",
-          "x": 540,
-          "y": 420,
-          "z": 21,
+          "x": 1721,
+          "y": 935.6015625,
+          "z": 45,
           "color": "green",
           "text": "Handles artwork up to 256px — favicons to app icons"
         },
         {
-          "id": "d-note1",
+          "id": "n46-sticky",
           "type": "sticky",
-          "x": -580,
-          "y": 110,
-          "z": 22,
+          "x": 601,
+          "y": 625.6015625,
+          "z": 46,
           "color": "blue",
           "text": "Auto-detects your selection — zero configuration"
         },
         {
-          "id": "d-note2",
+          "id": "n47-sticky",
           "type": "sticky",
-          "x": -340,
-          "y": 110,
-          "z": 23,
+          "x": 841,
+          "y": 625.6015625,
+          "z": 47,
           "color": "orange",
           "text": "Icon picker in the corner to hop between icons"
         },
         {
-          "id": "d-dogfood",
+          "id": "n48-md",
           "type": "md",
-          "x": -580,
-          "y": 330,
-          "z": 24,
+          "x": 601,
+          "y": 845.6015625,
+          "z": 48,
           "w": 450,
           "text": "**Dogfooding bonus**\n\nIcon Preview became the test-bed for [Plugma](https://www.plugma.dev/), my plugin-dev CLI — editing the plugin’s code with hot reload while it previews icons in Figma, all on one screen."
         },
         {
-          "id": "t-cover",
+          "id": "n49-image",
           "type": "image",
-          "x": -1320,
-          "y": 110,
-          "z": 25,
+          "x": -139,
+          "y": 625.6015625,
+          "z": 49,
           "w": 320,
           "h": 180,
           "assets": [
@@ -238,82 +249,82 @@
           ]
         },
         {
-          "id": "t-md",
+          "id": "n50-md",
           "type": "md",
-          "x": -1320,
-          "y": 330,
-          "z": 26,
+          "x": -139,
+          "y": 845.6015625,
+          "z": 50,
           "w": 360,
           "text": "**Live on the Figma Community.**\n\nFree to install — point it at any icon set.\n\n[Open Icon Preview →](https://www.figma.com/community/plugin/888907972695800109/icon-preview)"
         },
         {
-          "id": "t-note",
+          "id": "n51-sticky",
           "type": "sticky",
-          "x": -960,
-          "y": 130,
-          "z": 27,
+          "x": 221,
+          "y": 645.6015625,
+          "z": 51,
           "color": "yellow",
           "text": "Swap the dashed placeholders for real captures, then hit Save"
         }
       ],
       "shapes": [
         {
-          "id": "a-intro-problem",
+          "id": "s6",
           "type": "arrow",
           "stroke": "#7C2D91",
           "width": 3,
-          "z": 40,
-          "x1": -955,
-          "y1": -450,
-          "x2": -895,
-          "y2": -450
+          "z": 52,
+          "x1": 226,
+          "y1": 65.6015625,
+          "x2": 286,
+          "y2": 65.6015625
         },
         {
-          "id": "a-problem-idea",
+          "id": "s7",
           "type": "arrow",
           "stroke": "#141417",
           "width": 3,
-          "z": 41,
-          "x1": -60,
-          "y1": -420,
-          "x2": 20,
-          "y2": -420
+          "z": 53,
+          "x1": 1121,
+          "y1": 95.6015625,
+          "x2": 1201,
+          "y2": 95.6015625
         },
         {
-          "id": "a-idea-how",
+          "id": "s8",
           "type": "arrow",
           "stroke": "#1565C0",
           "width": 3,
-          "z": 42,
-          "x1": 480,
-          "y1": -100,
-          "x2": 540,
-          "y2": 20
+          "z": 54,
+          "x1": 1661,
+          "y1": 415.6015625,
+          "x2": 1721,
+          "y2": 535.6015625
         },
         {
-          "id": "a-how-details",
+          "id": "s9",
           "type": "arrow",
           "stroke": "#E5484D",
           "width": 3,
-          "z": 43,
-          "x1": 100,
-          "y1": 330,
-          "x2": 60,
-          "y2": 330
+          "z": 55,
+          "x1": 1281,
+          "y1": 845.6015625,
+          "x2": 1241,
+          "y2": 845.6015625
         },
         {
-          "id": "a-details-try",
+          "id": "s10",
           "type": "arrow",
           "stroke": "#2E7D32",
           "width": 3,
-          "z": 44,
-          "x1": -640,
-          "y1": 330,
-          "x2": -700,
-          "y2": 330
+          "z": 56,
+          "x1": 541,
+          "y1": 845.6015625,
+          "x2": 481,
+          "y2": 845.6015625
         }
       ]
     }
   ],
-  "savedAt": 1783952213677
+  "savedAt": 1784160855305
 }

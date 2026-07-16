@@ -728,6 +728,7 @@ export default function Canvas() {
         if (mk === 'z') { if (!S.readOnly) { e.preventDefault(); if (e.shiftKey) eng.redo(); else eng.undo(); } return; }
         if (mk === 'y') { if (!S.readOnly) { e.preventDefault(); eng.redo(); } return; }
         if (mk === 'c') { if (S.selected.length) { e.preventDefault(); eng.copySelected(); } return; }
+        if (mk === 'x') { if (!S.readOnly && S.selected.length) { e.preventDefault(); eng.cutSelected(); } return; }
         // Paste is handled by the native `paste` event (below) so it can also
         // pull image/gif/svg/video off the system clipboard — don't preventDefault
         // here or that event never fires.
@@ -763,6 +764,9 @@ export default function Canvas() {
       const r = viewportRef.current && viewportRef.current.getBoundingClientRect();
       const w = eng.screenToWorld(r ? r.left + r.width / 2 : 0, r ? r.top + r.height / 2 : 0);
       e.preventDefault();
+      // An in-canvas Copy stamps the OS clipboard with our marker — when it's
+      // there, paste the internal node clipboard, never a stale OS image/link.
+      if (eng.systemClipIsMine(e.clipboardData)) { eng.paste(); return; }
       // Media file → link URL → internal node clipboard, in that order.
       if (eng.pasteMedia(e.clipboardData, w.x, w.y)) return;
       if (eng.pasteLink(e.clipboardData, w.x, w.y)) return;

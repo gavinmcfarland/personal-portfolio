@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Maximize, Scaling, AppWindow, Puzzle, SquareX, Expand, Copy, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
+import { Maximize, Scaling, AppWindow, Puzzle, SquareX, Expand, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
@@ -98,6 +98,10 @@ export default function ContextMenu() {
       <button onClick={run(() => { eng.copySelected(); })}>
         <Copy />
         {count > 1 ? `Copy ${count} objects` : 'Copy'}
+      </button>
+      <button onClick={run(() => eng.cutTarget(target))}>
+        <Scissors />
+        {count > 1 ? `Cut ${count} objects` : 'Cut'}
       </button>
       <button onClick={run(() => eng.duplicateTarget(target))}>
         <CopyPlus />
