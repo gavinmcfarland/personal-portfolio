@@ -195,7 +195,12 @@ function buildFromSaved(base, raw, homeId, managedTypes) {
   const activePageId = raw.activePage && pagesData[raw.activePage] ? raw.activePage : pagesMeta[0].id;
   const bgColor = typeof raw.bgColor === 'string' ? raw.bgColor : null;
   const gridHidden = raw.gridHidden === true;
-  return { pagesMeta, pagesData, activePageId, bgColor, gridHidden, brand: base.brand, hadSaved: true };
+  // The container size the saved views were framed at, so a load at a different
+  // size can reframe the pan/zoom to be relative to the current container (see
+  // the boot effect). Absent on boards saved before this was recorded.
+  const vp = raw.viewport;
+  const savedViewport = vp && vp.w > 0 && vp.h > 0 ? { w: vp.w, h: vp.h } : null;
+  return { pagesMeta, pagesData, activePageId, bgColor, gridHidden, brand: base.brand, hadSaved: true, savedViewport };
 }
 
 function freshState(base, homeId) {
@@ -207,6 +212,7 @@ function freshState(base, homeId) {
     gridHidden: false,
     brand: base.brand,
     hadSaved: false,
+    savedViewport: null,
   };
 }
 
@@ -376,7 +382,16 @@ export function CanvasProvider({
   // viewport size to diff against. Captured once, like the other view config.
   const RESIZE_ANCHOR = useRef(resolveAnchor(resizeAnchor)).current;
   const SCALE_MODE = useRef(resolveScaleMode(scaleWithContainer)).current;
-  const lastVpSize = useRef(null);
+  const lastVpSize = useRef(null); // latest measured container size {w,h}
+  // Reference {w,h,x,y,scale} that resize scaling/anchoring is computed from.
+  // Seeded from the saved viewport size so a reload reframes the persisted view
+  // to the current container; re-captured on user pan/zoom (see applyView).
+  const resizeBase = useRef(
+    init.savedViewport
+      ? { w: init.savedViewport.w, h: init.savedViewport.h, x: active0.view.x, y: active0.view.y, scale: active0.view.scale }
+      : null
+  );
+  const reframing = useRef(false); // true while reframeOnResize applies, so applyView doesn't re-capture the base
   const actionRef = useRef(null);
   const zoomRAF = useRef(0);
   const waTimer = useRef(0);
@@ -431,6 +446,13 @@ export function CanvasProvider({
     function applyView() {
       const w = worldRef.current, vp = viewportRef.current;
       if (!w || !vp) return;
+      // Any non-resize view change (user pan/zoom, fit, boot) becomes the new
+      // reference the next container resize is measured against — so scaling and
+      // anchoring track the latest intent and stay reversible across a
+      // shrink-then-grow. Uses the cached size (no layout read on the pan path).
+      if (!reframing.current && lastVpSize.current) {
+        resizeBase.current = { w: lastVpSize.current.w, h: lastVpSize.current.h, x: viewRef.x, y: viewRef.y, scale: viewRef.scale };
+      }
       w.style.transform = `translate(${viewRef.x}px,${viewRef.y}px) scale(${viewRef.scale})`;
       const step = GRID * viewRef.scale;
       vp.style.setProperty('--gx', (viewRef.x % step) + 'px');
@@ -472,8 +494,9 @@ export function CanvasProvider({
     function vpW() { const el = viewportRef.current; return el ? el.clientWidth : 0; }
     function vpH() { const el = viewportRef.current; return el ? el.clientHeight : 0; }
 
-    /* Called whenever the container resizes. Two behaviours compose here, both
-       pivoting about `resizeAnchor` (ax, ay as viewport fractions):
+    /* Called whenever the container resizes (and once at boot to reframe a loaded
+       view). Two behaviours compose here, both pivoting about `resizeAnchor`
+       (ax, ay as viewport fractions):
 
          • Reposition — the world transform is anchored at the viewport's
            top-left, so left unadjusted the board stays pinned there as the box
@@ -481,29 +504,34 @@ export function CanvasProvider({
            0 (left/top) = no shift, 0.5 = follow the centre, 1 = pin the
            right/bottom edge.
          • Rescale — when `scaleWithContainer` is on, the zoom tracks the size
-           change (factor `f`) so the board grows/shrinks with its container,
-           scaling about that same anchor point.
+           change (factor `f`) so the board grows/shrinks with its container.
 
-       Both reduce to one pivot formula: keep the world point under the anchor
-       fixed while the box goes prev→new and the scale goes s0→s1. The first
-       call just records the baseline size. */
+       Both reduce to one pivot formula, computed against the reference `base`
+       (its size + view), NOT the previous frame. Deriving from a fixed reference
+       keeps it reversible — shrinking one axis to nothing and growing it back
+       returns to exactly the base view (an incremental min/max ratio would pick
+       a different axis on the way back and never undo) — and clamp-safe: a scale
+       that saturated at a tiny size still recovers, since we recompute from the
+       base rather than the clamped value. The base is re-captured on any user
+       pan/zoom (see applyView); the first call just seeds it. */
     function reframeOnResize() {
       const W = vpW(), H = vpH();
       if (!W || !H) return; // not laid out yet — wait for a real measurement
-      const prev = lastVpSize.current;
       lastVpSize.current = { w: W, h: H };
-      if (!prev) return; // baseline captured; nothing to reframe against yet
+      const base = resizeBase.current;
+      if (!base) { resizeBase.current = { w: W, h: H, x: viewRef.x, y: viewRef.y, scale: viewRef.scale }; return; }
       const { ax, ay } = RESIZE_ANCHOR;
-      const s0 = viewRef.scale;
-      const f = SCALE_MODE ? resizeScaleFactor(SCALE_MODE, prev.w, prev.h, W, H) : 1;
-      const s1 = SCALE_MODE ? clampScale(s0 * f) : s0;
-      const k = s1 / s0; // effective factor after zoom clamping (1 when scaling off)
-      const nx = ax * W - (ax * prev.w - viewRef.x) * k;
-      const ny = ay * H - (ay * prev.h - viewRef.y) * k;
-      if (nx === viewRef.x && ny === viewRef.y && s1 === s0) { syncChrome(); return; }
+      const f = SCALE_MODE ? resizeScaleFactor(SCALE_MODE, base.w, base.h, W, H) : 1;
+      const s1 = SCALE_MODE ? clampScale(base.scale * f) : base.scale;
+      const k = s1 / base.scale; // effective factor after zoom clamping (1 when scaling off)
+      const nx = ax * W - (ax * base.w - base.x) * k;
+      const ny = ay * H - (ay * base.h - base.y) * k;
+      if (nx === viewRef.x && ny === viewRef.y && s1 === viewRef.scale) { syncChrome(); return; }
+      reframing.current = true; // this view change derives FROM the base — don't let applyView overwrite it
       viewRef.x = nx; viewRef.y = ny; viewRef.scale = s1;
       targetRef.x = nx; targetRef.y = ny; targetRef.scale = s1;
       applyView(); // repaints the transform + chrome (and persists in edit mode)
+      reframing.current = false;
     }
 
     /* smooth zoom glide */
@@ -1404,6 +1432,10 @@ export function CanvasProvider({
       const snap = { version: 2, activePage: S.activePageId, pages: out };
       if (S.bgColor) snap.bgColor = S.bgColor;
       if (S.gridHidden) snap.gridHidden = true;
+      // Record the container size these views were framed at, so a later load
+      // can reframe the pan/zoom relative to whatever size the board opens at.
+      const vw = vpW(), vh = vpH();
+      if (vw && vh) snap.viewport = { w: vw, h: vh };
       // Stamp when this snapshot was produced so loadInitial can tell an
       // in-code edit of the committed file apart from a stale localStorage
       // autosave (see the savedAt comparison there).
@@ -2207,8 +2239,16 @@ export function CanvasProvider({
       // Only persist the fitted view when it's the first-ever view of the
       // board; a forced fit is presentational and must not clobber the save.
       if (!init.hadSaved) eng.saveNow();
+      // Drop any saved-size seed: the reference is the freshly fitted view at
+      // the current size (the first resize callback re-captures it).
+      resizeBase.current = null;
     } else {
-      eng.applyView();
+      eng.applyView(); // paint the saved view
+      // If we recorded the container size the view was framed at, reframe it to
+      // the size the board actually opened at — so a reload on a different
+      // screen / window size shows the zoom relative to the current container,
+      // matching how a live resize behaves. A no-op when the sizes match.
+      if (resizeBase.current) eng.reframeOnResize();
     }
     // From here on, view changes are user-driven and should publish.
     booted.current = true;
