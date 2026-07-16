@@ -582,7 +582,10 @@
 .canvas-root .node.image.framed,
 .canvas-root .node.video.framed {
   background: var(--surface);
-  border-radius: calc(var(--cv-df-bar, 36px) / 6);
+  /* Card outline matching the code node (1px solid --line), scaled off the bar
+     so it tracks the frame in scale mode (--cv-df-u isn't defined on the node). */
+  border: calc(var(--cv-df-bar, 36px) / 36) solid var(--line);
+  border-radius: calc(var(--cv-df-bar, 36px) / 3.6);
 }
 .canvas-root .cv-df {
   --cv-df-u: calc(var(--cv-df-bar, 36px) / 36);
@@ -609,8 +612,8 @@
   align-items: center;
   gap: calc(var(--cv-df-u) * 10);
   padding: 0 calc(var(--cv-df-u) * 12);
-  background: color-mix(in srgb, var(--surface) 82%, var(--ink));
-  border-bottom: calc(var(--cv-df-u) * 1) solid var(--line);
+  background: color-mix(in srgb, var(--surface) 97%, var(--ink));
+  border-bottom: calc(var(--cv-df-u) * 1) solid color-mix(in srgb, var(--line), transparent 65%);
   pointer-events: none;
   user-select: none;
 }
@@ -681,7 +684,7 @@
   padding: 0 calc(var(--cv-df-u) * 10);
   border-radius: 999px;
   background: var(--bg-base);
-  border: calc(var(--cv-df-u) * 1) solid var(--line);
+  border: calc(var(--cv-df-u) * 1) solid color-mix(in srgb, var(--line), transparent 65%);
   color: var(--muted);
   font-family: var(--sans, system-ui);
   font-size: calc(var(--cv-df-u) * 12);
