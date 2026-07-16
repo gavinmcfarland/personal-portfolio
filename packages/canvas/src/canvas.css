@@ -276,6 +276,10 @@
   cursor: default;
   transition: background-color 0.4s ease;
 }
+/* Dot grid toggled off (board setting) — keep the background colour, drop dots. */
+.canvas-root[data-cv-grid="off"] .cv-viewport {
+  background-image: none;
+}
 /* Edit mode (select tool, not read-only) shows a custom accent pointer. */
 .canvas-root.tool-select:not(.read-only):not(.panning) .cv-viewport {
   cursor: var(--cur-edit), default;

@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { Maximize, Scaling, AppWindow, Puzzle, SquareX, Expand, Copy, CopyPlus, ClipboardPaste, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
+import { Maximize, Scaling, AppWindow, Puzzle, SquareX, Expand, Copy, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
-  const { ctxMenu, setCtxMenu, nodes, selected, eng } = useCanvas();
+  const { ctxMenu, setCtxMenu, nodes, selected, gridHidden, eng } = useCanvas();
 
   useEffect(() => {
     if (!ctxMenu) return undefined;
@@ -25,12 +25,17 @@ export default function ContextMenu() {
   // point captured when the menu opened.
   if (target.kind === 'canvas') {
     const cx = Math.min(ctxMenu.x, innerWidth - 190);
-    const cy = Math.min(ctxMenu.y, innerHeight - 60);
+    const cy = Math.min(ctxMenu.y, innerHeight - 120);
     return (
       <div className="panel show" id="ctxmenu" style={{ left: cx, top: cy }}>
         <button onClick={run(() => eng.pasteFromMenu(target.wx, target.wy))}>
           <ClipboardPaste />
           Paste here
+        </button>
+        <div className="ctxsep" />
+        <button className={!gridHidden ? 'active' : ''} onClick={run(() => eng.toggleGrid())}>
+          <Grid2x2 />
+          {gridHidden ? 'Show dot grid' : 'Hide dot grid'}
         </button>
       </div>
     );

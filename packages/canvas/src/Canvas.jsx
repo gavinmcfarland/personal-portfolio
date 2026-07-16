@@ -48,7 +48,7 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, accent } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent } = ctx;
   // Cooperative gestures only apply in view mode; while editing the board keeps
   // full gesture control. `readOnly` (reactive) drives the CSS attribute/render;
   // the imperative handlers read the live `S.readOnly` instead.
@@ -903,6 +903,7 @@ export default function Canvas() {
       data-engaged={CLICK_TO_INTERACT && engaged ? '' : undefined}
       data-cv-accent={accent ? accentId : undefined}
       data-cv-bg={bgColor ? 'custom' : undefined}
+      data-cv-grid={gridHidden ? 'off' : undefined}
       style={bgStyle}
       onPointerEnter={() => { hoverInsideRef.current = true; }}
       onPointerLeave={() => { hoverInsideRef.current = false; }}

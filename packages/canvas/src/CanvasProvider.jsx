@@ -145,7 +145,8 @@ function buildFromSaved(base, raw, homeId, managedTypes) {
   });
   const activePageId = raw.activePage && pagesData[raw.activePage] ? raw.activePage : pagesMeta[0].id;
   const bgColor = typeof raw.bgColor === 'string' ? raw.bgColor : null;
-  return { pagesMeta, pagesData, activePageId, bgColor, brand: base.brand, hadSaved: true };
+  const gridHidden = raw.gridHidden === true;
+  return { pagesMeta, pagesData, activePageId, bgColor, gridHidden, brand: base.brand, hadSaved: true };
 }
 
 function freshState(base, homeId) {
@@ -154,6 +155,7 @@ function freshState(base, homeId) {
     pagesData: { [homeId]: { nodes: base.nodes, shapes: base.shapes, view: defaultView() } },
     activePageId: homeId,
     bgColor: null,
+    gridHidden: false,
     brand: base.brand,
     hadSaved: false,
   };
@@ -273,6 +275,7 @@ export function CanvasProvider({
   const [fullscreen, setFullscreen] = useState(null); // { id, index } of the media asset shown in the lightbox
   const [gridEditId, setGridEditId] = useState(null); // media node whose grid proportions are being edited
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
+  const [gridHidden, setGridHidden] = useState(init.gridHidden || false); // board-wide dot-grid toggle (false = grid shown)
   const [publishState, setPublishState] = useState('idle'); // idle|saving|done|error
   const [recording, setRecording] = useState(null); // {} while capturing mic audio, else null
   const recRef = useRef(null); // { rec: MediaRecorder, stream, cancelled } during a recording
@@ -362,6 +365,7 @@ export function CanvasProvider({
   S.pages = pages;
   S.activePageId = activePageId;
   S.bgColor = bgColor;
+  S.gridHidden = gridHidden;
 
   /* ── Engine (defined once; reads fresh state via refs/S) ─────── */
   const eng = useMemo(() => {
@@ -1260,6 +1264,7 @@ export function CanvasProvider({
       });
       const snap = { version: 2, activePage: S.activePageId, pages: out };
       if (S.bgColor) snap.bgColor = S.bgColor;
+      if (S.gridHidden) snap.gridHidden = true;
       // Stamp when this snapshot was produced so loadInitial can tell an
       // in-code edit of the committed file apart from a stale localStorage
       // autosave (see the savedAt comparison there).
@@ -1270,6 +1275,12 @@ export function CanvasProvider({
     function setCanvasBg(color) {
       if (!EDITABLE) return;
       setBgColor(color || null);
+    }
+    /* Board-wide dot-grid visibility. Off hides the background dots everywhere
+       (edit + view); the setting is saved with the board. */
+    function toggleGrid() {
+      if (!EDITABLE) return;
+      setGridHidden((v) => !v);
     }
     function scheduleSave() { if (!EDITABLE) return; clearTimeout(saveT.current); saveT.current = setTimeout(saveNow, 400); }
     function saveNow() {
@@ -1943,7 +1954,7 @@ export function CanvasProvider({
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, deleteSelected, deleteTarget,
       copySelected, paste, pasteAt, pasteFromMenu, hasClipboard, duplicateSelected, duplicateTarget, duplicateItemsAt,
-      setTool, setMode, setCanvasBg, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
+      setTool, setMode, setCanvasBg, toggleGrid, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
       addLinkFromUrl, pasteLink, openLink,
@@ -2028,7 +2039,7 @@ export function CanvasProvider({
   }, []);
 
   /* ── Keep chrome + persistence in sync with the model ───────── */
-  useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, eng]);
+  useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, gridHidden, eng]);
 
   /* ── Record undo/redo history on every committed content change ──
      One entry per change (bursts of typing coalesce, see recordHistory). Keyed
@@ -2043,7 +2054,7 @@ export function CanvasProvider({
   useEffect(() => {
     if (!didAutoPublishMount.current) { didAutoPublishMount.current = true; return; }
     eng.schedulePublish();
-  }, [nodes, shapes, pages, activePageId, bgColor, eng]);
+  }, [nodes, shapes, pages, activePageId, bgColor, gridHidden, eng]);
 
   /* ── Boot: apply the initial view (fit if nothing was saved, or if the
      embedder asked for a framed overview via initialView='fit') ──
@@ -2082,7 +2093,7 @@ export function CanvasProvider({
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
-    publishState, recording, fullscreen, gridEditId, pages, activePageId, pageData, bgColor,
+    publishState, recording, fullscreen, gridEditId, pages, activePageId, pageData, bgColor, gridHidden,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
