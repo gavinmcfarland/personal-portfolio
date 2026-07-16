@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Maximize, Scaling, AppWindow, Puzzle, Terminal, SquareX, Expand, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Trash2 } from 'lucide-react';
+import { Maximize, Scaling, AppWindow, Puzzle, Terminal, SquareX, Expand, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Trash2, Sun, Moon } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
@@ -49,6 +49,12 @@ export default function ContextMenu() {
   const isMedia = node && (node.type === 'image' || node.type === 'video');
   const singleAsset = isMedia && node.assets && node.assets.length === 1;
   const loneSvg = singleAsset && node.assets[0].svg;
+  // The image asset the theme-variant actions target: the right-clicked grid
+  // cell (captured as target.mediaIdx when the menu opened), or a lone asset.
+  const mediaIdx = target.mediaIdx || 0;
+  const themeAsset = isMedia && node.assets && node.assets[mediaIdx] && node.assets[mediaIdx].kind === 'image'
+    ? node.assets[mediaIdx]
+    : null;
   const x = Math.min(ctxMenu.x, innerWidth - 190);
   const y = Math.min(ctxMenu.y, innerHeight - 190);
 
@@ -92,6 +98,24 @@ export default function ContextMenu() {
                 <button onClick={run(() => eng.toggleFrame(node.id, node.frame))}>
                   <SquareX />
                   Remove frame
+                </button>
+              )}
+            </>
+          )}
+          {themeAsset && (
+            <>
+              <button onClick={run(() => eng.pickThemeImage(node.id, mediaIdx, 'light'))}>
+                <Sun />
+                Set light image…
+              </button>
+              <button onClick={run(() => eng.pickThemeImage(node.id, mediaIdx, 'dark'))}>
+                <Moon />
+                {themeAsset.srcDark ? 'Replace dark image…' : 'Set dark image…'}
+              </button>
+              {themeAsset.srcDark && (
+                <button onClick={run(() => eng.removeDarkImage(node.id, mediaIdx))}>
+                  <SquareX />
+                  Remove dark image
                 </button>
               )}
             </>

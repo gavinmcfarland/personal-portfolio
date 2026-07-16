@@ -1655,7 +1655,7 @@ export function CanvasProvider({
     /* Strip an ingest-time asset ({ kind, src, alt, svg, nat }) down to the
        persisted shape ({ kind, src, alt, svg }) — `nat` is only used to size the
        box on creation. */
-    const cleanAsset = (a) => ({ kind: a.kind, src: a.src, alt: a.alt || '', svg: !!a.svg });
+    const cleanAsset = (a) => ({ kind: a.kind, src: a.src, alt: a.alt || '', svg: !!a.svg, ...(a.srcDark ? { srcDark: a.srcDark } : {}) });
     const GRID_CELL = 150; // default on-board size of one cell in a fresh multi-asset grid
     /* Drop a media node holding one or more assets, centred on the cursor. A lone
        asset sizes the box to its natural aspect (scaled to a sane default); a grid
@@ -1844,6 +1844,44 @@ export function CanvasProvider({
       if (!EDITABLE) return;
       const a = await videoFileToAsset(file);
       if (a) createMediaNode([a], wx, wy);
+    }
+    /* Set one theme's image on an existing asset via a file picker. `dark`
+       stores an alternate src shown only on dark boards (see MediaContent) —
+       the light/dark pair swaps live via CSS, no re-render. `light` replaces
+       the primary src in place (box size, frame and crop all stay). The file
+       goes through the normal ingest path, so it lands in the same durable
+       storage as any dropped image. */
+    function pickThemeImage(id, index, theme) {
+      if (!EDITABLE || S.readOnly) return;
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = async () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const a = await imageFileToAsset(file);
+        if (!a) return;
+        const n = S.nodes.find((x) => x.id === id); // re-read: ingest is async
+        if (!n || !n.assets || !n.assets[index] || n.assets[index].kind !== 'image') return;
+        updateNode(id, {
+          assets: n.assets.map((as, i) => {
+            if (i !== index) return as;
+            // Replacing the light image keeps the alt (it describes the shot,
+            // not the file) but tracks the new file's svg-ness for rendering.
+            return theme === 'dark' ? { ...as, srcDark: a.src } : { ...as, src: a.src, svg: a.svg };
+          }),
+        });
+        selectNode(id);
+      };
+      input.click();
+    }
+    /* Drop an asset's dark-mode variant: the light image shows in both themes again. */
+    function removeDarkImage(id, index) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || !n.assets || !n.assets[index] || !n.assets[index].srcDark) return;
+      updateNode(id, { assets: n.assets.map((as, i) => (i === index ? { ...as, srcDark: undefined } : as)) });
+      selectNode(id);
     }
     /* Drop a fixed-size sound player card centred on the cursor. Audio carries no
        intrinsic size, so unlike image/video the box is a constant — only its
@@ -2151,7 +2189,7 @@ export function CanvasProvider({
       copySelected, cutSelected, cutTarget, paste, pasteAt, pasteFromMenu, hasClipboard, systemClipIsMine, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, toggleGrid, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
-      isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef,
+      isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startEditing, stopEditing, setChrome,

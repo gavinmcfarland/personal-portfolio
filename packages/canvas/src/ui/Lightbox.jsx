@@ -23,6 +23,7 @@ export default function Lightbox() {
   const many = assets.length > 1;
   const mediaKey = node ? `${node.id}:${index}` : '';
   const src = useMediaSrc(asset ? asset.src : null);
+  const srcDark = useMediaSrc(asset ? asset.srcDark : null);
   const vidRef = useRef(null);
 
   /* Hand the current full-screen position back to the inline cell, then close. */
@@ -85,6 +86,28 @@ export default function Lightbox() {
           onLoadedMetadata={onVideoMeta}
           onPointerDown={(e) => e.stopPropagation()}
         />
+      ) : asset.srcDark ? (
+        /* Dark-variant pair: both render, CSS on the `.dark` ancestor picks one
+           (see canvas.css) — mirrors the inline node so the theme can flip while
+           the lightbox is open. */
+        <>
+          <img
+            key={`${mediaKey}:light`}
+            className="cv-light"
+            src={src || undefined}
+            alt={asset.alt || ''}
+            draggable={false}
+            onPointerDown={(e) => e.stopPropagation()}
+          />
+          <img
+            key={`${mediaKey}:dark`}
+            className="cv-dark"
+            src={srcDark || undefined}
+            alt={asset.alt || ''}
+            draggable={false}
+            onPointerDown={(e) => e.stopPropagation()}
+          />
+        </>
       ) : (
         <img
           key={mediaKey}

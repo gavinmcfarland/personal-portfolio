@@ -47,9 +47,17 @@ function allNodes(data) {
 /* Asset filenames a snapshot's media nodes reference. */
 function assetRefs(data) {
   const refs = new Set();
+  const add = (src) => {
+    if (typeof src === 'string' && src.startsWith('/canvas-assets/')) refs.add(src.slice('/canvas-assets/'.length));
+  };
   for (const n of allNodes(data)) {
-    if (n && (n.type === 'image' || n.type === 'video') && typeof n.src === 'string' && n.src.startsWith('/canvas-assets/')) {
-      refs.add(n.src.slice('/canvas-assets/'.length));
+    if (n && (n.type === 'image' || n.type === 'video')) {
+      add(n.src); // legacy single-src nodes
+      // Current nodes hold an assets array; each asset may also carry a
+      // dark-mode variant (srcDark) — both are live references.
+      for (const a of Array.isArray(n.assets) ? n.assets : []) {
+        if (a) { add(a.src); add(a.srcDark); }
+      }
     }
     // Link cards bake their unfurled OG image in as a committed asset.
     if (n && n.type === 'link' && typeof n.image === 'string' && n.image.startsWith('/canvas-assets/')) {

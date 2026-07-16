@@ -352,7 +352,10 @@ export default function Canvas() {
     if (!inMulti) (kind === 'node' ? eng.selectNode : eng.selectShape)(id);
     // World coords under the cursor so "Paste here" lands at the click point.
     const w = eng.screenToWorld(e.clientX, e.clientY);
-    setCtxMenu({ x: e.clientX, y: e.clientY, wx: w.x, wy: w.y, target: inMulti ? { kind: 'multi' } : { kind, id } });
+    // In a media grid, remember which cell was clicked so per-asset actions
+    // (theme-variant images) target it; single-asset nodes resolve to 0.
+    const cellEl = e.target.closest && e.target.closest('[data-media-idx]');
+    setCtxMenu({ x: e.clientX, y: e.clientY, wx: w.x, wy: w.y, target: inMulti ? { kind: 'multi' } : { kind, id, mediaIdx: cellEl ? +cellEl.dataset.mediaIdx : 0 } });
   };
 
   /* Native window listeners: move / up / wheel / keyboard. */

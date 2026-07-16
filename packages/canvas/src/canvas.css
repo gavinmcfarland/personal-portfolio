@@ -2589,6 +2589,21 @@
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
   cursor: default;
 }
+
+/* Theme-variant images: an asset with a dark-mode src (see MediaContent)
+   renders both <img>s and the `.dark` ancestor decides which is visible, so a
+   live theme toggle swaps instantly with no re-render (both variants stay
+   loaded). `:is()` keeps the three rules at equal specificity — above every
+   plain `img { display: block }` rule — so order alone resolves them. */
+.canvas-root :is(.node, #lightbox) img.cv-dark {
+  display: none;
+}
+:is(.dark .canvas-root, .canvas-root.dark) :is(.node, #lightbox) img.cv-light {
+  display: none;
+}
+:is(.dark .canvas-root, .canvas-root.dark) :is(.node, #lightbox) img.cv-dark {
+  display: block;
+}
 .canvas-root #lightbox .lb-close {
   position: absolute;
   top: 18px;

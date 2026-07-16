@@ -17,8 +17,20 @@ import DeviceFrame from './DeviceFrame';
    `mediaStyle` carries the crop sizing (see MediaNode) onto the img/video. */
 function MediaContent({ nodeId, asset, index, bare, mediaStyle }) {
   const src = useMediaSrc(asset.src);
+  const srcDark = useMediaSrc(asset.srcDark);
   if (asset.kind === 'video') {
     return <VideoPlayer src={src} alt={asset.alt} mediaKey={`${nodeId}:${index}`} bare={bare} mediaStyle={mediaStyle} />;
+  }
+  // An image with a dark-mode variant renders both <img>s; CSS on the `.dark`
+  // ancestor decides which shows (see canvas.css), so a live theme toggle swaps
+  // instantly with no re-render or refetch — same mechanism as themeInk.
+  if (asset.srcDark) {
+    return (
+      <>
+        <img className="cv-light" src={src || undefined} alt={asset.alt || ''} draggable={false} style={mediaStyle} />
+        <img className="cv-dark" src={srcDark || undefined} alt={asset.alt || ''} draggable={false} style={mediaStyle} />
+      </>
+    );
   }
   return <img src={src || undefined} alt={asset.alt || ''} draggable={false} style={mediaStyle} />;
 }
