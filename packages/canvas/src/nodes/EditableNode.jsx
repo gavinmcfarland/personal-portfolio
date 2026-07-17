@@ -7,21 +7,41 @@ import { useRegister } from './common';
    self-delete (they'd be invisible); empty stickies stay — the note itself is
    a visible object the user placed. */
 function EditableNode({ node }) {
-  const { editingId, readOnly, eng, nodeEls } = useCanvas();
+  const { editingId, readOnly, eng, nodeEls, actionRef } = useCanvas();
   const { setRef, dataProps, style } = useRegister(node);
   const txtRef = useRef(null);
   const editing = editingId === node.id;
+  const hug = node.w == null;
+  const align = node.align || 'left';
 
-  // While editing, keep the selection outline in sync as the text grows/shrinks
-  // the node (text isn't committed to state until blur, so nothing else fires).
+  // Watch the node's size for two jobs. While editing: keep the selection
+  // outline in sync as the text grows/shrinks the node (text isn't committed to
+  // state until blur, so nothing else fires). And for a hugging centre/right-
+  // aligned block: keep it anchored — the box's centre (or right edge) stays
+  // put as the width changes, so centred text grows evenly and right-aligned
+  // text grows leftward. The anchor is derived from the committed x each time
+  // the effect re-runs (a shift we make re-derives the same anchor; a drag
+  // re-derives a new one). Skipped mid-gesture: resizes and cmd-drag font
+  // scaling style the element imperatively, and a state write here would fight
+  // them — the post-gesture commit re-fires this observer anyway.
   useEffect(() => {
-    if (!editing || typeof ResizeObserver === 'undefined') return;
+    const anchored = hug && align !== 'left';
+    if ((!editing && !anchored) || typeof ResizeObserver === 'undefined') return;
     const el = nodeEls.get(node.id);
     if (!el) return;
-    const ro = new ResizeObserver(() => eng.syncChrome());
+    const k = align === 'center' ? 0.5 : 1;
+    const sc = node.scale || 1;
+    const anchor = node.x + el.offsetWidth * sc * k;
+    const ro = new ResizeObserver(() => {
+      if (anchored && !el.dataset.w && !actionRef.current) {
+        const nx = anchor - el.offsetWidth * sc * k;
+        if (Math.abs(nx - node.x) > 0.01) { eng.updateNode(node.id, { x: nx }); return; }
+      }
+      eng.syncChrome();
+    });
     ro.observe(el);
     return () => ro.disconnect();
-  }, [editing, eng, nodeEls, node.id]);
+  }, [editing, hug, align, eng, nodeEls, actionRef, node.id, node.x, node.scale]);
 
   // Seed the text exactly once; the DOM owns it thereafter.
   useEffect(() => {

@@ -1362,8 +1362,10 @@ export function CanvasProvider({
       return history.byPage[pageId] || (history.byPage[pageId] = { undo: [], redo: [], base: null, coalesceKey: null });
     }
     /* If the transition from `base` to the current model changes nothing but one
-       node's `text`, return a stable key for that node so successive keystrokes
-       collapse into one history entry; otherwise null (each change stands alone). */
+       node's `text` — or, while that node is being edited, its `x` (a hugging
+       centre/right-aligned text block re-anchors as typing changes its width) —
+       return a stable key for that node so successive keystrokes collapse into
+       one history entry; otherwise null (each change stands alone). */
     function coalesceKeyFor(base, curNodes, curShapes) {
       if (base.shapes !== curShapes || base.nodes.length !== curNodes.length) return null;
       const bMap = new Map(base.nodes.map((n) => [n.id, n]));
@@ -1375,9 +1377,12 @@ export function CanvasProvider({
       }
       if (!changed) return null;
       const [b, n] = changed;
-      if (b.type !== n.type || b.text === n.text) return null;
-      for (const k in b) { if (k !== 'text' && b[k] !== n[k]) return null; }
-      for (const k in n) { if (k !== 'text' && b[k] !== n[k]) return null; }
+      if (b.type !== n.type) return null;
+      for (const k in b) { if (k !== 'text' && k !== 'x' && b[k] !== n[k]) return null; }
+      for (const k in n) { if (k !== 'text' && k !== 'x' && b[k] !== n[k]) return null; }
+      // A bare x change only coalesces mid-edit (the re-anchor shift); outside
+      // editing it's a drag and stands alone.
+      if (b.text === n.text && (b.x === n.x || S.editingId !== n.id)) return null;
       return 'text:' + n.id;
     }
     function recordHistory(curNodes, curShapes, pageId) {
