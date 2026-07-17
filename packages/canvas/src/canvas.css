@@ -412,10 +412,10 @@
   color: #4a2a05;
 }
 
-/* Text block — width-less blocks stay on one line and grow as you type;
-   a user-resized block (data-w set) has a fixed width and wraps inside it. */
+/* Text block — width-less blocks stay on one line, hug their text and grow as
+   you type; a user-resized block (data-w set) has a fixed width and wraps
+   inside it (resize clamps that width to ≥120px). */
 .canvas-root .tblock {
-  min-width: 120px;
   padding: 6px 8px;
   border-radius: 6px;
   font-family: var(--serif);
