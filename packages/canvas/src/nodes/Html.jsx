@@ -29,6 +29,10 @@ function useThemeSync(frameRef) {
     const f = frameRef.current;
     if (!f || !f.contentWindow) return;
     const dark = !!(f.closest && f.closest('.dark'));
+    // Mirror the scheme onto the iframe ELEMENT: when it differs from the
+    // embedded document's, the browser forces an opaque canvas — which would
+    // break the transparent background documents rely on to sit on the board.
+    f.style.colorScheme = dark ? 'dark' : 'light';
     f.contentWindow.postMessage({ type: 'canvas-theme', theme: dark ? 'dark' : 'light' }, '*');
   }, [frameRef]);
   useEffect(() => {
@@ -81,6 +85,9 @@ function HtmlNode({ node }) {
       <div className={`cv-df cv-df--${node.frame || 'plain'}`}>
         {node.frame ? <FrameBar node={node} /> : null}
         <div className="cv-df-screen">
+          {/* The iframe element's color-scheme is seeded to match the boot
+              theme the hash hands the document (and kept in sync by postTheme)
+              — a mismatch makes the browser force an opaque canvas. */}
           <iframe
             ref={frameRef}
             className="cv-html-frame"
@@ -89,6 +96,7 @@ function HtmlNode({ node }) {
             title={node.name || 'HTML'}
             loading="lazy"
             onLoad={postTheme}
+            style={{ colorScheme: bootTheme.current }}
           />
           {!live && <div className="cv-html-shield" />}
         </div>

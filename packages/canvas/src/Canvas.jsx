@@ -503,16 +503,22 @@ export default function Canvas() {
         }
         const minW = a.mdType === 'md' ? 160 : a.mdType === 'code' ? 200 : a.mdType === 'tblock' ? 120 : a.mdType === 'link' ? 200 : a.mdType === 'html' ? 200 : 60;
         // Snap the dragged edge(s) to nearby objects' edges/centres — the same
-        // pull and guide lines a move gets. Centered (Alt) and free (Cmd) resizes
-        // opt out.
-        if (!e.altKey && !(e.metaKey || e.ctrlKey)) {
+        // pull and guide lines a move gets. Only centered (Alt) resizes opt out;
+        // the crop and font-scale gestures (Cmd on a single image / text block)
+        // returned above, so a Cmd held here is just a free resize — which still
+        // snaps. Media/html keep their aspect while snapping unless it's been
+        // freed (Shift, or Cmd freeing a grid / html / non-lone-SVG with no crop).
+        const metaKey = e.metaKey || e.ctrlKey;
+        const mediaLike = a.mdType === 'image' || a.mdType === 'video' || a.mdType === 'html';
+        const aspectFree = e.shiftKey || (metaKey && mediaLike && !a.loneSvg && !a.crop);
+        if (!e.altKey) {
           const box = { x: a.ox, y: a.oy, w: a.ow, h: a.oh };
           const guides = [];
           // Aspect-locked media scales as one: snapping either the vertical or the
           // horizontal edge sets a target width; we take whichever pulls least and
           // scale the whole box to it, so the bottom/side lines up even though only
           // one axis is "dragged".
-          const aspectLocked = (a.mdType === 'image' || a.mdType === 'video' || a.mdType === 'html') && !e.shiftKey;
+          const aspectLocked = mediaLike && !aspectFree;
           if (aspectLocked) {
             const bar = a.frameBar || 0;
             const w0 = Math.max(minW, a.ow + (fromLeft ? -dx : dx));
@@ -558,8 +564,9 @@ export default function Canvas() {
           // A freed lone SVG letterboxes (it renders `contain`).
           // A device frame's chrome bar (a.frameBar) is fixed height, so lock the
           // media's ratio — box minus bar — and add the bar back, else the media
-          // gets clipped as the box ratio drifts from the media's.
-          const free = e.shiftKey || ((e.metaKey || e.ctrlKey) && !a.loneSvg && !a.crop);
+          // gets clipped as the box ratio drifts from the media's. `aspectFree`
+          // (computed above for snapping) is the single source of truth.
+          const free = aspectFree;
           const bar = a.frameBar || 0;
           h = free
             ? Math.max(40, hRaw)

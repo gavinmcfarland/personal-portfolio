@@ -503,12 +503,18 @@
    iframe. The iframe is inert (pointer-events:none) until the node goes live
    (double-click in edit mode / tap in view mode — see Canvas.jsx), so drags and
    pans over it behave like any other node; the shield is the explicit hit
-   surface on top while inert. */
+   surface on top while inert.
+
+   Like a lone SVG, a frameless html node carries no card chrome (no surface,
+   no shadow): the iframe stays transparent, so a document that paints no
+   background of its own sits directly on the board — one that does looks like
+   a card anyway. (The iframe element's color-scheme is kept in sync with the
+   document's by Html.jsx: a mismatch makes the browser force an opaque
+   canvas.) A device frame restores the card look — see .framed below. */
 .canvas-root .node.html {
   border-radius: 6px;
-  box-shadow: var(--shadow);
   overflow: hidden;
-  background: var(--surface);
+  background: transparent;
 }
 .canvas-root .node.html .cv-html-frame {
   display: block;
@@ -516,9 +522,18 @@
   height: 100%;
   border: 0;
   max-width: none; /* host resets (see .node.image img) must not squash it */
-  background: #fff; /* documents assume an opaque page behind them */
+  background: transparent;
   pointer-events: none;
   user-select: none;
+}
+/* The permanent cv-df skeleton (see Html.jsx): frameless, its screen must not
+   paint the device-frame backdrop either. Framed keeps --bg-base so a browser
+   window never looks hollow. */
+.canvas-root .node.html .cv-df--plain .cv-df-screen {
+  background: transparent;
+}
+.canvas-root .node.html.framed {
+  box-shadow: var(--shadow); /* match framed media — the shared .framed rule adds surface + border */
 }
 .canvas-root .node.html .cv-html-shield {
   position: absolute;
