@@ -137,6 +137,29 @@ export default function ContextMenu() {
           <div className="ctxsep" />
         </>
       )}
+      {node && (
+        <>
+          <div className="ctxscale" onPointerDown={(e) => e.stopPropagation()}>
+            <Scaling />
+            <span>Scale</span>
+            <input
+              className="ctxscale-input"
+              type="number"
+              min="0.05"
+              step="0.1"
+              defaultValue={node.scale ?? 1}
+              onPointerDown={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+                if (e.key === 'Enter') { const v = parseFloat(e.currentTarget.value); if (v > 0) eng.setNodeScale(node.id, v); setCtxMenu(null); }
+                if (e.key === 'Escape') setCtxMenu(null);
+              }}
+              onBlur={(e) => { const v = parseFloat(e.currentTarget.value); if (v > 0 && v !== (node.scale ?? 1)) eng.setNodeScale(node.id, v); }}
+            />
+          </div>
+          <div className="ctxsep" />
+        </>
+      )}
       <button onClick={run(() => { eng.copySelected(); })}>
         <Copy />
         {count > 1 ? `Copy ${count} objects` : 'Copy'}

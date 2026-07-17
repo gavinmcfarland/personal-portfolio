@@ -302,6 +302,12 @@
 .canvas-root.tool-code .cv-viewport {
   cursor: crosshair;
 }
+/* Scale mode (K): a resize cursor everywhere signals scaling; dragging an
+   object's body still moves it, dragging a corner handle scales it. */
+.canvas-root.tool-scale:not(.read-only) .cv-viewport,
+.canvas-root.tool-scale:not(.read-only) .node {
+  cursor: nwse-resize;
+}
 .canvas-root.tool-pen .cv-viewport,
 .canvas-root.tool-line .cv-viewport,
 .canvas-root.tool-arrow .cv-viewport,
@@ -1735,6 +1741,12 @@
 .canvas-root .cv-rz[data-mode='ew'] .cv-rz-ne,
 .canvas-root .cv-rz[data-mode='ew'] .cv-rz-n,
 .canvas-root .cv-rz[data-mode='ew'] .cv-rz-s { display: none; }
+/* Scale mode (K tool): only the four corners (dragging one scales the object
+   uniformly); the single-axis side strips don't apply. */
+.canvas-root .cv-rz[data-mode='scale'] .cv-rz-n,
+.canvas-root .cv-rz[data-mode='scale'] .cv-rz-s,
+.canvas-root .cv-rz[data-mode='scale'] .cv-rz-e,
+.canvas-root .cv-rz[data-mode='scale'] .cv-rz-w { display: none; }
 /* Media grid proportion-editing dividers — screen-space, so the accent stroke
    stays a constant 2px at any zoom. The wide strip is the grab target; the
    ::after line is what's drawn. Positioned by placeGridEdit(). */
@@ -2413,6 +2425,46 @@
   height: 1px;
   background: var(--ui-border);
   margin: 5px 6px;
+}
+/* Scale row: label + inline numeric field, laid out like a menu item. */
+.canvas-root #ctxmenu .ctxscale {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  height: 28px;
+  padding: 0 0.55rem;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.canvas-root #ctxmenu .ctxscale svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.canvas-root #ctxmenu .ctxscale span {
+  flex: 1;
+}
+.canvas-root #ctxmenu .ctxscale-input {
+  width: 58px;
+  height: 22px;
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  text-align: right;
+  padding: 0 6px;
+}
+.canvas-root #ctxmenu .ctxscale-input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 /* Page switcher (dropdown inside the top bar) */

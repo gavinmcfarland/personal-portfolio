@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 550.8461994421018,
-        "y": -189.9038593693693,
-        "scale": 0.4671922790335115
+        "x": 261.9709378479272,
+        "y": -188.78041067148948,
+        "scale": 0.40430705934021693
       },
       "nodes": [
         {
@@ -21,64 +21,10 @@
           "text": "Space is precious inside Figma so I wanted to be able to expand and collapse the plugin UI when it felt appropriate. Pages such as list views, settings, and logout collapse automatically, while code views expand automatically."
         },
         {
-          "id": "n33-image",
-          "type": "image",
-          "x": 238.53103862931823,
-          "y": 1252.861842966411,
-          "z": 93,
-          "w": 156.29442813720397,
-          "h": 254,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/44872a974a8efe4f.png",
-              "alt": "home-20260715-142633-413-view@3x 1.png"
-            }
-          ],
-          "frame": "plugin",
-          "frameScale": 0.0741
-        },
-        {
-          "id": "n34-image",
-          "type": "image",
-          "x": 1212.9717934754945,
-          "y": 890.6828367768259,
-          "z": 76,
-          "w": 299.792394122885,
-          "h": 486,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/c58f4e1ee3901a68.png",
-              "alt": "Group 2.png"
-            }
-          ],
-          "frame": "plugin",
-          "frameTitle": "Figlet"
-        },
-        {
-          "id": "n36-image",
-          "type": "image",
-          "x": 1731.837233953068,
-          "y": 890.6828367768258,
-          "z": 78,
-          "w": 600,
-          "h": 486,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/7df5bd7ce20fc383.png",
-              "alt": "home-20260715-140121-414-view@3x 2.png"
-            }
-          ],
-          "frame": "plugin",
-          "frameTitle": "Figlet"
-        },
-        {
           "id": "n37-tblock",
           "type": "tblock",
-          "x": 1997.3534472400079,
-          "y": 1415.361842966411,
+          "x": 1852.3204435257533,
+          "y": 1580.797631431958,
           "z": 79,
           "text": "New figlet",
           "font": "serif"
@@ -96,35 +42,17 @@
         {
           "id": "n39-tblock",
           "type": "tblock",
-          "x": 1302.9717934754945,
-          "y": 1415.361842966411,
+          "x": 1457.9387897612398,
+          "y": 1418.540849155996,
           "z": 81,
           "text": "Settings",
           "font": "serif"
         },
         {
-          "id": "n40-image",
-          "type": "image",
-          "x": 508.40660659259504,
-          "y": 890.6828367768259,
-          "z": 82,
-          "w": 600,
-          "h": 486,
-          "assets": [
-            {
-              "kind": "image",
-              "src": "/canvas-assets/122b0af0b96563fb.png",
-              "alt": "home-20260715-135245-324-view@3x.png"
-            }
-          ],
-          "frame": "plugin",
-          "frameTitle": "Figlet"
-        },
-        {
           "id": "n45-html",
           "type": "html",
-          "x": -1178.6187210503144,
-          "y": 929.361842966411,
+          "x": 542.398902707323,
+          "y": 893.8618429664109,
           "z": 87,
           "w": 600,
           "h": 485.99999999999994,
@@ -147,8 +75,8 @@
         {
           "id": "n49-html",
           "type": "html",
-          "x": -93.56480796044386,
-          "y": 1589.5570126228317,
+          "x": 169.72182756302504,
+          "y": 1259.290849155996,
           "z": 91,
           "w": 285.2151843111482,
           "h": 486.00000000000006,
@@ -156,6 +84,30 @@
           "name": "home-20260717-150255-263.html",
           "frame": "plugin",
           "frameScale": 0.0741
+        },
+        {
+          "id": "n52-html",
+          "type": "html",
+          "x": 1375.4387897612398,
+          "y": 893.8618429664106,
+          "z": 96,
+          "w": 285,
+          "h": 486,
+          "src": "/canvas-assets/7274716a6f553b23.html",
+          "name": "home-20260717-160355-153.html",
+          "frame": "plugin"
+        },
+        {
+          "id": "n53-html",
+          "type": "html",
+          "x": 1612.3204435257533,
+          "y": 1046.7372190502829,
+          "z": 97,
+          "w": 600,
+          "h": 485.9999999999997,
+          "src": "/canvas-assets/161354df982775e5.html",
+          "name": "home-20260717-160701-918.html",
+          "frame": "plugin"
         }
       ],
       "shapes": []
@@ -165,5 +117,5 @@
     "w": 1843,
     "h": 944
   },
-  "savedAt": 1784297142913
+  "savedAt": 1784301218604
 }

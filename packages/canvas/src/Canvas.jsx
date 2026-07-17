@@ -195,7 +195,10 @@ export default function Canvas() {
       vp.setPointerCapture(e.pointerId);
       return;
     }
-    if (tool === 'select' && (nodeEl || shapeEl)) {
+    // Scale mode (K) behaves like select for picking / moving objects; the only
+    // difference is that its resize handles scale instead of resize (see Chrome).
+    const selectLike = tool === 'select' || tool === 'scale';
+    if (selectLike && (nodeEl || shapeEl)) {
       const kind = nodeEl ? 'node' : 'shape';
       const id = (nodeEl || shapeEl).dataset.id;
       // Shift-click adds/removes the object from the selection without dragging.
@@ -213,7 +216,7 @@ export default function Canvas() {
       vp.setPointerCapture(e.pointerId);
       return;
     }
-    if (tool === 'select') {
+    if (selectLike) {
       /* Empty canvas: rubber-band selection. (Drag-to-pan on empty space is
          gone in edit mode — panning lives on space / middle-click / the hand
          tool / the wheel.) Shift keeps the existing selection as the base. */
@@ -410,7 +413,9 @@ export default function Canvas() {
         for (const it of a.items) {
           if (it.kind === 'node') {
             const nx = it.ox + dx, ny = it.oy + dy;
-            it.el.style.transform = `translate(${nx}px,${ny}px)`;
+            // Preserve the node's own scale — dropping it here would snap a
+            // scaled object back to 1× mid-drag.
+            it.el.style.transform = `translate(${nx}px,${ny}px) scale(${+it.el.dataset.scale || 1})`;
             it.el.dataset.x = nx; it.el.dataset.y = ny;
             if (a.moved) it.el.dataset.moved = '1';
           } else {
@@ -451,6 +456,24 @@ export default function Canvas() {
         let dx = activeX ? (e.clientX - a.sx) / scale() : 0;
         let dy = activeY ? (e.clientY - a.sy) / scale() : 0;
         const R = a.ox + a.ow, B = a.oy + a.oh; // fixed right/bottom edges when dragging left/top
+        // Scale mode (K tool): a corner drag multiplies the node's `scale`
+        // uniformly, anchoring the opposite corner. The box's width/height stay
+        // put — only the transform's scale (and x/y, to hold the anchor) change.
+        if (a.scaleMode) {
+          const footW = a.natW * a.scale0, footH = a.natH * a.scale0; // current on-board size
+          const rW = footW ? (footW + (fromLeft ? -dx : dx)) / footW : 1;
+          const rH = footH ? (footH + (fromTop ? -dy : dy)) / footH : 1;
+          // Uniform: follow whichever axis the pointer pushed further.
+          const r = Math.abs(rW - 1) >= Math.abs(rH - 1) ? rW : rH;
+          const newScale = Math.max(0.05, Math.min(20, a.scale0 * r));
+          const Wp = a.natW * newScale, Hp = a.natH * newScale; // new on-board size
+          const x = fromLeft ? (a.ox + footW) - Wp : a.ox;
+          const y = fromTop ? (a.oy + footH) - Hp : a.oy;
+          el.style.transform = `translate(${x}px,${y}px) scale(${newScale})`;
+          el.dataset.x = x; el.dataset.y = y; el.dataset.scale = newScale;
+          a.x = x; a.y = y; a.scale = newScale;
+          eng.setSnapGuides(null); eng.syncChrome(); return;
+        }
         // Cmd-drag on a text block scales the font instead of the box width. The
         // scale tracks how far the handle would have stretched the box: font grows
         // in proportion to the stretched width / ow, keeping the stored width untouched.
@@ -493,11 +516,15 @@ export default function Canvas() {
           }
           const x = center ? CX - w / 2 : fromLeft ? R - w : a.ox;
           const y = center ? CY - h / 2 : fromTop ? B - h : a.oy;
-          el.style.transform = `translate(${x}px,${y}px)`; el.dataset.x = x; el.dataset.y = y; a.x = x; a.y = y;
-          el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
-          el.style.height = h + 'px'; el.dataset.h = h; a.h = h;
-          c.el.style.width = c.cw + 'px'; c.el.style.height = c.ch + 'px';
-          c.el.style.transform = `translate(${MX - x}px,${MY - y}px)`;
+          // Footprint → natural: the box lives inside the node's scale(fx)
+          // transform, so its own width/height (and the media inside it) are
+          // divided by fx; the transform re-applies the scale. Crop fractions
+          // are scale-invariant. fx is 1 for unscaled media (the usual case).
+          el.style.transform = `translate(${x}px,${y}px) scale(${a.fx})`; el.dataset.x = x; el.dataset.y = y; a.x = x; a.y = y;
+          el.style.width = w / a.fx + 'px'; el.dataset.w = w / a.fx; a.w = w / a.fx;
+          el.style.height = h / a.fx + 'px'; el.dataset.h = h / a.fx; a.h = h / a.fx;
+          c.el.style.width = c.cw / a.fx + 'px'; c.el.style.height = c.ch / a.fx + 'px';
+          c.el.style.transform = `translate(${(MX - x) / a.fx}px,${(MY - y) / a.fx}px)`;
           a.cropRect = { x: (x - MX) / c.cw, y: (y - MY) / c.ch, w: w / c.cw, h: h / c.ch };
           eng.setSnapGuides(null); eng.syncChrome(); return;
         }
@@ -590,18 +617,22 @@ export default function Canvas() {
             h = Math.max(40, hRaw);
           }
         }
-        el.style.width = w + 'px'; el.dataset.w = w; a.w = w;
-        if (h != null) { el.style.height = h + 'px'; el.dataset.h = h; a.h = h; }
+        // The math above is in footprint units; the element's own width/height
+        // (and stored w/h) are natural, so divide the node's scale (fx) back out.
+        // The transform re-applies scale(fx) to reach the footprint on screen.
+        const wN = w / a.fx, hN = h != null ? h / a.fx : null;
+        el.style.width = wN + 'px'; el.dataset.w = wN; a.w = wN;
+        if (hN != null) { el.style.height = hN + 'px'; el.dataset.h = hN; a.h = hN; }
         // Scale-mode frame: grow the chrome bar (and thus the whole chrome + the
         // node's corner radius, which derive from --cv-df-bar on the node) live
         // with the box — React only recomputes it on release.
-        if (a.frameScale && h != null) el.style.setProperty('--cv-df-bar', h * a.frameScale + 'px');
+        if (a.frameScale && hN != null) el.style.setProperty('--cv-df-bar', hN * a.frameScale + 'px');
         // Anchor: centered resizes mirror around the box middle; otherwise
         // left/top handles pin the opposite corner. Height-auto nodes keep
         // their top edge.
         const x = center ? a.ox + (a.ow - w) / 2 : fromLeft ? R - w : a.ox;
         const y = h == null ? a.oy : center ? a.oy + (a.oh - h) / 2 : fromTop ? B - h : a.oy;
-        el.style.transform = `translate(${x}px,${y}px)`; el.dataset.x = x; el.dataset.y = y; a.x = x; a.y = y;
+        el.style.transform = `translate(${x}px,${y}px) scale(${a.fx})`; el.dataset.x = x; el.dataset.y = y; a.x = x; a.y = y;
         eng.syncChrome(); return;
       }
       if (a.type === 'frameDraw') {
@@ -673,6 +704,7 @@ export default function Canvas() {
         if (a.y != null) patch.y = a.y;
         if (a.w != null) patch.w = a.w;
         if (a.h != null) patch.h = a.h;
+        if (a.scale != null) patch.scale = a.scale; // scale-mode drag (no w/h change)
         if (a.fontSize != null) patch.fontSize = a.fontSize;
         if (a.cropRect) {
           // Commit the crop as fractions of the media's extent (relative, so
@@ -770,7 +802,7 @@ export default function Canvas() {
       }
       const map = S.readOnly
         ? { v: 'select', h: 'hand' }
-        : { v: 'select', h: 'hand', n: 'note', t: 'text', m: 'md', c: 'code', p: 'pen', l: 'line', a: 'arrow', r: 'rect', o: 'ellipse', f: 'frame' };
+        : { v: 'select', h: 'hand', k: 'scale', n: 'note', t: 'text', m: 'md', c: 'code', p: 'pen', l: 'line', a: 'arrow', r: 'rect', o: 'ellipse', f: 'frame' };
       const k = e.key.toLowerCase();
       if (map[k] && !e.metaKey && !e.ctrlKey) eng.setTool(map[k]);
       // Record is an action, not a placement tool: `S` starts a capture (Esc /

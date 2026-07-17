@@ -204,7 +204,7 @@ function FrameLabel({ node }) {
 }
 
 export default function Chrome() {
-  const { nodes, selected, eng, actionRef, nodeEls } = useCanvas();
+  const { nodes, selected, eng, actionRef, nodeEls, tool } = useCanvas();
 
   const selRef = useCallback((el) => eng.setChrome('sel', el), [eng]);
   const hovRef = useCallback((el) => eng.setChrome('hov', el), [eng]);
@@ -224,7 +224,12 @@ export default function Chrome() {
     if (!n) return;
     // A never-resized text block has no stored width — measure its element.
     const el = nodeEls.get(n.id);
-    const ow = n.w != null ? +n.w : el ? el.offsetWidth : 0;
+    // The resize math runs in on-board (footprint) units — natural size × the
+    // node's own scale — so handles and snapping track the visibly-scaled box.
+    // Live width/height writes divide fx back out (the node transform re-applies
+    // it). fx is 1 for the common, unscaled case, leaving everything unchanged.
+    const fx = n.scale || 1;
+    const ow = (n.w != null ? +n.w : el ? el.offsetWidth : 0) * fx;
     // Original font size, for cmd-drag text scaling (falls back to the rendered CSS size).
     const ofs = n.fontSize != null ? +n.fontSize : el ? parseFloat(getComputedStyle(el).fontSize) : 24;
     // A lone SVG renders `contain` (vector art), so cmd-drag cropping doesn't
@@ -261,10 +266,15 @@ export default function Chrome() {
     // fraction of the box, so the plain box ratio already keeps the media's —
     // frameBar 0.
     const frameBar = n.frame && !n.frameScale ? frameBarH(n.frame) : 0;
+    // Scale mode (the K tool): dragging a corner changes the node's `scale`
+    // instead of its width/height. Capture the natural (unscaled) size and the
+    // starting scale so the drag can grow the box about the opposite corner.
+    const scaleMode = tool === 'scale';
     actionRef.current = {
       type: 'resize', id: n.id, corner, sx: e.clientX, sy: e.clientY,
-      ox: +n.x, oy: +n.y, ow, oh: +n.h, ofs, mdType: n.type, loneSvg, crop, frameBar,
-      frameScale: n.frameScale || 0,
+      ox: +n.x, oy: +n.y, ow, oh: +n.h * fx, ofs, mdType: n.type, loneSvg, crop, frameBar,
+      frameScale: n.frameScale || 0, fx, scaleMode,
+      ...(scaleMode ? { natW: el ? el.offsetWidth : 0, natH: el ? el.offsetHeight : 0, scale0: fx } : {}),
     };
   };
 

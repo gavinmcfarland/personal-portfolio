@@ -6,7 +6,7 @@ import { useRegister } from './common';
 function Frame({ node }) {
   const { setRef, dataProps } = useRegister(node);
   const style = {
-    transform: `translate(${node.x}px,${node.y}px)`,
+    transform: `translate(${node.x}px,${node.y}px) scale(${node.scale || 1})`,
     zIndex: node.z,
     width: (node.w || 200) + 'px',
     height: (node.h || 140) + 'px',

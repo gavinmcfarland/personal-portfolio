@@ -132,7 +132,7 @@ function normalizeCrop(c) {
 }
 
 function normalizeSaved(n) {
-  const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor };
+  const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor, ...(n.scale && +n.scale !== 1 ? { scale: +n.scale } : {}) };
   if (n.type === 'frame') return { ...base, w: n.w || 200, h: n.h || 140, name: n.text || 'Section' };
   if (n.type === 'md') return { ...base, w: n.w || 340, text: n.text || '' };
   if (n.type === 'code') return { ...base, w: n.w || 420, text: n.text || '', lang: n.lang || 'js', ...(n.wrap != null ? { wrap: !!n.wrap } : {}) };
@@ -245,6 +245,12 @@ function loadInitial({ base, initialState, editable, storageKey, homeId, managed
 
   return freshState(base, homeId);
 }
+
+/* A node's stored scale multiplier (default 1). The node renders with
+   `transform: … scale(s)` about its top-left, so its on-board footprint is
+   offsetWidth*s × offsetHeight*s — every screen-space geometry read below
+   multiplies by this. */
+const nodeScale = (el) => +el.dataset.scale || 1;
 
 const EMPTY_BASE = { nodes: [], shapes: [], brand: {} };
 
@@ -628,7 +634,8 @@ export function CanvasProvider({
     function worldRectOf(sel) {
       if (sel.kind === 'node') {
         const n = nodeEls.get(sel.id); if (!n) return null;
-        return [+n.dataset.x, +n.dataset.y, n.offsetWidth, n.offsetHeight];
+        const sc = nodeScale(n);
+        return [+n.dataset.x, +n.dataset.y, n.offsetWidth * sc, n.offsetHeight * sc];
       }
       const el = shapeEls.get(sel.id); if (!el) return null;
       const bb = el.getBBox();
@@ -653,13 +660,17 @@ export function CanvasProvider({
       if ((type === 'md' || type === 'code') && !editing) {
         chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
       } else chrome.edit.style.display = 'none';
-      if ((type === 'frame' || type === 'md' || type === 'code' || type === 'tblock' || type === 'image' || type === 'video' || type === 'link' || type === 'html') && !editing) {
+      // Scale mode shows corner handles on ANY node (even stickies / sound,
+      // which have no resize handles otherwise) — dragging a corner scales it.
+      const scaling = type && S.tool === 'scale';
+      const resizable = type === 'frame' || type === 'md' || type === 'code' || type === 'tblock' || type === 'image' || type === 'video' || type === 'link' || type === 'html';
+      if ((scaling || resizable) && !editing) {
         // The rz container spans the node's screen rect; CSS pins a handle to
-        // each corner (see .cv-rz-h). data-mode drives the handle cursors.
+        // each corner (see .cv-rz-h). data-mode drives which handles show + cursors.
         chrome.rz.style.display = 'block';
         chrome.rz.style.left = sx + 'px'; chrome.rz.style.top = sy + 'px';
         chrome.rz.style.width = sw + 'px'; chrome.rz.style.height = sh + 'px';
-        chrome.rz.dataset.mode = type === 'md' || type === 'code' || type === 'tblock' || type === 'link' ? 'ew' : 'xy';
+        chrome.rz.dataset.mode = scaling ? 'scale' : (type === 'md' || type === 'code' || type === 'tblock' || type === 'link' ? 'ew' : 'xy');
       } else chrome.rz.style.display = 'none';
     }
     /* Faint hover outline for the node under the cursor (edit mode only). Drawn
@@ -672,7 +683,8 @@ export function CanvasProvider({
       if (suppressed) { hov.style.display = 'none'; return; }
       const el = nodeEls.get(id);
       if (!el) { hov.style.display = 'none'; return; }
-      const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth, h = el.offsetHeight;
+      const sc = nodeScale(el);
+      const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth * sc, h = el.offsetHeight * sc;
       const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s;
       hov.style.display = 'block';
       hov.style.left = (sx - 4) + 'px'; hov.style.top = (sy - 4) + 'px';
@@ -693,7 +705,8 @@ export function CanvasProvider({
       const geom = gridGeomRef.current;
       const el = geom ? nodeEls.get(geom.id) : null;
       if (!geom || !el || S.readOnly) { wrap.style.display = 'none'; return; }
-      const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth, h = el.offsetHeight;
+      const sc = nodeScale(el);
+      const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth * sc, h = el.offsetHeight * sc;
       const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s, sw = w * s, sh = h * s;
       wrap.style.display = 'block';
       const totalC = geom.colFr.reduce((a, b) => a + b, 0) || 1;
@@ -771,7 +784,8 @@ export function CanvasProvider({
       const rx1 = rect.x + rect.w, ry1 = rect.y + rect.h;
       const hits = [];
       nodeEls.forEach((el, id) => {
-        const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth, h = el.offsetHeight;
+        const sc = nodeScale(el);
+      const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth * sc, h = el.offsetHeight * sc;
         const hit = el.dataset.type === 'frame'
           ? x >= rect.x && y >= rect.y && x + w <= rx1 && y + h <= ry1
           : x < rx1 && x + w > rect.x && y < ry1 && y + h > rect.y;
@@ -837,7 +851,7 @@ export function CanvasProvider({
       let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
       for (const it of items) {
         let bx, by, bw, bh;
-        if (it.kind === 'node') { bx = it.ox; by = it.oy; bw = it.el.offsetWidth; bh = it.el.offsetHeight; }
+        if (it.kind === 'node') { const sc = nodeScale(it.el); bx = it.ox; by = it.oy; bw = it.el.offsetWidth * sc; bh = it.el.offsetHeight * sc; }
         else { const bb = it.el.getBBox(); bx = bb.x; by = bb.y; bw = bb.width; bh = bb.height; }
         x0 = Math.min(x0, bx); y0 = Math.min(y0, by);
         x1 = Math.max(x1, bx + bw); y1 = Math.max(y1, by + bh);
@@ -862,7 +876,7 @@ export function CanvasProvider({
         targets.push({ xs: [x, x + w / 2, x + w], ys: [y, y + h / 2, y + h] });
       };
       nodeEls.forEach((el, id) => {
-        if (!skipN || !skipN.has(id)) add(+el.dataset.x, +el.dataset.y, el.offsetWidth, el.offsetHeight);
+        if (!skipN || !skipN.has(id)) { const sc = nodeScale(el); add(+el.dataset.x, +el.dataset.y, el.offsetWidth * sc, el.offsetHeight * sc); }
       });
       shapeEls.forEach((el, id) => {
         if (skipS && skipS.has(id)) return;
@@ -1074,6 +1088,28 @@ export function CanvasProvider({
       }
       selectNode(id);
     }
+    /* Set a node's absolute scale multiplier (1 = original size), keeping its
+       CENTRE fixed so it grows/shrinks in place. Used by the right-click scale
+       field; the K-tool corner drag writes scale directly (anchoring the
+       opposite corner). Clamped to sane bounds. */
+    function setNodeScale(id, scale) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      const el = nodeEls.get(id);
+      if (!n || !el) return;
+      const next = Math.max(0.05, Math.min(20, +scale || 1));
+      const old = n.scale || 1;
+      if (next === old) return;
+      // Natural (unscaled) footprint; keep the centre put as the scale changes.
+      const natW = el.offsetWidth, natH = el.offsetHeight;
+      const cx = n.x + (natW * old) / 2, cy = n.y + (natH * old) / 2;
+      updateNode(id, {
+        scale: next === 1 ? undefined : next,
+        x: cx - (natW * next) / 2,
+        y: cy - (natH * next) / 2,
+      });
+      selectNode(id);
+    }
     function deleteSelected() {
       if (!S.selected.length) return;
       deleteItems(S.selected);
@@ -1241,7 +1277,9 @@ export function CanvasProvider({
     }
 
     /* ── Tools / mode ─────────────────────────────────────────── */
-    function setTool(t) { setToolState(t); deselect(); }
+    // Switching tools clears the selection — except entering scale mode, which
+    // acts on the object you already have selected (select → K → drag a corner).
+    function setTool(t) { setToolState(t); if (t !== 'scale') deselect(); }
     // `broadcast` is false when applying a mode change that originated from
     // another canvas instance, so we don't persist/re-emit and loop.
     function setMode(ro, broadcast = true) {
@@ -1258,7 +1296,8 @@ export function CanvasProvider({
       let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9, any = false;
       nodeEls.forEach((n) => {
         any = true;
-        const x = +n.dataset.x, y = +n.dataset.y, w = n.offsetWidth, h = n.offsetHeight;
+        const sc = nodeScale(n);
+        const x = +n.dataset.x, y = +n.dataset.y, w = n.offsetWidth * sc, h = n.offsetHeight * sc;
         minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x + w); maxY = Math.max(maxY, y + h);
       });
       S.shapes.forEach((s) => {
@@ -1281,7 +1320,8 @@ export function CanvasProvider({
     }
     function flyTo(id) {
       const el = nodeEls.get(id); if (!el) return;
-      const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth, h = el.offsetHeight;
+      const sc = nodeScale(el);
+      const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth * sc, h = el.offsetHeight * sc;
       const W = vpW(), H = vpH(), pad = 90;
       const s = clampScale(Math.min(W / (w + pad * 2), H / (h + pad * 2)));
       targetRef.scale = s; targetRef.x = W / 2 - (x + w / 2) * s; targetRef.y = H / 2 - (y + h / 2) * s;
@@ -1378,6 +1418,8 @@ export function CanvasProvider({
     function serializeNode(n) {
       const o = { id: n.id, type: n.type, x: +n.x, y: +n.y, z: n.z };
       if (n.anchor) o.anchor = 1;
+      // A per-object scale multiplier (K tool / right-click). Omitted at 1×.
+      if (n.scale && n.scale !== 1) o.scale = Math.round(n.scale * 10000) / 10000;
       if (n.type === 'sticky') { o.color = n.color; o.text = n.text; }
       else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; if (n.font) o.font = n.font; }
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
@@ -2330,7 +2372,7 @@ export function CanvasProvider({
       selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, snapResize, setSnapGuides,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
-      bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, deleteSelected, deleteTarget,
+      bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, setNodeScale, deleteSelected, deleteTarget,
       copySelected, cutSelected, cutTarget, paste, pasteAt, pasteFromMenu, hasClipboard, systemClipIsMine, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, toggleGrid, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
@@ -2389,7 +2431,10 @@ export function CanvasProvider({
     [...b.classList].forEach((c) => { if (c.startsWith('tool-')) b.classList.remove(c); });
     b.classList.add('tool-' + tool);
     b.classList.toggle('read-only', readOnly);
-  }, [tool, readOnly]);
+    // Entering/leaving scale mode changes which handles show on the selection,
+    // so re-place the chrome (it otherwise only re-syncs on data changes).
+    eng.syncChrome();
+  }, [tool, readOnly, eng]);
 
   /* ── Global edit/view mode: follow toggles from any other instance ── */
   useEffect(() => {

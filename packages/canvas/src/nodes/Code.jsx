@@ -237,7 +237,7 @@ function Code({ node }) {
     ? painted
     : '<span class="code-empty">Empty — double-click to edit</span>';
 
-  const style = { transform: `translate(${node.x}px,${node.y}px)`, zIndex: node.z, width: (node.w || 420) + 'px' };
+  const style = { transform: `translate(${node.x}px,${node.y}px) scale(${node.scale || 1})`, zIndex: node.z, width: (node.w || 420) + 'px' };
 
   return (
     <div

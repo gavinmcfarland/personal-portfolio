@@ -44,16 +44,21 @@ export function useRegister(node) {
     (el) => { if (el) nodeEls.set(node.id, el); else nodeEls.delete(node.id); },
     [node.id, nodeEls]
   );
+  const scale = node.scale || 1;
   const dataProps = {
     'data-id': node.id,
     'data-type': node.type,
     'data-x': node.x,
     'data-y': node.y,
     'data-z': node.z,
+    'data-scale': scale,
     'data-anchor': node.anchor ? '1' : '',
   };
   if (node.w != null) dataProps['data-w'] = node.w;
   if (node.h != null) dataProps['data-h'] = node.h;
-  const style = { transform: `translate(${node.x}px,${node.y}px)`, zIndex: node.z };
+  // A per-node scale multiplies the whole object (content, borders, media)
+  // about its top-left (transform-origin 0 0); the screen-space chrome/geometry
+  // in CanvasProvider multiplies offsetWidth/Height by data-scale to match.
+  const style = { transform: `translate(${node.x}px,${node.y}px) scale(${scale})`, zIndex: node.z };
   return { setRef, dataProps, style };
 }
