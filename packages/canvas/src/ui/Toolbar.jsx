@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   MousePointer2, Hand, StickyNote, Type, FileCode, Code, Pen, Anchor,
   Slash, ArrowUpRight, Square, Circle, Mic,
-  AlignLeft, AlignCenter, AlignRight,
+  AlignLeft, AlignCenter, AlignRight, GripVertical,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, themeInk } from '../constants';
@@ -119,7 +119,10 @@ function commonValue(items, get) {
   return items.every((x) => get(x) === first) ? first : undefined;
 }
 
-/* Colour palette below the toolbar. Depending on context it either sets the
+const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+
+/* Floating properties panel, docked bottom-right of the canvas; drag its
+   header to move it anywhere. Depending on context it either sets the
    defaults for the next shape/note or live-edits the current selection:
    - note tool, or a sticky note selected → note colours
    - a draw tool active, or shapes selected → Stroke row (+ Fill row for
@@ -130,6 +133,32 @@ function Swatches() {
     setNoteColor, setTextFont, setStrokeColor, setFillColor,
     selected, nodes, shapes, eng,
   } = useCanvas();
+  const panelRef = useRef(null);
+  const dragRef = useRef(null);
+  // null → default docked spot (bottom-right); {x, y} once the user drags it.
+  const [pos, setPos] = useState(null);
+
+  const startDrag = (e) => {
+    const panel = panelRef.current;
+    const host = panel?.offsetParent;
+    if (!host) return;
+    const r = panel.getBoundingClientRect();
+    const h = host.getBoundingClientRect();
+    dragRef.current = { sx: e.clientX, sy: e.clientY, ox: r.left - h.left, oy: r.top - h.top };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  };
+  const moveDrag = (e) => {
+    const d = dragRef.current;
+    const panel = panelRef.current;
+    const host = panel?.offsetParent;
+    if (!d || !host) return;
+    setPos({
+      x: clamp(d.ox + e.clientX - d.sx, 0, Math.max(host.clientWidth - panel.offsetWidth, 0)),
+      y: clamp(d.oy + e.clientY - d.sy, 0, Math.max(host.clientHeight - panel.offsetHeight, 0)),
+    });
+  };
+  const endDrag = () => { dragRef.current = null; };
 
   const isSelect = tool === 'select';
   const selShapes = selected
@@ -181,7 +210,22 @@ function Swatches() {
     : fillColor;
 
   return (
-    <div className="ui panel show" id="swatches">
+    <div
+      className="ui panel show"
+      id="swatches"
+      ref={panelRef}
+      style={pos ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined}
+    >
+      <div
+        className="props-handle"
+        onPointerDown={startDrag}
+        onPointerMove={moveDrag}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      >
+        <GripVertical />
+        Properties
+      </div>
       {showNote && (
         <div className="swatch-row">
           {COLORS.note.map(([hex, name]) => (

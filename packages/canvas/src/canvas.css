@@ -2057,11 +2057,10 @@
   fill: currentColor;
 }
 
-/* Colour swatches */
+/* Properties panel — docked bottom-right; drag its header to move it */
 .canvas-root #swatches {
-  left: 50%;
-  bottom: 84px;
-  transform: translateX(-50%);
+  right: 22px;
+  bottom: 22px;
   display: none;
   flex-direction: column;
   gap: 6px;
@@ -2069,6 +2068,33 @@
 }
 .canvas-root #swatches.show {
   display: flex;
+}
+.canvas-root .props-handle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 4px 6px;
+  border-bottom: 1px solid var(--ui-border);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.canvas-root .props-handle:active {
+  cursor: grabbing;
+}
+.canvas-root .props-handle svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  fill: none;
 }
 .canvas-root .swatch-row {
   display: flex;
