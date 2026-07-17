@@ -439,11 +439,17 @@ export default function Canvas() {
       }
       if (a.type === 'resize') {
         const el = nodeEls.get(a.id); if (!el) return;
-        // Which edges this corner handle drags; the opposite corner stays anchored.
-        const fromLeft = a.corner === 'nw' || a.corner === 'sw';
-        const fromTop = a.corner === 'nw' || a.corner === 'ne';
-        let dx = (e.clientX - a.sx) / scale();
-        let dy = (e.clientY - a.sy) / scale();
+        // Which edges this handle drags; the opposite edge stays anchored. Corners
+        // (nw/ne/sw/se) drive both axes; the side handles (n/s/e/w — grabbable
+        // anywhere along an edge, Figma-style) drive a single axis, so the other
+        // axis is pinned (its delta forced to 0 below).
+        const fromLeft = a.corner === 'nw' || a.corner === 'sw' || a.corner === 'w';
+        const fromTop = a.corner === 'nw' || a.corner === 'ne' || a.corner === 'n';
+        const activeX = a.corner !== 'n' && a.corner !== 's';
+        const activeY = a.corner !== 'e' && a.corner !== 'w';
+        const edgeOnly = activeX !== activeY; // a single-axis side handle
+        let dx = activeX ? (e.clientX - a.sx) / scale() : 0;
+        let dy = activeY ? (e.clientY - a.sy) / scale() : 0;
         const R = a.ox + a.ow, B = a.oy + a.oh; // fixed right/bottom edges when dragging left/top
         // Cmd-drag on a text block scales the font instead of the box width. The
         // scale tracks how far the handle would have stretched the box: font grows
@@ -510,7 +516,9 @@ export default function Canvas() {
         // freed (Shift, or Cmd freeing a grid / html / non-lone-SVG with no crop).
         const metaKey = e.metaKey || e.ctrlKey;
         const mediaLike = a.mdType === 'image' || a.mdType === 'video' || a.mdType === 'html';
-        const aspectFree = e.shiftKey || (metaKey && mediaLike && !a.loneSvg && !a.crop);
+        // A side handle stretches one axis, so media isn't aspect-locked (there's
+        // no second axis to scale) — same as Shift or a Cmd free-resize.
+        const aspectFree = e.shiftKey || edgeOnly || (metaKey && mediaLike && !a.loneSvg && !a.crop);
         if (!e.altKey) {
           const box = { x: a.ox, y: a.oy, w: a.ow, h: a.oh };
           const guides = [];
@@ -535,8 +543,9 @@ export default function Canvas() {
             }
           } else {
             // Independent edges. A text block's height is auto (no vertical edge);
-            // a Shift-locked non-media box scales on its dominant axis only.
-            let freeX = true, freeY = true;
+            // a Shift-locked non-media box scales on its dominant axis only; a side
+            // handle only snaps the axis it actually drags (activeX/activeY).
+            let freeX = activeX, freeY = activeY;
             if (a.mdType === 'md' || a.mdType === 'tblock' || a.mdType === 'code' || a.mdType === 'link') freeY = false;
             else if (e.shiftKey && a.mdType !== 'image' && a.mdType !== 'video') {
               if (Math.abs(dx) >= Math.abs(dy)) freeY = false; else freeX = false;

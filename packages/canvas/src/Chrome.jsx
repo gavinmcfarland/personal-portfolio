@@ -284,7 +284,9 @@ export default function Chrome() {
         <Pencil />
       </div>
       <div className="cv-rz" ref={rzRef}>
-        {['nw', 'ne', 'sw', 'se'].map((c) => (
+        {/* Side strips (grabbable anywhere along an edge) first, corner squares
+            last so the corners win the hit test where the two overlap. */}
+        {['n', 's', 'e', 'w', 'nw', 'ne', 'sw', 'se'].map((c) => (
           <div key={c} className={`cv-rz-h cv-rz-${c}`} onPointerDown={onResizeDown(c)} />
         ))}
       </div>

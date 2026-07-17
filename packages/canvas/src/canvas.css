@@ -1691,31 +1691,50 @@
   stroke-linejoin: round;
 }
 /* Resize handles: the .cv-rz container tracks the selection rect (placed by
-   placeSel) and stays click-through; the four corner squares inside it are the
-   actual grab targets. Each sticks out diagonally past its corner. */
+   placeSel) and stays click-through. Inside sit four visible corner squares plus
+   four transparent side strips — the strips make an object resizable from
+   anywhere along an edge (Figma-style), driving a single-axis resize. */
 .canvas-root .cv-rz {
   display: none;
   pointer-events: none;
 }
 .canvas-root .cv-rz .cv-rz-h {
   position: absolute;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+/* Corner squares: the visible grab targets, each poking out past its corner. */
+.canvas-root .cv-rz .cv-rz-nw,
+.canvas-root .cv-rz .cv-rz-ne,
+.canvas-root .cv-rz .cv-rz-sw,
+.canvas-root .cv-rz .cv-rz-se {
   width: 14px;
   height: 14px;
   background: var(--surface);
   border: 2px solid var(--accent);
-  box-sizing: border-box;
-  pointer-events: auto;
 }
 .canvas-root .cv-rz .cv-rz-nw { left: -10px; top: -10px; cursor: nwse-resize; }
 .canvas-root .cv-rz .cv-rz-ne { left: calc(100% - 4px); top: -10px; cursor: nesw-resize; }
 .canvas-root .cv-rz .cv-rz-sw { left: -10px; top: calc(100% - 4px); cursor: nesw-resize; }
 .canvas-root .cv-rz .cv-rz-se { left: calc(100% - 4px); top: calc(100% - 4px); cursor: nwse-resize; }
-/* Width-only nodes (markdown, code, text, link) resize horizontally: the two
-   bottom handles cover left/right growth, and hiding the top pair keeps the
-   ne corner clear of the edit-pencil button that floats there. */
-.canvas-root .cv-rz[data-mode='ew'] .cv-rz-h { cursor: ew-resize; }
+/* Side strips: invisible ~11px grab bands straddling each edge, inset from the
+   corners so the corner squares stay reachable. */
+.canvas-root .cv-rz .cv-rz-n,
+.canvas-root .cv-rz .cv-rz-s { left: 8px; right: 8px; height: 11px; cursor: ns-resize; }
+.canvas-root .cv-rz .cv-rz-e,
+.canvas-root .cv-rz .cv-rz-w { top: 8px; bottom: 8px; width: 11px; cursor: ew-resize; }
+.canvas-root .cv-rz .cv-rz-n { top: -5px; }
+.canvas-root .cv-rz .cv-rz-s { bottom: -5px; }
+.canvas-root .cv-rz .cv-rz-e { right: -5px; }
+.canvas-root .cv-rz .cv-rz-w { left: -5px; }
+/* Width-only nodes (markdown, code, text, link) resize horizontally only: keep
+   the left/right affordances (bottom corners + side strips), hide every
+   vertical one — including the ne corner, which would clash with the edit-pencil
+   button floating there. */
 .canvas-root .cv-rz[data-mode='ew'] .cv-rz-nw,
-.canvas-root .cv-rz[data-mode='ew'] .cv-rz-ne { display: none; }
+.canvas-root .cv-rz[data-mode='ew'] .cv-rz-ne,
+.canvas-root .cv-rz[data-mode='ew'] .cv-rz-n,
+.canvas-root .cv-rz[data-mode='ew'] .cv-rz-s { display: none; }
 /* Media grid proportion-editing dividers — screen-space, so the accent stroke
    stays a constant 2px at any zoom. The wide strip is the grab target; the
    ::after line is what's drawn. Positioned by placeGridEdit(). */
