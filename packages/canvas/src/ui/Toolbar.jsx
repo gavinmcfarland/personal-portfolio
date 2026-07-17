@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   MousePointer2, Hand, StickyNote, Type, FileCode, Code, Pen, Anchor,
   Slash, ArrowUpRight, Square, Circle, Mic,
+  AlignLeft, AlignCenter, AlignRight,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, themeInk } from '../constants';
@@ -12,6 +13,12 @@ const SHAPE_TOOLS = [
   { t: 'arrow', label: 'Arrow', key: 'A', icon: <ArrowUpRight /> },
   { t: 'rect', label: 'Rectangle', key: 'R', icon: <Square /> },
   { t: 'ellipse', label: 'Ellipse', key: 'O', icon: <Circle /> },
+];
+
+const ALIGNS = [
+  ['left', 'Align left', <AlignLeft />],
+  ['center', 'Align centre', <AlignCenter />],
+  ['right', 'Align right', <AlignRight />],
 ];
 
 const TOOLS = [
@@ -155,6 +162,7 @@ function Swatches() {
     if (editingTexts) selTexts.forEach((n) => eng.updateNode(n.id, { font: name }));
     else setTextFont(name);
   };
+  const pickAlign = (dir) => selTexts.forEach((n) => eng.updateNode(n.id, { align: dir }));
   const pickStroke = (hex) => {
     if (editingShapes) selShapes.forEach((s) => eng.updateShape(s.id, { stroke: hex }));
     else setStrokeColor(hex);
@@ -166,6 +174,7 @@ function Swatches() {
 
   const curNote = editingStickies ? commonValue(selStickies, (n) => n.color) : noteColor;
   const curFont = editingTexts ? commonValue(selTexts, (n) => n.font || 'serif') : textFont;
+  const curAlign = commonValue(selTexts, (n) => n.align || 'left');
   const curStroke = editingShapes ? commonValue(selShapes, (s) => s.stroke) : strokeColor;
   const curFill = fillableSel.length
     ? commonValue(fillableSel, (s) => s.fill || 'none')
@@ -197,6 +206,20 @@ function Swatches() {
               onClick={() => pickFont(name)}
             >
               {label}
+            </button>
+          ))}
+        </div>
+      )}
+      {editingTexts && (
+        <div className="swatch-row">
+          {ALIGNS.map(([dir, label, icon]) => (
+            <button
+              key={dir}
+              className={`align-btn${curAlign === dir ? ' active' : ''}`}
+              title={label}
+              onClick={() => pickAlign(dir)}
+            >
+              {icon}
             </button>
           ))}
         </div>

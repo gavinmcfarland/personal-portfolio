@@ -1668,6 +1668,13 @@
   position: absolute;
   background: var(--snap-guide);
 }
+/* Centre-line alignments read as dashed; edge alignments stay solid. */
+.canvas-root .cv-guide-center-v {
+  background: repeating-linear-gradient(to bottom, var(--snap-guide) 0 4px, transparent 4px 8px);
+}
+.canvas-root .cv-guide-center-h {
+  background: repeating-linear-gradient(to right, var(--snap-guide) 0 4px, transparent 4px 8px);
+}
 .canvas-root .cbtn {
   width: 22px;
   height: 22px;
@@ -2115,6 +2122,31 @@
 .canvas-root .font-btn[data-font="serif"] { font-family: var(--serif); }
 .canvas-root .font-btn[data-font="mono"] { font-family: var(--mono); }
 .canvas-root .font-btn[data-font="script"] { font-family: var(--hand); font-size: 18px; }
+/* Horizontal-alignment buttons for text blocks. */
+.canvas-root .align-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.dark .canvas-root .align-btn,
+.canvas-root.dark .align-btn {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.canvas-root .align-btn.active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.canvas-root .align-btn svg {
+  width: 15px;
+  height: 15px;
+}
 /* "No fill" swatch: white with a red diagonal slash. */
 .canvas-root .swatch.swatch-none {
   position: relative;

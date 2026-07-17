@@ -147,8 +147,9 @@ function normalizeSaved(n) {
   if (n.type === 'link') return { ...base, w: n.w || 280, url: n.url || '', title: n.title || '', desc: n.desc || '', image: n.image || '', siteName: n.siteName || '', favicon: n.favicon || '' };
   const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
   const ff = n.font ? { font: n.font } : null; // serif | sans | mono | script
-  if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs, ...ff }; // resized tblock wraps at its width
-  return { ...base, text: n.text || '', ...fs, ...ff }; // tblock
+  const al = n.align && n.align !== 'left' ? { align: n.align } : null; // left | center | right
+  if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs, ...ff, ...al }; // resized tblock wraps at its width
+  return { ...base, text: n.text || '', ...fs, ...ff, ...al }; // tblock
 }
 
 /* Merge a saved node list over the data-derived base for the home page. Nodes of
@@ -913,17 +914,20 @@ export function CanvasProvider({
       const fx = vals(sdx, 'x'), fy = vals(sdy, 'y');
       const guides = [], seen = new Set();
       const collect = (axis, dragVals, key, lo, hi) => {
-        for (const v of dragVals) {
+        dragVals.forEach((v, vi) => {
           const dedup = axis + Math.round(v * 2);
-          if (seen.has(dedup)) continue;
-          let a = lo, b = hi, hit = false;
-          for (const t of targets) if (t[key].some((tv) => Math.abs(tv - v) < SNAP_EPS)) {
+          if (seen.has(dedup)) return;
+          let a = lo, b = hi, hit = false, center = vi === 1; // index 1 = the box's centre line
+          for (const t of targets) {
+            let m = false;
+            t[key].forEach((tv, ti) => { if (Math.abs(tv - v) < SNAP_EPS) { m = true; if (ti === 1) center = true; } });
+            if (!m) continue;
             hit = true;
             const span = key === 'xs' ? t.ys : t.xs;
             a = Math.min(a, span[0]); b = Math.max(b, span[2]);
           }
-          if (hit) { seen.add(dedup); guides.push({ axis, v, a, b }); }
-        }
+          if (hit) { seen.add(dedup); guides.push({ axis, v, a, b, center }); }
+        });
       };
       collect('v', fx, 'xs', fy[0], fy[2]);
       collect('h', fy, 'ys', fx[0], fx[2]);
@@ -949,12 +953,15 @@ export function CanvasProvider({
         }
         if (d === null) return null;
         const v = val + d;
-        let a = lo, b = hi;
-        for (const t of targets) if (t[key].some((tv) => Math.abs(tv - v) < SNAP_EPS)) {
+        let a = lo, b = hi, center = false; // a resized edge is never a centre, but its target can be
+        for (const t of targets) {
+          let m = false;
+          t[key].forEach((tv, ti) => { if (Math.abs(tv - v) < SNAP_EPS) { m = true; if (ti === 1) center = true; } });
+          if (!m) continue;
           const span = key === 'xs' ? t.ys : t.xs;
           a = Math.min(a, span[0]); b = Math.max(b, span[2]);
         }
-        return { v, d, guide: { axis, v, a, b } };
+        return { v, d, guide: { axis, v, a, b, center } };
       };
       return {
         x: solve(cand.x, 'xs', 'v', box.y, box.y + box.h),
@@ -980,6 +987,7 @@ export function CanvasProvider({
       const s = viewRef.scale, EXT = 4; // guides overshoot the aligned boxes a touch
       snapGuides.forEach((g, i) => {
         const el = wrap.children[i];
+        el.className = g.center ? `cv-guide cv-guide-center-${g.axis}` : 'cv-guide';
         const at = (g.axis === 'v' ? viewRef.x : viewRef.y) + g.v * s - 0.5;
         const lo = (g.axis === 'v' ? viewRef.y : viewRef.x) + g.a * s - EXT;
         const len = (g.b - g.a) * s + EXT * 2;
@@ -1421,7 +1429,7 @@ export function CanvasProvider({
       // A per-object scale multiplier (K tool / right-click). Omitted at 1×.
       if (n.scale && n.scale !== 1) o.scale = Math.round(n.scale * 10000) / 10000;
       if (n.type === 'sticky') { o.color = n.color; o.text = n.text; }
-      else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; if (n.font) o.font = n.font; }
+      else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; if (n.font) o.font = n.font; if (n.align && n.align !== 'left') o.align = n.align; }
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
       else if (n.type === 'code') { o.w = n.w; o.text = n.text; o.lang = n.lang; if (n.wrap != null) o.wrap = n.wrap ? 1 : 0; }

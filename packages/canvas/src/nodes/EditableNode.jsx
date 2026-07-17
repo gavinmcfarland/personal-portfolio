@@ -66,6 +66,7 @@ function EditableNode({ node }) {
   // user resizes it, the stored width fixes the box and the text wraps inside.
   let sizedStyle = node.w != null ? { ...style, width: node.w + 'px' } : style;
   if (node.fontSize != null) sizedStyle = { ...sizedStyle, fontSize: node.fontSize + 'px' };
+  if (node.align && node.align !== 'left') sizedStyle = { ...sizedStyle, textAlign: node.align };
 
   return (
     <div
