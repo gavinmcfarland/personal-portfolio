@@ -1721,15 +1721,15 @@
 .canvas-root .cv-rz .cv-rz-ne,
 .canvas-root .cv-rz .cv-rz-sw,
 .canvas-root .cv-rz .cv-rz-se {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   background: var(--surface);
   border: 2px solid var(--accent);
 }
-.canvas-root .cv-rz .cv-rz-nw { left: -10px; top: -10px; cursor: nwse-resize; }
-.canvas-root .cv-rz .cv-rz-ne { left: calc(100% - 4px); top: -10px; cursor: nesw-resize; }
-.canvas-root .cv-rz .cv-rz-sw { left: -10px; top: calc(100% - 4px); cursor: nesw-resize; }
-.canvas-root .cv-rz .cv-rz-se { left: calc(100% - 4px); top: calc(100% - 4px); cursor: nwse-resize; }
+.canvas-root .cv-rz .cv-rz-nw { left: -9px; top: -9px; cursor: nwse-resize; }
+.canvas-root .cv-rz .cv-rz-ne { left: calc(100% - 3px); top: -9px; cursor: nesw-resize; }
+.canvas-root .cv-rz .cv-rz-sw { left: -9px; top: calc(100% - 3px); cursor: nesw-resize; }
+.canvas-root .cv-rz .cv-rz-se { left: calc(100% - 3px); top: calc(100% - 3px); cursor: nwse-resize; }
 /* Side strips: invisible ~11px grab bands straddling each edge, inset from the
    corners so the corner squares stay reachable. */
 .canvas-root .cv-rz .cv-rz-n,
