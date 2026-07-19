@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>plugma · board — Gavin McFarland</title>
+<meta name="description" content="The working board for Plugma — a zero-config toolchain for building Figma plugins, with real hot reloading." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          paper:'var(--paper)', plate:'var(--plate)', ink:'var(--ink)',
+          muted:'var(--muted)', faint:'var(--faint)', accent:'var(--accent)', rule:'var(--rule)',
+        },
+        fontFamily: {
+          sans:['IBM Plex Sans','ui-sans-serif','system-ui','sans-serif'],
+          mono:['IBM Plex Mono','ui-monospace','SFMono-Regular','monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   PLATE — shared layer
+   §1 tokens and §2 primitives are identical on every page; §3 board
+   is carried by the pages that draw one.
+
+   1. NO CURVES — `border-radius: 0` set globally, never overridden.
+   2. NO SHADOWS — depth from hairline rules and flat fills.
+   3. EVERYTHING SNAPS — 12 columns across, 24px baseline down.
+
+   This page substitutes a fixed shell for the sheet. Two things
+   follow, and they are the whole design problem:
+
+   1. The rail goes. A sheet index needs a scrolling sheet to index;
+      here the column scrolls on its own and is short enough to read
+      whole. The numbered module heads stay — they are the labels.
+   2. Gestures stop being cooperative. The page has no scroll to
+      protect, so a plain wheel pans and pinch zooms, which is what
+      anyone touching an infinite canvas expects.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+:root {
+  --paper:#F1F1EE;
+  --plate:#FFFFFF;
+  --sunk:#E7E7E3;
+  --ink:#0E1013;
+  --muted:#4A4E55;
+  --faint:#8A8E95;
+  --accent:#BF3B18;
+  --accent-soft:rgba(191,59,24,.08);
+  --rule:#C9C9C3;
+  --rule-hair:#DEDED9;
+  --grid-minor:#DFDFDA;
+  --grid-major:#CFCFC9;
+
+  --sw-a:#E8D9A8; --sw-a-ink:#3E3208;
+  --sw-b:#BFD2E0; --sw-b-ink:#0E2E44;
+  --sw-c:#C3D6BC; --sw-c-ink:#1B3516;
+  --sw-d:#E6C7AB; --sw-d-ink:#432708;
+
+  --page:75rem;
+  --cols:12;
+  --gutter:1.5rem;
+  --pad:clamp(1rem,3vw,2rem);
+  --bl:1.5rem;
+
+  --t-micro:.6875rem;
+  --t-label:.75rem;
+  --t-mono:.8125rem;
+  --t-body:.9375rem;
+  --t-display:clamp(1.375rem,2.8vw,1.75rem);
+
+  --dur:.15s; --ease:cubic-bezier(.2,.7,.3,1);
+  --f-sans:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace;
+}
+
+.dark {
+  --paper:#0B0C0D;
+  --plate:#141618;
+  --sunk:#08090A;
+  --ink:#E6E7E4;
+  --muted:#9CA0A6;
+  --faint:#6B6F75;
+  --accent:#FF7A52;
+  --accent-soft:rgba(255,122,82,.10);
+  --rule:#2C2F33;
+  --rule-hair:#212427;
+  --grid-minor:#141719;
+  --grid-major:#1F2327;
+
+  --sw-a:#6E5F28; --sw-a-ink:#F5EDD3;
+  --sw-b:#2F4A5C; --sw-b-ink:#DDEAF3;
+  --sw-c:#37502F; --sw-c-ink:#DFEEDA;
+  --sw-d:#6B4526; --sw-d-ink:#F6E4D2;
+}
+
+/* ── §2 · PRIMITIVES ───────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing:border-box; border-radius:0; }
+
+body {
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--f-sans); font-size:var(--t-body); line-height:var(--bl);
+  -webkit-font-smoothing:antialiased;
+}
+::selection { background:var(--accent); color:var(--paper); }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+.strip { border-bottom:1px solid var(--rule); background:var(--paper); }
+.strip__in {
+  margin-inline:auto; max-width:var(--page); padding:0 var(--pad);
+  height:calc(var(--bl) * 2);
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  font-family:var(--f-mono); font-size:var(--t-label);
+  letter-spacing:.06em; text-transform:uppercase; color:var(--muted);
+}
+.strip strong { font-weight:600; color:var(--ink); }
+.strip__sep { color:var(--faint); }
+
+.module { margin-bottom:calc(var(--bl) * 2); }
+.module:last-child { margin-bottom:0; }
+.module__head {
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  height:calc(var(--bl) * 1.5);
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--rule-hair);
+  margin-bottom:var(--bl);
+  font-family:var(--f-mono); font-size:var(--t-label);
+  letter-spacing:.08em; text-transform:uppercase;
+}
+.module__num { color:var(--accent); font-weight:500; }
+.module__name { color:var(--ink); font-weight:500; }
+.module__note { color:var(--faint); font-weight:400; letter-spacing:.04em; }
+.module__head > span:first-child { display:flex; gap:.75rem; }
+
+.prose { color:var(--muted); }
+.prose p { margin:0; }
+.prose p + p { margin-top:var(--bl); }
+.prose strong { color:var(--ink); font-weight:500; }
+
+.display {
+  margin:0; font-size:var(--t-display); font-weight:400;
+  line-height:calc(var(--bl) * 1.333);
+  letter-spacing:-.015em; color:var(--ink);
+}
+
+.tbl__row {
+  display:grid; grid-template-columns:1fr 1fr; align-items:baseline;
+  column-gap:var(--gutter);
+  padding-block:.5rem; border-bottom:1px solid var(--rule-hair);
+  color:inherit; text-decoration:none;
+  transition:background-color var(--dur) var(--ease);
+}
+a.tbl__row:hover { background:var(--accent-soft); }
+.c-term { font-family:var(--f-mono); font-size:var(--t-mono); color:var(--ink); }
+.c-body { color:var(--muted); font-family:var(--f-mono); font-size:var(--t-mono); text-align:right; }
+.tbl__mk { color:var(--accent); font-family:var(--f-mono); opacity:0; transition:opacity var(--dur) var(--ease); }
+a.tbl__row:hover .tbl__mk, a.tbl__row:focus-visible .tbl__mk { opacity:1; }
+
+.plate { background:var(--plate); border:1px solid var(--rule); }
+.plate__bar {
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  height:calc(var(--bl) * 1.25); padding:0 .75rem;
+  border-bottom:1px solid var(--rule-hair);
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.08em; text-transform:uppercase; color:var(--faint);
+}
+.plate__body { padding:.75rem; }
+
+.tags { display:flex; flex-wrap:wrap; gap:.25rem; margin-top:.75rem; }
+.tag {
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.08em; text-transform:uppercase; color:var(--faint);
+  border:1px solid var(--rule); padding:0 .375rem; line-height:1.25rem;
+}
+
+.lnk { color:var(--accent); text-decoration:none; border-bottom:1px solid currentColor; transition:opacity var(--dur) var(--ease); }
+.lnk:hover { opacity:.7; }
+
+.btn {
+  display:grid; place-items:center; width:var(--bl); height:var(--bl);
+  border:1px solid transparent; background:transparent;
+  color:var(--faint); cursor:pointer;
+  transition:color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.btn:hover { color:var(--ink); border-color:var(--rule); }
+
+.tb-cell {
+  padding:.5rem .75rem; min-height:calc(var(--bl) * 2);
+  border-right:1px solid var(--rule-hair);
+  border-bottom:1px solid var(--rule-hair);
+}
+.tb-cell:last-child { border-right:0; }
+.tb-k { display:block; font-family:var(--f-mono); font-size:var(--t-micro); letter-spacing:.1em; text-transform:uppercase; color:var(--faint); }
+.tb-v { display:block; font-family:var(--f-mono); font-size:var(--t-mono); color:var(--ink); }
+
+/* ── §3 · BOARD ────────────────────────────────────────────────────
+   Board nodes are §2 plates with a position. Same hairline border,
+   same square corners, same caption strip that a figure on the page
+   uses. Annotations are set in mono caps in the accent — the
+   drawing's own callout language — because handwriting would be the
+   one thing on the sheet that was not drafted.
+
+   Node coordinates and widths are multiples of 20; the board grid is
+   20px minor / 100px major. The board is squared paper, the page is
+   a ruled sheet: same discipline, different substrate. */
+
+.board { position:relative; width:100%; height:100%; overflow:hidden; contain:strict; background:var(--sunk); }
+.vp {
+  position:absolute; inset:0;
+  background-color:var(--sunk);
+  background-image:
+    linear-gradient(to right, var(--grid-major) 0 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-major) 0 1px, transparent 1px),
+    linear-gradient(to right, var(--grid-minor) 0 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-minor) 0 1px, transparent 1px);
+  background-size:100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  cursor:grab; touch-action:none;
+}
+.vp:active { cursor:grabbing; }
+.vp:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+.world { position:absolute; top:0; left:0; transform-origin:0 0; }
+.node { position:absolute; top:0; left:0; }
+
+.n-doc { width:360px; }
+.n-doc .plate__body { color:var(--muted); font-size:var(--t-mono); }
+.n-doc p { margin:0; }
+.n-doc p + p { margin-top:var(--bl); }
+.n-doc code {
+  font-family:var(--f-mono); font-size:.9em; color:var(--ink);
+  background:var(--accent-soft); padding:0 .25em;
+}
+
+.n-swatch { width:200px; border:1px solid var(--rule); background:var(--sw-a); color:var(--sw-a-ink); }
+.n-swatch[data-tint='b'] { background:var(--sw-b); color:var(--sw-b-ink); }
+.n-swatch[data-tint='c'] { background:var(--sw-c); color:var(--sw-c-ink); }
+.n-swatch[data-tint='d'] { background:var(--sw-d); color:var(--sw-d-ink); }
+.n-swatch__bar {
+  height:calc(var(--bl) * 1.25); padding:0 .75rem;
+  display:flex; align-items:center; border-bottom:1px solid currentColor;
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.1em; text-transform:uppercase; opacity:.65;
+}
+.n-swatch__body {
+  padding:.75rem; height:140px;
+  font-family:var(--f-mono); font-size:var(--t-mono); line-height:var(--bl);
+  white-space:pre-wrap;
+}
+
+.n-callout {
+  font-family:var(--f-mono); font-weight:500;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--accent);
+  white-space:pre-wrap;
+}
+
+.n-code { width:440px; }
+.n-code pre {
+  margin:0; padding:.75rem; font-family:var(--f-mono);
+  font-size:var(--t-mono); line-height:var(--bl); color:var(--ink);
+  white-space:pre; overflow-x:auto;
+}
+.n-code .cm { color:var(--faint); }
+.n-code .kw { color:var(--accent); }
+
+.n-link { width:300px; display:block; text-decoration:none; color:inherit; }
+.n-link__thumb {
+  height:120px; border-bottom:1px solid var(--rule-hair);
+  background-image:repeating-linear-gradient(45deg, var(--rule-hair) 0 1px, transparent 1px 8px);
+  display:grid; place-items:center;
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.1em; text-transform:uppercase; color:var(--faint);
+}
+.n-link__title { display:block; font-size:var(--t-mono); font-weight:500; color:var(--ink); }
+.n-link__desc { display:block; font-size:var(--t-mono); color:var(--muted); }
+.n-link__host { display:block; font-family:var(--f-mono); font-size:var(--t-micro); color:var(--faint); }
+
+.shape-svg { position:absolute; top:0; left:0; width:1px; height:1px; overflow:visible; pointer-events:none; }
+
+/* board chrome — a plate, squared off and pinned to the grid */
+.board__ui { position:absolute; z-index:100; }
+#zoom {
+  right:var(--bl); top:var(--bl);
+  display:flex; align-items:center;
+  background:var(--plate); border:1px solid var(--rule);
+}
+#zoom button {
+  display:grid; place-items:center; height:calc(var(--bl) * 1.25); width:calc(var(--bl) * 1.25);
+  border:0; border-right:1px solid var(--rule-hair); background:transparent;
+  color:var(--muted); cursor:pointer;
+  transition:background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+#zoom button:last-child { border-right:0; }
+#zoom button:hover { background:var(--accent-soft); color:var(--ink); }
+#zoomval {
+  min-width:calc(var(--bl) * 2.5); padding:0 .5rem;
+  border:0; border-right:1px solid var(--rule-hair); background:transparent;
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.06em; font-variant-numeric:tabular-nums;
+  color:var(--muted); cursor:pointer;
+}
+#zoomval:hover { color:var(--ink); }
+
+/* ── PAGE-LOCAL · shell ────────────────────────────────────────────
+   Below lg the split turns horizontal — document above, board below
+   at a fixed height — because a 21rem column and a usable canvas
+   cannot both fit across a phone. */
+.shell { position:fixed; inset:0; display:flex; flex-direction:column; }
+.doc {
+  display:flex; flex-direction:column; flex:none;
+  max-height:52vh; overflow-y:auto;
+  background:var(--paper); border-bottom:1px solid var(--rule);
+}
+.doc__body { flex:1; padding:var(--bl) var(--pad) calc(var(--bl) * 2); }
+.stage { position:relative; height:48vh; min-height:0; flex:1; }
+
+@media (min-width:1024px) {
+  .shell { flex-direction:row; }
+  .doc { max-height:none; width:21rem; border-bottom:0; border-right:1px solid var(--rule); }
+  .stage { height:auto; min-width:0; }
+}
+@media (min-width:1280px) { .doc { width:24rem; } }
+</style>
+</head>
+
+<body>
+
+<a href="#doc" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[200] focus:bg-accent focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
+
+<div class="shell">
+
+  <!-- ── Document column ──────────────────────────────────────────
+       The same numbered modules as project.html, stacked. No rail:
+       the column scrolls on its own and is short enough to read. -->
+  <aside id="doc" class="doc">
+
+    <div class="strip" style="position:sticky;top:0;z-index:2">
+      <div class="strip__in" style="padding:0 var(--pad)">
+        <span class="min-w-0 truncate">
+          <a style="color:inherit;text-decoration:none" href="index.html#work">work</a>
+          <span class="strip__sep">/</span>
+          <a style="color:inherit;text-decoration:none" href="project.html">plugma</a>
+          <span class="strip__sep">/</span>
+          <strong>board</strong>
+        </span>
+        <button id="theme-toggle" type="button" class="btn" aria-label="Toggle dark mode">
+          <svg class="h-3.5 w-3.5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+          </svg>
+          <svg class="hidden h-3.5 w-3.5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="doc__body">
+
+      <section class="module">
+        <div class="module__head">
+          <span><span class="module__num">01</span> <span class="module__name">about</span></span>
+        </div>
+        <h1 class="display" style="font-family:var(--f-mono);letter-spacing:0">plugma</h1>
+        <p class="prose" style="margin-top:var(--bl)">
+          A zero-config toolchain for building Figma plugins — with the hot reloading the
+          platform never shipped.
+        </p>
+        <p style="margin-top:var(--bl); font-family:var(--f-mono); font-size:var(--t-mono)">
+          <a class="lnk" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">plugma.dev ↗</a>
+          <span style="color:var(--faint); margin:0 .5rem">·</span>
+          <a class="lnk" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">source ↗</a>
+        </p>
+      </section>
+
+      <section class="module">
+        <div class="module__head">
+          <span><span class="module__num">02</span> <span class="module__name">spec</span></span>
+        </div>
+        <div class="tbl__row"><span class="c-term">year</span><span class="c-body">2024</span></div>
+        <div class="tbl__row"><span class="c-term">role</span><span class="c-body">creator</span></div>
+        <div class="tbl__row"><span class="c-term">status</span><span class="c-body">maintained</span></div>
+        <div class="tbl__row"><span class="c-term">stack</span><span class="c-body">node, ts, vite</span></div>
+      </section>
+
+      <section class="module">
+        <div class="module__head">
+          <span><span class="module__num">03</span> <span class="module__name">problem</span></span>
+        </div>
+        <div class="prose">
+          <p>
+            A Figma plugin is two programs that cannot see each other — one in a sandbox with
+            the document, one in an iframe with the DOM. They speak only by passing messages.
+          </p>
+          <p>
+            So every plugin began with the same lost day: a bundler, a manifest, a message
+            bridge, and a build step that inlines the UI.
+          </p>
+        </div>
+      </section>
+
+      <section class="module">
+        <div class="module__head">
+          <span><span class="module__num">04</span> <span class="module__name">approach</span></span>
+        </div>
+        <div class="prose">
+          <p>
+            Plugma hides that underneath. One command scaffolds, one develops, one ships, and
+            the framework stays your choice.
+          </p>
+          <p>
+            The part worth having is real hot module reloading — edits appear without a
+            rebuild and without losing plugin state.
+          </p>
+        </div>
+      </section>
+
+      <section class="module">
+        <div class="module__head">
+          <span><span class="module__num">05</span> <span class="module__name">result</span></span>
+        </div>
+        <div class="prose">
+          <p>
+            The setup it replaces took most of a day. It now takes a command. Still maintained,
+            and the substrate for every plugin I built after it.
+          </p>
+        </div>
+      </section>
+
+      <section class="module">
+        <div class="module__head">
+          <span><span class="module__num">06</span> <span class="module__name">index</span></span>
+        </div>
+        <a class="tbl__row" href="project.html">
+          <span class="c-term">written version</span>
+          <span class="c-body"><span class="tbl__mk">→</span></span>
+        </a>
+        <a class="tbl__row" href="index.html#work">
+          <span class="c-term">all work</span>
+          <span class="c-body"><span class="tbl__mk">→</span></span>
+        </a>
+      </section>
+
+      <!-- title block, compact — the same cells as the other sheets -->
+      <div style="margin-top:calc(var(--bl) * 2); border-top:1px solid var(--ink); display:grid; grid-template-columns:repeat(2,minmax(0,1fr))">
+        <div class="tb-cell"><span class="tb-k">sheet</span><span class="tb-v">03 / 03</span></div>
+        <div class="tb-cell"><span class="tb-k">title</span><span class="tb-v">board</span></div>
+        <div class="tb-cell"><span class="tb-k">date</span><span class="tb-v">2026-07</span></div>
+        <div class="tb-cell"><span class="tb-k">rev</span><span class="tb-v">A</span></div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ── Board ────────────────────────────────────────────────── -->
+  <div class="stage">
+    <div class="board">
+      <div class="vp" id="vp" tabindex="0" role="group"
+           aria-label="Project board. Drag to pan, scroll to pan, pinch to zoom. Arrow keys pan, plus and minus zoom, zero fits the board.">
+        <div class="world" id="world"></div>
+      </div>
+
+      <div class="board__ui" id="zoom">
+        <button type="button" data-act="fit" aria-label="Fit board to view" title="Fit to view">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/>
+          </svg>
+        </button>
+        <button type="button" data-act="out" aria-label="Zoom out">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14"/></svg>
+        </button>
+        <button type="button" id="zoomval" data-act="reset" aria-label="Reset zoom to 100 percent">100%</button>
+        <button type="button" data-act="in" aria-label="Zoom in">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const dark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+  });
+
+  /* ══ BOARD ENGINE ═══════════════════════════════════════════════
+     Pan, zoom, fit. Nodes are data; rendering maps each one onto a
+     §2 primitive, which is why the board cannot drift from the page.
+     ═══════════════════════════════════════════════════════════════ */
+
+  const GRID = 20, MIN = 0.08, MAX = 8, LEGIBLE = 0.35;
+
+  const vp = document.getElementById('vp');
+  const world = document.getElementById('world');
+  const zoomval = document.getElementById('zoomval');
+
+  const view = { x:0, y:0, scale:1 };
+  let touched = false;
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+  function apply() {
+    world.style.transform = `translate(${view.x}px,${view.y}px) scale(${view.scale})`;
+    const minor = GRID * view.scale, major = minor * 5;
+    vp.style.backgroundSize = `${major}px ${major}px, ${major}px ${major}px, ${minor}px ${minor}px, ${minor}px ${minor}px`;
+    vp.style.backgroundPosition =
+      `${view.x % major}px ${view.y % major}px, ${view.x % major}px ${view.y % major}px, ` +
+      `${view.x % minor}px ${view.y % minor}px, ${view.x % minor}px ${view.y % minor}px`;
+    zoomval.textContent = Math.round(view.scale * 100) + '%';
+  }
+
+  /* Every coordinate and width is a multiple of 20 — the board's own
+     module. The code node is ILLUSTRATIVE: the documented Figma API
+     showing the sandbox/iframe split, not a file from the project. */
+  const nodes = [
+    { id:'intro', type:'doc', x:0, y:0, z:10, bar:'doc · plugma',
+      html:'<p>A zero-config toolchain for Figma plugins. Scaffold, develop with real hot reloading, and ship — without assembling a bundler, a manifest and a message bridge by hand.</p>',
+      tags:['node.js','typescript','vite'] },
+
+    { id:'features', type:'callout', x:520, y:-40, z:11, text:'features', size:20 },
+
+    { id:'s1', type:'swatch', x:520, y:20,  z:12, tint:'a', bar:'01', text:'Zero\nconfig' },
+    { id:'s2', type:'swatch', x:740, y:20,  z:13, tint:'b', bar:'02', text:'Real HMR,\nstate kept' },
+    { id:'s3', type:'swatch', x:520, y:240, z:14, tint:'c', bar:'03', text:'React\nSvelte\nVue' },
+    { id:'s4', type:'swatch', x:740, y:240, z:15, tint:'d', bar:'04', text:'One command\nto ship' },
+
+    { id:'code', type:'code', x:0, y:320, z:16, bar:'main.ts', text:
+      '<span class="cm">// sandbox half — document access, no DOM</span>\n' +
+      '<span class="kw">figma</span>.ui.onmessage = (msg) => {\n' +
+      '  <span class="kw">if</span> (msg.type === <span class="cm">\'resize\'</span>) {\n' +
+      '    <span class="kw">figma</span>.ui.resize(msg.w, msg.h)\n' +
+      '  }\n' +
+      '}' },
+
+    { id:'link', type:'link', x:1000, y:0, z:17, bar:'link',
+      url:'https://www.plugma.dev/', title:'Plugma — Getting started',
+      desc:'Scaffold a plugin and run it with hot reloading in one command.', host:'plugma.dev' },
+
+    { id:'how', type:'doc', x:1000, y:300, z:18, bar:'note · how it works',
+      html:'<p>The UI is served from a dev server during development and inlined at build time, so the sandbox half never notices the difference.</p><p>Messages are typed across the bridge with <code>onmessage</code>.</p>' },
+
+    { id:'why', type:'doc', x:520, y:460, z:19, bar:'note · why it matters',
+      html:'<p>Interface work stops being a stop-start loop. That is the whole return on the tool.</p>' },
+  ];
+
+  const shapes = [
+    { id:'a1', type:'arrow', x1:360, y1:60, x2:500, y2:20, width:2, z:6 },
+  ];
+
+  function renderNode(n) {
+    const el = document.createElement('div');
+    el.className = 'node';
+    el.style.transform = `translate(${n.x}px,${n.y}px)`;
+    el.style.zIndex = n.z;
+
+    if (n.type === 'doc') {
+      el.innerHTML = `<div class="plate n-doc">
+        <div class="plate__bar"><span>${esc(n.bar)}</span></div>
+        <div class="plate__body">${n.html}${
+          n.tags ? `<div class="tags">${n.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''
+        }</div></div>`;
+    } else if (n.type === 'swatch') {
+      el.innerHTML = `<div class="n-swatch" data-tint="${esc(n.tint)}">
+        <div class="n-swatch__bar">${esc(n.bar)}</div>
+        <div class="n-swatch__body">${esc(n.text)}</div>
+      </div>`;
+    } else if (n.type === 'callout') {
+      el.innerHTML = `<div class="n-callout" style="font-size:${n.size}px">${esc(n.text)}</div>`;
+    } else if (n.type === 'code') {
+      el.innerHTML = `<div class="plate n-code">
+        <div class="plate__bar"><span>${esc(n.bar)}</span></div>
+        <pre>${n.text}</pre></div>`;
+    } else if (n.type === 'link') {
+      el.innerHTML = `
+        <a class="plate n-link" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">
+          <div class="plate__bar"><span>${esc(n.bar)}</span><span>↗</span></div>
+          <div class="n-link__thumb">preview</div>
+          <div class="plate__body">
+            <span class="n-link__title">${esc(n.title)}</span>
+            <span class="n-link__desc">${esc(n.desc)}</span>
+            <span class="n-link__host">${esc(n.host)}</span>
+          </div>
+        </a>`;
+    }
+    return el;
+  }
+
+  /* Connectors read the accent token live, so they follow the theme
+     with everything else rather than being pinned to a hex. */
+  const accent = () => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+
+  function renderShape(s) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'shape-svg');
+    svg.style.zIndex = s.z;
+    const mid = 'ah-' + s.id;
+    svg.innerHTML =
+      `<defs><marker id="${mid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+         <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+       </marker></defs>
+       <line x1="${s.x1}" y1="${s.y1}" x2="${s.x2}" y2="${s.y2}"
+             stroke="currentColor" stroke-width="${s.width}"
+             marker-end="url(#${mid})"/>`;
+    svg.style.color = accent();
+    return svg;
+  }
+
+  const frag = document.createDocumentFragment();
+  shapes.forEach((s) => frag.appendChild(renderShape(s)));
+  nodes.forEach((n) => frag.appendChild(renderNode(n)));
+  world.appendChild(frag);
+
+  new MutationObserver(() => {
+    const c = accent();
+    world.querySelectorAll('.shape-svg').forEach((s) => { s.style.color = c; });
+  }).observe(document.documentElement, { attributes:true, attributeFilter:['class'] });
+
+  function bounds() {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    nodes.forEach((n, i) => {
+      const el = world.children[shapes.length + i];
+      x0 = Math.min(x0, n.x); y0 = Math.min(y0, n.y);
+      x1 = Math.max(x1, n.x + el.offsetWidth); y1 = Math.max(y1, n.y + el.offsetHeight);
+    });
+    return { x:x0, y:y0, w:x1 - x0, h:y1 - y0 };
+  }
+
+  function fit(pad) {
+    const b = bounds();
+    const r = vp.getBoundingClientRect();
+    if (!b.w || !b.h || !r.width) return;
+    pad = pad == null ? Math.min(72, r.width * 0.06) : pad;
+
+    const s = Math.min((r.width - pad * 2) / b.w, (r.height - pad * 2) / b.h);
+
+    if (s < LEGIBLE) {
+      /* On a phone the whole board fits at around 20%, which is a
+         smear rather than content. Frame the opening plate at a
+         legible size and let the reader pan out to the rest. */
+      const first = world.children[shapes.length];
+      const n = nodes[0];
+      view.scale = clamp(Math.min((r.width - pad * 2) / first.offsetWidth, 1), MIN, MAX);
+      view.x = pad - n.x * view.scale;
+      view.y = pad - n.y * view.scale;
+    } else {
+      view.scale = clamp(s, MIN, MAX);
+      view.x = (r.width - b.w * view.scale) / 2 - b.x * view.scale;
+      view.y = (r.height - b.h * view.scale) / 2 - b.y * view.scale;
+    }
+    apply();
+  }
+
+  function zoomAt(cx, cy, factor) {
+    const r = vp.getBoundingClientRect();
+    const px = cx - r.left, py = cy - r.top;
+    const wx = (px - view.x) / view.scale, wy = (py - view.y) / view.scale;
+    view.scale = clamp(view.scale * factor, MIN, MAX);
+    view.x = px - wx * view.scale;
+    view.y = py - wy * view.scale;
+    apply();
+  }
+
+  function zoomCentre(factor) {
+    const r = vp.getBoundingClientRect();
+    zoomAt(r.left + r.width / 2, r.top + r.height / 2, factor);
+  }
+
+  let panning = false, lastX = 0, lastY = 0;
+
+  vp.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('a')) return;
+    panning = true; touched = true;
+    lastX = e.clientX; lastY = e.clientY;
+    vp.setPointerCapture(e.pointerId);
+  });
+
+  vp.addEventListener('pointermove', (e) => {
+    if (!panning) return;
+    view.x += e.clientX - lastX;
+    view.y += e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    apply();
+  });
+
+  const endPan = (e) => {
+    if (!panning) return;
+    panning = false;
+    try { vp.releasePointerCapture(e.pointerId); } catch {}
+  };
+  vp.addEventListener('pointerup', endPan);
+  vp.addEventListener('pointercancel', endPan);
+
+  vp.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    touched = true;
+    if (e.ctrlKey || e.metaKey) {
+      zoomAt(e.clientX, e.clientY, Math.exp(-clamp(e.deltaY, -24, 24) * 0.015));
+    } else {
+      view.x -= e.deltaX; view.y -= e.deltaY; apply();
+    }
+  }, { passive:false });
+
+  vp.addEventListener('keydown', (e) => {
+    const step = e.shiftKey ? 120 : 40;
+    const moves = { ArrowLeft:[step,0], ArrowRight:[-step,0], ArrowUp:[0,step], ArrowDown:[0,-step] };
+    if (e.key in moves) {
+      e.preventDefault(); touched = true;
+      view.x += moves[e.key][0]; view.y += moves[e.key][1]; apply();
+    } else if (e.key === '+' || e.key === '=') {
+      e.preventDefault(); touched = true; zoomCentre(1.25);
+    } else if (e.key === '-') {
+      e.preventDefault(); touched = true; zoomCentre(0.8);
+    } else if (e.key === '0') {
+      e.preventDefault(); fit();
+    }
+  });
+
+  document.getElementById('zoom').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    touched = true;
+    const act = btn.dataset.act;
+    if (act === 'fit') fit();
+    else if (act === 'in') zoomCentre(1.25);
+    else if (act === 'out') zoomCentre(0.8);
+    else if (act === 'reset') { view.scale = 1; apply(); }
+  });
+
+  if ('ResizeObserver' in window) {
+    let t;
+    new ResizeObserver(() => {
+      clearTimeout(t);
+      t = setTimeout(() => { if (!touched) fit(); }, 120);
+    }).observe(vp);
+  }
+
+  fit();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!touched) fit(); });
+})();
+</script>
+
+</body>
+</html>
