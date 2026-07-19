@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Index</title>
+<meta name="description" content="Gavin McFarland builds design systems, front-end, and the small tools in between. London." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body data-page="home">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<header class="strip">
+  <div class="strip__in">
+    <span><strong>gavin mcfarland</strong> <span class="strip__sep">/</span> designer &amp; engineer</span>
+    <span id="nav" style="display:flex;gap:.5rem;flex-wrap:wrap"></span>
+    <span class="strip__tools">
+      <button class="btn" id="grid-toggle" type="button" aria-pressed="false" title="Layout grid (G)">Grid</button>
+      <button class="btn" id="theme-toggle" type="button" aria-pressed="false">Invert</button>
+    </span>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <nav class="rail" aria-label="Sheet index">
+    <a href="#summary"><span class="n">01</span> summary</a>
+    <a href="#work"><span class="n">02</span> work</a>
+    <a href="#capabilities"><span class="n">03</span> capabilities</a>
+    <a href="#elsewhere"><span class="n">04</span> elsewhere</a>
+  </nav>
+
+  <main class="main">
+
+    <!-- 01 summary ─────────────────────────────────────────────── -->
+    <section id="summary" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">01</span><span class="module__name">summary</span>
+          <span class="module__note">london, uk</span>
+        </div>
+
+        <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+          <p class="display" style="max-width:34ch">Most teams are slowed by something nobody owns.</p>
+          <p class="lead" style="margin-top:.5rem">I build that thing, then write down how it works.</p>
+        </div>
+
+        <div class="prose" style="grid-column:1 / -1; max-width:64ch">
+          <p>
+            Fifteen years between design and engineering — finance, government and retail. The
+            pattern repeats: something falls between two teams, nobody is given it, and the work
+            slows down until somebody builds the missing piece.
+          </p>
+          <p>
+            Right now that is <a class="lnk" href="project.html">plugma</a>, a toolchain for
+            building Figma plugins. Its <a class="lnk" href="changelog.html">changelog</a> and the
+            <a class="lnk" href="specimen.html">icon set</a> used across this sheet are both here.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 work — with a live filter ───────────────────────────── -->
+    <section id="work" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">02</span><span class="module__name">work</span>
+          <span class="module__note" id="filter-count">—</span>
+        </div>
+
+        <!-- The filter is progressive: without JS the full schedule
+             is still rendered and readable, and this panel simply
+             does nothing. -->
+        <div class="plate" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+          <div class="plate__bar"><span>filter</span></div>
+          <div class="plate__body" style="display:flex; flex-wrap:wrap; gap:.75rem 1.5rem; align-items:center">
+            <label style="display:flex; align-items:center; gap:.5rem; font-family:var(--f-mono); font-size:var(--t-micro); text-transform:uppercase; letter-spacing:.08em; color:var(--dim)">
+              Search
+              <input id="filter" type="search" placeholder="name or description"
+                     style="border:1px solid var(--rule); background:var(--paper); color:var(--ink);
+                            font:inherit; font-size:var(--t-mono); padding:.125rem .375rem; min-width:12rem" />
+            </label>
+            <span style="display:flex; flex-wrap:wrap; gap:.75rem; font-family:var(--f-mono); font-size:var(--t-mono)">
+              <label><input type="radio" name="kindfilter" value="all" checked /> all</label>
+              <label><input type="radio" name="kindfilter" value="tool" /> tools</label>
+              <label><input type="radio" name="kindfilter" value="plugin" /> plug-ins</label>
+              <label><input type="radio" name="kindfilter" value="library" /> libraries</label>
+            </span>
+          </div>
+        </div>
+
+        <div class="tbl module__grid" id="project-list">
+          <div class="tbl__head">
+            <span class="c-ico"></span>
+            <span class="c-name">name</span>
+            <span class="c-desc">description</span>
+            <span class="c-meta">type · year</span>
+          </div>
+        </div>
+
+        <p id="filter-empty" hidden
+           style="grid-column:1 / -1; margin:var(--bl) 0 0; padding:var(--bl); border:1px dotted var(--rule-hair);
+                  font-family:var(--f-mono); font-size:var(--t-mono); color:var(--dim); text-align:center">
+          Nothing matches that filter.
+        </p>
+      </div>
+    </section>
+
+    <!-- 03 capabilities ────────────────────────────────────────── -->
+    <section id="capabilities" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">03</span><span class="module__name">capabilities</span>
+        </div>
+        <div class="tbl module__grid">
+          <div class="tbl__row">
+            <span class="c-term">design systems</span>
+            <span class="c-body">Tokens, components and the governance that keeps them honest — so the design file and the codebase describe the same thing after I leave.</span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">product &amp; front-end</span>
+            <span class="c-body">Interface design carried through to production code. Every project starts in a design file, including the ones that end as a command-line tool.</span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">developer tooling</span>
+            <span class="c-body">CLIs, plug-ins and build steps — usually the difference between a day of setup and a single command.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 elsewhere ───────────────────────────────────────────── -->
+    <section id="elsewhere" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">04</span><span class="module__name">elsewhere</span>
+        </div>
+        <div class="tbl module__grid">
+          <a class="tbl__row" href="cv.html">
+            <span class="c-term">cv</span>
+            <span class="c-body">Roles, skills and clients — with a print sheet →</span>
+          </a>
+          <a class="tbl__row" href="specimen.html">
+            <span class="c-term">icon specimen</span>
+            <span class="c-body">The bitmap set, every cell, at both sizes →</span>
+          </a>
+          <a class="tbl__row" href="changelog.html">
+            <span class="c-term">changelog</span>
+            <span class="c-body">plugma release notes →</span>
+          </a>
+          <a class="tbl__row" href="mailto:gavin@limitlessloop.com">
+            <span class="c-term">email</span>
+            <span class="c-body">gavin@limitlessloop.com →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="titleblock">
+  <div class="titleblock__in">
+    <div class="tb-cell"><span class="tb-k">drawn by</span><span class="tb-v">g. mcfarland</span></div>
+    <div class="tb-cell"><span class="tb-k">contents</span><span class="tb-v" id="counts">—</span></div>
+    <div class="tb-cell"><span class="tb-k">date</span><span class="tb-v">2026-07</span></div>
+    <div class="tb-cell"><span class="tb-k">sheet</span><span class="tb-v">01 / 06</span></div>
+    <div class="tb-cell"><span class="tb-k">title</span><span class="tb-v">index</span></div>
+    <div class="tb-cell"><span class="tb-k">rev</span><span class="tb-v">A</span></div>
+  </div>
+</footer>
+
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script>
+  /* Rows are rendered before system.js binds the filter to them. */
+  document.addEventListener('DOMContentLoaded', () => {});
+</script>
+<script>
+  (() => {
+    const list = document.getElementById('project-list');
+    const kindOf = (p) => DATA.kinds[p.kind] || { label:p.kind, colour:'var(--c-gray)' };
+    list.insertAdjacentHTML('beforeend', DATA.projects.map((p) => {
+      const k = kindOf(p), ext = p.href.startsWith('http');
+      return `
+        <a class="tbl__row" data-kind="${p.kind}" data-name="${p.name} ${p.desc}"
+           href="${p.href}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+          <span class="c-ico">${icon(p.icon, { size:32 })}</span>
+          <span class="c-name">${p.name}${ext ? ' ↗' : ''}</span>
+          <span class="c-desc">${p.desc}</span>
+          <span class="c-meta"><span class="swatch" style="background:${k.colour}"></span>${k.label} · ${p.year}</span>
+        </a>`;
+    }).join(''));
+  })();
+</script>
+<script src="system.js"></script>
+
+</body>
+</html>

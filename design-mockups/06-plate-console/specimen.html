@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Icon specimen — Gavin McFarland</title>
+<meta name="description" content="The bitmap icon set: every cell, at both sizes, with the palette and the grid." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body data-page="specimen">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<header class="strip">
+  <div class="strip__in">
+    <span><a href="index.html">gavin mcfarland</a> <span class="strip__sep">/</span> <strong>icon specimen</strong></span>
+    <span id="nav" style="display:flex;gap:.5rem;flex-wrap:wrap"></span>
+    <span class="strip__tools">
+      <button class="btn" id="grid-toggle" type="button" aria-pressed="false" title="Layout grid (G)">Grid</button>
+      <button class="btn" id="theme-toggle" type="button" aria-pressed="false">Invert</button>
+    </span>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <nav class="rail" aria-label="Sheet index">
+    <a href="#set"><span class="n">01</span> the set</a>
+    <a href="#detail"><span class="n">02</span> detail</a>
+    <a href="#palette"><span class="n">03</span> palette</a>
+    <a href="#rules"><span class="n">04</span> rules</a>
+  </nav>
+
+  <main class="main">
+
+    <!-- 01 the set ─────────────────────────────────────────────── -->
+    <section id="set" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">01</span><span class="module__name">the set</span>
+          <span class="module__note" id="set-count">—</span>
+        </div>
+
+        <div class="prose" style="grid-column:1 / -1; max-width:64ch; margin-bottom:var(--bl)">
+          <p>
+            Every icon is a grid of characters, one character per pixel, in a source file you can
+            read and diff. The two sizes are <strong>drawn separately, not scaled</strong> — a
+            32×32 reduced to 16px puts every source pixel on a half-pixel and turns to mud.
+          </p>
+        </div>
+
+        <div class="spec" id="spec"></div>
+      </div>
+    </section>
+
+    <!-- 02 detail ──────────────────────────────────────────────── -->
+    <section id="detail" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">02</span><span class="module__name">detail</span>
+          <span class="module__note">32 × 32, magnified</span>
+        </div>
+
+        <div class="prose" style="grid-column:1 / -1; max-width:64ch; margin-bottom:var(--bl)">
+          <p>
+            Shading is done with the palette's own steps — white, silver, gray, black — because a
+            16-colour icon has no alpha to spend. Pick a cell to inspect it.
+          </p>
+        </div>
+
+        <div class="plate" style="grid-column:1 / -1">
+          <div class="plate__bar">
+            <span id="mag-name">—</span>
+            <span class="right" id="mag-dims">32 × 32</span>
+          </div>
+          <div class="plate__body" style="display:flex; gap:var(--bl); flex-wrap:wrap; align-items:flex-start">
+            <div class="mag" id="mag" role="img" aria-label="Magnified icon bitmap"></div>
+            <div style="display:grid; gap:.5rem; align-content:start">
+              <span class="mono dim" style="font-size:var(--t-micro); text-transform:uppercase; letter-spacing:.08em">Choose</span>
+              <div id="mag-picker" style="display:flex; flex-wrap:wrap; gap:.25rem"></div>
+              <span class="mono dim" style="font-size:var(--t-micro); text-transform:uppercase; letter-spacing:.08em; margin-top:.5rem">Actual size</span>
+              <div id="mag-actual" style="display:flex; gap:.75rem; align-items:flex-end"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 palette ─────────────────────────────────────────────── -->
+    <section id="palette" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">03</span><span class="module__name">palette</span>
+          <span class="module__note">16 colours, no alpha</span>
+        </div>
+        <div class="tbl module__grid" id="palette-list">
+          <div class="tbl__head">
+            <span class="c-ico"></span>
+            <span class="c-name">key</span>
+            <span class="c-desc">name</span>
+            <span class="c-meta">value</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 rules ───────────────────────────────────────────────── -->
+    <section id="rules" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">04</span><span class="module__name">rules</span>
+        </div>
+        <div class="tbl module__grid">
+          <div class="tbl__row">
+            <span class="c-term">one source</span>
+            <span class="c-body">Icons live in <span class="mono">icons.js</span> as character grids. No sprite sheet, no icon font, no build step.</span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">draw each size</span>
+            <span class="c-body">16 and 32 are separate drawings. The small set carries fewer details and heavier forms so it survives at 16px.</span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">palette only</span>
+            <span class="c-body">Sixteen colours, no gradients, no alpha. Shading is done by stepping through the palette.</span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">stay aliased</span>
+            <span class="c-body"><span class="mono">shape-rendering: crispEdges</span> — antialiasing is the one thing that would give a bitmap away.</span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">merge runs</span>
+            <span class="c-body">Horizontal runs of one colour become a single <span class="mono">&lt;rect&gt;</span>, so a 32×32 cell is tens of rects, not 1,024.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="titleblock">
+  <div class="titleblock__in">
+    <div class="tb-cell"><span class="tb-k">drawn by</span><span class="tb-v">g. mcfarland</span></div>
+    <div class="tb-cell"><span class="tb-k">cells</span><span class="tb-v" id="tb-cells">—</span></div>
+    <div class="tb-cell"><span class="tb-k">sizes</span><span class="tb-v">16 · 32</span></div>
+    <div class="tb-cell"><span class="tb-k">sheet</span><span class="tb-v">04 / 06</span></div>
+    <div class="tb-cell"><span class="tb-k">title</span><span class="tb-v">specimen</span></div>
+    <div class="tb-cell"><span class="tb-k">rev</span><span class="tb-v">A</span></div>
+  </div>
+</footer>
+
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  const SETS = window.ICON_SETS, PAL = window.ICON_PALETTE, NAMES = window.ICON_NAMES;
+
+  /* ── The set ─────────────────────────────────────────────────
+     Each cell reports which sizes actually exist, so a missing
+     drawing is visible rather than silently substituted. */
+  const spec = document.getElementById('spec');
+  spec.innerHTML = NAMES.map((n) => {
+    const has32 = !!SETS[32][n], has16 = !!SETS[16][n];
+    return `
+      <div class="spec__cell">
+        <span class="spec__row">
+          ${has32 ? icon(n, { size:32, label:n + ' at 32 pixels' }) : '<span class="spec__missing">32</span>'}
+          ${has16 ? icon(n, { size:16, label:n + ' at 16 pixels' }) : '<span class="spec__missing">16</span>'}
+        </span>
+        <span class="spec__name">${esc(n)}</span>
+        <span class="spec__sizes">${[has16 && '16', has32 && '32'].filter(Boolean).join(' · ')}</span>
+      </div>`;
+  }).join('');
+
+  const cells32 = NAMES.filter((n) => SETS[32][n]).length;
+  document.getElementById('set-count').textContent = `${NAMES.length} names · ${cells32} at 32px`;
+  document.getElementById('tb-cells').textContent =
+    `${Object.keys(SETS[16]).length} + ${Object.keys(SETS[32]).length}`;
+
+  /* ── The magnifier ───────────────────────────────────────────
+     Renders the grid as literal cells, which is what the source
+     looks like. Transparent pixels are left as the sheet. */
+  const mag = document.getElementById('mag');
+  const magName = document.getElementById('mag-name');
+  const magDims = document.getElementById('mag-dims');
+  const magActual = document.getElementById('mag-actual');
+
+  function show(name) {
+    const size = SETS[32][name] ? 32 : 16;
+    const grid = SETS[size][name];
+    mag.style.gridTemplateColumns = `repeat(${size}, auto)`;
+    mag.innerHTML = grid.map((row) =>
+      [...row].map((ch) => `<i style="background:${ch === '.' ? 'var(--paper)' : PAL[ch]}"></i>`).join('')
+    ).join('');
+    magName.textContent = name;
+    magDims.textContent = `${size} × ${size}`;
+    magActual.innerHTML =
+      (SETS[32][name] ? icon(name, { size:32 }) : '') + (SETS[16][name] ? icon(name, { size:16 }) : '');
+    document.querySelectorAll('#mag-picker .btn').forEach((b) =>
+      b.setAttribute('aria-pressed', String(b.dataset.name === name)));
+  }
+
+  document.getElementById('mag-picker').innerHTML =
+    NAMES.map((n) => `<button class="btn" type="button" data-name="${esc(n)}" aria-pressed="false">${esc(n)}</button>`).join('');
+  document.getElementById('mag-picker').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-name]');
+    if (b) show(b.dataset.name);
+  });
+  show(NAMES.find((n) => SETS[32][n]) || NAMES[0]);
+
+  /* ── The palette ─────────────────────────────────────────────
+     Read from the same object the icons index into, so this table
+     cannot describe a palette the icons are not using. */
+  const NICE = {
+    k:'black', w:'white', s:'silver', g:'gray', n:'navy', b:'blue', t:'teal', c:'aqua',
+    y:'yellow', o:'olive', r:'red', m:'maroon', l:'lime', e:'green', p:'purple', f:'fuchsia',
+  };
+  document.getElementById('palette-list').insertAdjacentHTML('beforeend',
+    Object.entries(PAL).map(([ch, hex]) => `
+      <div class="tbl__row">
+        <span class="c-ico"><span class="swatch" style="width:20px;height:20px;background:${hex};border:1px solid var(--rule-hair)"></span></span>
+        <span class="c-name">${esc(ch)}</span>
+        <span class="c-desc">${esc(NICE[ch] || '')}</span>
+        <span class="c-meta">${esc(hex)}</span>
+      </div>`).join(''));
+})();
+</script>
+
+</body>
+</html>

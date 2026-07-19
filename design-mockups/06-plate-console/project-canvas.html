@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>plugma — Board</title>
+<meta name="description" content="The working board for plugma — a zero-config toolchain for building Figma plugins." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+<style>
+  /* ── PAGE-LOCAL ───────────────────────────────────────────────
+     The shell owns the viewport. Two consequences, and they are the
+     whole design problem on this sheet:
+
+       1. The rail goes. A sheet index needs a scrolling sheet to
+          index; the notes column scrolls on its own and is short
+          enough to read whole. The numbered heads stay.
+       2. Gestures stop being cooperative. The page has no scroll to
+          protect, so a plain wheel pans and pinch zooms.
+
+     Below 1024px the split turns horizontal, because a 22rem column
+     and a usable canvas cannot both fit across a phone. */
+  html, body { height:100%; overflow:hidden; }
+</style>
+</head>
+
+<body data-page="project">
+
+<div class="shell">
+
+  <aside class="doc">
+    <header class="strip">
+      <div class="strip__in" style="padding:0 var(--pad)">
+        <span><a href="index.html">index</a> <span class="strip__sep">/</span> <a href="project.html">plugma</a> <span class="strip__sep">/</span> <strong>board</strong></span>
+        <span class="strip__tools">
+          <button class="btn" id="theme-toggle" type="button" aria-pressed="false">Invert</button>
+        </span>
+      </div>
+    </header>
+
+    <div class="doc__body">
+
+      <div style="display:flex; gap:.75rem; align-items:flex-start; margin-bottom:calc(var(--bl) * 1.5)">
+        <span id="hero-ico"></span>
+        <span>
+          <span class="display" style="display:block; font-family:var(--f-mono)">plugma</span>
+          <span class="lead" style="display:block">the working board</span>
+        </span>
+      </div>
+
+      <section class="module" style="margin-bottom:var(--bl)">
+        <div class="module__head" style="margin-bottom:.75rem">
+          <span class="module__num">01</span><span class="module__name">brief</span>
+        </div>
+        <div class="prose">
+          <p>Give Figma plugins the development loop every other web project already has: change a line, see it.</p>
+        </div>
+        <p style="margin-top:var(--bl); display:flex; gap:.5rem; flex-wrap:wrap">
+          <a class="btn" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">plugma.dev ↗</a>
+          <a class="btn" href="project.html">written version</a>
+        </p>
+      </section>
+
+      <section class="module" style="margin-bottom:var(--bl)">
+        <div class="module__head" style="margin-bottom:.75rem">
+          <span class="module__num">02</span><span class="module__name">spec</span>
+        </div>
+        <div class="tbl">
+          <div class="tbl__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">type</span><span class="mono dim">toolchain</span>
+          </div>
+          <div class="tbl__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">role</span><span class="mono dim">creator</span>
+          </div>
+          <div class="tbl__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">status</span><span class="mono dim">maintained</span>
+          </div>
+          <div class="tbl__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">objects</span><span class="mono dim" id="objcount">—</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="module" style="margin-bottom:var(--bl)">
+        <div class="module__head" style="margin-bottom:.75rem">
+          <span class="module__num">03</span><span class="module__name">problem</span>
+        </div>
+        <div class="prose">
+          <p>
+            A plugin is two programs that cannot see each other — one in a sandbox with the
+            document, one in an iframe with the DOM. They speak only by passing messages.
+          </p>
+          <p>Neither half can be served from disk, so the UI has to be inlined into the built file.</p>
+        </div>
+      </section>
+
+      <section class="module" style="margin-bottom:var(--bl)">
+        <div class="module__head" style="margin-bottom:.75rem">
+          <span class="module__num">04</span><span class="module__name">approach</span>
+        </div>
+        <div class="prose">
+          <p>
+            One command scaffolds, one develops, one ships. In development the UI is served; at
+            build time it is inlined. The sandbox half never notices.
+          </p>
+        </div>
+      </section>
+
+      <div style="border-top:2px solid var(--ink); display:grid; grid-template-columns:repeat(2,minmax(0,1fr))">
+        <div class="tb-cell"><span class="tb-k">sheet</span><span class="tb-v">06 / 06</span></div>
+        <div class="tb-cell"><span class="tb-k">title</span><span class="tb-v">board</span></div>
+        <div class="tb-cell"><span class="tb-k">keys</span><span class="tb-v">↑↓←→ · ± · 0</span></div>
+        <div class="tb-cell"><span class="tb-k">rev</span><span class="tb-v">A</span></div>
+      </div>
+
+    </div>
+  </aside>
+
+  <div class="stage">
+    <div class="board">
+      <div class="vp" id="vp" tabindex="0" role="group"
+           aria-label="Project board. Drag to pan, scroll to pan, pinch to zoom. Arrow keys pan, plus and minus zoom, zero fits the board.">
+        <div class="world" id="world"></div>
+      </div>
+
+      <div class="board__ui" id="zoom">
+        <button type="button" data-act="fit" aria-label="Fit board to view" title="Fit to view">⛶</button>
+        <button type="button" data-act="out" aria-label="Zoom out">−</button>
+        <button type="button" class="zoomval" data-act="reset" aria-label="Reset zoom to 100 percent">100%</button>
+        <button type="button" data-act="in" aria-label="Zoom in">+</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script src="board.js"></script>
+<script>
+  document.getElementById('hero-ico').innerHTML = icon('monitor', { size:32, label:'plugma' });
+  drawBoard({ viewport:'vp', world:'world', zoom:'zoom', count:'objcount' });
+</script>
+
+</body>
+</html>

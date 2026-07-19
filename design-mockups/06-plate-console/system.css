@@ -1,0 +1,423 @@
+/* ══════════════════════════════════════════════════════════════════
+   PLATE · CONSOLE — the system
+   ------------------------------------------------------------------
+   The drafting sheet of 02 carrying the palette of 05. IBM Plex Sans
+   and Mono, hairline rules, numbered caption strips, ruled
+   schedules, a drawing title block — all of it now printed in the
+   16-colour VGA palette.
+
+   The join is tidier than it sounds, because both parents already
+   agreed on the important things: square corners, a 12-column grid,
+   a 24px baseline, and a five-step type ramp.
+
+   ONE DELIBERATE DEPARTURE FROM 02
+     02 set body prose in a mid grey (#4A4E55). This palette has
+     nothing between black and #808080, and #808080 on white is 3.9:1
+     — under AA for body text. So prose is set in --ink and #808080
+     is reserved for labels, column heads and secondary values, where
+     it is large enough or non-essential. The palette constrains the
+     colour; it does not get to constrain the contrast.
+
+   §1 tokens · §2 primitives · §3 templates · §4 board · §5 print
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+:root {
+  --paper:#FFFFFF;
+  --sunk:#C0C0C0;
+  --plate:#FFFFFF;
+  --ink:#0A0A0A;
+  --dim:#808080;
+  --accent:#000080;          /* navy */
+  --accent-2:#008080;        /* teal */
+  --accent-soft:rgba(0,0,128,.07);
+  --rule:#808080;
+  --rule-hair:#C0C0C0;
+  --on-accent:#FFFFFF;
+
+  /* the palette, for category coding and the specimen sheet */
+  --c-navy:#000080; --c-teal:#008080; --c-maroon:#800000; --c-olive:#808000;
+  --c-purple:#800080; --c-green:#008000; --c-red:#FF0000; --c-blue:#0000FF;
+  --c-silver:#C0C0C0; --c-gray:#808080; --c-yellow:#FFFF00; --c-aqua:#00FFFF;
+  --c-lime:#00FF00; --c-fuchsia:#FF00FF; --c-white:#FFFFFF; --c-black:#0A0A0A;
+
+  --page:75rem;
+  --cols:12;
+  --gutter:1.5rem;
+  --pad:clamp(1rem,3vw,2rem);
+  --bl:1.5rem;               /* 24px baseline */
+
+  --t-micro:.6875rem;        /* 11 */
+  --t-label:.75rem;          /* 12 */
+  --t-mono:.8125rem;         /* 13 */
+  --t-body:.9375rem;         /* 15 */
+  --t-display:clamp(1.375rem,2.8vw,1.75rem);
+
+  --dur:.15s; --ease:cubic-bezier(.2,.7,.3,1);
+  --f-sans:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace;
+}
+
+/* Night sheet — the same 16 colours run on black stock. */
+.dark {
+  --paper:#0A0A0A;
+  --sunk:#000000;
+  --plate:#0A0A0A;
+  --ink:#FFFFFF;
+  --dim:#C0C0C0;
+  --accent:#00FFFF;
+  --accent-2:#FFFF00;
+  --accent-soft:rgba(0,255,255,.10);
+  --rule:#C0C0C0;
+  --rule-hair:#808080;
+  --on-accent:#0A0A0A;
+}
+
+/* ── §2 · PRIMITIVES ───────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing:border-box; border-radius:0; }
+
+body {
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--f-sans); font-size:var(--t-body); line-height:var(--bl);
+  -webkit-font-smoothing:antialiased;
+}
+::selection { background:var(--accent); color:var(--on-accent); }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+img, svg { display:block; max-width:100%; }
+
+/* bitmap icons — never resampled */
+.ico { flex:none; }
+.ico--16 { width:16px; height:16px; }
+.ico--32 { width:32px; height:32px; }
+
+/* strip — the ruled band at the head of every sheet */
+.strip { border-bottom:1px solid var(--rule); background:var(--paper); }
+.strip__in {
+  margin-inline:auto; max-width:var(--page); padding:0 var(--pad);
+  min-height:calc(var(--bl) * 2);
+  display:flex; align-items:center; justify-content:space-between; gap:.75rem 1rem;
+  flex-wrap:wrap;                 /* see 05: a rigid bar crushes its buttons */
+  font-family:var(--f-mono); font-size:var(--t-label);
+  letter-spacing:.06em; text-transform:uppercase; color:var(--dim);
+}
+.strip__in a { color:inherit; text-decoration:none; }
+.strip__in a:hover { color:var(--ink); }
+.strip strong { font-weight:600; color:var(--ink); }
+.strip__sep { color:var(--rule-hair); }
+.strip__tools { display:flex; align-items:center; gap:.5rem; flex:none; }
+
+.sheet {
+  margin-inline:auto; max-width:var(--page); padding:0 var(--pad);
+  border-left:1px solid var(--rule-hair); border-right:1px solid var(--rule-hair);
+}
+.grid12 { display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr)); column-gap:var(--gutter); }
+.spread { padding-block:calc(var(--bl) * 2); }
+
+.rail { display:none; }
+.main { grid-column:1 / -1; min-width:0; }
+@media (min-width:1024px) {
+  .rail {
+    display:block; grid-column:1 / 3; position:sticky; top:var(--bl); height:max-content;
+    font-family:var(--f-mono); font-size:var(--t-label); color:var(--dim);
+  }
+  .main { grid-column:3 / -1; }
+}
+.rail a {
+  display:flex; gap:.5rem; align-items:center; height:var(--bl);
+  padding-left:.5rem; border-left:2px solid transparent;
+  color:inherit; text-decoration:none;
+  transition:color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.rail a:hover { color:var(--ink); }
+.rail a[aria-current='true'] { border-left-color:var(--accent); color:var(--ink); }
+.rail .n { color:var(--rule-hair); }
+.rail a[aria-current='true'] .n { color:var(--accent); }
+
+/* module — a numbered plate of the sheet */
+.module { margin-bottom:calc(var(--bl) * 2.5); scroll-margin-top:calc(var(--bl) * 2); }
+.module:last-child { margin-bottom:0; }
+.module__grid {
+  display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); column-gap:var(--gutter);
+}
+@media (max-width:1023px) { .module__grid { grid-template-columns:repeat(var(--cols),minmax(0,1fr)); } }
+
+.module__head {
+  grid-column:1 / -1;
+  display:flex; align-items:center; gap:.75rem;
+  min-height:calc(var(--bl) * 1.5);
+  border-top:2px solid var(--ink); border-bottom:1px solid var(--rule-hair);
+  margin-bottom:var(--bl); padding-top:.25rem;
+  font-family:var(--f-mono); font-size:var(--t-label);
+  letter-spacing:.08em; text-transform:uppercase;
+}
+.module__num { color:var(--accent); font-weight:600; }
+.module__name { color:var(--ink); font-weight:600; }
+.module__note { margin-left:auto; color:var(--dim); letter-spacing:.04em; }
+
+.prose { color:var(--ink); }
+.prose p { margin:0; }
+.prose p + p { margin-top:var(--bl); }
+.prose strong { font-weight:600; }
+.dim { color:var(--dim); }
+.mono { font-family:var(--f-mono); font-size:var(--t-mono); }
+
+.display {
+  margin:0; font-size:var(--t-display); font-weight:400;
+  line-height:calc(var(--bl) * 1.333); letter-spacing:-.015em; color:var(--ink);
+}
+.lead { margin:0; font-size:var(--t-body); color:var(--dim); }
+
+/* tbl — the ruled schedule. Every table on every template. */
+.tbl { grid-column:1 / -1; }
+.tbl__head, .tbl__row {
+  display:grid; grid-template-columns:subgrid; grid-column:1 / -1;
+  align-items:center; column-gap:var(--gutter);
+}
+@supports not (grid-template-columns:subgrid) {
+  .tbl__head, .tbl__row { grid-template-columns:repeat(10,minmax(0,1fr)); }
+  @media (max-width:1023px) { .tbl__head, .tbl__row { grid-template-columns:repeat(var(--cols),minmax(0,1fr)); } }
+}
+.tbl__head {
+  min-height:var(--bl); border-bottom:1px solid var(--rule);
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.1em; text-transform:uppercase; color:var(--dim);
+}
+.tbl__row {
+  padding-block:.5rem; border-bottom:1px solid var(--rule-hair);
+  color:inherit; text-decoration:none;
+  transition:background-color var(--dur) var(--ease);
+}
+a.tbl__row:hover, a.tbl__row:focus-visible { background:var(--accent); color:var(--on-accent); }
+a.tbl__row:hover .dim, a.tbl__row:focus-visible .dim { color:var(--on-accent); }
+a.tbl__row:hover .swatch, a.tbl__row:focus-visible .swatch { outline:1px solid var(--on-accent); }
+
+.c-ico  { grid-column:span 1; padding-left:.25rem; }
+.c-name { grid-column:span 2; font-family:var(--f-mono); font-size:var(--t-mono); font-weight:600; }
+.c-desc { grid-column:span 5; font-size:var(--t-mono); }
+.c-meta { grid-column:span 2; display:flex; align-items:center; gap:.375rem; justify-content:flex-end;
+          padding-right:.25rem; font-family:var(--f-mono); font-size:var(--t-mono); color:var(--dim); }
+.c-term { grid-column:span 3; padding-left:.25rem; font-family:var(--f-mono); font-size:var(--t-mono); font-weight:600; }
+.c-body { grid-column:span 7; }
+
+@media (max-width:767px) {
+  .tbl__head { display:none; }
+  .tbl__row { grid-template-columns:auto 1fr auto; padding-block:.625rem; }
+  /* explicit rows: .c-desc precedes .c-meta in the DOM, so
+     auto-placement would strand the meta on a row of its own */
+  .c-ico  { grid-column:1; grid-row:1; }
+  .c-name { grid-column:2; grid-row:1; }
+  .c-meta { grid-column:3; grid-row:1; }
+  .c-desc { grid-column:1 / -1; grid-row:2; padding-left:.25rem; }
+  .c-term { grid-column:1 / -1; }
+  .c-body { grid-column:1 / -1; padding-left:.25rem; }
+}
+
+.swatch { width:9px; height:9px; flex:none; }
+
+/* plate — flat surface, hairline edge, caption strip */
+.plate { background:var(--plate); border:1px solid var(--rule); }
+.plate__bar {
+  display:flex; align-items:center; gap:.5rem;
+  min-height:calc(var(--bl) * 1.25); padding:.125rem .625rem;
+  border-bottom:1px solid var(--rule-hair);
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.08em; text-transform:uppercase; color:var(--dim);
+}
+.plate__bar a { color:var(--accent); }
+.plate__bar .right { margin-left:auto; }
+.plate__body { padding:.75rem; }
+
+.tag {
+  display:inline-flex; align-items:center; gap:.25rem;
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.08em; text-transform:uppercase; color:var(--dim);
+  border:1px solid var(--rule-hair); padding:0 .375rem; line-height:1.25rem;
+}
+.tags { display:flex; flex-wrap:wrap; gap:.25rem; }
+
+.lnk { color:var(--accent); text-decoration:none; border-bottom:1px solid currentColor; }
+.lnk:hover { background:var(--accent); color:var(--on-accent); }
+
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:.375rem;
+  padding:.25rem .625rem; border:1px solid var(--rule);
+  background:var(--paper); color:var(--ink);
+  font:inherit; font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.06em; text-transform:uppercase; text-decoration:none; cursor:pointer;
+}
+.btn:hover { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
+.btn[aria-pressed='true'] { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
+
+/* titleblock — the drawing's title block, foot of every sheet */
+.titleblock { border-top:2px solid var(--ink); }
+.titleblock__in {
+  margin-inline:auto; max-width:var(--page); padding:0 var(--pad);
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+}
+@media (min-width:640px) { .titleblock__in { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+@media (min-width:1024px) { .titleblock__in { grid-template-columns:repeat(6,minmax(0,1fr)); } }
+.tb-cell { padding:.5rem .625rem; min-height:calc(var(--bl) * 2);
+  border-right:1px solid var(--rule-hair); border-bottom:1px solid var(--rule-hair); }
+.tb-cell:last-child { border-right:0; }
+.tb-k { display:block; font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.1em; text-transform:uppercase; color:var(--dim); }
+.tb-v { display:block; font-family:var(--f-mono); font-size:var(--t-mono); color:var(--ink); }
+.tb-v a { color:inherit; }
+
+/* grid overlay — mirrors .sheet's box exactly */
+.gridlines { position:fixed; inset:0; z-index:60; pointer-events:none; display:none; }
+.gridlines[data-on='true'] { display:block; }
+.gridlines__in {
+  margin-inline:auto; max-width:var(--page); height:100%; padding:0 var(--pad);
+  border-left:1px solid transparent; border-right:1px solid transparent;
+  display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr)); column-gap:var(--gutter);
+}
+.gridlines__in > i { background:var(--c-red); opacity:.10; }
+
+/* ── §3 · TEMPLATES ────────────────────────────────────────────── */
+
+/* specimen sheet — every icon at every size, plus one magnified */
+/* Rules are drawn on the cells, not faked with a gap over a coloured
+   background — an auto-fill grid whose last row is short would show
+   that background as a block where the missing cells are. */
+.spec { grid-column:1 / -1; display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(7.5rem,1fr));
+        border-top:1px solid var(--rule-hair); border-left:1px solid var(--rule-hair); }
+.spec__cell { background:var(--paper); padding:.75rem .5rem;
+              display:grid; gap:.5rem; justify-items:center; text-align:center;
+              border-right:1px solid var(--rule-hair); border-bottom:1px solid var(--rule-hair); }
+.spec__row { display:flex; align-items:flex-end; gap:.75rem; min-height:34px; }
+.spec__name { font-family:var(--f-mono); font-size:var(--t-micro); color:var(--ink); }
+.spec__sizes { font-family:var(--f-mono); font-size:var(--t-micro); color:var(--dim); }
+.spec__missing { font-family:var(--f-mono); font-size:var(--t-micro); color:var(--dim); border:1px dotted var(--rule-hair); padding:0 .25rem; }
+
+/* the magnifier — a bitmap shown as its own grid of cells */
+.mag { display:grid; border:1px solid var(--rule); background:var(--rule-hair); gap:1px; width:max-content; max-width:100%; }
+.mag i { width:9px; height:9px; display:block; }
+@media (max-width:640px) { .mag i { width:6px; height:6px; } }
+
+/* changelog */
+.entry { grid-column:1 / -1; display:grid; column-gap:var(--gutter);
+         padding-block:var(--bl); border-bottom:1px solid var(--rule-hair); }
+@media (min-width:900px) { .entry { grid-template-columns:10rem minmax(0,1fr); } }
+.entry__meta { font-family:var(--f-mono); font-size:var(--t-mono); }
+.entry__ver { font-weight:600; color:var(--ink); }
+.entry__date { display:block; color:var(--dim); font-size:var(--t-micro); }
+/* No bullets: every line already leads with a badge, and two
+   markers on one line is one marker too many. */
+.entry ul { margin:0; padding:0; list-style:none; }
+.entry li { margin-bottom:.25rem; display:flex; gap:.5rem; align-items:baseline; }
+.entry li .badge { flex:none; margin-right:0; }
+.badge {
+  display:inline-block; padding:0 .375rem; margin-right:.375rem;
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.06em; text-transform:uppercase;
+  background:var(--accent); color:var(--on-accent);
+}
+.badge--fix { background:var(--c-maroon); color:#FFF; }
+.badge--new { background:var(--c-teal); color:#FFF; }
+.dark .badge--fix { background:var(--c-red); color:#0A0A0A; }
+.dark .badge--new { background:var(--c-lime); color:#0A0A0A; }
+
+/* cv */
+.cv-row { grid-column:1 / -1; display:grid; column-gap:var(--gutter);
+          padding-block:.625rem; border-bottom:1px solid var(--rule-hair); }
+@media (min-width:900px) { .cv-row { grid-template-columns:8rem minmax(0,1fr); } }
+.cv-when { font-family:var(--f-mono); font-size:var(--t-mono); color:var(--dim); }
+.cv-what strong { display:block; font-weight:600; }
+.cv-what span { color:var(--dim); font-size:var(--t-mono); }
+
+/* ── §4 · BOARD ────────────────────────────────────────────────── */
+
+.board { position:relative; width:100%; height:100%; overflow:hidden; contain:strict; background:var(--sunk); }
+.vp {
+  position:absolute; inset:0; background-color:var(--sunk);
+  background-image:radial-gradient(var(--rule) 1px, transparent 1px);
+  background-size:8px 8px; cursor:grab; touch-action:none;
+}
+.dark .vp { background-image:radial-gradient(var(--rule-hair) 1px, transparent 1px); }
+.vp:active { cursor:grabbing; }
+.world { position:absolute; top:0; left:0; transform-origin:0 0; }
+.node { position:absolute; top:0; left:0; }
+
+.n-doc { width:340px; }
+.n-doc .plate__body { font-size:var(--t-mono); }
+.n-doc p { margin:0; }
+.n-doc p + p { margin-top:var(--bl); }
+.n-doc code { font-family:var(--f-mono); background:var(--sunk); padding:0 .25em; }
+
+.n-note { width:190px; padding:.625rem; border:1px solid var(--rule); font-size:var(--t-mono); white-space:pre-wrap; }
+.n-note__n { display:block; font-family:var(--f-mono); font-size:var(--t-micro); letter-spacing:.1em; opacity:.65; margin-bottom:.375rem; }
+
+.n-callout {
+  font-family:var(--f-mono); font-weight:600; font-size:var(--t-body);
+  letter-spacing:.12em; text-transform:uppercase; color:var(--accent);
+  white-space:pre;                       /* no width: must not wrap */
+}
+
+.n-code { width:420px; }
+.n-code pre { margin:0; padding:.625rem .75rem; font-family:var(--f-mono);
+  font-size:var(--t-mono); line-height:var(--bl); white-space:pre; overflow-x:auto; color:var(--ink); }
+.n-code .cm { color:var(--dim); }
+.n-code .kw { color:var(--accent); font-weight:600; }
+
+.n-link { width:280px; display:block; text-decoration:none; color:inherit; }
+.n-link__title { display:block; font-weight:600; font-size:var(--t-mono); }
+.n-link__desc { display:block; font-size:var(--t-mono); color:var(--dim); }
+.n-link__host { display:block; margin-top:.25rem; font-family:var(--f-mono); font-size:var(--t-micro); color:var(--accent); }
+
+.shape-svg { position:absolute; top:0; left:0; width:1px; height:1px; overflow:visible; pointer-events:none; }
+
+.board__ui { position:absolute; z-index:20; right:var(--bl); top:var(--bl);
+  display:flex; align-items:stretch; border:1px solid var(--rule); background:var(--paper); }
+.board__ui button {
+  width:26px; height:24px; display:grid; place-items:center;
+  border:0; border-right:1px solid var(--rule-hair); background:transparent; color:var(--ink);
+  font:inherit; font-size:var(--t-mono); cursor:pointer;
+}
+.board__ui button:last-child { border-right:0; }
+.board__ui button:hover { background:var(--accent); color:var(--on-accent); }
+.board__ui .zoomval {
+  min-width:56px; padding:0 .375rem; border:0; border-right:1px solid var(--rule-hair);
+  background:transparent; color:var(--ink); font-family:var(--f-mono); font-size:var(--t-micro);
+  font-variant-numeric:tabular-nums; cursor:pointer;
+}
+
+.figure { grid-column:1 / -1; margin:0; }
+.figure__stage { position:relative; height:calc(var(--bl) * 11); }
+.figure__scale { position:absolute; top:0; left:0; transform-origin:0 0; }
+
+/* shell — the full-bleed board page */
+.shell { position:fixed; inset:0; display:flex; flex-direction:column; }
+.doc { flex:none; max-height:46vh; overflow-y:auto; background:var(--paper);
+       border-bottom:1px solid var(--rule); }
+.doc__body { padding:var(--bl) var(--pad); }
+.stage { position:relative; flex:1; min-height:0; }
+@media (min-width:1024px) {
+  .shell { flex-direction:row; }
+  .doc { max-height:none; width:22rem; border-bottom:0; border-right:1px solid var(--rule); }
+  .stage { min-width:0; }
+}
+
+/* ── §5 · PRINT ────────────────────────────────────────────────────
+   The CV is the one template meant to leave the screen, so it gets a
+   real print sheet: chrome off, rules kept, links resolved to their
+   URLs, and the title block turned into a footer. */
+@media print {
+  :root { --paper:#FFF; --ink:#000; --dim:#444; --rule:#000; --rule-hair:#999; --accent:#000; }
+  .strip, .rail, .gridlines, .no-print { display:none !important; }
+  body { font-size:10.5pt; line-height:1.4; }
+  .sheet { max-width:none; border:0; padding:0; }
+  .spread { padding-block:0; }
+  .main { grid-column:1 / -1 !important; }
+  .module { break-inside:avoid; margin-bottom:14pt; }
+  .module__head { border-top:1.5pt solid #000; }
+  .cv-row, .tbl__row { break-inside:avoid; }
+  .lnk { border-bottom:0; }
+  .print-url::after { content:' (' attr(href) ')'; font-size:8pt; color:#444; }
+  .titleblock { border-top:1pt solid #000; }
+  @page { margin:14mm; }
+}
+
+@media (prefers-reduced-motion:reduce) { * { transition:none !important; } }

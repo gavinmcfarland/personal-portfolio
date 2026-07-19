@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>plugma — Gavin McFarland</title>
+<meta name="description" content="Plugma — a zero-config toolchain for building Figma plugins, with real hot reloading." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body data-page="project">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<header class="strip">
+  <div class="strip__in">
+    <span><a href="index.html">gavin mcfarland</a> <span class="strip__sep">/</span> <strong>plugma</strong></span>
+    <span id="nav" style="display:flex;gap:.5rem;flex-wrap:wrap"></span>
+    <span class="strip__tools">
+      <button class="btn" id="grid-toggle" type="button" aria-pressed="false" title="Layout grid (G)">Grid</button>
+      <button class="btn" id="theme-toggle" type="button" aria-pressed="false">Invert</button>
+    </span>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <nav class="rail" aria-label="Sheet index">
+    <a href="#about"><span class="n">01</span> about</a>
+    <a href="#spec"><span class="n">02</span> spec</a>
+    <a href="#problem"><span class="n">03</span> problem</a>
+    <a href="#approach"><span class="n">04</span> approach</a>
+    <a href="#shape"><span class="n">05</span> shape</a>
+    <a href="#result"><span class="n">06</span> result</a>
+  </nav>
+
+  <main class="main">
+
+    <section id="about" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">01</span><span class="module__name">about</span>
+          <span class="module__note">open source</span>
+        </div>
+
+        <div style="grid-column:1 / -1; display:flex; gap:.75rem; align-items:flex-start; margin-bottom:var(--bl)">
+          <span id="hero-ico"></span>
+          <span>
+            <span class="display" style="display:block; font-family:var(--f-mono)">plugma</span>
+            <span class="lead" style="display:block; margin-top:.25rem">A zero-config toolchain for Figma plugins</span>
+          </span>
+        </div>
+
+        <div class="prose" style="grid-column:1 / -1; max-width:64ch">
+          <p>
+            Give Figma plugins the development loop every other web project already has: change a
+            line, see it. No rebuild, no reload, and no losing the state you were halfway through
+            testing.
+          </p>
+        </div>
+
+        <p style="grid-column:1 / -1; margin:var(--bl) 0 0; display:flex; gap:.5rem; flex-wrap:wrap">
+          <a class="btn" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">plugma.dev ↗</a>
+          <a class="btn" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">source ↗</a>
+          <a class="btn" href="changelog.html">changelog</a>
+          <a class="btn" href="project-canvas.html">open board</a>
+        </p>
+      </div>
+    </section>
+
+    <section id="spec" class="module">
+      <div class="module__grid">
+        <div class="module__head"><span class="module__num">02</span><span class="module__name">spec</span></div>
+        <div class="tbl module__grid">
+          <div class="tbl__row"><span class="c-term">type</span><span class="c-body mono">command-line toolchain</span></div>
+          <div class="tbl__row"><span class="c-term">year</span><span class="c-body mono">2024 — ongoing</span></div>
+          <div class="tbl__row"><span class="c-term">role</span><span class="c-body mono">creator, maintainer</span></div>
+          <div class="tbl__row"><span class="c-term">built with</span><span class="c-body mono">node, typescript, vite</span></div>
+          <div class="tbl__row"><span class="c-term">latest</span><span class="c-body mono" id="latest">—</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="problem" class="module">
+      <div class="module__grid">
+        <div class="module__head"><span class="module__num">03</span><span class="module__name">problem</span></div>
+        <div class="prose" style="grid-column:1 / -1; max-width:64ch">
+          <p>
+            A Figma plugin is two programs that cannot see each other. One runs in a sandbox with
+            access to the document and no DOM; the other runs in an iframe with the DOM and no
+            document. They speak only by passing messages.
+          </p>
+          <p>
+            Neither half can be served from disk the way an ordinary web app can, so the UI has to
+            be inlined into the built file. <strong>That single requirement is what breaks the
+            development loop</strong> — inlining is a build step, and a build step means you are no
+            longer editing, you are rebuilding and reloading by hand.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="approach" class="module">
+      <div class="module__grid">
+        <div class="module__head"><span class="module__num">04</span><span class="module__name">approach</span></div>
+        <div class="prose" style="grid-column:1 / -1; max-width:64ch">
+          <p>
+            Plugma puts all of it underneath one command. One scaffolds, one develops, one ships,
+            and the framework stays your choice.
+          </p>
+          <p>
+            The trick is where the UI lives. In development it is served from a dev server; at
+            build time the same UI is inlined. The sandbox half never notices the difference, so
+            hot module reloading works the way it does anywhere else.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="shape" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">05</span><span class="module__name">shape</span>
+          <span class="module__note">fig. 1</span>
+        </div>
+
+        <div class="prose" style="grid-column:1 / -1; max-width:64ch; margin-bottom:var(--bl)">
+          <p>
+            The working notes live on a board rather than in a document, because the argument is
+            spatial — two halves, a bridge, and what each side can reach.
+          </p>
+        </div>
+
+        <figure class="figure plate">
+          <div class="plate__bar">
+            <span>fig. 1 — working board · 52%</span>
+            <a class="right" href="project-canvas.html">open full board ↗</a>
+          </div>
+          <div class="figure__stage board">
+            <div class="vp" style="cursor:default" aria-hidden="true">
+              <div class="figure__scale" id="mini"></div>
+            </div>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <section id="result" class="module">
+      <div class="module__grid">
+        <div class="module__head"><span class="module__num">06</span><span class="module__name">result</span></div>
+        <div class="prose" style="grid-column:1 / -1; max-width:64ch; margin-bottom:var(--bl)">
+          <p>
+            What it replaces took most of a day, every time. It now takes one command. Still
+            maintained, and the substrate under every plugin I have built since.
+          </p>
+        </div>
+        <div class="tbl module__grid" id="neighbours"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="titleblock">
+  <div class="titleblock__in">
+    <div class="tb-cell"><span class="tb-k">drawn by</span><span class="tb-v">g. mcfarland</span></div>
+    <div class="tb-cell"><span class="tb-k">project</span><span class="tb-v">plugma</span></div>
+    <div class="tb-cell"><span class="tb-k">date</span><span class="tb-v">2026-07</span></div>
+    <div class="tb-cell"><span class="tb-k">sheet</span><span class="tb-v">02 / 06</span></div>
+    <div class="tb-cell"><span class="tb-k">title</span><span class="tb-v">project</span></div>
+    <div class="tb-cell"><span class="tb-k">rev</span><span class="tb-v">A</span></div>
+  </div>
+</footer>
+
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script src="board.js"></script>
+<script>
+  document.getElementById('hero-ico').innerHTML = icon('monitor', { size:32, label:'plugma' });
+
+  /* The figure is the board itself at 52% — not a picture of it. */
+  drawFigure(document.getElementById('mini'), 0.52, 16);
+
+  /* Both of these read the shared data, so neither can disagree
+     with the changelog or the index. */
+  document.getElementById('latest').textContent =
+    `v${DATA.releases[0].ver} — ${DATA.releases[0].date}`;
+
+  const i = DATA.projects.findIndex((p) => p.slug === 'plugma');
+  const near = [
+    { label:'next', p:DATA.projects[i + 1] },
+    { label:'prev', p:DATA.projects[i - 1] },
+  ].filter((n) => n.p);
+
+  document.getElementById('neighbours').innerHTML = near.map((n) => `
+    <a class="tbl__row" href="${esc(n.p.href)}"${n.p.href.startsWith('http') ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+      <span class="c-term">${n.label}</span>
+      <span class="c-body mono">${esc(n.p.name)} — ${esc(n.p.desc)}</span>
+    </a>`).join('') + `
+    <a class="tbl__row" href="index.html#work">
+      <span class="c-term">index</span>
+      <span class="c-body mono">all work →</span>
+    </a>`;
+</script>
+
+</body>
+</html>
