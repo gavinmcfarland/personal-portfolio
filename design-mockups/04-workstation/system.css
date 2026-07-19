@@ -1,0 +1,589 @@
+/* ══════════════════════════════════════════════════════════════════
+   WORKSTATION — the system
+   ------------------------------------------------------------------
+   Loosely Windows 95. The bevel specifications below are the
+   canonical four-stop stacks (98.css), and the palette is the VGA
+   system palette Win95 shipped with:
+
+     face #C0C0C0 · shadow #808080 · dark #0A0A0A · light #DFDFDF
+     desktop teal #008080 · active title navy #000080
+
+   Note: the gradient title bar is a Windows 98 feature. 95 used a
+   flat navy caption, so that is what this uses.
+
+   Carried over from the earlier variations:
+     · square corners — `border-radius: 0`, set once, never undone
+     · a 12-column grid across, a baseline down
+     · a flat type ramp — 11 / 12 / 13 / 15 / 20px, five steps
+
+   About shadows: every box-shadow here is `inset` with zero blur.
+   They are drawn edges — two-tone bevels — not depth. Nothing in
+   this system is blurred, and nothing floats.
+
+   Density: the baseline drops to 20px (from 24px in 02 and 03),
+   because 11–13px system type on a 24px rhythm reads airy and wrong
+   for the idiom. Proportionally it is the same density.
+
+   §1 tokens · §2 bevels · §3 chrome · §4 controls · §5 content
+   §6 board
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+:root {
+  --desktop:#008080;
+  --face:#C0C0C0;
+  --field:#FFFFFF;
+  --text:#0A0A0A;
+  --text-dim:#808080;
+  --title:#000080;
+  --title-text:#FFFFFF;
+  --title-off:#808080;
+  --sel:#000080;
+  --sel-text:#FFFFFF;
+  --link:#0000EE;
+
+  /* the four bevel stops — every raised, pressed and sunken edge is
+     built from exactly these, in a different order */
+  --bev-lightest:#FFFFFF;
+  --bev-light:#DFDFDF;
+  --bev-dark:#808080;
+  --bev-darkest:#0A0A0A;
+
+  /* the 16-colour VGA palette, used by the abstract cover art */
+  --c-navy:#000080;  --c-teal:#008080;  --c-maroon:#800000; --c-olive:#808000;
+  --c-purple:#800080; --c-green:#008000; --c-silver:#C0C0C0; --c-gray:#808080;
+  --c-red:#FF0000;   --c-lime:#00FF00;  --c-yellow:#FFFF00; --c-blue:#0000FF;
+  --c-fuchsia:#FF00FF; --c-aqua:#00FFFF;
+
+  --page:64rem;
+  --cols:12;
+  --gutter:1rem;
+  --bl:1.25rem;            /* 20px baseline */
+  --pad:.75rem;
+  --taskbar:28px;
+
+  /* five steps, flattest ramp in the set */
+  --t-micro:11px;
+  --t-ui:11px;
+  --t-body:13px;
+  --t-lead:15px;
+  --t-display:20px;
+
+  /* MS Sans Serif's closest widely-available relatives. No webfont
+     is loaded anywhere in this variation — the system UI face is the
+     whole point, and it makes this the fastest of the four. */
+  --f-ui:Tahoma, Verdana, Geneva, 'DejaVu Sans', sans-serif;
+  --f-mono:'Lucida Console', 'Courier New', ui-monospace, monospace;
+}
+
+/* Night shift is the High Contrast Black accessibility scheme that
+   Windows actually shipped — a truer answer than inventing a dark
+   mode the platform never had. Yellow links are that scheme's. */
+.dark {
+  --desktop:#000000;
+  --face:#000000;
+  --field:#000000;
+  --text:#FFFFFF;
+  --text-dim:#A0A0A0;
+  --title:#0000AA;
+  --title-text:#FFFFFF;
+  --title-off:#404040;
+  --sel:#FFFFFF;
+  --sel-text:#000000;
+  --link:#FFFF00;
+
+  --bev-lightest:#FFFFFF;
+  --bev-light:#C0C0C0;
+  --bev-dark:#404040;
+  --bev-darkest:#808080;
+}
+
+/* ── §2 · BEVELS ───────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing:border-box; border-radius:0; }
+
+.raised {
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light);
+}
+.pressed {
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-darkest),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-dark);
+}
+.sunken {
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest);
+}
+/* a group box is a sunken outer and a raised inner, one pixel apart */
+.etched {
+  border-top:1px solid var(--bev-dark);   border-left:1px solid var(--bev-dark);
+  border-right:1px solid var(--bev-lightest); border-bottom:1px solid var(--bev-lightest);
+}
+
+/* Focus is a dotted rectangle inside the control, as it was. */
+:focus-visible { outline:1px dotted var(--text); outline-offset:-4px; }
+
+/* Icons are 16×16 everywhere by default. An inline <svg> with a
+   viewBox and no width takes its intrinsic 300×150, which in a flex
+   row silently eats the space its label needed — so the size is set
+   once, here, rather than per context. 14px in the tighter chrome. */
+.ico { width:16px; height:16px; flex:none; display:block; }
+.win__title .ico, .tree .ico, .menu .ico { width:14px; height:14px; }
+
+/* ── §3 · CHROME ───────────────────────────────────────────────── */
+
+body {
+  margin:0; background:var(--desktop); color:var(--text);
+  font-family:var(--f-ui); font-size:var(--t-body); line-height:var(--bl);
+  padding-bottom:var(--taskbar);
+  -webkit-font-smoothing:none;
+}
+::selection { background:var(--sel); color:var(--sel-text); }
+
+/* window ------------------------------------------------------- */
+.win {
+  max-width:var(--page); margin:var(--bl) auto;
+  background:var(--face); padding:3px;
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light);
+}
+.win--full { max-width:none; margin:0; height:100vh; display:flex; flex-direction:column; }
+
+.win__title {
+  display:flex; align-items:center; gap:.25rem;
+  height:18px; padding:0 2px 0 3px;
+  background:var(--title); color:var(--title-text);
+  font-size:var(--t-ui); font-weight:700; letter-spacing:.01em;
+}
+.win__title .ico { width:14px; height:14px; flex:none; }
+.win__title .name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.win__ctrls { margin-left:auto; display:flex; gap:2px; }
+.win__ctrl {
+  width:16px; height:14px; flex:none; padding:0;
+  background:var(--face); color:var(--text); border:0; cursor:pointer;
+  display:grid; place-items:center; font-size:9px; line-height:1;
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light);
+}
+.win__ctrl:active { box-shadow:
+  inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-darkest),
+  inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-dark); }
+
+/* menu bar ----------------------------------------------------- */
+.menubar { display:flex; padding:1px 0 2px; font-size:var(--t-ui); position:relative; }
+.menubar > * {
+  padding:1px 7px; color:var(--text); text-decoration:none;
+  background:transparent; border:0; cursor:pointer; font:inherit;
+}
+.menubar > *:hover, .menubar > [aria-expanded='true'] { background:var(--sel); color:var(--sel-text); }
+.menubar u { text-decoration:underline; }
+
+.menu {
+  position:absolute; top:100%; left:0; z-index:60; min-width:170px;
+  background:var(--face); padding:2px; display:none;
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light);
+}
+.menu[data-open='true'] { display:block; }
+.menu button, .menu a {
+  display:flex; width:100%; align-items:center; gap:.5rem;
+  padding:2px 18px 2px 20px; background:transparent; border:0;
+  font:inherit; font-size:var(--t-ui); color:var(--text);
+  text-align:left; text-decoration:none; cursor:pointer;
+}
+.menu button:hover, .menu a:hover { background:var(--sel); color:var(--sel-text); }
+.menu hr { border:0; border-top:1px solid var(--bev-dark); border-bottom:1px solid var(--bev-lightest); margin:2px 1px; }
+.menu .tick { position:absolute; left:6px; }
+.menu li { position:relative; list-style:none; }
+.menu ul { margin:0; padding:0; }
+
+/* status bar --------------------------------------------------- */
+.statusbar { display:flex; gap:2px; margin-top:3px; }
+.status {
+  padding:1px 5px; font-size:var(--t-ui); color:var(--text);
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest);
+}
+.status--grow { flex:1; }
+
+/* taskbar ------------------------------------------------------ */
+.taskbar {
+  position:fixed; left:0; right:0; bottom:0; z-index:80;
+  height:var(--taskbar); display:flex; align-items:center; gap:3px;
+  padding:2px; background:var(--face);
+  box-shadow: inset 0 1px var(--bev-lightest), inset 0 2px var(--bev-light);
+}
+.start {
+  display:flex; align-items:center; gap:4px;
+  height:22px; padding:0 6px 0 3px;
+  background:var(--face); color:var(--text); border:0; cursor:pointer;
+  font:inherit; font-size:var(--t-ui); font-weight:700;
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light);
+}
+.start[aria-expanded='true'] {
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-darkest),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-dark);
+}
+.tasks { display:flex; gap:3px; flex:1; min-width:0; }
+.task {
+  display:flex; align-items:center; gap:4px;
+  height:22px; padding:0 6px; min-width:0; max-width:170px;
+  background:var(--face); color:var(--text); text-decoration:none;
+  font-size:var(--t-ui); overflow:hidden;
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light);
+}
+.task span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.task[aria-current='page'] {
+  font-weight:700;
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-darkest),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-dark);
+}
+.tray {
+  display:flex; align-items:center; gap:6px; height:22px; padding:0 7px;
+  font-size:var(--t-ui); font-variant-numeric:tabular-nums;
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest);
+}
+
+/* start menu --------------------------------------------------- */
+.startmenu {
+  position:fixed; left:2px; bottom:calc(var(--taskbar) - 1px); z-index:81;
+  display:none; background:var(--face); padding:3px;
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light);
+}
+.startmenu[data-open='true'] { display:flex; }
+.startmenu__banner {
+  width:24px; background:var(--title); flex:none;
+  display:flex; align-items:flex-end; justify-content:center; padding-bottom:6px;
+}
+.startmenu__banner span {
+  writing-mode:vertical-rl; transform:rotate(180deg);
+  color:#fff; font-size:var(--t-body); font-weight:700; letter-spacing:.06em;
+}
+.startmenu ul { margin:0; padding:0; list-style:none; min-width:200px; }
+.startmenu a {
+  display:flex; align-items:center; gap:8px; padding:4px 20px 4px 8px;
+  color:var(--text); text-decoration:none; font-size:var(--t-body);
+}
+.startmenu a:hover { background:var(--sel); color:var(--sel-text); }
+.startmenu hr { border:0; border-top:1px solid var(--bev-dark); border-bottom:1px solid var(--bev-lightest); margin:3px 2px; }
+
+/* ── §4 · CONTROLS ─────────────────────────────────────────────── */
+
+.btn {
+  min-width:75px; padding:4px 12px;
+  background:var(--face); color:var(--text); border:0; cursor:pointer;
+  font:inherit; font-size:var(--t-ui); text-align:center; text-decoration:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:.375rem;
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light);
+}
+.btn:active {
+  padding:5px 11px 3px 13px;
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-darkest),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-dark);
+}
+.btn--sm { min-width:0; padding:2px 8px; }
+.btn:disabled { color:var(--text-dim); text-shadow:1px 1px 0 var(--bev-lightest); cursor:default; }
+
+.field {
+  width:100%; padding:3px 4px; border:0;
+  background:var(--field); color:var(--text);
+  font:inherit; font-size:var(--t-body);
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest);
+}
+.field:focus { outline:none; }
+.field:focus-visible { outline:1px dotted var(--text); outline-offset:-4px; }
+textarea.field { resize:vertical; min-height:calc(var(--bl) * 4); line-height:var(--bl); }
+select.field { padding:2px 4px; }
+
+.group { margin:0 0 var(--bl); padding:var(--bl) var(--pad) var(--pad); position:relative;
+  border-top:1px solid var(--bev-dark);   border-left:1px solid var(--bev-dark);
+  border-right:1px solid var(--bev-lightest); border-bottom:1px solid var(--bev-lightest); }
+.group > legend { position:absolute; top:-1px; left:8px; padding:0 4px; background:var(--face); font-size:var(--t-ui); }
+
+.check { display:flex; align-items:flex-start; gap:6px; font-size:var(--t-body); cursor:pointer; }
+.check input { margin:3px 0 0; accent-color:var(--title); flex:none; }
+
+.formrow { display:grid; gap:3px; margin-bottom:var(--bl); }
+@media (min-width:640px) {
+  .formrow { grid-template-columns:9rem minmax(0,1fr); gap:3px var(--gutter); align-items:start; }
+  .formrow > label { padding-top:4px; }
+}
+.formrow > label { font-size:var(--t-ui); }
+.hint { display:block; margin-top:2px; font-size:var(--t-micro); color:var(--text-dim); }
+.err { display:block; margin-top:2px; font-size:var(--t-micro); color:var(--text); font-weight:700; }
+.dark .err { color:var(--link); }
+
+/* modal dialog ------------------------------------------------- */
+.modal { position:fixed; inset:0; z-index:120; display:none; place-items:center; background:rgba(0,0,0,.28); padding:1rem; }
+.modal[data-open='true'] { display:grid; }
+.dialog {
+  width:min(24rem,100%); background:var(--face); padding:3px;
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light);
+}
+.dialog__body { display:flex; gap:12px; padding:16px 12px; }
+.dialog__ico { width:32px; height:32px; flex:none; }
+.dialog__msg { font-size:var(--t-body); }
+.dialog__foot { display:flex; justify-content:center; gap:6px; padding:0 12px 12px; }
+
+/* ── §5 · CONTENT ──────────────────────────────────────────────── */
+
+.client {
+  background:var(--field); padding:var(--bl) var(--pad);
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest);
+}
+.client--flat { background:var(--face); }
+
+.grid12 { display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr)); column-gap:var(--gutter); }
+.grid10 { display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); column-gap:var(--gutter); }
+@media (max-width:1023px) { .grid10 { grid-template-columns:repeat(var(--cols),minmax(0,1fr)); } }
+
+/* explorer split: tree pane + document pane */
+.explorer { display:flex; gap:3px; }
+.pane-tree { width:11rem; flex:none; display:none; }
+@media (min-width:900px) { .pane-tree { display:block; } }
+.pane-main { flex:1; min-width:0; }
+
+/* tree view ---------------------------------------------------- */
+.tree {
+  height:100%; padding:6px 4px; background:var(--field); font-size:var(--t-ui);
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest);
+}
+.tree ul { margin:0; padding:0 0 0 14px; list-style:none; }
+.tree > ul { padding-left:2px; }
+.tree a {
+  display:flex; align-items:center; gap:4px; padding:1px 3px;
+  color:var(--text); text-decoration:none;
+}
+.tree a:hover { text-decoration:underline; }
+.tree a[aria-current='true'] { background:var(--sel); color:var(--sel-text); }
+.tree .ico { width:14px; height:14px; flex:none; }
+
+/* type --------------------------------------------------------- */
+.display { margin:0; font-size:var(--t-display); font-weight:700; line-height:calc(var(--bl) * 1.2); }
+.lead { margin:0; font-size:var(--t-lead); line-height:calc(var(--bl) * 1.2); }
+.prose { color:var(--text); }
+.prose p { margin:0; }
+.prose p + p { margin-top:var(--bl); }
+.prose strong { font-weight:700; }
+.dim { color:var(--text-dim); }
+.mono { font-family:var(--f-mono); font-size:var(--t-body); }
+
+.a { color:var(--link); text-decoration:underline; }
+.a:hover { text-decoration:none; background:var(--sel); color:var(--sel-text); }
+
+/* section head — a title bar for a block of content */
+.sec { margin-bottom:calc(var(--bl) * 1.5); }
+.sec:last-child { margin-bottom:0; }
+.sec__head {
+  display:flex; align-items:center; gap:.5rem;
+  padding:1px 5px; margin-bottom:calc(var(--bl) * .5);
+  background:var(--title); color:var(--title-text);
+  font-size:var(--t-ui); font-weight:700;
+}
+.sec__head .n { opacity:.75; font-weight:400; }
+.sec__note { margin-left:auto; font-weight:400; opacity:.85; }
+
+/* list view — the column-headed table Explorer uses */
+.lv { grid-column:1 / -1; }
+.lv__head, .lv__row {
+  display:grid; grid-template-columns:subgrid; grid-column:1 / -1;
+  column-gap:var(--gutter); align-items:baseline;
+}
+@supports not (grid-template-columns:subgrid) {
+  .lv__head, .lv__row { grid-template-columns:repeat(10,minmax(0,1fr)); }
+  @media (max-width:1023px) { .lv__head, .lv__row { grid-template-columns:repeat(var(--cols),minmax(0,1fr)); } }
+}
+.lv__head > span {
+  padding:2px 5px; background:var(--face); font-size:var(--t-ui); text-align:left;
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light);
+}
+.lv__row { padding:2px 0; color:var(--text); text-decoration:none; }
+a.lv__row:hover { background:var(--sel); color:var(--sel-text); }
+a.lv__row:hover .dim, a.lv__row:hover .c-desc, a.lv__row:hover .c-meta { color:var(--sel-text); }
+.c-key  { grid-column:span 3; padding-left:5px; font-size:var(--t-body); }
+.c-desc { grid-column:span 5; font-size:var(--t-body); color:var(--text); }
+.c-meta { grid-column:span 2; font-size:var(--t-body); color:var(--text-dim); padding-right:5px; }
+.c-term { grid-column:span 3; padding-left:5px; font-size:var(--t-body); font-weight:700; }
+.c-body { grid-column:span 7; font-size:var(--t-body); }
+
+@media (max-width:767px) {
+  .lv__head { display:none; }
+  .lv__row { grid-template-columns:1fr auto; padding:4px 0; }
+  /* explicit rows: .c-desc precedes .c-meta in the DOM, so
+     auto-placement would strand the meta on a row of its own */
+  .c-key  { grid-column:1; grid-row:1; }
+  .c-meta { grid-column:2; grid-row:1; padding-right:5px; }
+  .c-desc { grid-column:1 / -1; grid-row:2; padding-left:5px; }
+  .c-term { grid-column:1 / -1; }
+  .c-body { grid-column:1 / -1; padding-left:5px; }
+}
+
+/* ── icon view — the visual project home ───────────────────────── */
+.icons {
+  display:grid; gap:var(--gutter);
+  grid-template-columns:repeat(auto-fill, minmax(9rem, 1fr));
+}
+.icons[data-size='lg'] { grid-template-columns:repeat(auto-fill, minmax(13rem, 1fr)); }
+.icon-item {
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:6px; color:var(--text); text-decoration:none; text-align:center;
+}
+.icon-item:hover .icon-item__label,
+.icon-item:focus-visible .icon-item__label { background:var(--sel); color:var(--sel-text); }
+.icon-item__art {
+  width:100%; aspect-ratio:4 / 3; display:block; background:var(--face);
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest);
+}
+.icon-item__art svg { width:100%; height:100%; display:block; }
+.icon-item__label { padding:0 3px; font-size:var(--t-ui); }
+.icon-item__meta { font-size:var(--t-micro); color:var(--text-dim); }
+.icons[data-size='sm'] .icon-item__meta { display:none; }
+
+/* ── grid overlay ──────────────────────────────────────────────── */
+.gridlines { position:fixed; inset:0; z-index:70; pointer-events:none; display:none; }
+.gridlines[data-on='true'] { display:block; }
+.gridlines__in {
+  margin-inline:auto; max-width:var(--page); height:100%;
+  /* mirrors .win's box: 3px frame padding plus .client's own padding,
+     so the bands measure the grid the content is actually on */
+  padding:0 calc(3px + var(--pad));
+  display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr)); column-gap:var(--gutter);
+}
+.gridlines__in > i { background:var(--c-red); opacity:.12; }
+
+/* ── §6 · BOARD ────────────────────────────────────────────────────
+   Board nodes are §5 windows with a position — the same bevel, the
+   same navy caption, the same square corners. A note on the board is
+   a window; a window on the page is a window. Nothing on the board
+   uses a shape the desktop does not already have. */
+
+.board { position:relative; width:100%; height:100%; overflow:hidden; contain:strict; background:var(--desktop); }
+.vp {
+  position:absolute; inset:0; background-color:var(--desktop);
+  /* the 50% dither the desktop pattern was drawn with */
+  background-image:
+    linear-gradient(45deg, rgba(255,255,255,.10) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.10) 75%),
+    linear-gradient(45deg, rgba(255,255,255,.10) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.10) 75%);
+  background-size:4px 4px; background-position:0 0, 2px 2px;
+  cursor:grab; touch-action:none;
+}
+.vp:active { cursor:grabbing; }
+.world { position:absolute; top:0; left:0; transform-origin:0 0; }
+.node { position:absolute; top:0; left:0; }
+
+.nwin { background:var(--face); padding:3px;
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light); }
+.nwin__title {
+  display:flex; align-items:center; height:16px; padding:0 3px;
+  background:var(--title); color:var(--title-text);
+  font-size:var(--t-micro); font-weight:700;
+}
+.nwin__title .x { margin-left:auto; }
+.nwin__body { padding:6px; background:var(--face); font-size:var(--t-body); }
+.nwin__body.field-bg { background:var(--field); box-shadow:
+  inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+  inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest); }
+.nwin__body p { margin:0; }
+.nwin__body p + p { margin-top:var(--bl); }
+.nwin__body code { font-family:var(--f-mono); background:var(--sel); color:var(--sel-text); padding:0 2px; }
+
+.n-doc { width:340px; }
+.n-code { width:420px; }
+.n-code pre {
+  margin:0; padding:6px; font-family:var(--f-mono); font-size:var(--t-body);
+  line-height:var(--bl); white-space:pre; overflow-x:auto; color:var(--text);
+}
+.n-code .cm { color:var(--text-dim); }
+.n-code .kw { color:var(--link); font-weight:700; }
+
+/* a note is a Post-it rendered as a sticky yellow window body */
+.n-note { width:180px; }
+.n-note .nwin__body { background:var(--c-yellow); color:#0A0A0A; min-height:96px; font-size:var(--t-body); white-space:pre-wrap; }
+.dark .n-note .nwin__body { background:var(--c-olive); color:#FFF; }
+
+.n-callout {
+  font-family:var(--f-ui); font-weight:700; font-size:var(--t-lead);
+  color:#FFFFFF; white-space:pre;                 /* see 03: no width, must not wrap */
+  text-shadow:1px 1px 0 rgba(0,0,0,.55);
+}
+
+.n-link { width:280px; display:block; text-decoration:none; color:inherit; }
+.n-link__thumb { height:96px; display:grid; place-items:center; background:var(--face);
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest);
+  font-size:var(--t-micro); color:var(--text-dim); }
+.n-link__title { display:block; font-weight:700; font-size:var(--t-body); }
+.n-link__desc { display:block; font-size:var(--t-body); }
+.n-link__host { display:block; font-size:var(--t-micro); color:var(--link); text-decoration:underline; }
+
+.chips { display:flex; flex-wrap:wrap; gap:3px; margin-top:6px; }
+.chip { font-size:var(--t-micro); padding:0 4px; background:var(--face); color:var(--text);
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light); }
+
+.shape-svg { position:absolute; top:0; left:0; width:1px; height:1px; overflow:visible; pointer-events:none; }
+
+.board__ui { position:absolute; z-index:100; right:8px; top:8px;
+  display:flex; align-items:center; gap:2px; padding:2px; background:var(--face);
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light); }
+.board__ui button {
+  width:22px; height:20px; display:grid; place-items:center;
+  background:var(--face); color:var(--text); border:0; cursor:pointer; font-size:var(--t-ui);
+  box-shadow:
+    inset -1px -1px var(--bev-darkest), inset  1px  1px var(--bev-lightest),
+    inset -2px -2px var(--bev-dark),    inset  2px  2px var(--bev-light); }
+.board__ui button:active { box-shadow:
+  inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-darkest),
+  inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-dark); }
+.board__ui .zoomval {
+  min-width:52px; height:20px; padding:0 4px; border:0; cursor:pointer;
+  background:var(--field); color:var(--text); font:inherit; font-size:var(--t-ui);
+  font-variant-numeric:tabular-nums;
+  box-shadow:
+    inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+    inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest); }
+
+/* figure — the inert miniature of the board */
+.figure { grid-column:1 / -1; margin:0; }
+.figure__stage { position:relative; height:calc(var(--bl) * 13); }
+.figure__scale { position:absolute; top:0; left:0; transform-origin:0 0; }
+
+@media (prefers-reduced-motion:reduce) { * { transition:none !important; } }

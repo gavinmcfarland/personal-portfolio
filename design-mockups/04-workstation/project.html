@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Plugma — Gavin McFarland</title>
+<meta name="description" content="Plugma — a zero-config toolchain for building Figma plugins, with real hot reloading." />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body data-page="project">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<div class="win">
+
+  <div class="win__title">
+    <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M3 1h7l3 3v11H3z" fill="#FFFFFF" stroke="#0A0A0A"/><path d="M5 6h6M5 8h6M5 10h4" stroke="#000080"/></svg>
+    <span class="name">Plugma — Properties</span>
+    <span class="win__ctrls">
+      <button class="win__ctrl" type="button" aria-label="Minimise" title="Decorative">_</button>
+      <button class="win__ctrl" type="button" aria-label="Maximise" title="Decorative">□</button>
+      <button class="win__ctrl" type="button" aria-label="Close" title="Decorative">✕</button>
+    </span>
+  </div>
+
+  <nav class="menubar" aria-label="Main">
+    <a href="index.html"><u>F</u>ile</a>
+    <button type="button" id="viewbtn" aria-haspopup="true" aria-expanded="false" aria-controls="viewmenu"><u>V</u>iew</button>
+    <a href="gallery.html"><u>G</u>o</a>
+    <a href="contact.html"><u>H</u>elp</a>
+    <div class="menu" id="viewmenu" role="menu">
+      <ul>
+        <li><a role="menuitem" href="project-canvas.html">Open board…</a></li>
+        <li><hr /></li>
+        <li><button type="button" role="menuitem" onclick="toggleGrid()"><span class="tick" data-tick="grid"></span>Layout grid</button></li>
+        <li><button type="button" role="menuitem" onclick="toggleTheme()"><span class="tick" data-tick="dark"></span>High contrast</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="client">
+    <div class="grid12">
+      <div style="grid-column:1 / -1">
+
+        <div style="margin-bottom:var(--bl)">
+          <p class="display">Plugma</p>
+          <p class="lead" style="margin-top:calc(var(--bl) * .5)">
+            A zero-config toolchain for Figma plugins — with the hot reloading the platform
+            never shipped.
+          </p>
+          <p style="margin-top:var(--bl); font-size:var(--t-ui)">
+            <a class="a" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">plugma.dev ↗</a>
+            &nbsp;·&nbsp;
+            <a class="a" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">source ↗</a>
+          </p>
+        </div>
+
+        <!-- 1 general ------------------------------------------- -->
+        <section class="sec">
+          <h2 class="sec__head"><span class="n">1.</span> General</h2>
+          <div class="grid10">
+            <div class="lv grid10">
+              <div class="lv__row"><span class="c-term">Type</span><span class="c-body">Application — command-line toolchain</span></div>
+              <div class="lv__row"><span class="c-term">Version</span><span class="c-body">Maintained, ongoing</span></div>
+              <div class="lv__row"><span class="c-term">Role</span><span class="c-body">Creator, maintainer</span></div>
+              <div class="lv__row"><span class="c-term">Built with</span><span class="c-body">Node, TypeScript, Vite</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2 problem ------------------------------------------- -->
+        <section class="sec">
+          <h2 class="sec__head"><span class="n">2.</span> Problem</h2>
+          <div class="prose" style="max-width:64ch">
+            <p>
+              A Figma plugin is two programs that cannot see each other. One runs in a sandbox
+              with access to the document and no DOM; the other runs in an iframe with the DOM
+              and no document. They speak only by passing messages.
+            </p>
+            <p>
+              Neither half can be served from disk the way an ordinary web app can, so the UI has
+              to be inlined into the built file. <strong>That single requirement is what breaks
+              the development loop</strong> — inlining is a build step, and a build step means
+              you are no longer editing, you are rebuilding and reloading by hand.
+            </p>
+          </div>
+        </section>
+
+        <!-- 3 approach ------------------------------------------ -->
+        <section class="sec">
+          <h2 class="sec__head"><span class="n">3.</span> Approach</h2>
+          <div class="prose" style="max-width:64ch">
+            <p>
+              Plugma puts all of it underneath one command. One scaffolds, one develops, one
+              ships, and the framework stays your choice.
+            </p>
+            <p>
+              The trick is where the UI lives. In development it is served from a dev server; at
+              build time the same UI is inlined. The sandbox half never notices the difference,
+              so hot module reloading works the way it does anywhere else — edits appear without
+              a rebuild, and without dropping the plugin state you were testing against.
+            </p>
+          </div>
+        </section>
+
+        <!-- 4 board --------------------------------------------- -->
+        <section class="sec">
+          <h2 class="sec__head">
+            <span class="n">4.</span> Working board
+            <span class="sec__note">Preview</span>
+          </h2>
+
+          <div class="prose" style="max-width:64ch; margin-bottom:var(--bl)">
+            <p>
+              The working notes live on a board rather than in a document, because the argument
+              is spatial — two halves, a bridge, and what each side can reach.
+            </p>
+          </div>
+
+          <div class="grid10">
+            <figure class="figure">
+              <div class="figure__stage board">
+                <div class="vp" style="cursor:default" aria-hidden="true">
+                  <div class="figure__scale" id="mini"></div>
+                </div>
+              </div>
+              <figcaption class="statusbar">
+                <span class="status status--grow">Preview — 52%</span>
+                <span class="status"><a class="a" href="project-canvas.html">Open board ↗</a></span>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <!-- 5 result -------------------------------------------- -->
+        <section class="sec">
+          <h2 class="sec__head"><span class="n">5.</span> Result</h2>
+          <div class="prose" style="max-width:64ch; margin-bottom:var(--bl)">
+            <p>
+              What it replaces took most of a day, every time. It now takes one command. Still
+              maintained, and the substrate under every plugin I have built since.
+            </p>
+          </div>
+          <div class="grid10">
+            <div class="lv grid10" id="neighbours"></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="status status--grow">Plugma</div>
+    <div class="status">412 KB</div>
+    <div class="status">Application</div>
+  </div>
+</div>
+
+<div class="taskbar">
+  <button class="start" type="button" id="startbtn" aria-haspopup="true" aria-expanded="false" aria-controls="startmenu">
+    <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges">
+      <rect x="1" y="2" width="6" height="6" fill="#FF0000"/><rect x="8" y="2" width="6" height="6" fill="#00FF00"/>
+      <rect x="1" y="9" width="6" height="6" fill="#0000FF"/><rect x="8" y="9" width="6" height="6" fill="#FFFF00"/>
+    </svg>
+    Start
+  </button>
+  <div class="tasks" id="tasks"></div>
+  <div class="tray"><span id="clock">11:40</span></div>
+</div>
+
+<div class="startmenu" id="startmenu">
+  <div class="startmenu__banner"><span>Portfolio 95</span></div>
+  <ul id="startlist"></ul>
+</div>
+
+<div class="modal" id="modal" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script src="board.js"></script>
+<script>
+  /* The figure is the board itself at 52% — not a picture of it. */
+  drawFigure(document.getElementById('mini'), 0.52, 16);
+
+  /* Neighbours come from the same array the other pages read. */
+  const i = DATA.projects.findIndex((p) => p.slug === 'plugma');
+  const near = [
+    { label:'Next', p:DATA.projects[i + 1] },
+    { label:'Previous', p:DATA.projects[i - 1] },
+  ].filter((n) => n.p);
+
+  document.getElementById('neighbours').innerHTML = near.map((n) => `
+    <a class="lv__row" href="${esc(n.p.href)}"${n.p.href.startsWith('http') ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+      <span class="c-term">${n.label}</span>
+      <span class="c-body">${esc(n.p.name)} — ${esc(n.p.desc)}</span>
+    </a>`).join('') + `
+    <a class="lv__row" href="gallery.html">
+      <span class="c-term">All</span>
+      <span class="c-body">My Projects →</span>
+    </a>`;
+</script>
+
+</body>
+</html>

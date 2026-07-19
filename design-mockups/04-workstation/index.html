@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Portfolio — Gavin McFarland</title>
+<meta name="description" content="Gavin McFarland — design systems, front-end, and the small tools in between. London." />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body data-page="home">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<div class="win">
+
+  <div class="win__title">
+    <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M1 3h5l1 2h8v8H1z" fill="#FFD24A" stroke="#0A0A0A"/></svg>
+    <span class="name">Portfolio — Gavin McFarland</span>
+    <span class="win__ctrls">
+      <button class="win__ctrl" type="button" aria-label="Minimise" title="Decorative">_</button>
+      <button class="win__ctrl" type="button" aria-label="Maximise" title="Decorative">□</button>
+      <button class="win__ctrl" type="button" aria-label="Close" title="Decorative">✕</button>
+    </span>
+  </div>
+
+  <!-- menu bar — View is a real menu; the rest are links -->
+  <nav class="menubar" aria-label="Main">
+    <a href="gallery.html"><u>F</u>ile</a>
+    <button type="button" id="viewbtn" aria-haspopup="true" aria-expanded="false" aria-controls="viewmenu"><u>V</u>iew</button>
+    <a href="project.html"><u>G</u>o</a>
+    <a href="contact.html"><u>H</u>elp</a>
+
+    <div class="menu" id="viewmenu" role="menu">
+      <ul>
+        <li><button type="button" role="menuitem" onclick="toggleGrid()"><span class="tick" data-tick="grid"></span>Layout grid</button></li>
+        <li><button type="button" role="menuitem" onclick="toggleTheme()"><span class="tick" data-tick="dark"></span>High contrast</button></li>
+        <li><hr /></li>
+        <li><a role="menuitem" href="gallery.html">Large Icons…</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="explorer">
+
+    <!-- tree pane — the rail, as Explorer would draw it -->
+    <div class="pane-tree">
+      <nav class="tree" aria-label="Contents">
+        <ul>
+          <li>
+            <a href="#" aria-current="true">
+              <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M1 3h5l1 2h8v8H1z" fill="#FFD24A" stroke="#0A0A0A"/></svg>
+              Portfolio
+            </a>
+            <ul>
+              <li><a href="#summary">Summary</a></li>
+              <li><a href="#projects">Projects</a></li>
+              <li><a href="#skills">Skills</a></li>
+              <li><a href="#history">History</a></li>
+            </ul>
+          </li>
+          <li><a href="gallery.html">
+            <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M1 3h5l1 2h8v8H1z" fill="#FFD24A" stroke="#0A0A0A"/></svg>
+            My Projects</a></li>
+          <li><a href="contact.html">
+            <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10" fill="#FFFFFF" stroke="#0A0A0A"/><path d="M1 3l7 6 7-6" fill="none" stroke="#0A0A0A"/></svg>
+            Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- document pane -->
+    <div class="pane-main">
+      <div class="client">
+        <div class="grid12">
+          <div style="grid-column:1 / -1">
+
+            <!-- summary ------------------------------------------ -->
+            <section id="summary" class="sec">
+              <h2 class="sec__head"><span class="n">1.</span> Summary</h2>
+
+              <div class="grid12">
+                <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <p class="display">Most teams are slowed by something nobody owns.</p>
+                  <p class="lead" style="margin-top:calc(var(--bl) * .5)">I build that thing, then write down how it works.</p>
+                </div>
+
+                <div class="prose" style="grid-column:1 / -1; max-width:64ch">
+                  <p>
+                    Fifteen years between design and engineering — finance, government and retail.
+                    The pattern repeats: something falls between two teams, nobody is given it, and
+                    the work slows down until somebody builds the missing piece.
+                  </p>
+                  <p>
+                    Right now that is <a class="a" href="project.html">Plugma</a>, a toolchain for
+                    building Figma plugins. Everything else is in
+                    <a class="a" href="gallery.html">My Projects</a>.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <!-- projects ----------------------------------------- -->
+            <section id="projects" class="sec">
+              <h2 class="sec__head">
+                <span class="n">2.</span> Projects
+                <span class="sec__note">Details view</span>
+              </h2>
+
+              <div class="grid10">
+                <div class="lv grid10" id="project-list">
+                  <div class="lv__head">
+                    <span class="c-key">Name</span>
+                    <span class="c-desc">Description</span>
+                    <span class="c-meta">Type</span>
+                  </div>
+                </div>
+              </div>
+
+              <p style="margin:var(--bl) 0 0; font-size:var(--t-ui)">
+                <a class="a" href="gallery.html">View as Large Icons →</a>
+              </p>
+            </section>
+
+            <!-- skills ------------------------------------------- -->
+            <section id="skills" class="sec">
+              <h2 class="sec__head"><span class="n">3.</span> Skills</h2>
+
+              <div class="grid10">
+                <div class="lv grid10">
+                  <div class="lv__row">
+                    <span class="c-term">Design systems</span>
+                    <span class="c-body">Tokens, components and the governance that keeps them honest — so the design file and the codebase describe the same thing after I leave.</span>
+                  </div>
+                  <div class="lv__row">
+                    <span class="c-term">Product &amp; front-end</span>
+                    <span class="c-body">Interface design carried through to production code. Every project starts in a design file, including the ones that end as a command-line tool.</span>
+                  </div>
+                  <div class="lv__row">
+                    <span class="c-term">Developer tooling</span>
+                    <span class="c-body">CLIs, plug-ins and build steps — usually the difference between a day of setup and a single command.</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- history ------------------------------------------ -->
+            <section id="history" class="sec">
+              <h2 class="sec__head"><span class="n">4.</span> History</h2>
+
+              <div class="grid10">
+                <div class="lv grid10">
+                  <div class="lv__row">
+                    <span class="c-term">Clients</span>
+                    <span class="c-body">American Express · NatWest · Home Office · John Lewis · LSEG · Ecologi · Amazon</span>
+                  </div>
+                  <div class="lv__row">
+                    <span class="c-term">Based</span>
+                    <span class="c-body">London, UK — available from September</span>
+                  </div>
+                  <div class="lv__row">
+                    <span class="c-term">Contact</span>
+                    <span class="c-body"><a class="a" href="contact.html">Open the contact form →</a></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="status status--grow" id="status">Ready</div>
+    <div class="status">6 object(s)</div>
+    <div class="status">London, UK</div>
+  </div>
+</div>
+
+<!-- taskbar -->
+<div class="taskbar">
+  <button class="start" type="button" id="startbtn" aria-haspopup="true" aria-expanded="false" aria-controls="startmenu">
+    <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges">
+      <rect x="1" y="2" width="6" height="6" fill="#FF0000"/><rect x="8" y="2" width="6" height="6" fill="#00FF00"/>
+      <rect x="1" y="9" width="6" height="6" fill="#0000FF"/><rect x="8" y="9" width="6" height="6" fill="#FFFF00"/>
+    </svg>
+    Start
+  </button>
+  <div class="tasks" id="tasks"></div>
+  <div class="tray"><span id="clock">11:40</span></div>
+</div>
+
+<div class="startmenu" id="startmenu">
+  <div class="startmenu__banner"><span>Portfolio 95</span></div>
+  <ul id="startlist"></ul>
+</div>
+
+<div class="modal" id="modal" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  render.into('project-list', DATA.projects, render.projectRow);
+</script>
+
+</body>
+</html>

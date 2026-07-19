@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Plugma — Board</title>
+<meta name="description" content="The working board for Plugma — a zero-config toolchain for building Figma plugins." />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+<style>
+  /* ── PAGE-LOCAL · the maximised window ──────────────────────────
+     The window fills the screen above the taskbar and its client
+     area is the board. Two consequences, and they are the whole
+     design problem on this page:
+
+       1. The tree pane goes. A contents tree needs a scrolling
+          document to index; the notes panel scrolls on its own and
+          is short enough to read whole.
+       2. Gestures stop being cooperative. The page has no scroll to
+          protect, so a plain wheel pans and pinch zooms, which is
+          what anyone touching an infinite canvas expects.
+
+     Below 1024px the split turns horizontal — notes above, board
+     below — because a 20rem panel and a usable canvas cannot both
+     fit across a phone. */
+  html, body { height:100%; overflow:hidden; }
+  .win--full { margin:0; height:calc(100vh - var(--taskbar)); }
+  .work { flex:1; min-height:0; display:flex; flex-direction:column; gap:3px; }
+  .notes {
+    flex:none; max-height:40vh; overflow-y:auto; padding:var(--bl) var(--pad);
+    background:var(--field);
+    box-shadow:
+      inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+      inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest);
+  }
+  .canvas-pane { flex:1; min-height:0; position:relative; }
+  @media (min-width:1024px) {
+    .work { flex-direction:row; }
+    .notes { width:21rem; max-height:none; }
+    .canvas-pane { min-width:0; }
+  }
+</style>
+</head>
+
+<body data-page="board">
+
+<div class="win win--full">
+
+  <div class="win__title">
+    <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="1" y="2" width="14" height="11" fill="#008080" stroke="#0A0A0A"/><rect x="3" y="4" width="4" height="3" fill="#FFFF00"/><rect x="9" y="7" width="4" height="4" fill="#FF00FF"/></svg>
+    <span class="name">Plugma — Board</span>
+    <span class="win__ctrls">
+      <button class="win__ctrl" type="button" aria-label="Minimise" title="Decorative">_</button>
+      <button class="win__ctrl" type="button" aria-label="Maximise" title="Decorative">□</button>
+      <button class="win__ctrl" type="button" aria-label="Close" title="Decorative">✕</button>
+    </span>
+  </div>
+
+  <nav class="menubar" aria-label="Main">
+    <a href="index.html"><u>F</u>ile</a>
+    <button type="button" id="viewbtn" aria-haspopup="true" aria-expanded="false" aria-controls="viewmenu"><u>V</u>iew</button>
+    <a href="project.html"><u>G</u>o</a>
+    <a href="contact.html"><u>H</u>elp</a>
+    <div class="menu" id="viewmenu" role="menu">
+      <ul>
+        <li><a role="menuitem" href="project.html">Properties…</a></li>
+        <li><hr /></li>
+        <li><button type="button" role="menuitem" onclick="toggleTheme()"><span class="tick" data-tick="dark"></span>High contrast</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="work">
+
+    <aside class="notes">
+      <section class="sec">
+        <h2 class="sec__head"><span class="n">1.</span> Brief</h2>
+        <div class="prose">
+          <p>
+            Give Figma plugins the development loop every other web project already has:
+            change a line, see it.
+          </p>
+        </div>
+        <p style="margin-top:var(--bl); font-size:var(--t-ui)">
+          <a class="a" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">plugma.dev ↗</a>
+          &nbsp;·&nbsp;
+          <a class="a" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">source ↗</a>
+        </p>
+      </section>
+
+      <section class="sec">
+        <h2 class="sec__head"><span class="n">2.</span> General</h2>
+        <div class="lv">
+          <div class="lv__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">Type</span><span class="c-body" style="text-align:right">Application</span>
+          </div>
+          <div class="lv__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">Role</span><span class="c-body" style="text-align:right">Creator</span>
+          </div>
+          <div class="lv__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">Status</span><span class="c-body" style="text-align:right">Maintained</span>
+          </div>
+          <div class="lv__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">Built with</span><span class="c-body" style="text-align:right">Node, TS, Vite</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec">
+        <h2 class="sec__head"><span class="n">3.</span> Problem</h2>
+        <div class="prose">
+          <p>
+            A plugin is two programs that cannot see each other — one in a sandbox with the
+            document, one in an iframe with the DOM. They speak only by passing messages.
+          </p>
+          <p>
+            Neither half can be served from disk, so the UI has to be inlined into the built
+            file.
+          </p>
+        </div>
+      </section>
+
+      <section class="sec">
+        <h2 class="sec__head"><span class="n">4.</span> Approach</h2>
+        <div class="prose">
+          <p>
+            One command scaffolds, one develops, one ships. In development the UI is served; at
+            build time it is inlined. The sandbox half never notices.
+          </p>
+        </div>
+      </section>
+
+      <section class="sec">
+        <h2 class="sec__head"><span class="n">5.</span> Go to</h2>
+        <div class="lv">
+          <a class="lv__row" href="project.html" style="display:flex; justify-content:space-between"><span class="c-term" style="padding:0">Properties</span><span>→</span></a>
+          <a class="lv__row" href="gallery.html" style="display:flex; justify-content:space-between"><span class="c-term" style="padding:0">My Projects</span><span>→</span></a>
+          <a class="lv__row" href="contact.html" style="display:flex; justify-content:space-between"><span class="c-term" style="padding:0">Contact</span><span>→</span></a>
+        </div>
+      </section>
+    </aside>
+
+    <div class="canvas-pane">
+      <div class="board">
+        <div class="vp" id="vp" tabindex="0" role="group"
+             aria-label="Project board. Drag to pan, scroll to pan, pinch to zoom. Arrow keys pan, plus and minus zoom, zero fits the board.">
+          <div class="world" id="world"></div>
+        </div>
+
+        <div class="board__ui" id="zoom">
+          <button type="button" data-act="fit" aria-label="Fit board to view" title="Fit to view">⛶</button>
+          <button type="button" data-act="out" aria-label="Zoom out">−</button>
+          <button type="button" class="zoomval" data-act="reset" aria-label="Reset zoom to 100 percent">100%</button>
+          <button type="button" data-act="in" aria-label="Zoom in">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="status status--grow" id="objcount">Loading…</div>
+    <div class="status" id="zoomstatus">Zoom: 100%</div>
+    <div class="status">Drag to pan</div>
+  </div>
+</div>
+
+<div class="taskbar">
+  <button class="start" type="button" id="startbtn" aria-haspopup="true" aria-expanded="false" aria-controls="startmenu">
+    <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges">
+      <rect x="1" y="2" width="6" height="6" fill="#FF0000"/><rect x="8" y="2" width="6" height="6" fill="#00FF00"/>
+      <rect x="1" y="9" width="6" height="6" fill="#0000FF"/><rect x="8" y="9" width="6" height="6" fill="#FFFF00"/>
+    </svg>
+    Start
+  </button>
+  <div class="tasks" id="tasks"></div>
+  <div class="tray"><span id="clock">11:40</span></div>
+</div>
+
+<div class="startmenu" id="startmenu">
+  <div class="startmenu__banner"><span>Portfolio 95</span></div>
+  <ul id="startlist"></ul>
+</div>
+
+<div class="modal" id="modal" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script src="board.js"></script>
+<script>
+  drawBoard({ viewport:'vp', world:'world', zoom:'zoom', status:'zoomstatus', count:'objcount' });
+</script>
+
+</body>
+</html>
