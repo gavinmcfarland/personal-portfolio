@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>plugma — Gavin McFarland</title>
+<meta name="description" content="Plugma — a zero-config toolchain for building Figma plugins, with real hot reloading. Built by Gavin McFarland." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+<!-- Set theme before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          paper: { DEFAULT: '#FBFAF7', dark: '#0E0F10' },
+          ink:   { DEFAULT: '#16171A', dark: '#E8E8E5' },
+          muted: { DEFAULT: '#55575E', dark: '#9B9C9C' },
+          faint: { DEFAULT: '#8B8D95', dark: '#6A6C6E' },
+          teal:  { DEFAULT: '#17685A', dark: '#63C2A9' },
+          term:  '#0A0B0C',
+          prompt:'#5BE59A',
+          rule:  { DEFAULT: 'rgba(22,23,26,.14)', dark: 'rgba(232,232,229,.16)' },
+        },
+        fontFamily: {
+          sans: ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Folio — project detail, boxed canvas
+     The folio detail template with the board embedded inline: a
+     bounded box in the flow of the document, sized min(70vh,520px),
+     sitting between "approach" and "result" as one more section.
+     The board is read-only and gesture-cooperative — the page keeps
+     ownership of plain scroll and one-finger touch, so the canvas
+     never traps a reader on the way past. Zoom needs a modifier;
+     the hint says so rather than leaving it to be discovered.
+     Canvas styling follows packages/canvas: a dot grid painted on
+     the viewport and panned modulo the grid step, one transform on
+     the world, nodes as absolutely positioned divs.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+
+  ::selection { background: #17685A; color: #FBFAF7; }
+  .dark ::selection { background: #63C2A9; color: #0E0F10; }
+
+  :focus-visible { outline: 2px solid #17685A; outline-offset: 3px; border-radius: 2px; }
+  .dark :focus-visible { outline-color: #63C2A9; }
+
+  .rail a {
+    display: block; padding: .2rem 0 .2rem .75rem;
+    border-left: 2px solid transparent;
+    font-style: italic; font-weight: 400;
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .rail a[aria-current='true'] { border-left-color: #17685A; color: #16171A; }
+  .dark .rail a[aria-current='true'] { border-left-color: #63C2A9; color: #E8E8E5; }
+
+  .leader {
+    flex: 1 1 auto; min-width: 1.5rem;
+    border-bottom: 1px dotted rgba(22,23,26,.3);
+    transform: translateY(-.24em);
+  }
+  .dark .leader { border-bottom-color: rgba(232,232,229,.28); }
+
+  .ln {
+    color: #17685A; text-decoration: underline;
+    text-decoration-thickness: 1px; text-underline-offset: .18em;
+    text-decoration-color: rgba(23,104,90,.3);
+    transition: text-decoration-color .2s ease;
+  }
+  .ln:hover { text-decoration-color: currentColor; }
+  .dark .ln { color: #63C2A9; text-decoration-color: rgba(99,194,169,.32); }
+
+  .prose p { margin: 0 0 1.1rem; max-width: 64ch; line-height: 1.72; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose strong { font-weight: 500; color: #16171A; }
+  .dark .prose strong { color: #E8E8E5; }
+
+  .sec { scroll-margin-top: 4rem; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(.5rem); } to { opacity: 1; transform: none; } }
+  .rise { opacity: 0; animation: rise .6s cubic-bezier(.2,.7,.3,1) forwards; animation-delay: calc(var(--i,0) * 70ms); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise { animation: none; opacity: 1; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     CANVAS
+     Tokens and structure mirror packages/canvas/src/canvas.css so
+     this mockup and the real component read as the same object.
+     ═══════════════════════════════════════════════════════════ */
+
+  .canvas-root {
+    --bg: #F6F5F3;
+    --grid: rgba(0,0,0,.075);
+    --surface: #FFFFFF;
+    --ink: #141417;
+    --muted: #3C3C42;
+    --faint: #8B8B91;
+    --line: rgba(0,0,0,.11);
+    --accent: #17685A;
+    --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.09);
+    --ui-bg: rgba(255,255,255,.82);
+    --ui-border: rgba(0,0,0,.1);
+    --cv-sans: 'DM Sans', system-ui, sans-serif;
+    --cv-serif: 'Tinos', 'Times New Roman', serif;
+    --cv-hand: 'Caveat', cursive;
+    --cv-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    position: relative; width: 100%; height: 100%;
+    overflow: hidden; contain: strict;
+  }
+
+  .dark .canvas-root {
+    --bg: #0C0C0E;
+    --grid: rgba(255,255,255,.07);
+    --surface: #161619;
+    --ink: #F2F2EF;
+    --muted: #B4B4B9;
+    --faint: #6C6C72;
+    --line: rgba(242,242,239,.12);
+    --accent: #63C2A9;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.45);
+    --ui-bg: rgba(22,22,25,.82);
+    --ui-border: rgba(255,255,255,.1);
+  }
+
+  /* The grid is painted here and panned by writing background-position
+     modulo the step — so it reads as infinite without moving anything. */
+  .cv-viewport {
+    position: absolute; inset: 0;
+    background-color: var(--bg);
+    background-image: radial-gradient(var(--grid) 1.4px, transparent 1.4px);
+    background-size: 22px 22px;
+    cursor: grab;
+    touch-action: pan-y;      /* page keeps one-finger vertical scroll */
+  }
+  .cv-viewport:active { cursor: grabbing; }
+  .cv-viewport:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  .cv-world { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+
+  .node { position: absolute; top: 0; left: 0; }
+
+  /* ── Node: markdown card ─────────────────────────────────── */
+  .md {
+    width: 340px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .md-render { padding: 16px 20px; font-family: var(--cv-serif); font-size: 1rem; line-height: 1.55; color: var(--ink); }
+  .md-render h1 { margin: 0 0 .4em; font-family: var(--cv-sans); font-size: 2rem; font-weight: 700; letter-spacing: -.01em; }
+  .md-render h2 { margin: 0 0 .45em; font-family: var(--cv-sans); font-size: 1.3rem; font-weight: 700; letter-spacing: -.01em; }
+  .md-render p { margin: 0 0 .7em; }
+  .md-render p:last-child { margin-bottom: 0; }
+  .md-render ul { margin: 0 0 .7em; padding-left: 1.1em; }
+  .md-render a { color: var(--accent); text-decoration: underline; }
+  .md-render code {
+    font-family: var(--cv-mono); font-size: .84em;
+    background: var(--accent-soft); padding: .1em .35em; border-radius: 5px;
+  }
+  .md-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .md-tags span {
+    font-family: var(--cv-sans); font-size: .62rem; font-weight: 600;
+    letter-spacing: .07em; text-transform: uppercase; color: var(--faint);
+    border: 1px solid var(--line); border-radius: 100px; padding: .22rem .6rem;
+  }
+
+  /* ── Node: sticky ────────────────────────────────────────── */
+  .sticky {
+    width: 210px; min-height: 180px; padding: 18px 18px 20px;
+    font-family: var(--cv-hand); font-size: 1.5rem; line-height: 1.25;
+    white-space: pre-wrap;
+    color: #3A2C00; background: #FFE27A;
+    box-shadow: 0 2px 3px rgba(0,0,0,.14), 0 14px 26px rgba(0,0,0,.16);
+    border-radius: 3px 3px 5px 5px;
+  }
+  .sticky[data-color='pink']   { background: #FFB4C6; color: #4A1024; }
+  .sticky[data-color='blue']   { background: #A9D3FF; color: #0D2C4A; }
+  .sticky[data-color='green']  { background: #B7E6A5; color: #173A10; }
+  .sticky[data-color='purple'] { background: #D9B8FF; color: #2E1147; }
+  .sticky[data-color='orange'] { background: #FFC98A; color: #4A2A05; }
+
+  /* ── Node: text block ────────────────────────────────────── */
+  .tblock {
+    padding: 6px 8px; border-radius: 6px;
+    font-family: var(--cv-serif); line-height: 1.4; color: var(--ink);
+    white-space: pre-wrap;
+  }
+  .tblock[data-font='script'] { font-family: var(--cv-hand); }
+
+  /* ── Node: code ──────────────────────────────────────────── */
+  .code {
+    width: 420px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .code-bar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 12px; border-bottom: 1px solid var(--line);
+    font-family: var(--cv-mono); font-size: .68rem; color: var(--faint);
+  }
+  .code pre {
+    margin: 0; padding: 14px 16px;
+    font-family: var(--cv-mono); font-size: .78rem; line-height: 1.65;
+    color: var(--ink); white-space: pre; overflow-x: auto;
+  }
+  .code .cm { color: var(--faint); }
+  .code .kw { color: var(--accent); }
+
+  /* ── Node: link ──────────────────────────────────────────── */
+  .link-card {
+    width: 280px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); overflow: hidden;
+    display: block; color: inherit; text-decoration: none;
+  }
+  /* Hatched rather than blank: an empty box reads as a failed image,
+     hatching reads as a slot with nothing dropped in yet. */
+  .link-thumb {
+    aspect-ratio: 1.91 / 1; background: var(--line);
+    background-image: repeating-linear-gradient(135deg, rgba(0,0,0,.06) 0 1px, transparent 1px 9px);
+    display: grid; place-items: center;
+    font-family: var(--cv-mono); font-size: .62rem; color: var(--faint);
+  }
+  .link-body { padding: 12px 14px 13px; display: grid; gap: 4px; font-family: var(--cv-sans); }
+  .link-title { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .link-desc  { font-size: 12px; color: var(--muted); line-height: 1.45; }
+  .link-host  { font-size: 11px; color: var(--muted); }
+
+  /* ── Shapes ──────────────────────────────────────────────── */
+  .shapeSvg { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: visible; pointer-events: none; }
+
+  /* ── UI chrome ───────────────────────────────────────────── */
+  .cv-ui { position: absolute; z-index: 100; }
+  .cv-panel {
+    background: var(--ui-bg);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    border: 1px solid var(--ui-border);
+    border-radius: 12px; box-shadow: var(--shadow);
+  }
+  #cv-zoom { right: 16px; top: 16px; display: flex; align-items: center; gap: 2px; padding: 4px; }
+  #cv-zoom button {
+    display: grid; place-items: center; height: 28px; width: 28px;
+    border: 0; background: transparent; border-radius: 8px;
+    color: var(--muted); cursor: pointer;
+    transition: background .18s ease, color .18s ease;
+  }
+  #cv-zoom button:hover { background: var(--accent-soft); color: var(--ink); }
+  #cv-zoomval {
+    min-width: 52px; padding: 0 4px; border: 0; background: transparent;
+    font-family: var(--cv-sans); font-size: .75rem; font-weight: 600;
+    font-variant-numeric: tabular-nums; color: var(--muted); cursor: pointer;
+  }
+  #cv-zoomval:hover { color: var(--ink); }
+
+  /* Gesture hint, bottom-left — states the modifier instead of
+     leaving the reader to discover it. */
+  #cv-hint {
+    left: 16px; bottom: 16px; padding: 6px 10px;
+    font-family: var(--cv-sans); font-size: .72rem; color: var(--muted);
+    display: flex; align-items: center; gap: 7px;
+    opacity: 1; transition: opacity .3s ease;
+  }
+  #cv-hint[data-quiet='true'] { opacity: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cv-viewport, .cv-world { transition: none !important; }
+  }
+</style>
+</head>
+
+<body class="bg-paper font-sans text-ink antialiased dark:bg-paper-dark dark:text-ink-dark">
+
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-teal focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
+
+<div class="rise border-b border-rule px-6 py-3 font-mono text-[.74rem] tracking-[.04em] text-muted dark:border-rule-dark dark:text-muted-dark sm:px-10" style="--i:0">
+  <div class="mx-auto flex max-w-5xl items-baseline justify-between gap-4">
+    <nav aria-label="Breadcrumb">
+      <a class="transition hover:text-teal dark:hover:text-teal-dark" href="portfolio-folio.html">gavin mcfarland</a>
+      <span class="text-faint dark:text-faint-dark"> / </span>
+      <a class="transition hover:text-teal dark:hover:text-teal-dark" href="portfolio-folio.html#work">work</a>
+      <span class="text-faint dark:text-faint-dark"> / </span>
+      <span class="font-medium text-ink dark:text-ink-dark" aria-current="page">plugma</span>
+    </nav>
+
+    <span class="flex items-baseline gap-4">
+      <a class="hidden transition hover:text-teal dark:hover:text-teal-dark sm:inline" href="portfolio-folio-project-fullscreen.html">full board &#8599;</a>
+      <button id="theme-toggle" type="button" aria-label="Toggle dark mode"
+        class="-mb-1 rounded p-0.5 text-faint transition hover:text-ink dark:text-faint-dark dark:hover:text-ink-dark">
+        <svg class="h-3.5 w-3.5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <svg class="hidden h-3.5 w-3.5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+    </span>
+  </div>
+</div>
+
+<div class="mx-auto flex max-w-5xl gap-12 px-6 py-16 sm:px-10 sm:py-20">
+
+  <nav class="rail rise sticky top-8 hidden h-max w-36 shrink-0 font-mono text-[.8rem] text-faint dark:text-faint-dark lg:block" style="--i:1" aria-label="Contents">
+    <a href="#about">about</a>
+    <a href="#facts">facts</a>
+    <a href="#problem">problem</a>
+    <a href="#approach">approach</a>
+    <a href="#board">board</a>
+    <a href="#result">result</a>
+  </nav>
+
+  <main id="main" class="min-w-0 flex-1">
+
+    <section id="about" class="sec rise" style="--i:2">
+      <h1 class="font-mono text-[clamp(1.5rem,3.4vw,2rem)] font-medium tracking-[-.02em]">plugma</h1>
+
+      <p class="mt-4 max-w-[60ch] text-[1.05rem] leading-[1.6] text-muted dark:text-muted-dark">
+        A zero-config toolchain for building Figma plugins — with the hot reloading the
+        platform never shipped.
+      </p>
+
+      <p class="mt-6 font-mono text-[.86rem]">
+        <a class="ln" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">plugma.dev &#8599;</a>
+        <span class="mx-2 text-faint dark:text-faint-dark">·</span>
+        <a class="ln" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">source &#8599;</a>
+      </p>
+    </section>
+
+    <section id="facts" class="sec rise mt-20 sm:mt-24" style="--i:3">
+      <h2 class="mb-5 font-mono text-[.8rem] italic text-faint dark:text-faint-dark lg:sr-only">facts</h2>
+
+      <dl class="max-w-lg font-mono text-[.86rem]">
+        <div class="flex items-baseline gap-3 border-b border-rule py-3 dark:border-rule-dark">
+          <dt class="text-faint dark:text-faint-dark">year</dt><dd class="leader"></dd><dd>2024</dd>
+        </div>
+        <div class="flex items-baseline gap-3 border-b border-rule py-3 dark:border-rule-dark">
+          <dt class="text-faint dark:text-faint-dark">role</dt><dd class="leader"></dd><dd>creator, maintainer</dd>
+        </div>
+        <div class="flex items-baseline gap-3 border-b border-rule py-3 dark:border-rule-dark">
+          <dt class="text-faint dark:text-faint-dark">status</dt><dd class="leader"></dd><dd>maintained</dd>
+        </div>
+        <div class="flex items-baseline gap-3 py-3">
+          <dt class="text-faint dark:text-faint-dark">built&nbsp;with</dt><dd class="leader"></dd><dd>node, typescript, vite</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section id="problem" class="sec rise mt-20 sm:mt-24" style="--i:4">
+      <h2 class="mb-5 font-mono text-[.8rem] italic text-faint dark:text-faint-dark lg:sr-only">problem</h2>
+
+      <div class="prose text-muted dark:text-muted-dark">
+        <p>
+          A Figma plugin is two programs that cannot see each other. One runs in a sandbox
+          with access to the document; the other runs in an iframe with access to the DOM.
+          They speak only by passing messages, and neither can be served from disk the way
+          an ordinary web app can.
+        </p>
+        <p>
+          So every plugin begins by wiring a bundler, a manifest, a message bridge, and a
+          build step that inlines the UI. <strong>Change one line and you rebuild and reload
+          by hand.</strong> I had assembled that same toolchain enough times to stop
+          pretending it was a one-off.
+        </p>
+      </div>
+    </section>
+
+    <section id="approach" class="sec rise mt-20 sm:mt-24" style="--i:5">
+      <h2 class="mb-5 font-mono text-[.8rem] italic text-faint dark:text-faint-dark lg:sr-only">approach</h2>
+
+      <div class="prose text-muted dark:text-muted-dark">
+        <p>
+          Plugma hides the two-program problem underneath. One command scaffolds, one
+          develops, one ships. The framework is your choice, because the tool sits under the
+          framework rather than beside it.
+        </p>
+        <p>
+          The part worth having is <strong>real hot module reloading</strong>. Edits appear
+          without a rebuild and without losing plugin state, which turns interface work from
+          a stop-start loop into something continuous.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── Board ──────────────────────────────────────────────
+         The canvas as one more section of the document. Bounded
+         height, hairline border, and cooperative gestures so the
+         page keeps ownership of scroll. -->
+    <section id="board" class="sec rise mt-20 sm:mt-24" style="--i:6">
+      <h2 class="mb-5 font-mono text-[.8rem] italic text-faint dark:text-faint-dark lg:sr-only">board</h2>
+
+      <div class="overflow-hidden rounded-2xl border border-rule dark:border-rule-dark"
+           style="height: min(70vh, 520px)">
+        <div class="canvas-root" id="board-canvas">
+          <div class="cv-viewport" id="cv-vp" tabindex="0" role="group"
+               aria-label="Project board. Drag to pan. Hold Command or Control and scroll to zoom. Arrow keys pan, plus and minus zoom.">
+            <div class="cv-world" id="cv-world"></div>
+          </div>
+
+          <div class="cv-ui cv-panel" id="cv-zoom">
+            <button type="button" data-act="fit" aria-label="Fit board to view" title="Fit to view">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/>
+              </svg>
+            </button>
+            <button type="button" data-act="out" aria-label="Zoom out">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+            </button>
+            <button type="button" id="cv-zoomval" data-act="reset" aria-label="Reset zoom to 100 percent">100%</button>
+            <button type="button" data-act="in" aria-label="Zoom in">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+
+          <div class="cv-ui cv-panel" id="cv-hint">
+            <span id="cv-hint-text">Drag to pan · ⌘ + scroll to zoom</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="mt-4 max-w-[58ch] text-[.9rem] leading-[1.7] text-faint dark:text-faint-dark">
+        A working board of notes, snippets and references from building the tool.
+        <a class="ln" href="portfolio-folio-project-fullscreen.html">Open it full screen</a>
+        for the whole thing.
+      </p>
+    </section>
+
+    <section id="result" class="sec rise mt-20 sm:mt-24" style="--i:7">
+      <h2 class="mb-5 font-mono text-[.8rem] italic text-faint dark:text-faint-dark lg:sr-only">result</h2>
+
+      <div class="prose text-muted dark:text-muted-dark">
+        <p>
+          The setup it replaces took most of a day. It now takes a command. Plugma is used by
+          plugin developers across the Figma community and is still maintained.
+        </p>
+        <p>
+          It also became the substrate for everything after it — the later plugins listed on
+          this site are all Plugma projects.
+        </p>
+      </div>
+    </section>
+
+    <nav class="rise mt-20 border-t border-rule pt-6 font-mono text-[.86rem] sm:mt-24 dark:border-rule-dark" style="--i:8" aria-label="More projects">
+      <div class="flex flex-wrap gap-x-10 gap-y-2">
+        <p><span class="text-faint dark:text-faint-dark">prev</span> <a class="ln" href="portfolio-folio.html#work">icon-preview</a></p>
+        <p><span class="text-faint dark:text-faint-dark">next</span> <a class="ln" href="portfolio-folio.html#work">askeroo</a></p>
+      </div>
+      <p class="mt-3"><a class="ln" href="portfolio-folio.html#work">all work</a></p>
+    </nav>
+
+  </main>
+</div>
+
+<div class="border-t border-rule px-6 py-3 font-mono text-[.74rem] tracking-[.04em] text-faint dark:border-rule-dark dark:text-faint-dark sm:px-10">
+  <div class="mx-auto flex max-w-5xl items-baseline justify-between gap-4">
+    <span>london</span>
+    <span class="hidden sm:inline">july 2026</span>
+    <span>gavin mcfarland</span>
+  </div>
+</div>
+
+<footer class="bg-term px-6 py-16 text-[#E8E8E5] sm:px-10 sm:py-20">
+  <div class="mx-auto max-w-5xl">
+    <p class="font-mono text-[.86rem] text-prompt"><span class="select-none opacity-70">$</span> contact gavin</p>
+
+    <ul class="mt-8 space-y-px font-mono text-[.86rem]">
+      <li><a class="group flex items-baseline gap-4 py-2.5 text-[#B9BDC2] transition hover:text-white" href="mailto:gavin@limitlessloop.com">
+        <span class="w-20 shrink-0 text-[#5F6469]">email</span>
+        <span class="border-b border-transparent transition group-hover:border-prompt">gavin@limitlessloop.com</span></a></li>
+      <li><a class="group flex items-baseline gap-4 py-2.5 text-[#B9BDC2] transition hover:text-white" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">
+        <span class="w-20 shrink-0 text-[#5F6469]">github</span>
+        <span class="border-b border-transparent transition group-hover:border-prompt">gavinmcfarland</span></a></li>
+      <li><a class="group flex items-baseline gap-4 py-2.5 text-[#B9BDC2] transition hover:text-white" href="https://www.figma.com/@gavinmcfarland" target="_blank" rel="noopener noreferrer">
+        <span class="w-20 shrink-0 text-[#5F6469]">figma</span>
+        <span class="border-b border-transparent transition group-hover:border-prompt">@gavinmcfarland</span></a></li>
+    </ul>
+
+    <p class="mt-14 border-t border-white/10 pt-5 font-mono text-[.74rem] text-[#5F6469]">© 2026 gavin mcfarland</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  /* Theme — the pre-paint script set the class; this persists it. */
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const dark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+  });
+
+  /* Rail tracking. */
+  const links = new Map();
+  document.querySelectorAll('.rail a').forEach((a) => links.set(a.getAttribute('href').slice(1), a));
+
+  if ('IntersectionObserver' in window) {
+    const visible = new Set();
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { e.isIntersecting ? visible.add(e.target.id) : visible.delete(e.target.id); });
+      const current = [...links.keys()].find((id) => visible.has(id));
+      links.forEach((a, id) => id === current ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current'));
+    }, { rootMargin: '-8% 0px -70% 0px' });
+    document.querySelectorAll('.sec').forEach((s) => io.observe(s));
+  }
+
+  /* ═════════════════════════════════════════════════════════
+     CANVAS ENGINE
+
+     A faithful reduction of packages/canvas: one transform on the
+     world, and a dot grid panned by writing background-position
+     modulo the grid step. Read-only — no editing, no persistence.
+     ═════════════════════════════════════════════════════════ */
+
+  const GRID = 28, MIN = 0.08, MAX = 8;
+  const vp = document.getElementById('cv-vp');
+  const world = document.getElementById('cv-world');
+  const zoomval = document.getElementById('cv-zoomval');
+  const hint = document.getElementById('cv-hint');
+
+  const view = { x: 0, y: 0, scale: 1 };
+  let touched = false;   // has the reader moved the board yet
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+  function apply() {
+    world.style.transform = `translate(${view.x}px,${view.y}px) scale(${view.scale})`;
+    const step = GRID * view.scale;
+    vp.style.backgroundSize = `${step}px ${step}px`;
+    vp.style.backgroundPosition = `${view.x % step}px ${view.y % step}px`;
+    zoomval.textContent = Math.round(view.scale * 100) + '%';
+  }
+
+  /* ── Board data ────────────────────────────────────────────
+     Shaped like packages/portfolio/src/data/canvas/*.json —
+     node types, x/y/z, and the same field names — so this is
+     swappable for the real serialised board.
+     The code node is ILLUSTRATIVE: it shows the sandbox/iframe
+     message split using the documented Figma API, not a verbatim
+     file from the project. */
+  const nodes = [
+    { id: 'intro', type: 'md', x: 0, y: 0, z: 10, text:
+      '<h1>Plugma</h1><p>A zero-config toolchain for Figma plugins. Scaffold, develop with real hot reloading, and ship — without assembling a bundler, a manifest and a message bridge by hand.</p>',
+      tags: ['Node.js', 'TypeScript', 'Vite'] },
+
+    { id: 'features-title', type: 'tblock', x: 500, y: -40, z: 11, text: 'Features', size: 42, font: 'script' },
+
+    { id: 's1', type: 'sticky', x: 500, y: 40,  z: 12, color: 'yellow', text: 'Zero\nconfig' },
+    { id: 's2', type: 'sticky', x: 730, y: 40,  z: 13, color: 'blue',   text: 'Real HMR,\nstate kept' },
+    { id: 's3', type: 'sticky', x: 500, y: 250, z: 14, color: 'green',  text: 'React\nSvelte\nVue' },
+    { id: 's4', type: 'sticky', x: 730, y: 250, z: 15, color: 'orange', text: 'One command\nto ship' },
+
+    { id: 'code', type: 'code', x: 0, y: 330, z: 16, lang: 'main.ts', text:
+      '<span class="cm">// sandbox half — document access, no DOM</span>\n' +
+      '<span class="kw">figma</span>.ui.onmessage = (msg) => {\n' +
+      '  <span class="kw">if</span> (msg.type === <span class="cm">\'resize\'</span>) {\n' +
+      '    <span class="kw">figma</span>.ui.resize(msg.w, msg.h)\n' +
+      '  }\n' +
+      '}' },
+
+    { id: 'link', type: 'link', x: 1010, y: 20, z: 17,
+      url: 'https://www.plugma.dev/', title: 'Plugma — Getting started',
+      desc: 'Scaffold a plugin and run it with hot reloading in one command.', host: 'plugma.dev' },
+
+    { id: 'how', type: 'md', x: 1010, y: 300, z: 18, text:
+      '<h2>How it works</h2><p>The UI is served from a dev server during development and inlined at build time, so the sandbox half never notices the difference.</p><p>Messages are typed across the bridge with <code>onmessage</code>.</p>' },
+  ];
+
+  const shapes = [
+    { id: 'a1', type: 'arrow', x1: 352, y1: 70, x2: 486, y2: 30, stroke: '#17685A', width: 3, z: 6 },
+  ];
+
+  /* ── Render ────────────────────────────────────────────── */
+  function renderNode(n) {
+    const el = document.createElement('div');
+    el.className = 'node';
+    el.style.transform = `translate(${n.x}px,${n.y}px)`;
+    el.style.zIndex = n.z;
+
+    if (n.type === 'md') {
+      el.innerHTML = `<div class="md"><div class="md-render">${n.text}${
+        n.tags ? `<div class="md-tags">${n.tags.map((t) => `<span>${esc(t)}</span>`).join('')}</div>` : ''
+      }</div></div>`;
+
+    } else if (n.type === 'sticky') {
+      el.innerHTML = `<div class="sticky" data-color="${esc(n.color)}">${esc(n.text)}</div>`;
+
+    } else if (n.type === 'tblock') {
+      el.innerHTML = `<div class="tblock" data-font="${esc(n.font || 'serif')}" style="font-size:${n.size || 24}px">${esc(n.text)}</div>`;
+
+    } else if (n.type === 'code') {
+      el.innerHTML = `<div class="code"><div class="code-bar">${esc(n.lang)}</div><pre>${n.text}</pre></div>`;
+
+    } else if (n.type === 'link') {
+      el.innerHTML = `
+        <a class="link-card" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">
+          <div class="link-thumb">preview</div>
+          <div class="link-body">
+            <span class="link-title">${esc(n.title)}</span>
+            <span class="link-desc">${esc(n.desc)}</span>
+            <span class="link-host">${esc(n.host)}</span>
+          </div>
+        </a>`;
+    }
+    return el;
+  }
+
+  function renderShape(s) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'shapeSvg');
+    svg.style.zIndex = s.z;
+
+    const mid = 'ah-' + s.id;
+    svg.innerHTML =
+      `<defs><marker id="${mid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+         <path d="M0 0 L10 5 L0 10 z" fill="${s.stroke}"/>
+       </marker></defs>
+       <line x1="${s.x1}" y1="${s.y1}" x2="${s.x2}" y2="${s.y2}"
+             stroke="${s.stroke}" stroke-width="${s.width}" stroke-linecap="round"
+             marker-end="url(#${mid})"/>`;
+    return svg;
+  }
+
+  const frag = document.createDocumentFragment();
+  shapes.forEach((s) => frag.appendChild(renderShape(s)));
+  nodes.forEach((n) => frag.appendChild(renderNode(n)));
+  world.appendChild(frag);
+
+  /* ── Fit ───────────────────────────────────────────────────
+     Measured from the laid-out DOM rather than declared sizes, so
+     content-hugging nodes (sticky, tblock) are included correctly. */
+  function bounds() {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    nodes.forEach((n, i) => {
+      const el = world.children[shapes.length + i];
+      const w = el.offsetWidth, h = el.offsetHeight;
+      x0 = Math.min(x0, n.x); y0 = Math.min(y0, n.y);
+      x1 = Math.max(x1, n.x + w); y1 = Math.max(y1, n.y + h);
+    });
+    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  }
+
+  /* Below this scale the cards are a smear rather than content. */
+  const LEGIBLE = 0.35;
+
+  function fit(pad) {
+    const b = bounds();
+    const r = vp.getBoundingClientRect();
+    if (!b.w || !b.h || !r.width) return;
+    pad = pad == null ? Math.min(56, r.width * 0.06) : pad;
+
+    const s = Math.min((r.width - pad * 2) / b.w, (r.height - pad * 2) / b.h);
+
+    if (s < LEGIBLE) {
+      /* A whole board fitted into a phone is unreadable — 1350px of
+         content in a 380px viewport lands around 20%. Frame the
+         opening card at a size that can actually be read instead,
+         and let the reader pan out to the rest. */
+      const first = world.children[shapes.length];
+      const n = nodes[0];
+      view.scale = clamp(Math.min((r.width - pad * 2) / first.offsetWidth, 1), MIN, MAX);
+      view.x = pad - n.x * view.scale;
+      view.y = pad - n.y * view.scale;
+    } else {
+      view.scale = clamp(s, MIN, MAX);
+      view.x = (r.width - b.w * view.scale) / 2 - b.x * view.scale;
+      view.y = (r.height - b.h * view.scale) / 2 - b.y * view.scale;
+    }
+    apply();
+  }
+
+  function zoomAt(cx, cy, factor) {
+    const r = vp.getBoundingClientRect();
+    const px = cx - r.left, py = cy - r.top;
+    const wx = (px - view.x) / view.scale, wy = (py - view.y) / view.scale;
+    view.scale = clamp(view.scale * factor, MIN, MAX);
+    view.x = px - wx * view.scale;
+    view.y = py - wy * view.scale;
+    apply();
+  }
+
+  function zoomCentre(factor) {
+    const r = vp.getBoundingClientRect();
+    zoomAt(r.left + r.width / 2, r.top + r.height / 2, factor);
+  }
+
+  /* ── Pan ───────────────────────────────────────────────────
+     Cooperative: a single touch belongs to the page, so the board
+     never traps a reader scrolling past it. Mouse drag pans. */
+  let panning = false, lastX = 0, lastY = 0;
+
+  vp.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch') return;      // page keeps one-finger scroll
+    if (e.target.closest('a')) return;          // links stay clickable
+    panning = true; touched = true;
+    lastX = e.clientX; lastY = e.clientY;
+    vp.setPointerCapture(e.pointerId);
+    hint.dataset.quiet = 'true';
+  });
+
+  vp.addEventListener('pointermove', (e) => {
+    if (!panning) return;
+    view.x += e.clientX - lastX;
+    view.y += e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    apply();
+  });
+
+  const endPan = (e) => {
+    if (!panning) return;
+    panning = false;
+    try { vp.releasePointerCapture(e.pointerId); } catch {}
+  };
+  vp.addEventListener('pointerup', endPan);
+  vp.addEventListener('pointercancel', endPan);
+
+  /* Wheel: plain scroll belongs to the page. Only a modifier zooms,
+     and only then is the event consumed. */
+  vp.addEventListener('wheel', (e) => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    touched = true;
+    hint.dataset.quiet = 'true';
+    zoomAt(e.clientX, e.clientY, Math.exp(-clamp(e.deltaY, -24, 24) * 0.015));
+  }, { passive: false });
+
+  /* Keyboard — the board is reachable and drivable without a mouse.
+     Node text is real DOM text, so it is readable by assistive tech
+     whatever the view transform is. */
+  vp.addEventListener('keydown', (e) => {
+    const step = e.shiftKey ? 120 : 40;
+    const moves = { ArrowLeft: [step, 0], ArrowRight: [-step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] };
+    if (e.key in moves) {
+      e.preventDefault(); touched = true;
+      view.x += moves[e.key][0]; view.y += moves[e.key][1]; apply();
+    } else if (e.key === '+' || e.key === '=') {
+      e.preventDefault(); touched = true; zoomCentre(1.25);
+    } else if (e.key === '-') {
+      e.preventDefault(); touched = true; zoomCentre(0.8);
+    } else if (e.key === '0') {
+      e.preventDefault(); fit();
+    }
+  });
+
+  document.getElementById('cv-zoom').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    touched = true;
+    const act = btn.dataset.act;
+    if (act === 'fit') fit();
+    else if (act === 'in') zoomCentre(1.25);
+    else if (act === 'out') zoomCentre(0.8);
+    else if (act === 'reset') { view.scale = 1; apply(); }
+  });
+
+  /* Refit on resize, but only while the reader has not taken over —
+     otherwise resizing would throw away their position. */
+  if ('ResizeObserver' in window) {
+    let t;
+    new ResizeObserver(() => {
+      clearTimeout(t);
+      t = setTimeout(() => { if (!touched) fit(); }, 120);
+    }).observe(vp);
+  }
+
+  /* Fonts change measured sizes, so fit once they have settled. */
+  fit();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!touched) fit(); });
+
+  /* Match the hint to the platform modifier. */
+  if (!/Mac|iPhone|iPad/.test(navigator.platform || '')) {
+    document.getElementById('cv-hint-text').textContent = 'Drag to pan · Ctrl + scroll to zoom';
+  }
+})();
+</script>
+
+</body>
+</html>
