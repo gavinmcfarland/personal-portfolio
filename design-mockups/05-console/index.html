@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Design systems, front-end, tooling</title>
+<meta name="description" content="Gavin McFarland builds design systems, front-end, and the small tools in between. London." />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body data-page="home">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<header class="bar">
+  <div class="bar__in">
+    <a class="brand" href="index.html"><span id="brand-ico"></span>Gavin McFarland</a>
+    <nav id="nav" aria-label="Main"></nav>
+    <button id="grid-toggle" class="btn" type="button" aria-pressed="false" style="min-width:0;padding:3px 8px" title="Layout grid (G)">Grid</button>
+    <button id="theme-toggle" class="btn" type="button" aria-pressed="false" style="min-width:0;padding:3px 8px">Theme</button>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <nav class="rail" aria-label="Contents">
+    <a href="#intro">Overview</a>
+    <a href="#work">Work</a>
+    <a href="#practice">Practice</a>
+    <a href="#background">Background</a>
+  </nav>
+
+  <main class="main">
+
+    <!-- overview -------------------------------------------------- -->
+    <section id="intro" class="sec">
+      <div class="grid10">
+        <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+          <p class="display" style="max-width:34ch">
+            Most teams are slowed by something nobody owns.
+          </p>
+          <p class="lead" style="margin-top:6px; color:var(--dim)">
+            I build that thing, then write down how it works.
+          </p>
+        </div>
+
+        <div class="prose" style="grid-column:1 / -1">
+          <p>
+            Fifteen years between design and engineering — finance, government and retail. The
+            pattern repeats: something falls between two teams, nobody is given it, and the work
+            slows down until somebody builds the missing piece.
+          </p>
+          <p>
+            Right now that is <a href="project.html">Plugma</a>, a toolchain for building Figma
+            plugins.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- work ------------------------------------------------------
+         Tiles first, then the same projects as a scannable list.
+         Both come from one array and one pair of renderers. -->
+    <section id="work" class="sec">
+      <h2 class="sec__head">
+        <span class="sec__n">01</span> Work
+        <span class="sec__note" id="work-note"></span>
+      </h2>
+
+      <div class="tiles" id="tiles" style="margin-bottom:calc(var(--bl) * 1.5)"></div>
+
+      <div class="grid10">
+        <div class="list grid10" id="project-list">
+          <div class="list__head">
+            <span class="c-name">Name</span>
+            <span class="c-desc">Description</span>
+            <span class="c-meta">Type</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- practice --------------------------------------------------- -->
+    <section id="practice" class="sec">
+      <h2 class="sec__head"><span class="sec__n">02</span> Practice</h2>
+      <div class="grid10">
+        <div class="list grid10">
+          <div class="list__row">
+            <span class="c-term">Design systems</span>
+            <span class="c-body">Tokens, components and the governance that keeps them honest — so the design file and the codebase describe the same thing after I leave.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">Product &amp; front-end</span>
+            <span class="c-body">Interface design carried through to production code. Every project starts in a design file, including the ones that end as a command-line tool.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">Developer tooling</span>
+            <span class="c-body">CLIs, plug-ins and build steps — usually the difference between a day of setup and a single command.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- background ------------------------------------------------- -->
+    <section id="background" class="sec">
+      <h2 class="sec__head"><span class="sec__n">03</span> Background</h2>
+      <div class="grid10">
+        <div class="list grid10">
+          <div class="list__row">
+            <span class="c-term">Clients</span>
+            <span class="c-body">American Express · NatWest · Home Office · John Lewis · LSEG · Ecologi · Amazon</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">Based</span>
+            <span class="c-body">London, UK — available from September</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">Contact</span>
+            <span class="c-body"><a href="contact.html">Send a message →</a></span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="rule stipple" style="margin-top:calc(var(--bl) * 1.5)" />
+    </section>
+
+  </main>
+</div>
+
+<footer class="foot">
+  <div class="foot__in">
+    <span><span class="k">Index</span> <span id="counts">—</span></span>
+    <span><span class="k">Based</span> London, UK</span>
+    <span><span class="k">Mail</span> <a href="mailto:gavin@limitlessloop.com">gavin@limitlessloop.com</a></span>
+  </div>
+</footer>
+
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  document.getElementById('brand-ico').innerHTML = icon('floppy');
+  render.into('tiles', DATA.projects, render.projectTile);
+  render.into('project-list', DATA.projects, render.projectRow);
+  document.getElementById('work-note').textContent = `${DATA.projects.length} items`;
+</script>
+
+</body>
+</html>
