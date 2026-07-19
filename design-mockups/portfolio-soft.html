@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Soft</title>
+<meta name="description" content="Designer and full-stack engineer building tools and web apps." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Theme resolved before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Soft
+     Direction: dimensional and warm — the one mockup in this folder
+     that isn't flat. Where the others divide space with hairlines,
+     this one stacks it: large radii, layered soft shadows, a slow
+     gradient mesh behind everything, and cards that lift on hover.
+     Fraunces (soft-serif, optical sizing) carries the display type
+     against Inter. Motion is spring-eased rather than linear.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+
+  :root {
+    --ink:    #2A2320;
+    --plane:  #FDF8F4;   /* warm paper, not white */
+    --raise:  #FFFFFF;   /* cards sit above the plane */
+    --sunken: #F5EDE6;
+    --muted:  #857971;
+    --faint:  #B9ABA1;
+    --edge:   rgba(42,35,32,.08);
+
+    --accent:  #E2724A;  /* terracotta */
+    --accent2: #C05C86;  /* rose, second gradient stop */
+    --accent3: #6B7FD0;  /* periwinkle, third stop */
+    --on-accent: #FFFFFF;
+
+    /* Layered, tinted shadows — the core of the direction. A single
+       hard shadow reads cheap; three stacked soft ones read physical. */
+    --lift-1: 0 1px 2px rgba(42,35,32,.04), 0 4px 12px rgba(42,35,32,.05);
+    --lift-2: 0 2px 4px rgba(42,35,32,.05), 0 12px 28px rgba(42,35,32,.09), 0 1px 0 rgba(255,255,255,.7) inset;
+    --lift-3: 0 4px 8px rgba(42,35,32,.06), 0 24px 56px rgba(226,114,74,.16);
+
+    --r-sm: 12px;
+    --r-md: 20px;
+    --r-lg: 28px;
+    --r-xl: 40px;
+
+    --pad: clamp(1.15rem, 4vw, 3rem);
+    --sans:  'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --serif: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
+
+    /* One spring curve reused everywhere, so every lift feels related. */
+    --spring: cubic-bezier(.22, 1, .36, 1);
+  }
+
+  .dark {
+    --ink:    #F0E9E4;
+    --plane:  #16120F;
+    --raise:  #221C18;
+    --sunken: #1B1613;
+    --muted:  #A2958C;
+    --faint:  #6B5F58;
+    --edge:   rgba(240,233,228,.10);
+
+    --accent:  #F2895D;
+    --accent2: #DE7BA4;
+    --accent3: #8B9CE8;
+    --on-accent: #1A1310;
+
+    --lift-1: 0 1px 2px rgba(0,0,0,.30), 0 4px 12px rgba(0,0,0,.24);
+    --lift-2: 0 2px 4px rgba(0,0,0,.32), 0 12px 28px rgba(0,0,0,.34), 0 1px 0 rgba(255,255,255,.05) inset;
+    --lift-3: 0 4px 8px rgba(0,0,0,.34), 0 24px 56px rgba(242,137,93,.20);
+  }
+
+  html { font-family: var(--sans); }
+  body {
+    background: var(--plane); color: var(--ink);
+    font-size: 16px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    /* Theme swap animates rather than snapping. */
+    transition: background-color .5s var(--spring), color .5s var(--spring);
+  }
+
+  ::selection { background: var(--accent); color: var(--on-accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+
+  .wrap { width: 100%; max-width: 1180px; margin-inline: auto; padding-inline: var(--pad); }
+
+  /* ── Type ───────────────────────────────────────────────────────── */
+
+  .display {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-variation-settings: 'opsz' 100;
+    letter-spacing: -.025em;
+    line-height: 1.02;
+    margin: 0;
+  }
+  .eyebrow {
+    font-size: .72rem; font-weight: 600; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .lede { font-size: clamp(1.02rem, 1.5vw, 1.2rem); color: var(--muted); line-height: 1.65; }
+  .sec-title { font-family: var(--serif); font-weight: 600; font-size: clamp(1.8rem, 4vw, 2.6rem); letter-spacing: -.02em; margin: .35rem 0 0; }
+
+  /* ── Gradient mesh backdrop ─────────────────────────────────────── */
+  /* Three blurred radial blobs drifting on long, offset cycles. Fixed
+     and pointer-events-none so they never interfere with scroll cost
+     or hit-testing. Cheap: no JS, no canvas, composited transforms. */
+
+  .mesh { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(90px); opacity: .55;
+    will-change: transform;
+  }
+  .dark .blob { opacity: .38; }
+  .blob-a { width: 46vw; height: 46vw; min-width: 340px; min-height: 340px; top: -12vh;  left: -8vw;   background: var(--accent);  animation: drift-a 26s var(--spring) infinite alternate; }
+  .blob-b { width: 38vw; height: 38vw; min-width: 300px; min-height: 300px; top: 24vh;   right: -10vw; background: var(--accent2); animation: drift-b 32s var(--spring) infinite alternate; }
+  .blob-c { width: 34vw; height: 34vw; min-width: 260px; min-height: 260px; top: 62vh;   left: 18vw;   background: var(--accent3); animation: drift-c 38s var(--spring) infinite alternate; }
+
+  @keyframes drift-a { to { transform: translate3d(9vw, 7vh, 0) scale(1.16); } }
+  @keyframes drift-b { to { transform: translate3d(-11vw, 10vh, 0) scale(.86); } }
+  @keyframes drift-c { to { transform: translate3d(13vw, -9vh, 0) scale(1.1); } }
+
+  /* ── Nav ────────────────────────────────────────────────────────── */
+  /* A floating pill rather than a full-width bar — consistent with the
+     rounded, dimensional language. */
+
+  .nav-shell { position: sticky; top: 0; z-index: 60; padding: .85rem var(--pad); }
+  .nav {
+    max-width: 1180px; margin-inline: auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: .55rem .6rem .55rem 1.15rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--raise) 78%, transparent);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border: 1px solid var(--edge);
+    box-shadow: var(--lift-1);
+  }
+  .brand { font-family: var(--serif); font-weight: 600; font-size: 1.02rem; letter-spacing: -.015em; white-space: nowrap; }
+  .nav-links { display: none; gap: .25rem; }
+  @media (min-width: 720px) { .nav-links { display: flex; } }
+  .nav-links a {
+    padding: .45rem .85rem; border-radius: 999px;
+    font-size: .875rem; font-weight: 500; color: var(--muted);
+    transition: color .3s var(--spring), background-color .3s var(--spring);
+  }
+  .nav-links a:hover { color: var(--ink); background: var(--sunken); }
+
+  .icon-btn {
+    display: grid; place-items: center;
+    width: 38px; height: 38px; flex: none;
+    border: 1px solid var(--edge); border-radius: 999px;
+    background: var(--raise); color: var(--ink);
+    cursor: pointer; font: inherit;
+    box-shadow: var(--lift-1);
+    transition: transform .35s var(--spring), box-shadow .35s var(--spring);
+  }
+  .icon-btn:hover { transform: translateY(-2px); box-shadow: var(--lift-2); }
+  .icon-btn:active { transform: translateY(0) scale(.94); }
+  .icon-btn svg { width: 17px; height: 17px; }
+  /* Sun in light mode, moon in dark — swap purely in CSS. */
+  .icon-moon { display: none; }
+  .dark .icon-sun  { display: none; }
+  .dark .icon-moon { display: block; }
+
+  /* ── Buttons ────────────────────────────────────────────────────── */
+
+  .btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .8rem 1.4rem; border-radius: 999px;
+    font-size: .9rem; font-weight: 600; font-family: inherit;
+    border: 1px solid transparent; cursor: pointer;
+    transition: transform .35s var(--spring), box-shadow .35s var(--spring), background-color .3s var(--spring);
+  }
+  .btn-primary {
+    color: var(--on-accent);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: var(--lift-2);
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: var(--lift-3); }
+  .btn-primary:active { transform: translateY(-1px); }
+  .btn-ghost {
+    color: var(--ink); background: var(--raise);
+    border-color: var(--edge); box-shadow: var(--lift-1);
+  }
+  .btn-ghost:hover { transform: translateY(-3px); box-shadow: var(--lift-2); }
+  .btn svg { width: 15px; height: 15px; }
+
+  /* ── Hero ───────────────────────────────────────────────────────── */
+
+  .hero { padding: clamp(3.5rem, 11vh, 8rem) 0 clamp(3rem, 8vh, 6rem); }
+  .hero .display { font-size: clamp(2.7rem, 8.5vw, 5.6rem); max-width: 15ch; }
+
+  /* Each line is a clipping window; the span inside rises into it. */
+  .line { display: block; overflow: hidden; padding-bottom: .08em; }
+  .line > span {
+    display: block;
+    transform: translateY(105%);
+    animation: rise .95s var(--spring) forwards;
+    animation-delay: calc(var(--i, 0) * 110ms);
+  }
+  @keyframes rise { to { transform: translateY(0); } }
+
+  .grad-text {
+    background: linear-gradient(105deg, var(--accent), var(--accent2) 45%, var(--accent3));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+
+  /* Fades in behind the headline once the lines have landed. */
+  .settle { opacity: 0; transform: translateY(14px); animation: settle .85s var(--spring) forwards; animation-delay: calc(var(--i, 0) * 110ms); }
+  @keyframes settle { to { opacity: 1; transform: none; } }
+
+  .hero-sub { margin: 1.9rem 0 0; max-width: 46ch; }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2.2rem; }
+
+  /* Small stat row — grounds the hero without a fake availability badge. */
+  .stats { display: flex; flex-wrap: wrap; gap: clamp(1.5rem, 5vw, 3.5rem); margin-top: 3.5rem; }
+  .stat-n { font-family: var(--serif); font-weight: 600; font-size: 1.9rem; letter-spacing: -.02em; line-height: 1; }
+  .stat-l { font-size: .78rem; color: var(--muted); margin-top: .4rem; }
+
+  /* ── Sections ───────────────────────────────────────────────────── */
+
+  .sec { padding: clamp(3.5rem, 9vw, 7rem) 0; }
+  .sec-head { max-width: 60ch; margin-bottom: clamp(2rem, 4vw, 3.25rem); }
+
+  /* ── Projects ───────────────────────────────────────────────────── */
+
+  .grid {
+    display: grid; gap: clamp(1rem, 2vw, 1.5rem);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  }
+
+  .card {
+    position: relative; isolation: isolate;
+    display: flex; flex-direction: column;
+    padding: 1.6rem;
+    border-radius: var(--r-lg);
+    background: var(--raise);
+    border: 1px solid var(--edge);
+    box-shadow: var(--lift-1);
+    transition: transform .45s var(--spring), box-shadow .45s var(--spring);
+  }
+  .card:hover { transform: translateY(-6px); box-shadow: var(--lift-2); }
+
+  /* Gradient rim that only resolves on hover — keeps the resting grid calm. */
+  .card::before {
+    content: ''; position: absolute; inset: -1px; z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    opacity: 0; transition: opacity .45s var(--spring);
+  }
+  .card:hover::before { opacity: .9; }
+
+  .card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+  .card-year { font-size: .74rem; font-weight: 600; letter-spacing: .1em; color: var(--faint); }
+  .card-num { font-family: var(--serif); font-size: .82rem; color: var(--faint); }
+  .card-title { font-family: var(--serif); font-weight: 600; font-size: 1.4rem; letter-spacing: -.02em; margin: .9rem 0 0; }
+  .card-desc { font-size: .92rem; color: var(--muted); margin: .6rem 0 0; }
+
+  .badges { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1.2rem 0 0; }
+  .badge {
+    font-size: .72rem; font-weight: 500; color: var(--muted);
+    padding: .3rem .65rem; border-radius: 999px;
+    background: var(--sunken); border: 1px solid var(--edge);
+  }
+
+  /* Pushed to the bottom so links align across cards of unequal height. */
+  .card-links { display: flex; gap: 1.1rem; margin-top: auto; padding-top: 1.4rem; }
+  .card-link {
+    display: inline-flex; align-items: center; gap: .35rem;
+    font-size: .84rem; font-weight: 600; color: var(--accent);
+    transition: gap .3s var(--spring), opacity .3s var(--spring);
+  }
+  .card-link:hover { gap: .6rem; }
+  .card-link svg { width: 13px; height: 13px; }
+
+  /* ── About ──────────────────────────────────────────────────────── */
+
+  .about {
+    display: grid; gap: clamp(1rem, 2vw, 1.5rem);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .panel {
+    padding: clamp(1.5rem, 3vw, 2.2rem);
+    border-radius: var(--r-lg);
+    background: var(--raise);
+    border: 1px solid var(--edge);
+    box-shadow: var(--lift-1);
+  }
+  .panel-wide { grid-column: 1 / -1; }
+  @media (min-width: 860px) { .panel-wide { grid-column: span 2; } }
+  .panel h3 { font-family: var(--serif); font-weight: 600; font-size: 1.15rem; margin: 0 0 .7rem; letter-spacing: -.015em; }
+  .panel p { margin: 0 0 .9rem; color: var(--muted); font-size: .95rem; }
+  .panel p:last-child { margin-bottom: 0; }
+  .panel .pull { font-family: var(--serif); font-size: 1.28rem; line-height: 1.4; color: var(--ink); letter-spacing: -.015em; }
+
+  .timeline { margin: 0; padding: 0; display: grid; gap: 1rem; }
+  .timeline > div { display: grid; grid-template-columns: 4.2rem 1fr; gap: 1rem; align-items: baseline; }
+  .timeline dt { font-size: .78rem; font-weight: 600; color: var(--accent); letter-spacing: .04em; }
+  .timeline dd { margin: 0; font-size: .9rem; color: var(--muted); }
+
+  /* ── Contact ────────────────────────────────────────────────────── */
+  /* The card is collapsed by default and expands in place. Height is
+     animated via grid-template-rows 0fr→1fr, which — unlike max-height
+     — needs no magic number and stays correct at any breakpoint. */
+
+  .contact-card {
+    border-radius: var(--r-xl);
+    background: var(--raise);
+    border: 1px solid var(--edge);
+    box-shadow: var(--lift-2);
+    overflow: hidden;
+  }
+  .contact-head {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 1.25rem; padding: clamp(1.6rem, 4vw, 2.75rem);
+  }
+  .contact-head h2 { margin: .3rem 0 0; }
+  .contact-head p { margin: .6rem 0 0; max-width: 42ch; }
+
+  .expander { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .6s var(--spring); }
+  .expander[data-open='true'] { grid-template-rows: 1fr; }
+  .expander > div { overflow: hidden; }
+  .expander-inner {
+    padding: 0 clamp(1.6rem, 4vw, 2.75rem) clamp(1.6rem, 4vw, 2.75rem);
+    border-top: 1px solid var(--edge);
+    margin-top: .25rem; padding-top: 1.75rem;
+  }
+  /* Contents fade up slightly behind the height change. */
+  .expander > div > .expander-inner { opacity: 0; transform: translateY(10px); transition: opacity .45s var(--spring) .1s, transform .45s var(--spring) .1s; }
+  .expander[data-open='true'] > div > .expander-inner { opacity: 1; transform: none; }
+
+  .form-row { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+  .field { display: grid; gap: .45rem; }
+  .field label { font-size: .78rem; font-weight: 600; letter-spacing: .04em; color: var(--muted); }
+  .field input, .field textarea {
+    font: inherit; font-size: .93rem; color: var(--ink);
+    padding: .8rem 1rem; border-radius: var(--r-sm);
+    background: var(--sunken); border: 1px solid var(--edge);
+    transition: border-color .3s var(--spring), box-shadow .3s var(--spring), background-color .3s var(--spring);
+  }
+  .field textarea { resize: vertical; min-height: 118px; }
+  .field input::placeholder, .field textarea::placeholder { color: var(--faint); }
+  .field input:focus, .field textarea:focus {
+    outline: none; background: var(--raise);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+  .form-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: 1.25rem; }
+  .form-note { font-size: .82rem; color: var(--muted); }
+
+  /* ── Socials + footer ───────────────────────────────────────────── */
+
+  .socials { display: flex; flex-wrap: wrap; gap: .55rem; }
+  .social {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .6rem 1rem; border-radius: 999px;
+    font-size: .84rem; font-weight: 500;
+    background: var(--sunken); border: 1px solid var(--edge);
+    transition: transform .35s var(--spring), box-shadow .35s var(--spring), color .3s var(--spring);
+  }
+  .social:hover { transform: translateY(-2px); box-shadow: var(--lift-1); color: var(--accent); }
+  .social svg { width: 15px; height: 15px; }
+
+  footer { padding: 2.5rem 0 3.5rem; }
+  .foot-inner {
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    align-items: center; justify-content: space-between;
+    padding-top: 2rem; border-top: 1px solid var(--edge);
+    font-size: .84rem; color: var(--muted);
+  }
+
+  /* ── Scroll reveal ──────────────────────────────────────────────── */
+
+  .reveal { opacity: 0; transform: translateY(22px); transition: opacity .8s var(--spring), transform .8s var(--spring); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ── Reduced motion ─────────────────────────────────────────────── */
+  /* Everything decorative stops; only the state changes remain. */
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+    .line > span { transform: none; }
+    .reveal { opacity: 1; transform: none; }
+    /* The expander still needs its transition to read as opening. */
+    .expander { transition: grid-template-rows .3s ease !important; }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="mesh" aria-hidden="true">
+  <div class="blob blob-a"></div>
+  <div class="blob blob-b"></div>
+  <div class="blob blob-c"></div>
+</div>
+
+<div class="nav-shell">
+  <nav class="nav" aria-label="Primary">
+    <a href="#top" class="brand">Gavin McFarland</a>
+    <div class="nav-links">
+      <a href="#work">Work</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch to dark mode">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.4M12 19.2v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.4 12h2.4M19.2 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8Z"/>
+      </svg>
+    </button>
+  </nav>
+</div>
+
+<main id="top">
+
+  <!-- ── Hero ─────────────────────────────────────────────────────── -->
+  <section class="hero wrap">
+    <p class="eyebrow settle" style="--i:0">Design engineer · Independent</p>
+
+    <h1 class="display" style="margin-top:1.1rem">
+      <span class="line"><span style="--i:1">I design the</span></span>
+      <span class="line"><span style="--i:2">thing, then</span></span>
+      <span class="line"><span class="grad-text" style="--i:3">build it too.</span></span>
+    </h1>
+
+    <p class="lede hero-sub settle" style="--i:5">
+      Fifteen years across graphic design, product, and front-end engineering — mostly spent
+      on design systems and the unglamorous tooling that decides whether a team ships
+      consistently or just talks about it.
+    </p>
+
+    <div class="hero-cta settle" style="--i:6">
+      <a href="#work" class="btn btn-primary">
+        See the work
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a href="#contact" class="btn btn-ghost">Start a conversation</a>
+    </div>
+
+    <div class="stats settle" style="--i:7">
+      <div><div class="stat-n">15+</div><div class="stat-l">Years designing &amp; shipping</div></div>
+      <div><div class="stat-n">40+</div><div class="stat-l">Engineers on systems I&rsquo;ve led</div></div>
+      <div><div class="stat-n">6</div><div class="stat-l">Selected projects below</div></div>
+    </div>
+  </section>
+
+  <!-- ── Work ─────────────────────────────────────────────────────── -->
+  <section class="sec wrap" id="work">
+    <header class="sec-head reveal">
+      <p class="eyebrow">Selected work</p>
+      <h2 class="sec-title">Six projects, 2019&ndash;2026</h2>
+      <p class="lede" style="margin-top:.8rem">
+        Tooling, design systems, and the occasional plugin that saves a team an afternoon a week.
+      </p>
+    </header>
+
+    <div class="grid">
+
+      <article class="card reveal">
+        <div class="card-top"><span class="card-year">2024</span><span class="card-num">01</span></div>
+        <h3 class="card-title">Plugma</h3>
+        <p class="card-desc">A build tool that makes developing Figma plugins feel like modern web work.</p>
+        <div class="badges"><span class="badge">Svelte</span><span class="badge">TypeScript</span><span class="badge">Vite</span></div>
+        <div class="card-links">
+          <a class="card-link" href="#">Live demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
+          <a class="card-link" href="#">Case study <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+
+      <article class="card reveal">
+        <div class="card-top"><span class="card-year">2023</span><span class="card-num">02</span></div>
+        <h3 class="card-title">Token pipeline</h3>
+        <p class="card-desc">Design tokens flowing from Figma variables to shipped CSS, with a diffing step.</p>
+        <div class="badges"><span class="badge">Style Dictionary</span><span class="badge">TypeScript</span><span class="badge">CI</span></div>
+        <div class="card-links">
+          <a class="card-link" href="#">Live demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
+          <a class="card-link" href="#">Case study <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+
+      <article class="card reveal">
+        <div class="card-top"><span class="card-year">2022</span><span class="card-num">03</span></div>
+        <h3 class="card-title">Atlas design system</h3>
+        <p class="card-desc">Component library and documentation site for a 40-person product org.</p>
+        <div class="badges"><span class="badge">Svelte</span><span class="badge">Storybook</span><span class="badge">A11y</span></div>
+        <div class="card-links">
+          <a class="card-link" href="#">Live demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
+          <a class="card-link" href="#">Case study <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+
+      <article class="card reveal">
+        <div class="card-top"><span class="card-year">2022</span><span class="card-num">04</span></div>
+        <h3 class="card-title">Spec exporter</h3>
+        <p class="card-desc">Turns a selected Figma frame into engineer-ready redlines and a props table.</p>
+        <div class="badges"><span class="badge">Figma API</span><span class="badge">TypeScript</span><span class="badge">Canvas</span></div>
+        <div class="card-links">
+          <a class="card-link" href="#">Live demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
+          <a class="card-link" href="#">Case study <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+
+      <article class="card reveal">
+        <div class="card-top"><span class="card-year">2021</span><span class="card-num">05</span></div>
+        <h3 class="card-title">Pulse dashboard</h3>
+        <p class="card-desc">Real-time analytics surface rebuilt for speed — sub-800ms first paint, cold cache.</p>
+        <div class="badges"><span class="badge">Svelte</span><span class="badge">TypeScript</span><span class="badge">D3</span></div>
+        <div class="card-links">
+          <a class="card-link" href="#">Live demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
+          <a class="card-link" href="#">Case study <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+
+      <article class="card reveal">
+        <div class="card-top"><span class="card-year">2019</span><span class="card-num">06</span></div>
+        <h3 class="card-title">Field notes</h3>
+        <p class="card-desc">Identity and editorial system for a research publication.</p>
+        <div class="badges"><span class="badge">Identity</span><span class="badge">Editorial</span><span class="badge">Print</span></div>
+        <div class="card-links">
+          <a class="card-link" href="#">Live demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
+          <a class="card-link" href="#">Case study <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── About ────────────────────────────────────────────────────── -->
+  <section class="sec wrap" id="about">
+    <header class="sec-head reveal">
+      <p class="eyebrow">About</p>
+      <h2 class="sec-title">Two disciplines, one job</h2>
+    </header>
+
+    <div class="about">
+      <div class="panel panel-wide reveal">
+        <p class="pull">
+          I started in graphic design and ended up writing the code too — mostly out of impatience.
+        </p>
+        <p style="margin-top:1.1rem">
+          Handing a beautiful static file to someone else and hoping felt like the wrong end of the job.
+          These days I sit in the gap between the two: close enough to design to argue about optical
+          spacing, close enough to engineering to know what that argument costs in render time.
+        </p>
+      </div>
+
+      <div class="panel reveal">
+        <h3>What I actually do</h3>
+        <p>
+          Mostly design systems and the tooling around them — component libraries, token pipelines,
+          documentation nobody wanted to write, and the occasional plugin that saves a team an
+          afternoon a week.
+        </p>
+      </div>
+
+      <div class="panel reveal">
+        <h3>The boring parts</h3>
+        <p>
+          How a thing behaves at 320px. What happens on a slow connection. Whether the focus ring is
+          visible. Whether the build is still fast in a year. That&rsquo;s where the quality lives.
+        </p>
+      </div>
+
+      <div class="panel reveal">
+        <h3>Off the clock</h3>
+        <p>
+          Too many half-finished side projects, a long-running interest in typography, and a habit of
+          rewriting things that already worked fine.
+        </p>
+      </div>
+
+      <div class="panel panel-wide reveal">
+        <h3>Where I&rsquo;ve been</h3>
+        <dl class="timeline">
+          <div><dt>Now</dt><dd>Independent — design engineering for product teams</dd></div>
+          <div><dt>2021</dt><dd>Design systems lead, fintech platform</dd></div>
+          <div><dt>2018</dt><dd>Senior product designer, agency side</dd></div>
+          <div><dt>2014</dt><dd>Graphic design, print and identity</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Contact ──────────────────────────────────────────────────── -->
+  <section class="sec wrap" id="contact">
+    <div class="contact-card reveal">
+      <div class="contact-head">
+        <div>
+          <p class="eyebrow">Contact</p>
+          <h2 class="sec-title">Got something worth building?</h2>
+          <p class="lede">
+            Design systems, tooling, or a front end that needs someone who cares about both halves.
+          </p>
+        </div>
+        <button class="btn btn-primary" id="contact-toggle" type="button" aria-expanded="false" aria-controls="contact-panel">
+          <span id="contact-toggle-label">Write a message</span>
+          <svg id="contact-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transition: transform .5s cubic-bezier(.22,1,.36,1)"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+      </div>
+
+      <div class="expander" id="contact-panel" data-open="false">
+        <div>
+          <div class="expander-inner">
+            <form id="contact-form" novalidate>
+              <div class="form-row">
+                <div class="field">
+                  <label for="c-name">Name</label>
+                  <input id="c-name" name="name" type="text" placeholder="Your name" autocomplete="name" required />
+                </div>
+                <div class="field">
+                  <label for="c-email">Email</label>
+                  <input id="c-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required />
+                </div>
+              </div>
+
+              <div class="field" style="margin-top:1rem">
+                <label for="c-message">Message</label>
+                <textarea id="c-message" name="message" placeholder="What are you working on, and where does it hurt?" required></textarea>
+              </div>
+
+              <div class="form-foot">
+                <button class="btn btn-primary" type="submit">
+                  Send message
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+                <p class="form-note" id="form-status" role="status">Or email me directly at <a href="mailto:hello@example.com" style="color:var(--accent);font-weight:600">hello@example.com</a></p>
+              </div>
+            </form>
+
+            <div class="socials" style="margin-top:1.75rem">
+              <a class="social" href="#">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
+                GitHub
+              </a>
+              <a class="social" href="#">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3l-4.9-6.5L6.3 22H3.2l7.3-8.3L2.4 2h6.4l4.4 5.9L18.9 2Zm-1.1 18.2h1.7L7.3 3.7H5.5l12.3 16.5Z"/></svg>
+                Twitter
+              </a>
+              <a class="social" href="#">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm6.5 0h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.5c0-1.31-.02-3-1.83-3-1.83 0-2.11 1.43-2.11 2.9V21h-4V9Z"/></svg>
+                LinkedIn
+              </a>
+              <a class="social" href="mailto:hello@example.com">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3.5 6.5 8.5 6 8.5-6"/></svg>
+                Email
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <div class="foot-inner">
+    <span>&copy; 2026 Gavin McFarland</span>
+    <span>Design engineering, independent</span>
+  </div>
+</footer>
+
+<script>
+  /* ── Theme toggle ─────────────────────────────────────────────── */
+
+  const root = document.documentElement;
+  const toggle = document.getElementById('theme-toggle');
+
+  const syncToggleLabel = () => {
+    const dark = root.classList.contains('dark');
+    toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+  };
+  syncToggleLabel();
+
+  toggle.addEventListener('click', () => {
+    const dark = root.classList.toggle('dark');
+    localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+    syncToggleLabel();
+  });
+
+  /* ── Contact expander ─────────────────────────────────────────── */
+
+  const cToggle   = document.getElementById('contact-toggle');
+  const cPanel    = document.getElementById('contact-panel');
+  const cLabel    = document.getElementById('contact-toggle-label');
+  const cChevron  = document.getElementById('contact-chevron');
+
+  cToggle.addEventListener('click', () => {
+    const open = cPanel.dataset.open !== 'true';
+    cPanel.dataset.open = String(open);
+    cToggle.setAttribute('aria-expanded', String(open));
+    cLabel.textContent = open ? 'Close' : 'Write a message';
+    cChevron.style.transform = open ? 'rotate(180deg)' : 'none';
+    // Focus the first field once the panel has finished expanding.
+    if (open) setTimeout(() => document.getElementById('c-name').focus(), 450);
+  });
+
+  /* ── Form (mockup only — nothing is sent) ─────────────────────── */
+
+  const form   = document.getElementById('contact-form');
+  const status = document.getElementById('form-status');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    if (!data.get('name') || !data.get('email') || !data.get('message')) {
+      status.textContent = 'Please fill in every field.';
+      return;
+    }
+    status.textContent = 'Thanks — this is a mockup, so nothing was actually sent.';
+    form.reset();
+  });
+
+  /* ── Scroll reveal ────────────────────────────────────────────── */
+  /* One observer, unobserving as it goes, so scrolling stays cheap. */
+
+  const revealables = document.querySelectorAll('.reveal');
+
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (!entry.isIntersecting) return;
+        // Slight stagger so a row of cards arrives in sequence, not as a block.
+        entry.target.style.transitionDelay = (i * 70) + 'ms';
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: .12 });
+
+    revealables.forEach((el) => io.observe(el));
+  } else {
+    revealables.forEach((el) => el.classList.add('in'));
+  }
+</script>
+
+</body>
+</html>
