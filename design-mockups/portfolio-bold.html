@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Bold Studio</title>
+<meta name="description" content="Designer and full-stack engineer building tools and web apps." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet" />
+
+<!-- Set theme before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          ink:     { DEFAULT: '#0C0B0A', dark: '#F7F4EE' },
+          muted:   { DEFAULT: '#4A4744', dark: '#A9A49B' },
+          canvas:  { DEFAULT: '#F7F4EE', dark: '#0C0B0A' },
+          surface: { DEFAULT: '#FFFFFF', dark: '#161412' },
+          flame:   '#FF4A1C',   /* primary accent — same in both modes */
+          acid:    '#D8FF3E',   /* secondary accent */
+        },
+        fontFamily: {
+          display: ['Anton', 'Impact', 'sans-serif'],
+          sans:    ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        },
+        maxWidth: { content: '78rem' },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Bold
+     Direction: loud and structural. Oversized condensed display
+     type, hard 2px rules, offset shadows with no blur, one flame
+     accent doing all the shouting. The opposite of the minimal
+     mockup: where that one whispers in serif, this one prints.
+     ───────────────────────────────────────────────────────────── */
+
+  ::selection { background: #FF4A1C; color: #F7F4EE; }
+
+  /* Structural helpers ------------------------------------------------ */
+
+  /* Hard, blurless offset shadow — the signature of this direction. */
+  .slab { box-shadow: 6px 6px 0 0 #0C0B0A; }
+  .dark .slab { box-shadow: 6px 6px 0 0 #F7F4EE; }
+  /* Primary buttons: press *into* their own shadow on hover. */
+  .slab-flame { box-shadow: 6px 6px 0 0 #FF4A1C; transition: transform .15s ease, box-shadow .15s ease; }
+  .slab-flame:hover { box-shadow: none; transform: translate(3px, 3px); }
+
+  /* Cards lift toward their shadow on hover. */
+  .lift { transition: transform .18s cubic-bezier(.2,.7,.3,1), box-shadow .18s cubic-bezier(.2,.7,.3,1); }
+  .lift:hover, .lift:focus-within { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 0 #FF4A1C; }
+
+  /* Hero ---------------------------------------------------------------- */
+
+  /* Each display line sits in a clipping box and slides up out of it. */
+  .mask { overflow: hidden; display: block; }
+  .mask > span { display: block; transform: translateY(105%); animation: slam .8s cubic-bezier(.16,1,.3,1) forwards;
+    animation-delay: calc(var(--i, 0) * 90ms); }
+  @keyframes slam { to { transform: none; } }
+
+  /* Rotating discipline word — stacked in one grid cell, cycled by delay. */
+  .rotator { display: inline-grid; vertical-align: top; text-align: left; }
+  .rotator > span { grid-area: 1 / 1; opacity: 0; animation: cycle 12s infinite;
+    animation-delay: calc(var(--n) * 3s); }
+  @keyframes cycle {
+    0%, 1%   { opacity: 0; transform: translateY(45%) skewY(4deg); }
+    5%, 23%  { opacity: 1; transform: none; }
+    28%,100% { opacity: 0; transform: translateY(-45%) skewY(-4deg); }
+  }
+
+  /* Marquee ------------------------------------------------------------- */
+  .marquee { display: flex; width: max-content; animation: slide 32s linear infinite; }
+  @keyframes slide { to { transform: translateX(-50%); } }
+  .marquee:hover { animation-play-state: paused; }
+
+  /* Scroll reveal ------------------------------------------------------- */
+  .reveal { opacity: 0; transform: translateY(1.5rem); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.3,1); }
+  .reveal.shown { opacity: 1; transform: none; }
+
+  /* Contact expander — 0fr→1fr animates to intrinsic height. */
+  .expander { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .5s cubic-bezier(.2,.7,.3,1); }
+  .expander > div { overflow: hidden; }
+  .expander[data-open='true'] { grid-template-rows: 1fr; }
+  /* Fields stagger in once the panel is open. */
+  .expander [data-field] { opacity: 0; transform: translateY(12px); transition: opacity .4s ease, transform .4s ease; }
+  .expander[data-open='true'] [data-field] { opacity: 1; transform: none; transition-delay: calc(var(--f) * 70ms + 140ms); }
+
+  /* Project filtering --------------------------------------------------- */
+  [data-card][hidden] { display: none; }
+
+  :focus-visible { outline: 3px solid #FF4A1C; outline-offset: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mask > span, .rotator > span { animation: none; opacity: 1; transform: none; }
+    .marquee { animation: none; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .expander, .expander [data-field], .lift, .slab-flame { transition: none; }
+    .lift:hover, .slab-flame:hover { transform: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="bg-canvas text-ink antialiased dark:bg-canvas-dark dark:text-ink-dark font-sans">
+
+<a href="#work" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-4 focus:bg-flame focus:px-4 focus:py-2 focus:font-bold focus:text-white">Skip to content</a>
+
+<!-- ── Nav ──────────────────────────────────────────────────────────── -->
+<header class="sticky top-0 z-40 border-b-2 border-ink bg-canvas/90 backdrop-blur dark:border-ink-dark dark:bg-canvas-dark/90">
+  <nav class="mx-auto flex max-w-content items-center justify-between gap-4 px-5 py-3 sm:px-8">
+    <a href="#" class="font-display text-xl uppercase leading-none tracking-wide">GM<span class="text-flame">.</span></a>
+
+    <div class="flex items-center gap-2 sm:gap-5">
+      <div class="hidden text-sm font-medium uppercase tracking-wide sm:flex sm:gap-5">
+        <a href="#work"    class="hover:text-flame">Work</a>
+        <a href="#about"   class="hover:text-flame">About</a>
+        <a href="#contact" class="hover:text-flame">Contact</a>
+      </div>
+      <button id="theme-toggle" type="button" aria-label="Toggle dark mode" aria-pressed="false"
+        class="grid h-10 w-10 place-items-center border-2 border-ink transition hover:bg-flame hover:text-white dark:border-ink-dark">
+        <svg class="h-[18px] w-[18px] dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <svg class="hidden h-[18px] w-[18px] dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<!-- ── Hero ─────────────────────────────────────────────────────────── -->
+<section class="relative overflow-hidden border-b-2 border-ink dark:border-ink-dark">
+  <!-- Subtle gradient wash: two soft radials over the canvas colour. -->
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0"
+       style="background:
+         radial-gradient(60rem 40rem at 12% -10%, rgba(255,74,28,.20), transparent 60%),
+         radial-gradient(45rem 35rem at 95% 15%, rgba(216,255,62,.28), transparent 62%);"></div>
+
+  <div class="relative mx-auto max-w-content px-5 pb-16 pt-16 sm:px-8 sm:pb-24 sm:pt-24">
+    <p class="mask mb-6 text-xs font-bold uppercase tracking-[0.25em] text-muted dark:text-muted-dark" style="--i:0">
+      <span>Edinburgh · Available for select projects</span>
+    </p>
+
+    <h1 class="font-display uppercase leading-[0.86] tracking-tight text-[clamp(3rem,12vw,9.5rem)]">
+      <span class="mask" style="--i:1"><span>Design that</span></span>
+      <span class="mask" style="--i:2"><span>ships<span class="text-flame">.</span> Code</span></span>
+      <span class="mask" style="--i:3"><span>that lasts<span class="text-flame">.</span></span></span>
+    </h1>
+
+    <div class="mt-10 grid gap-8 border-t-2 border-ink pt-8 dark:border-ink-dark md:grid-cols-[1.2fr_1fr] md:items-end">
+      <p class="max-w-xl text-lg leading-relaxed text-muted dark:text-muted-dark sm:text-xl">
+        I'm <strong class="text-ink dark:text-ink-dark">Gavin McFarland</strong> — a designer and full-stack engineer.
+        I take products from a blank canvas to production, working across
+        <span class="rotator font-bold text-ink dark:text-ink-dark">
+          <span style="--n:0">design systems.</span>
+          <span style="--n:1">design tooling.</span>
+          <span style="--n:2">web platform work.</span>
+          <span style="--n:3">front-end architecture.</span>
+        </span>
+      </p>
+
+      <div class="flex flex-wrap gap-3">
+        <a href="#work" class="slab-flame border-2 border-ink bg-ink px-6 py-3 font-bold uppercase tracking-wide text-canvas transition hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none dark:border-ink-dark dark:bg-ink-dark dark:text-canvas-dark">
+          See the work
+        </a>
+        <a href="#contact" class="border-2 border-ink px-6 py-3 font-bold uppercase tracking-wide transition hover:bg-flame hover:text-white dark:border-ink-dark">
+          Start a project
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Marquee ──────────────────────────────────────────────────────── -->
+<div class="overflow-hidden border-b-2 border-ink bg-flame py-3 text-white dark:border-ink-dark" aria-hidden="true">
+  <div class="marquee">
+    <!-- Duplicated once; the keyframe travels exactly -50% for a seamless loop. -->
+    <div class="flex shrink-0 items-center gap-8 pr-8 font-display text-lg uppercase tracking-wide sm:text-xl">
+      <span>Design systems</span><span>✦</span><span>Figma plugins</span><span>✦</span><span>Svelte &amp; TypeScript</span><span>✦</span>
+      <span>Prototyping</span><span>✦</span><span>Design engineering</span><span>✦</span><span>Web performance</span><span>✦</span>
+    </div>
+    <div class="flex shrink-0 items-center gap-8 pr-8 font-display text-lg uppercase tracking-wide sm:text-xl">
+      <span>Design systems</span><span>✦</span><span>Figma plugins</span><span>✦</span><span>Svelte &amp; TypeScript</span><span>✦</span>
+      <span>Prototyping</span><span>✦</span><span>Design engineering</span><span>✦</span><span>Web performance</span><span>✦</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Work ─────────────────────────────────────────────────────────── -->
+<section id="work" class="mx-auto max-w-content px-5 py-20 sm:px-8 sm:py-28">
+  <div class="reveal mb-10 flex flex-wrap items-end justify-between gap-6 border-b-2 border-ink pb-6 dark:border-ink-dark">
+    <h2 class="font-display text-[clamp(2.25rem,7vw,4.5rem)] uppercase leading-none tracking-tight">
+      Selected work
+    </h2>
+    <p class="text-sm font-bold uppercase tracking-[0.2em] text-muted dark:text-muted-dark">
+      <span id="project-count">6</span> projects · 2019—2026
+    </p>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="reveal mb-10 flex flex-wrap gap-2" role="group" aria-label="Filter projects by technology">
+    <button data-filter="all"        aria-pressed="true"  class="filter border-2 border-ink px-4 py-2 text-xs font-bold uppercase tracking-wide transition dark:border-ink-dark">All</button>
+    <button data-filter="svelte"     aria-pressed="false" class="filter border-2 border-ink px-4 py-2 text-xs font-bold uppercase tracking-wide transition dark:border-ink-dark">Svelte</button>
+    <button data-filter="typescript" aria-pressed="false" class="filter border-2 border-ink px-4 py-2 text-xs font-bold uppercase tracking-wide transition dark:border-ink-dark">TypeScript</button>
+    <button data-filter="figma"      aria-pressed="false" class="filter border-2 border-ink px-4 py-2 text-xs font-bold uppercase tracking-wide transition dark:border-ink-dark">Figma API</button>
+    <button data-filter="design"     aria-pressed="false" class="filter border-2 border-ink px-4 py-2 text-xs font-bold uppercase tracking-wide transition dark:border-ink-dark">Design</button>
+  </div>
+
+  <div id="grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+
+    <!-- Card 1 -->
+    <article data-card data-tech="svelte typescript figma" class="reveal lift slab flex flex-col border-2 border-ink bg-surface dark:border-ink-dark dark:bg-surface-dark">
+      <div class="relative aspect-[4/3] overflow-hidden border-b-2 border-ink dark:border-ink-dark"
+           style="background: linear-gradient(135deg, #FF4A1C 0%, #FF9A3C 100%);">
+        <span class="absolute left-3 top-3 bg-ink px-2 py-1 font-display text-xs uppercase text-canvas dark:bg-ink-dark dark:text-canvas-dark">01</span>
+        <div class="grid h-full place-items-center font-display text-5xl uppercase text-white/85">Plugma</div>
+      </div>
+      <div class="flex flex-1 flex-col gap-4 p-5">
+        <div>
+          <h3 class="font-display text-2xl uppercase leading-tight">Plugma</h3>
+          <p class="mt-2 text-sm leading-relaxed text-muted dark:text-muted-dark">
+            A build tool that makes developing Figma plugins feel like modern web work — HMR, framework-agnostic, one command.
+          </p>
+        </div>
+        <ul class="flex flex-wrap gap-2" aria-label="Tech stack">
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">Svelte</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">TypeScript</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">Vite</li>
+        </ul>
+        <div class="mt-auto flex gap-4 border-t-2 border-ink pt-4 text-xs font-bold uppercase tracking-wide dark:border-ink-dark">
+          <a href="#" class="hover:text-flame">Live demo ↗</a>
+          <a href="#" class="hover:text-flame">Case study →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 2 -->
+    <article data-card data-tech="design typescript" class="reveal lift slab flex flex-col border-2 border-ink bg-surface dark:border-ink-dark dark:bg-surface-dark">
+      <div class="relative aspect-[4/3] overflow-hidden border-b-2 border-ink dark:border-ink-dark"
+           style="background: linear-gradient(135deg, #1B1A18 0%, #4A4744 100%);">
+        <span class="absolute left-3 top-3 bg-acid px-2 py-1 font-display text-xs uppercase text-ink">02</span>
+        <div class="grid h-full place-items-center font-display text-5xl uppercase text-acid">Tokens</div>
+      </div>
+      <div class="flex flex-1 flex-col gap-4 p-5">
+        <div>
+          <h3 class="font-display text-2xl uppercase leading-tight">Token pipeline</h3>
+          <p class="mt-2 text-sm leading-relaxed text-muted dark:text-muted-dark">
+            Design tokens flowing from Figma variables to shipped CSS, with a diffing step so designers see what actually changed.
+          </p>
+        </div>
+        <ul class="flex flex-wrap gap-2" aria-label="Tech stack">
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">Style Dictionary</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">TypeScript</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">CI</li>
+        </ul>
+        <div class="mt-auto flex gap-4 border-t-2 border-ink pt-4 text-xs font-bold uppercase tracking-wide dark:border-ink-dark">
+          <a href="#" class="hover:text-flame">Live demo ↗</a>
+          <a href="#" class="hover:text-flame">Case study →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 3 -->
+    <article data-card data-tech="svelte design" class="reveal lift slab flex flex-col border-2 border-ink bg-surface dark:border-ink-dark dark:bg-surface-dark">
+      <div class="relative aspect-[4/3] overflow-hidden border-b-2 border-ink dark:border-ink-dark"
+           style="background: linear-gradient(135deg, #D8FF3E 0%, #7BE0A0 100%);">
+        <span class="absolute left-3 top-3 bg-ink px-2 py-1 font-display text-xs uppercase text-canvas dark:bg-ink-dark dark:text-canvas-dark">03</span>
+        <div class="grid h-full place-items-center font-display text-5xl uppercase text-ink/80">Atlas</div>
+      </div>
+      <div class="flex flex-1 flex-col gap-4 p-5">
+        <div>
+          <h3 class="font-display text-2xl uppercase leading-tight">Atlas design system</h3>
+          <p class="mt-2 text-sm leading-relaxed text-muted dark:text-muted-dark">
+            Component library and documentation site for a 40-person product org. Accessibility baked into every primitive.
+          </p>
+        </div>
+        <ul class="flex flex-wrap gap-2" aria-label="Tech stack">
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">Svelte</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">Storybook</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">A11y</li>
+        </ul>
+        <div class="mt-auto flex gap-4 border-t-2 border-ink pt-4 text-xs font-bold uppercase tracking-wide dark:border-ink-dark">
+          <a href="#" class="hover:text-flame">Live demo ↗</a>
+          <a href="#" class="hover:text-flame">Case study →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 4 -->
+    <article data-card data-tech="figma typescript" class="reveal lift slab flex flex-col border-2 border-ink bg-surface dark:border-ink-dark dark:bg-surface-dark">
+      <div class="relative aspect-[4/3] overflow-hidden border-b-2 border-ink dark:border-ink-dark"
+           style="background: linear-gradient(135deg, #3B2AE0 0%, #A24BFF 100%);">
+        <span class="absolute left-3 top-3 bg-acid px-2 py-1 font-display text-xs uppercase text-ink">04</span>
+        <div class="grid h-full place-items-center font-display text-5xl uppercase text-white/85">Specs</div>
+      </div>
+      <div class="flex flex-1 flex-col gap-4 p-5">
+        <div>
+          <h3 class="font-display text-2xl uppercase leading-tight">Spec exporter</h3>
+          <p class="mt-2 text-sm leading-relaxed text-muted dark:text-muted-dark">
+            Figma plugin that turns a selected frame into engineer-ready redlines and a copy-pasteable props table.
+          </p>
+        </div>
+        <ul class="flex flex-wrap gap-2" aria-label="Tech stack">
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">Figma API</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">TypeScript</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">Canvas</li>
+        </ul>
+        <div class="mt-auto flex gap-4 border-t-2 border-ink pt-4 text-xs font-bold uppercase tracking-wide dark:border-ink-dark">
+          <a href="#" class="hover:text-flame">Live demo ↗</a>
+          <a href="#" class="hover:text-flame">Case study →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 5 -->
+    <article data-card data-tech="svelte typescript" class="reveal lift slab flex flex-col border-2 border-ink bg-surface dark:border-ink-dark dark:bg-surface-dark">
+      <div class="relative aspect-[4/3] overflow-hidden border-b-2 border-ink dark:border-ink-dark"
+           style="background: linear-gradient(135deg, #0C0B0A 0%, #FF4A1C 130%);">
+        <span class="absolute left-3 top-3 bg-ink px-2 py-1 font-display text-xs uppercase text-canvas dark:bg-ink-dark dark:text-canvas-dark">05</span>
+        <div class="grid h-full place-items-center font-display text-5xl uppercase text-white/85">Pulse</div>
+      </div>
+      <div class="flex flex-1 flex-col gap-4 p-5">
+        <div>
+          <h3 class="font-display text-2xl uppercase leading-tight">Pulse dashboard</h3>
+          <p class="mt-2 text-sm leading-relaxed text-muted dark:text-muted-dark">
+            Real-time analytics surface rebuilt for speed — first contentful paint under 800ms on a cold cache.
+          </p>
+        </div>
+        <ul class="flex flex-wrap gap-2" aria-label="Tech stack">
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">Svelte</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">TypeScript</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">D3</li>
+        </ul>
+        <div class="mt-auto flex gap-4 border-t-2 border-ink pt-4 text-xs font-bold uppercase tracking-wide dark:border-ink-dark">
+          <a href="#" class="hover:text-flame">Live demo ↗</a>
+          <a href="#" class="hover:text-flame">Case study →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 6 -->
+    <article data-card data-tech="design" class="reveal lift slab flex flex-col border-2 border-ink bg-surface dark:border-ink-dark dark:bg-surface-dark">
+      <div class="relative aspect-[4/3] overflow-hidden border-b-2 border-ink dark:border-ink-dark"
+           style="background: linear-gradient(135deg, #F7F4EE 0%, #C9C2B4 100%);">
+        <span class="absolute left-3 top-3 bg-flame px-2 py-1 font-display text-xs uppercase text-white">06</span>
+        <div class="grid h-full place-items-center font-display text-5xl uppercase text-ink/70">Field</div>
+      </div>
+      <div class="flex flex-1 flex-col gap-4 p-5">
+        <div>
+          <h3 class="font-display text-2xl uppercase leading-tight">Field notes</h3>
+          <p class="mt-2 text-sm leading-relaxed text-muted dark:text-muted-dark">
+            An identity and editorial system for a research publication — type scale, grid, and a print-first colour palette.
+          </p>
+        </div>
+        <ul class="flex flex-wrap gap-2" aria-label="Tech stack">
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">Identity</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">Type</li>
+          <li class="border border-ink/25 px-2 py-1 text-[11px] font-bold uppercase tracking-wide dark:border-ink-dark/25">Print</li>
+        </ul>
+        <div class="mt-auto flex gap-4 border-t-2 border-ink pt-4 text-xs font-bold uppercase tracking-wide dark:border-ink-dark">
+          <a href="#" class="hover:text-flame">Live demo ↗</a>
+          <a href="#" class="hover:text-flame">Case study →</a>
+        </div>
+      </div>
+    </article>
+
+  </div>
+
+  <p id="empty" hidden class="mt-10 border-2 border-dashed border-ink/40 p-8 text-center font-bold uppercase tracking-wide text-muted dark:border-ink-dark/40 dark:text-muted-dark">
+    Nothing under that filter — yet.
+  </p>
+</section>
+
+<!-- ── About ────────────────────────────────────────────────────────── -->
+<section id="about" class="border-y-2 border-ink bg-ink text-canvas dark:border-ink-dark dark:bg-surface-dark dark:text-ink-dark">
+  <div class="mx-auto max-w-content px-5 py-20 sm:px-8 sm:py-28">
+
+    <h2 class="reveal font-display text-[clamp(2.25rem,7vw,4.5rem)] uppercase leading-none tracking-tight">
+      Two disciplines<span class="text-flame">,</span> one head<span class="text-flame">.</span>
+    </h2>
+
+    <div class="mt-12 grid gap-12 lg:grid-cols-[1.1fr_1fr]">
+      <div class="reveal space-y-6 text-lg leading-relaxed text-canvas/80 dark:text-muted-dark">
+        <p>
+          I started in graphic design and ended up writing the code too — mostly out of impatience.
+          Handing a beautiful static file to someone else and hoping felt like the wrong end of the job.
+        </p>
+        <p>
+          These days I sit in the gap: close enough to design to argue about optical spacing,
+          close enough to engineering to know what that argument costs in render time. Most of my
+          work is <strong class="text-canvas dark:text-ink-dark">design systems and the tooling around them</strong> —
+          the unglamorous plumbing that decides whether a team ships consistently or just talks about it.
+        </p>
+        <p>
+          Outside of that: too many half-finished side projects, a long-running interest in typography,
+          and a habit of rewriting things that already worked fine.
+        </p>
+      </div>
+
+      <!-- Scannable column: stats, then a compact timeline -->
+      <div class="reveal space-y-10">
+        <dl class="grid grid-cols-3 gap-px border-2 border-canvas/25 bg-canvas/25 dark:border-ink-dark/20 dark:bg-ink-dark/20">
+          <div class="bg-ink p-4 dark:bg-surface-dark">
+            <dt class="text-[11px] font-bold uppercase tracking-wider text-canvas/60 dark:text-muted-dark">Years</dt>
+            <dd class="font-display text-4xl leading-none text-flame">12</dd>
+          </div>
+          <div class="bg-ink p-4 dark:bg-surface-dark">
+            <dt class="text-[11px] font-bold uppercase tracking-wider text-canvas/60 dark:text-muted-dark">Shipped</dt>
+            <dd class="font-display text-4xl leading-none text-flame">40+</dd>
+          </div>
+          <div class="bg-ink p-4 dark:bg-surface-dark">
+            <dt class="text-[11px] font-bold uppercase tracking-wider text-canvas/60 dark:text-muted-dark">OSS</dt>
+            <dd class="font-display text-4xl leading-none text-flame">6</dd>
+          </div>
+        </dl>
+
+        <ul class="space-y-0 border-t border-canvas/20 dark:border-ink-dark/15">
+          <li class="flex gap-5 border-b border-canvas/20 py-4 dark:border-ink-dark/15">
+            <span class="w-20 shrink-0 text-sm font-bold uppercase tracking-wide text-flame">Now</span>
+            <span class="text-sm leading-relaxed text-canvas/80 dark:text-muted-dark">Independent — design engineering for product teams</span>
+          </li>
+          <li class="flex gap-5 border-b border-canvas/20 py-4 dark:border-ink-dark/15">
+            <span class="w-20 shrink-0 text-sm font-bold uppercase tracking-wide text-flame">2021</span>
+            <span class="text-sm leading-relaxed text-canvas/80 dark:text-muted-dark">Design systems lead, fintech platform</span>
+          </li>
+          <li class="flex gap-5 border-b border-canvas/20 py-4 dark:border-ink-dark/15">
+            <span class="w-20 shrink-0 text-sm font-bold uppercase tracking-wide text-flame">2018</span>
+            <span class="text-sm leading-relaxed text-canvas/80 dark:text-muted-dark">Senior product designer, agency side</span>
+          </li>
+          <li class="flex gap-5 py-4">
+            <span class="w-20 shrink-0 text-sm font-bold uppercase tracking-wide text-flame">2014</span>
+            <span class="text-sm leading-relaxed text-canvas/80 dark:text-muted-dark">Graphic design, print and identity</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Contact ──────────────────────────────────────────────────────── -->
+<section id="contact" class="mx-auto max-w-content px-5 py-20 sm:px-8 sm:py-28">
+  <div class="slab border-2 border-ink bg-surface dark:border-ink-dark dark:bg-surface-dark">
+
+    <button id="contact-toggle" type="button" aria-expanded="false" aria-controls="contact-panel"
+      class="group flex w-full items-center justify-between gap-6 p-6 text-left sm:p-10">
+      <span>
+        <span class="block font-display text-[clamp(2rem,6vw,4rem)] uppercase leading-none tracking-tight">
+          Let's build it<span class="text-flame">.</span>
+        </span>
+        <span class="mt-3 block text-sm font-bold uppercase tracking-[0.2em] text-muted dark:text-muted-dark">
+          Open the brief →
+        </span>
+      </span>
+      <span aria-hidden="true"
+        class="grid h-14 w-14 shrink-0 place-items-center border-2 border-ink text-3xl leading-none transition group-hover:bg-flame group-hover:text-white dark:border-ink-dark">
+        <span id="toggle-icon" class="transition-transform duration-300">+</span>
+      </span>
+    </button>
+
+    <div id="contact-panel" class="expander border-t-2 border-ink dark:border-ink-dark" data-open="false">
+      <div>
+        <form id="contact-form" class="grid gap-6 p-6 sm:p-10 md:grid-cols-2" novalidate>
+          <div data-field style="--f:0" class="md:col-span-1">
+            <label for="name" class="mb-2 block text-xs font-bold uppercase tracking-wider">Name</label>
+            <input id="name" name="name" type="text" required autocomplete="name" placeholder="Your name"
+              class="w-full border-2 border-ink bg-transparent px-4 py-3 outline-none placeholder:text-muted/60 focus:border-flame dark:border-ink-dark dark:placeholder:text-muted-dark/60" />
+          </div>
+
+          <div data-field style="--f:1" class="md:col-span-1">
+            <label for="email" class="mb-2 block text-xs font-bold uppercase tracking-wider">Email</label>
+            <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@company.com"
+              class="w-full border-2 border-ink bg-transparent px-4 py-3 outline-none placeholder:text-muted/60 focus:border-flame dark:border-ink-dark dark:placeholder:text-muted-dark/60" />
+          </div>
+
+          <div data-field style="--f:2" class="md:col-span-2">
+            <label for="message" class="mb-2 block text-xs font-bold uppercase tracking-wider">What are you building?</label>
+            <textarea id="message" name="message" rows="4" required placeholder="A sentence or two is plenty."
+              class="w-full resize-y border-2 border-ink bg-transparent px-4 py-3 outline-none placeholder:text-muted/60 focus:border-flame dark:border-ink-dark dark:placeholder:text-muted-dark/60"></textarea>
+          </div>
+
+          <div data-field style="--f:3" class="flex flex-wrap items-center gap-4 md:col-span-2">
+            <button type="submit"
+              class="slab-flame border-2 border-ink bg-ink px-8 py-3 font-bold uppercase tracking-wide text-canvas transition hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none dark:border-ink-dark dark:bg-ink-dark dark:text-canvas-dark">
+              Send it
+            </button>
+            <p id="form-status" role="status" aria-live="polite" class="text-sm font-bold uppercase tracking-wide text-flame"></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Direct + social -->
+  <div class="mt-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+    <a href="mailto:hello@example.com"
+       class="font-display text-[clamp(1.5rem,4vw,2.5rem)] uppercase leading-none tracking-tight hover:text-flame">
+      hello@example.com
+    </a>
+    <ul class="flex flex-wrap gap-2">
+      <li><a href="#" class="block border-2 border-ink px-4 py-2 text-xs font-bold uppercase tracking-wide transition hover:bg-flame hover:text-white dark:border-ink-dark">GitHub</a></li>
+      <li><a href="#" class="block border-2 border-ink px-4 py-2 text-xs font-bold uppercase tracking-wide transition hover:bg-flame hover:text-white dark:border-ink-dark">LinkedIn</a></li>
+      <li><a href="#" class="block border-2 border-ink px-4 py-2 text-xs font-bold uppercase tracking-wide transition hover:bg-flame hover:text-white dark:border-ink-dark">Bluesky</a></li>
+      <li><a href="#" class="block border-2 border-ink px-4 py-2 text-xs font-bold uppercase tracking-wide transition hover:bg-flame hover:text-white dark:border-ink-dark">Dribbble</a></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── Footer ───────────────────────────────────────────────────────── -->
+<footer class="border-t-2 border-ink dark:border-ink-dark">
+  <div class="mx-auto flex max-w-content flex-col gap-2 px-5 py-8 text-xs font-bold uppercase tracking-wider text-muted dark:text-muted-dark sm:flex-row sm:justify-between sm:px-8">
+    <p>© 2026 Gavin McFarland</p>
+    <p>Set in Anton &amp; DM Sans · Built by hand</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  /* Theme --------------------------------------------------------------- */
+  const root = document.documentElement;
+  const toggle = document.getElementById('theme-toggle');
+  const syncToggle = () => toggle.setAttribute('aria-pressed', String(root.classList.contains('dark')));
+  syncToggle();
+  toggle.addEventListener('click', () => {
+    const dark = root.classList.toggle('dark');
+    localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+    syncToggle();
+  });
+
+  /* Scroll reveal — one observer, unobserve after firing. ---------------- */
+  const reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('shown');
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -12% 0px' });
+    reveals.forEach((el) => io.observe(el));
+  } else {
+    reveals.forEach((el) => el.classList.add('shown'));
+  }
+
+  /* Project filter ------------------------------------------------------- */
+  const cards   = [...document.querySelectorAll('[data-card]')];
+  const chips   = [...document.querySelectorAll('.filter')];
+  const count   = document.getElementById('project-count');
+  const empty   = document.getElementById('empty');
+
+  const paint = () => chips.forEach((c) => {
+    const on = c.getAttribute('aria-pressed') === 'true';
+    c.classList.toggle('bg-flame', on);
+    c.classList.toggle('text-white', on);
+    c.classList.toggle('border-flame', on);
+  });
+
+  chips.forEach((chip) => chip.addEventListener('click', () => {
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+    paint();
+
+    const filter = chip.dataset.filter;
+    let shown = 0;
+    cards.forEach((card) => {
+      const match = filter === 'all' || card.dataset.tech.split(' ').includes(filter);
+      card.hidden = !match;
+      if (match) shown++;
+    });
+    count.textContent = shown;
+    empty.hidden = shown > 0;
+  }));
+  paint();
+
+  /* Contact expander ------------------------------------------------------ */
+  const cToggle = document.getElementById('contact-toggle');
+  const panel   = document.getElementById('contact-panel');
+  const icon    = document.getElementById('toggle-icon');
+
+  cToggle.addEventListener('click', () => {
+    const open = panel.dataset.open !== 'true';
+    panel.dataset.open = String(open);
+    cToggle.setAttribute('aria-expanded', String(open));
+    icon.style.transform = open ? 'rotate(45deg)' : 'none';
+    if (open) setTimeout(() => document.getElementById('name').focus(), 450);
+  });
+
+  /* Form — mockup only, no network call. ---------------------------------- */
+  const form   = document.getElementById('contact-form');
+  const status = document.getElementById('form-status');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!form.checkValidity()) {
+      status.textContent = 'Fill in every field first.';
+      form.reportValidity();
+      return;
+    }
+    status.textContent = 'Sent — mockup only, nothing left the page.';
+    form.reset();
+  });
+})();
+</script>
+</body>
+</html>
