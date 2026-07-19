@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Archive — Gavin McFarland</title>
+<meta name="description" content="Everything, by year — pieces and field notes." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body>
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__bl"></div>
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<header class="masthead">
+  <div class="masthead__in">
+    <span>
+      <a href="index.html">gavin mcfarland</a>
+      <span class="masthead__sep">/</span>
+      <strong>archive</strong>
+    </span>
+    <span style="display:flex;align-items:center;gap:.75rem">
+      <button id="grid-toggle" type="button" class="btn" aria-pressed="false" aria-label="Show layout grid" title="Show layout grid (G)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M2 2h12v12H2z"/><path d="M6 2v12M10 2v12M2 6h12M2 10h12"/>
+        </svg>
+      </button>
+      <button id="theme-toggle" type="button" class="btn" aria-label="Toggle dark mode">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+      </button>
+    </span>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <svg class="regmark regmark--tl" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+    <circle cx="7" cy="7" r="4"/><path d="M7 0v14M0 7h14"/>
+  </svg>
+  <svg class="regmark regmark--tr" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+    <circle cx="7" cy="7" r="4"/><path d="M7 0v14M0 7h14"/>
+  </svg>
+
+  <!-- ── The dense-index template ─────────────────────────────────
+       No prose column at all. Everything is grouped by year and
+       rendered by the same row functions the cover uses, so a piece
+       here and a piece on the front are literally the same markup. -->
+  <nav class="rail" aria-label="Years" id="year-rail"></nav>
+
+  <main id="main" class="main">
+
+    <div class="grid10" style="margin-bottom:calc(var(--bl) * 3)">
+      <div class="lead" style="grid-column:1 / -1">
+        <p>Everything, by year.</p>
+        <p class="sub" id="counts">—</p>
+      </div>
+    </div>
+
+    <div id="years"></div>
+
+  </main>
+</div>
+
+<footer class="colophon">
+  <div class="colophon__in" id="colophon"></div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  /* Pieces and notes are different shapes with a shared spine: both
+     have a year, a name, a description and a link. Normalise once,
+     group by year, and the same renderer handles both. */
+  const items = [
+    ...DATA.pieces.map((p) => ({ ...p, year:p.year, tag:p.kind })),
+    ...DATA.notes.map((n) => ({ ...n, year:n.date.slice(0,4), tag:'note' })),
+  ];
+
+  const years = [...new Set(items.map((i) => i.year))].sort().reverse();
+
+  document.getElementById('counts').textContent =
+    `${DATA.pieces.length} pieces · ${DATA.notes.length} notes · ${years.length} years`;
+
+  document.getElementById('years').innerHTML = years.map((y, yi) => {
+    const rows = items.filter((i) => i.year === y).map((it, i) => `
+      <a class="list__row" href="${esc(it.href)}"${it.href.startsWith('http') ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+        <span class="c-idx">${String(i + 1).padStart(2,'0')}</span>
+        <span class="c-key">${esc(it.name)} ${it.local ? '→' : (it.href.startsWith('http') ? '↗' : '·')}</span>
+        <span class="c-desc">${esc(it.desc)}</span>
+        <span class="c-meta">${esc(it.tag)}</span>
+      </a>`).join('');
+
+    return `
+      <section id="y${esc(y)}" class="sec">
+        <div class="grid10">
+          <h2 class="sec__head" style="grid-column:1 / -1">
+            <span class="sec__num">${String(yi + 1).padStart(2,'0')}</span>
+            <span class="sec__name">${esc(y)}</span>
+            <span class="sec__note">${items.filter((i) => i.year === y).length} items</span>
+          </h2>
+          <div class="list grid10">${rows}</div>
+        </div>
+      </section>`;
+  }).join('');
+
+  /* The rail is built from the years that actually exist. */
+  document.getElementById('year-rail').innerHTML =
+    years.map((y, i) => `<a href="#y${esc(y)}">${String(i + 1).padStart(2,'0')} ${esc(y)}</a>`).join('');
+
+  /* system.js wired its observer before these sections existed, so
+     this page tracks its own. Same behaviour, later binding. */
+  const links = new Map();
+  document.querySelectorAll('#year-rail a').forEach((a) => links.set(a.getAttribute('href').slice(1), a));
+  if ('IntersectionObserver' in window) {
+    const visible = new Set();
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => e.isIntersecting ? visible.add(e.target.id) : visible.delete(e.target.id));
+      const current = [...links.keys()].find((id) => visible.has(id));
+      links.forEach((a, id) => id === current ? a.setAttribute('aria-current','true') : a.removeAttribute('aria-current'));
+    }, { rootMargin:'-8% 0px -70% 0px' });
+    document.querySelectorAll('#years .sec').forEach((s) => io.observe(s));
+  }
+})();
+</script>
+
+</body>
+</html>

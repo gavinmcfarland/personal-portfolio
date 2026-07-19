@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>plugma — Gavin McFarland</title>
+<meta name="description" content="Plugma — a zero-config toolchain for building Figma plugins, with real hot reloading." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body>
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__bl"></div>
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<header class="masthead">
+  <div class="masthead__in">
+    <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+      <a href="index.html">gavin mcfarland</a>
+      <span class="masthead__sep">/</span>
+      <a href="archive.html">pieces</a>
+      <span class="masthead__sep">/</span>
+      <strong>plugma</strong>
+    </span>
+    <span style="display:flex;align-items:center;gap:.75rem">
+      <button id="grid-toggle" type="button" class="btn" aria-pressed="false" aria-label="Show layout grid" title="Show layout grid (G)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M2 2h12v12H2z"/><path d="M6 2v12M10 2v12M2 6h12M2 10h12"/>
+        </svg>
+      </button>
+      <button id="theme-toggle" type="button" class="btn" aria-label="Toggle dark mode">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+      </button>
+    </span>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <svg class="regmark regmark--tl" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+    <circle cx="7" cy="7" r="4"/><path d="M7 0v14M0 7h14"/>
+  </svg>
+  <svg class="regmark regmark--tr" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+    <circle cx="7" cy="7" r="4"/><path d="M7 0v14M0 7h14"/>
+  </svg>
+
+  <nav class="rail" aria-label="Contents">
+    <a href="#brief">01 brief</a>
+    <a href="#facts">02 facts</a>
+    <a href="#constraints">03 constraints</a>
+    <a href="#build">04 build</a>
+    <a href="#board">05 board</a>
+    <a href="#outcome">06 outcome</a>
+  </nav>
+
+  <main id="main" class="main">
+
+    <div class="grid10" style="margin-bottom:calc(var(--bl) * 3)">
+      <div class="lead" style="grid-column:1 / -1">
+        <p>plugma</p>
+        <p class="sub">a zero-config toolchain for figma plugins · 2024 · maintained</p>
+      </div>
+    </div>
+
+    <!-- 01 brief ────────────────────────────────────────────── -->
+    <section id="brief" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">01</span><span class="sec__name">brief</span>
+        </h2>
+        <div class="prose" style="grid-column:1 / -1; max-width:62ch">
+          <p>
+            Give Figma plugins the development loop every other web project already has:
+            <span class="mark">change a line, see it</span>. No rebuild, no reload, no losing
+            the state you were halfway through testing.
+          </p>
+          <p style="margin-top:var(--bl)">
+            <a class="lnk" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">plugma.dev ↗</a>
+            &nbsp;
+            <a class="lnk" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">source ↗</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 facts ────────────────────────────────────────────── -->
+    <section id="facts" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">02</span><span class="sec__name">facts</span>
+        </h2>
+        <div class="list grid10">
+          <div class="list__row"><span class="c-term">year</span><span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">2024 — ongoing</span></div>
+          <div class="list__row"><span class="c-term">role</span><span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">creator, maintainer</span></div>
+          <div class="list__row"><span class="c-term">shape</span><span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">cli + dev server + build step</span></div>
+          <div class="list__row"><span class="c-term">built with</span><span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">node, typescript, vite</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 constraints ──────────────────────────────────────── -->
+    <section id="constraints" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">03</span><span class="sec__name">constraints</span>
+          <span class="sec__note">what made it hard</span>
+        </h2>
+
+        <div class="list grid10">
+          <div class="list__row">
+            <span class="c-term">two runtimes</span>
+            <span class="c-body">A plugin is two programs that cannot see each other. One sits in a sandbox with the document and no DOM; the other sits in an iframe with the DOM and no document.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">no dev server</span>
+            <span class="c-body">Neither half can be served from disk the way an ordinary web app can. The UI has to be inlined into the built file.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">messages only</span>
+            <span class="c-body">The halves speak by passing messages. Anything shared has to be serialisable, and anything typed has to be typed twice.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 build ────────────────────────────────────────────── -->
+    <section id="build" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">04</span><span class="sec__name">build</span>
+        </h2>
+        <div class="prose" style="grid-column:1 / -1; max-width:62ch">
+          <p>
+            Plugma puts all of that underneath a single command. One scaffolds, one develops,
+            one ships, and the framework stays your choice — React, Svelte, Vue, or none.
+          </p>
+          <p>
+            The trick is where the UI lives. In development it is served from a dev server and
+            pointed at by the manifest; at build time the same UI is inlined into the output.
+            <strong>The sandbox half never notices the difference</strong>, so hot module
+            reloading works the way it does anywhere else — edits appear without a rebuild, and
+            without dropping the plugin state you were testing against.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 board ────────────────────────────────────────────── -->
+    <section id="board" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">05</span><span class="sec__name">board</span>
+          <span class="sec__note">fig. 1</span>
+        </h2>
+
+        <div class="prose" style="grid-column:1 / -1; max-width:62ch; margin-bottom:var(--bl)">
+          <p>
+            The working notes live on a board rather than in a document, because the argument
+            is spatial — two halves, a bridge, and what each side can reach.
+          </p>
+        </div>
+
+        <figure class="figure panel">
+          <div class="panel__head">
+            <span>fig. 1 — working board · 52%</span>
+            <a href="piece-canvas.html">open full board ↗</a>
+          </div>
+          <div class="figure__stage board">
+            <div class="vp" style="cursor:default" aria-hidden="true">
+              <div class="figure__scale" id="mini"></div>
+            </div>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 06 outcome ──────────────────────────────────────────── -->
+    <section id="outcome" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">06</span><span class="sec__name">outcome</span>
+        </h2>
+        <div class="prose" style="grid-column:1 / -1; max-width:62ch; margin-bottom:var(--bl)">
+          <p>
+            What it replaces took most of a day, every time. It now takes one command. Still
+            maintained, and the substrate under every plugin I have built since.
+          </p>
+        </div>
+        <div class="list grid10" id="neighbours"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="colophon">
+  <div class="colophon__in" id="colophon"></div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script src="board.js"></script>
+<script>
+  /* The figure is the board itself, drawn at 52% — not a picture of it. */
+  drawFigure(document.getElementById('mini'), 0.52, 24);
+
+  /* Neighbours come from the same array the archive reads, so the
+     prev/next here can never disagree with the index. */
+  const i = DATA.pieces.findIndex((p) => p.slug === 'plugma');
+  const near = [
+    { label:'next', p: DATA.pieces[i + 1] },
+    { label:'prev', p: DATA.pieces[i - 1] },
+  ].filter((n) => n.p);
+
+  document.getElementById('neighbours').innerHTML = near.map((n) => `
+    <a class="list__row" href="${esc(n.p.href)}"${n.p.href.startsWith('http') ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+      <span class="c-term">${n.label}</span>
+      <span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">${esc(n.p.name)} — ${esc(n.p.desc)}</span>
+    </a>`).join('') + `
+    <a class="list__row" href="archive.html">
+      <span class="c-term">index</span>
+      <span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">everything, by year →</span>
+    </a>`;
+</script>
+
+</body>
+</html>
