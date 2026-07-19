@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland</title>
+<meta name="description" content="Gavin McFarland — designer and engineer in London. A running log of things made." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet" />
+
+<!-- Set theme before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          ink:    { DEFAULT: '#26231F', dark: '#E4E0D8' },
+          muted:  { DEFAULT: '#5A544C', dark: '#9A938A' },
+          faint:  { DEFAULT: '#8E877D', dark: '#6B655D' },
+          paper:  { DEFAULT: '#FCFBF8', dark: '#100F0E' },
+          rule:   { DEFAULT: 'rgba(38,35,31,.13)', dark: 'rgba(228,224,216,.15)' },
+          link:   { DEFAULT: '#3A5A7A', dark: '#8FB0CE' },
+        },
+        fontFamily: {
+          serif: ['Source Serif 4', 'Georgia', 'serif'],
+          mono:  ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Log
+     Direction: a personal page, not a portfolio site. No hero, no
+     pitch, no project grid, no contact form — the whole page is one
+     narrow reverse-chronological column of dated notes, the way a
+     personal site looked before it learned to sell. One serif at
+     three sizes carries everything; dates sit in the system mono as
+     the only second voice. The single indulgence is the year rule
+     that sticks as you scroll, so you always know when you are.
+     Nothing moves except what you are pointing at.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  ::selection { background: #3A5A7A; color: #FCFBF8; }
+  .dark ::selection { background: #8FB0CE; color: #100F0E; }
+
+  :focus-visible { outline: 2px solid #3A5A7A; outline-offset: 3px; border-radius: 2px; }
+  .dark :focus-visible { outline-color: #8FB0CE; }
+
+  /* Optical sizing does the work display type would normally do. */
+  body { font-optical-sizing: auto; text-rendering: optimizeLegibility; }
+
+  /* Links are underlined by default — this is a text page, and a
+     text page should look like one. The underline just warms up. */
+  .prose-link {
+    color: #3A5A7A;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .18em;
+    text-decoration-color: rgba(58,90,122,.35);
+    transition: text-decoration-color .25s ease;
+  }
+  .prose-link:hover { text-decoration-color: currentColor; }
+  .dark .prose-link { color: #8FB0CE; text-decoration-color: rgba(143,176,206,.35); }
+
+  /* Year markers stay put while their entries pass behind them. */
+  .year {
+    position: sticky; top: 0; z-index: 10;
+    background: #FCFBF8;
+  }
+  .dark .year { background: #100F0E; }
+
+  /* Entries fade up once. Deliberately slight — this is a page you
+     read, not one you watch. */
+  @keyframes settle { from { opacity: 0; transform: translateY(.4rem); } to { opacity: 1; transform: none; } }
+  .settle { opacity: 0; animation: settle .55s ease forwards; animation-delay: calc(var(--i, 0) * 55ms); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .settle { opacity: 1 !important; transform: none !important; animation: none !important; }
+    html { scroll-behavior: auto; }
+    .year { position: static; }
+  }
+</style>
+</head>
+
+<body class="bg-paper font-serif text-[1.02rem] leading-[1.62] text-ink antialiased dark:bg-paper-dark dark:text-ink-dark">
+
+<!-- The column is the entire layout. Everything below lives in it. -->
+<div class="mx-auto w-full max-w-[38rem] px-6 py-16 sm:px-8 sm:py-24">
+
+  <!-- ── Masthead ──────────────────────────────────────────────
+       Name, one line about what I do, and the toggle. No nav: the
+       page is short enough that a nav would be furniture. -->
+  <header class="flex items-start justify-between gap-6">
+    <div>
+      <h1 class="text-[1.15rem] font-semibold tracking-tight">Gavin McFarland</h1>
+      <p class="mt-1 text-muted dark:text-muted-dark">Designer and engineer. London.</p>
+    </div>
+
+    <button id="theme-toggle" type="button" aria-label="Toggle dark mode"
+      class="-mr-1 mt-0.5 shrink-0 rounded p-1.5 text-faint transition hover:text-ink dark:text-faint-dark dark:hover:text-ink-dark">
+      <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+      </svg>
+      <svg class="hidden h-4 w-4 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- ── Standfirst ────────────────────────────────────────────
+       PLACEHOLDER PROSE — voice is invented, rewrite in your own.
+       Two sentences is the budget. Any more and it becomes an
+       About page, which is the thing this page is avoiding. -->
+  <section class="mt-12">
+    <p class="text-[1.1rem] leading-[1.6]">
+      I mostly build small tools for people who make software — the piece of
+      the workflow nobody owns, usually. Below is a log of what I have shipped,
+      newest first.
+    </p>
+  </section>
+
+  <!-- ── The log ───────────────────────────────────────────────
+       Reverse-chronological. Entries are injected from the data at
+       the foot of the page so the years group themselves. -->
+  <main id="log" class="mt-16">
+    <!-- Injected below. -->
+  </main>
+
+  <!-- ── Elsewhere ─────────────────────────────────────────────
+       Three links, no form, no call to action. If someone wants to
+       reach me they can manage an email client. -->
+  <section class="mt-20 border-t border-rule pt-8 dark:border-rule-dark">
+    <h2 class="font-mono text-[.72rem] uppercase tracking-[.14em] text-faint dark:text-faint-dark">Elsewhere</h2>
+    <ul class="mt-4 space-y-2">
+      <li><a class="prose-link" href="mailto:gavin@limitlessloop.com">gavin@limitlessloop.com</a></li>
+      <li><a class="prose-link" href="https://github.com/gavinmcfarland" rel="me noopener noreferrer" target="_blank">GitHub</a></li>
+      <li><a class="prose-link" href="https://www.figma.com/@gavinmcfarland" rel="me noopener noreferrer" target="_blank">Figma Community</a></li>
+    </ul>
+  </section>
+
+  <!-- ── Colophon ──────────────────────────────────────────────
+       The personal-web convention: say how the thing was made. -->
+  <footer class="mt-16 border-t border-rule pt-8 text-[.9rem] text-faint dark:border-rule-dark dark:text-faint-dark">
+    <p>
+      Set in Source Serif 4. Built by hand, hosted quietly, no analytics.
+    </p>
+    <p class="mt-1.5">Last tended July 2026.</p>
+  </footer>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* Theme — the pre-paint script set the class; this persists changes. */
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const dark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+  });
+
+  /* ── Entries ───────────────────────────────────────────────
+     Facts (name, year, link) are real. The `note` lines are
+     PLACEHOLDER VOICE — plausible, but invented. Rewrite them.
+     Order is newest first; the year headings derive from this. */
+  const entries = [
+    { year: 2024, month: 'Nov', title: 'Plugma',
+      note: 'A command that sets up a Figma plugin and gets out of the way. I had rebuilt the same toolchain by hand too many times to keep pretending it was a one-off.',
+      href: 'https://www.plugma.dev/', hrefLabel: 'plugma.dev' },
+
+    { year: 2024, month: 'Jun', title: 'Askeroo',
+      note: 'Terminal prompts that let you go back. Obvious in hindsight, faintly maddening that it was not already the default.',
+      href: 'https://github.com/gavinmcfarland/askeroo', hrefLabel: 'GitHub' },
+
+    { year: 2024, month: 'Feb', title: 'Screenshot 2 Layout',
+      note: 'Recovers the structure of a screenshot instead of redrawing it. An experiment that turned out to be useful more often than I expected.',
+      href: '#', hrefLabel: 'Demo' },
+
+    { year: 2023, month: 'Sep', title: 'Figlet',
+      note: 'Plugin code you can write and run in the browser, with nothing installed. Built mostly so I could stop answering the same setup question.',
+      href: 'https://www.figma.com/community/plugin/1215620774867583125/figlet', hrefLabel: 'Figma Community' },
+
+    { year: 2022, month: 'Apr', title: 'Table Creator',
+      note: 'Tables on a design canvas that survive being edited. The unglamorous half of design tooling, and the half people actually ask for.',
+      href: 'https://www.figma.com/community/plugin/885838970710285271/table-creator', hrefLabel: 'Figma Community' },
+
+    { year: 2021, month: 'Mar', title: 'Icon Preview',
+      note: 'Shows the icon you are drawing at the sizes it will really be used. Small, and it fixed a thing that had bothered me for years.',
+      href: 'https://www.figma.com/community/plugin/888907972695800109/icon-preview', hrefLabel: 'Figma Community' },
+  ];
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* Group into years, preserving the array's order. */
+  const years = [];
+  for (const entry of entries) {
+    const last = years[years.length - 1];
+    if (last && last.year === entry.year) last.items.push(entry);
+    else years.push({ year: entry.year, items: [entry] });
+  }
+
+  let i = 0; // running index, so the stagger continues across years
+  document.getElementById('log').innerHTML = years.map((group) => `
+    <section class="mb-14">
+      <h2 class="year settle border-b border-rule py-2 font-mono text-[.72rem] tracking-[.14em] text-faint dark:border-rule-dark dark:text-faint-dark" style="--i:${i++}">
+        ${group.year}
+      </h2>
+
+      <ul>
+        ${group.items.map((e) => {
+          const external = e.href.startsWith('http');
+          return `
+          <li class="settle border-b border-rule py-6 last:border-0 dark:border-rule-dark" style="--i:${i++}">
+            <div class="flex items-baseline gap-4">
+              <span class="w-9 shrink-0 font-mono text-[.72rem] text-faint dark:text-faint-dark">${esc(e.month)}</span>
+              <h3 class="font-semibold tracking-tight">${esc(e.title)}</h3>
+            </div>
+            <div class="mt-2 pl-0 sm:pl-[3.25rem]">
+              <p class="text-muted dark:text-muted-dark">${esc(e.note)}</p>
+              <p class="mt-2.5 text-[.9rem]">
+                <a class="prose-link" href="${esc(e.href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${esc(e.hrefLabel)}</a>
+              </p>
+            </div>
+          </li>`;
+        }).join('')}
+      </ul>
+    </section>`).join('');
+})();
+</script>
+
+</body>
+</html>
