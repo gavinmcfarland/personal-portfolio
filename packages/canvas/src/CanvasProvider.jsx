@@ -651,8 +651,10 @@ export function CanvasProvider({
     function placeSel(x, y, w, h) {
       const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s, sw = w * s, sh = h * s;
       chrome.sel.style.display = 'block';
-      chrome.sel.style.left = (sx - 4) + 'px'; chrome.sel.style.top = (sy - 4) + 'px';
-      chrome.sel.style.width = (sw + 8) + 'px'; chrome.sel.style.height = (sh + 8) + 'px';
+      // Offset -10px from the base 4px pad: the selected outline draws inset,
+      // its 2px border spanning 6-8px inside the object's edge.
+      chrome.sel.style.left = (sx + 6) + 'px'; chrome.sel.style.top = (sy + 6) + 'px';
+      chrome.sel.style.width = (sw - 12) + 'px'; chrome.sel.style.height = (sh - 12) + 'px';
       /* The edit / resize affordances only make sense for a single selected node. */
       const single = S.selected.length === 1 ? S.selected[0] : null;
       const nodeEl = single && single.kind === 'node' ? nodeEls.get(single.id) : null;
@@ -728,7 +730,7 @@ export function CanvasProvider({
       // (see placeSel) — so each divider spans the full outlined box, edge to edge.
       // Everything is sized/centred explicitly here (no CSS transform) so the two
       // axes stay symmetric and a divider can't be shifted by a stray transform.
-      const SEL_PAD = 4;
+      const SEL_PAD = -6;
       const HIT = 15; // grab-strip thickness
       for (const child of wrap.children) {
         const axis = child.dataset.axis, k = +child.dataset.k;

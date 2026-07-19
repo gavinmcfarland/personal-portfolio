@@ -1726,10 +1726,10 @@
   background: var(--surface);
   border: 2px solid var(--accent);
 }
-.canvas-root .cv-rz .cv-rz-nw { left: -9px; top: -9px; cursor: nwse-resize; }
-.canvas-root .cv-rz .cv-rz-ne { left: calc(100% - 3px); top: -9px; cursor: nesw-resize; }
-.canvas-root .cv-rz .cv-rz-sw { left: -9px; top: calc(100% - 3px); cursor: nesw-resize; }
-.canvas-root .cv-rz .cv-rz-se { left: calc(100% - 3px); top: calc(100% - 3px); cursor: nwse-resize; }
+.canvas-root .cv-rz .cv-rz-nw { left: 1px; top: 1px; cursor: nwse-resize; }
+.canvas-root .cv-rz .cv-rz-ne { left: calc(100% - 13px); top: 1px; cursor: nesw-resize; }
+.canvas-root .cv-rz .cv-rz-sw { left: 1px; top: calc(100% - 13px); cursor: nesw-resize; }
+.canvas-root .cv-rz .cv-rz-se { left: calc(100% - 13px); top: calc(100% - 13px); cursor: nwse-resize; }
 /* Side strips: invisible ~11px grab bands straddling each edge, inset from the
    corners so the corner squares stay reachable. */
 .canvas-root .cv-rz .cv-rz-n,
