@@ -235,9 +235,14 @@ a.tbl__row:hover .tbl__mk, a.tbl__row:focus-visible .tbl__mk { opacity:1; }
   .tbl__head { display:none; }
   .tbl__row { grid-template-columns:1fr auto; padding-block:.75rem; }
   .c-num { display:none; }
-  .c-key { grid-column:1; }
-  .c-year { grid-column:2; }
-  .c-desc { grid-column:1 / -1; }
+  /* Rows are stated explicitly, not left to auto-placement: .c-desc
+     precedes .c-year in the DOM, so auto-placement would take the
+     full-width description as row 2 and strand the year on a row 3
+     of its own. Key and year share row 1; the year column survives
+     as a right-hand edge. */
+  .c-key  { grid-column:1; grid-row:1; }
+  .c-year { grid-column:2; grid-row:1; }
+  .c-desc { grid-column:1 / -1; grid-row:2; }
   .c-term { grid-column:1 / -1; }
   .c-body { grid-column:1 / -1; margin-top:.25rem; }
 }
