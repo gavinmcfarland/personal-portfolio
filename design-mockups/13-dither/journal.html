@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>journal(1) — Gavin McFarland</title>
+<meta name="description" content="Field notes on design systems, Figma tooling and the seam between design and front-end.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230E0F0D'/%3E%3Cg fill='%23D9D7CB'%3E%3Crect x='3' y='3' width='1' height='1'/%3E%3Crect x='5' y='4' width='1' height='1'/%3E%3Crect x='7' y='3' width='1' height='1'/%3E%3Crect x='4' y='6' width='1' height='1'/%3E%3Crect x='6' y='7' width='1' height='1'/%3E%3Crect x='9' y='6' width='1' height='1'/%3E%3Crect x='8' y='9' width='1' height='1'/%3E%3Crect x='11' y='8' width='1' height='1'/%3E%3Crect x='10' y='11' width='1' height='1'/%3E%3Crect x='12' y='12' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<script>(()=>{document.documentElement.classList.toggle('light',localStorage.getItem('gm-surface-13')==='bone');})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="journal">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="bar__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="sec">
+    <div class="sheet">
+      <h1 class="man__h">Name</h1>
+      <div class="man__b">
+        <p class="ink"><span class="b">journal</span> — field notes, written when a project taught me
+        something worth keeping.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Description</h2>
+      <div class="man__b">
+        <p>Short, dated, and filed under the year they happened —
+        <span data-count="posts">—</span> entries so far.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Latest</h2>
+      <div class="entry" style="border-top:1px solid var(--line)">
+        <a class="cmd" href="note.html">
+          <span class="cmd__$">$</span>
+          <span><span class="dim">journal --read</span> <span class="cmd__name">two-programs-one-plugin</span></span>
+          <span class="cmd__year">2026-05</span>
+        </a>
+        <div class="entry__grid">
+          <div>
+            <span class="plate" data-plate="a" aria-hidden="true"></span>
+            <p class="plate-cap">Plate 1 — drift</p>
+          </div>
+          <div>
+            <p class="entry__desc">A Figma plugin looks like one thing and behaves like two. Almost every
+            difficulty in building one comes from that gap, and almost every tool that helps is a tool that
+            hides it.</p>
+            <p style="margin-top:1rem"><a class="ln" href="note.html">note(1) →</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">All entries</h2>
+      <div style="padding-left:var(--indent)" id="posts">
+        <noscript><p class="dim">The journal is rendered from a shared data file. It needs JavaScript.</p></noscript>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="index.html">gavin</a><span class="n">(1)</span>,
+          <a href="note.html">note</a><span class="n">(1)</span>,
+          <a href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">github</a><span class="n">(7)</span>
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <p>journal(1) &nbsp;·&nbsp; 13 · Dither &nbsp;·&nbsp; London, United Kingdom</p>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>renderPosts(document.getElementById('posts'));</script>
+</body>
+</html>
