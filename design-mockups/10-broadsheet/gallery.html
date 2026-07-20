@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallery — The Working Sheet</title>
+<meta name="description" content="Six plates, printed flat: tools, plug-ins and libraries.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23D8D6CD'/%3E%3Crect x='4' y='4' width='24' height='7' fill='%2317171A'/%3E%3Crect x='4' y='14' width='11' height='14' fill='%23C4321B'/%3E%3Crect x='17' y='14' width='11' height='14' fill='%231B3C96'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="gallery">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <div class="sheet bar__in">
+    <nav id="nav" aria-label="Primary"></nav>
+    <div class="bar__tools">
+      <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+      <button id="theme-toggle" type="button">Theme</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="band band--tight">
+    <div class="sheet">
+      <div class="g12">
+        <div class="c7">
+          <p class="micro dim">Gallery</p>
+          <h1 class="display" style="margin-top:.6rem;max-width:18ch">Six plates, printed flat.</h1>
+        </div>
+        <div class="c4" style="grid-column:9 / span 4">
+          <p class="dim">
+            The same <span data-count="projects">—</span> items as the front-page table,
+            given texture and a spot colour. Three arrangements of one set: a strip
+            you scroll, a grid that staggers, and the plain table underneath.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── L3 · The filmstrip: for comparing, not for searching ──────── -->
+  <section class="band" aria-labelledby="st-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="st-h">The strip</h2>
+        <span class="head__x faint">Scroll sideways · snaps</span>
+      </div>
+      <div data-layout="strip"></div>
+    </div>
+  </section>
+
+  <!-- ── L4 · Staggered: the same items, refusing to line up ───────── -->
+  <section class="band" aria-labelledby="sg-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">02</span>
+        <h2 id="sg-h">Staggered</h2>
+        <span class="head__x faint">Press G — they still hold the grid</span>
+      </div>
+      <p class="dim" style="max-width:58ch;margin-bottom:1.25rem">
+        Every second cell drops half a row and every third drops a quarter. Nothing
+        leaves the twelve columns; the grid is still doing all the work, it has just
+        stopped announcing itself.
+      </p>
+      <div data-layout="stagger"></div>
+    </div>
+  </section>
+
+  <!-- ── The index underneath, because a gallery still needs one ───── -->
+  <section class="band" aria-labelledby="ix-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">03</span>
+        <h2 id="ix-h">The same six, listed</h2>
+        <a class="head__x ln" href="archive.html">Classifieds →</a>
+      </div>
+      <div data-layout="table"></div>
+      <p class="micro scroll-hint">Scroll →</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Sheet</dt><dd>Gallery</dd></div>
+      <div><dt>Set</dt><dd>10 · Broadsheet</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>

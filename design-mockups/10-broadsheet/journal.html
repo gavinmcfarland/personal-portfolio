@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Journal — The Working Sheet</title>
+<meta name="description" content="Field notes on design systems, Figma tooling and the seam between design and front-end.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23D8D6CD'/%3E%3Crect x='4' y='4' width='24' height='7' fill='%2317171A'/%3E%3Crect x='4' y='14' width='11' height='14' fill='%23C4321B'/%3E%3Crect x='17' y='14' width='11' height='14' fill='%231B3C96'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="journal">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <div class="sheet bar__in">
+    <nav id="nav" aria-label="Primary"></nav>
+    <div class="bar__tools">
+      <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+      <button id="theme-toggle" type="button">Theme</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── The lead note, given a whole band to itself ───────────────── -->
+  <section class="band band--tight">
+    <div class="sheet">
+      <div class="g12">
+        <div class="c8">
+          <p class="micro dim">Journal</p>
+          <p class="dim" style="margin-top:.6rem;max-width:50ch">
+            Field notes, written when a project taught me something worth keeping.
+            Short, dated, filed under the year they happened —
+            <span data-count="posts">—</span> entries so far.
+          </p>
+        </div>
+        <div class="c4" style="grid-column:9 / span 4">
+          <a class="note" data-tone="red" href="feature.html" style="text-decoration:none">
+            <span class="note__label">Pinned · 2026-05</span>Two programs,
+one plugin
+            <span class="micro" style="margin-top:auto">Read the feature →</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── L1 · The three-column flow, which is what a journal is ────── -->
+  <section class="band" aria-labelledby="rc-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="rc-h">Recent, in columns</h2>
+        <span class="head__x faint">Set in three</span>
+      </div>
+      <div class="l-flow l-flow--3" id="recent"></div>
+    </div>
+  </section>
+
+  <!-- ── Grouped by year, collapsible ─────────────────────────────── -->
+  <section class="band" aria-labelledby="all-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">02</span>
+        <h2 id="all-h">All entries, by year</h2>
+        <span class="head__x faint">Collapse a year to set it aside</span>
+      </div>
+      <div id="posts">
+        <noscript><p class="meta dim">The ledger is rendered from a shared data file. It needs JavaScript.</p></noscript>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Elsewhere ─────────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="el-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">03</span>
+        <h2 id="el-h">Elsewhere</h2>
+      </div>
+      <div class="edrows">
+        <div class="edrow">
+          <span class="edrow__k"><span class="ph ph--14" aria-hidden="true"></span> GitHub</span>
+          <p class="edrow__v">Most of what these notes describe ships as code — <a class="ln" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">github.com/gavinmcfarland ↗</a></p>
+        </div>
+        <div class="edrow">
+          <span class="edrow__k"><span class="ph ph--14" aria-hidden="true"></span> Boards</span>
+          <p class="edrow__v">The working notes behind each project stay on their <a class="ln" href="board.html">boards</a> — the honest version of how the work went.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Sheet</dt><dd>Journal</dd></div>
+      <div><dt>Set</dt><dd>10 · Broadsheet</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+    renderPosts(document.getElementById('posts'));
+
+    document.getElementById('recent').innerHTML = DATA.posts.slice(0, 6).map((p, i) => `
+      <div class="keep">
+        <p class="micro dim" style="border-bottom:1px solid var(--hair);padding-bottom:.35rem;margin-bottom:.45rem">
+          <span class="num">${pad2(i + 1)}</span> ${esc(p.date)} · ${esc(p.tag)}
+        </p>
+        <a class="ln--bare" href="${esc(p.href)}">
+          <span class="strong" style="display:block;margin-bottom:.25rem">${esc(p.title)}</span>
+          <span class="dim">${esc(p.lede)}</span>
+        </a>
+      </div>`).join('');
+  })();
+</script>
+</body>
+</html>
