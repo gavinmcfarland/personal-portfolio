@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Journal — Galley</title>
+<meta name="description" content="Field notes on design systems, Figma tooling and the seam between design and front-end.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F4F1E9'/%3E%3Crect x='4' y='4' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='9' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='14' width='9' height='2' fill='%231A1916'/%3E%3Crect x='22' y='4' width='2' height='12' fill='%23A82818'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="journal">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="head">
+  <a class="head__name" href="index.html">G. McFarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="head__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Theme</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── Centred left: a whole viewport spent on four lines ───────── -->
+  <section class="frame frame--cl frame--half">
+    <span class="frame__mark">center / start</span>
+    <div class="hold--wide">
+      <p class="micro faint">Journal · <span data-count="posts">—</span> entries</p>
+      <h1 class="display" style="margin-top:1.25rem">Notes taken<br><em>while the work was warm.</em></h1>
+      <p class="dim hold" style="margin-top:1.25rem">
+        Written when a project taught me something worth keeping. Short, dated,
+        and filed under the year they happened.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── The lead note, held apart from its own margin ────────────── -->
+  <section class="frame frame--tl frame--auto">
+    <span class="frame__mark">measure + margin</span>
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">01</span>
+        <h2>Latest</h2>
+      </div>
+      <div class="hang">
+        <div>
+          <p class="micro faint">2026-05 · figma · six minutes</p>
+          <p style="font-size:1.25rem;line-height:1.35;margin:.75rem 0 1rem">
+            <a class="ln--bare" href="note.html">Two programs, one plugin</a>
+          </p>
+          <p class="dim">
+            A Figma plugin looks like one thing and behaves like two. Almost every
+            difficulty in building one comes from that gap, and almost every tool
+            that helps is a tool that hides it.
+          </p>
+          <p class="mark" style="margin-top:1rem"><a class="ln" href="note.html">Read the note →</a></p>
+        </div>
+        <div class="hang__notes">
+          <div>
+            <span class="micro">Why it is here</span>
+            <span class="mark dim">It is the argument behind
+            <a class="ln" href="project.html">plugma</a>, written out in full rather
+            than compressed into a project page.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Everything, by year, at full width ───────────────────────── -->
+  <section class="frame frame--wide frame--auto">
+    <span class="frame__mark">100% / start</span>
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">02</span>
+        <h2>All entries, by year</h2>
+        <span class="marker__x">Collapse a year to set it aside</span>
+      </div>
+      <div id="posts">
+        <noscript><p class="mark dim">The journal is rendered from a shared data file. It needs JavaScript.</p></noscript>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Bottom left ──────────────────────────────────────────────── -->
+  <section class="frame frame--bl frame--half">
+    <span class="frame__mark">end / start</span>
+    <div class="hold">
+      <p class="micro faint">Elsewhere</p>
+      <p class="dim" style="margin-top:.75rem">
+        Most of what these notes describe ships as code —
+        <a class="ln" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">github.com/gavinmcfarland ↗</a>.
+        The working notes behind each project stay on their
+        <a class="ln" href="board.html">boards</a>.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <dl class="defs">
+    <div><dt>Sheet</dt><dd>Journal</dd></div>
+    <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+    <div><dt>Set</dt><dd>11 · Galley</dd></div>
+  </dl>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>renderPosts(document.getElementById('posts'));</script>
+</body>
+</html>

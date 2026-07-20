@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact — Galley</title>
+<meta name="description" content="Get in touch about design systems, tooling, or front-end work.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F4F1E9'/%3E%3Crect x='4' y='4' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='9' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='14' width='9' height='2' fill='%231A1916'/%3E%3Crect x='22' y='4' width='2' height='12' fill='%23A82818'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="contact">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="head">
+  <a class="head__name" href="index.html">G. McFarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="head__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Theme</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── Held apart: the invitation at the head, the address at the
+       foot, a viewport of nothing between them. ─────────────────── -->
+  <section class="frame frame--split">
+    <span class="frame__mark">space-between</span>
+    <div class="hold--wide">
+      <p class="micro faint">Contact</p>
+      <h1 class="display" style="margin-top:1.25rem">The fastest route<br><em>is email.</em></h1>
+    </div>
+    <div class="hold--full">
+      <div class="hang">
+        <div>
+          <p class="dim">
+            Two working days, usually sooner. Everything below this line is context
+            for what happens after you send one.
+          </p>
+        </div>
+        <div class="hang__notes">
+          <div>
+            <span class="micro">Direct</span>
+            <span class="mark dim"><a class="ln" data-email href="#">—</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── The form, one measure wide, set as blanks to fill ────────── -->
+  <section class="frame frame--tl frame--auto">
+    <span class="frame__mark">34em / start</span>
+    <div class="hang hold--full">
+
+      <div>
+        <div class="marker">
+          <span class="corr">01</span>
+          <h2>Write</h2>
+        </div>
+        <form id="contact-form" novalidate>
+          <div class="field">
+            <label for="f-name">Name</label>
+            <input class="input" id="f-name" name="name" type="text" autocomplete="name">
+            <span class="err" aria-live="polite"></span>
+          </div>
+          <div class="field">
+            <label for="f-email">Email</label>
+            <input class="input" id="f-email" name="email" type="email" autocomplete="email">
+            <span class="err" aria-live="polite"></span>
+          </div>
+          <div class="field">
+            <label for="f-msg">Message</label>
+            <textarea class="input" id="f-msg" name="message"></textarea>
+            <span class="err" aria-live="polite"></span>
+          </div>
+          <button class="btn" type="submit" style="margin-top:.5rem">Send it</button>
+          <p class="mark dim" id="form-done" hidden tabindex="-1" style="margin-top:1rem">
+            This sheet is a mockup — nothing was sent. The address above works, though.
+          </p>
+        </form>
+      </div>
+
+      <div class="hang__notes">
+        <div>
+          <span class="micro">Availability</span>
+          <span class="mark dim">
+            Taking conversations for autumn 2026. Design systems, plugin tooling,
+            front-end builds.
+          </span>
+        </div>
+        <div>
+          <span class="micro">Where</span>
+          <span class="mark dim">
+            London, UK. GMT / BST — mornings overlap well with the US east coast.
+            Remote by default, on-site for kick-offs.
+          </span>
+        </div>
+        <div>
+          <span class="micro">First engagement</span>
+          <span class="mark dim">
+            Usually an audit: two weeks, a written report, and a board of what to
+            fix in what order.
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Likely questions, full width ─────────────────────────────── -->
+  <section class="frame frame--wide frame--half">
+    <span class="frame__mark">100% / start</span>
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">02</span>
+        <h2>Likely questions</h2>
+      </div>
+      <details class="fold">
+        <summary>Do you take retained work?</summary>
+        <p class="fold__body">Yes — most design-system engagements settle into a few days a month once the heavy build is done.</p>
+      </details>
+      <details class="fold">
+        <summary>Remote or on-site?</summary>
+        <p class="fold__body">Remote by default, on-site in London for kick-offs and the weeks where a whiteboard beats a call.</p>
+      </details>
+      <details class="fold">
+        <summary>Can you audit an existing system?</summary>
+        <p class="fold__body">Usually the best first engagement — two weeks, a written report, and a board of what to fix in what order.</p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <dl class="defs">
+    <div><dt>Sheet</dt><dd>Contact</dd></div>
+    <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+    <div><dt>Set</dt><dd>11 · Galley</dd></div>
+  </dl>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>
