@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Journal — Gavin McFarland</title>
+<meta name="description" content="Field notes on design systems, Figma tooling and the seam between design and front-end.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23161511'/%3E%3Crect x='18' y='6' width='8' height='8' fill='%23C23A08'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="journal" class="page">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="rail">
+  <a class="rail__mark" href="index.html"><span class="ph ph--16" aria-hidden="true"></span>g.mcfarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">theme</button>
+    <span>london, uk</span>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── Head + the pinned note — board vocabulary on a document page ── -->
+  <section class="section" style="margin-top:2rem">
+    <div class="sheet">
+      <div class="g12">
+        <div class="c8">
+          <p class="micro dim">sheet 02 / 08 · journal</p>
+          <p class="mono dim" style="margin-top:.75rem;max-width:52ch">
+            Field notes, written when a project taught me something worth keeping.
+            Short, dated, and filed under the year they happened —
+            <span data-count="posts">—</span> entries so far.
+          </p>
+          <div class="tx-ruled" style="height:3.5rem;margin-top:1.25rem" aria-hidden="true"></div>
+        </div>
+        <div class="c4">
+          <a class="note" data-tone="yellow" href="post.html" style="text-decoration:none;min-height:9rem">
+            <span class="note__label">pinned · 2026-05</span>Two programs,
+one plugin
+            <span class="mono" style="margin-top:auto;font-size:var(--t-micro)">read →</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 01 · The ledger, grouped by year ──────────────────────────── -->
+  <section class="section" aria-labelledby="log-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="log-h">all entries</h2>
+        <span class="head__x micro dim">collapse a year to set it aside</span>
+      </div>
+      <div id="posts">
+        <noscript><p class="mono dim">The ledger is rendered from a shared data file. It needs JavaScript.</p></noscript>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 02 · Elsewhere ────────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="els-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">02</span>
+        <h2 id="els-h">elsewhere</h2>
+      </div>
+      <div class="edrows">
+        <div class="edrow">
+          <span class="edrow__k"><span class="ph ph--16" aria-hidden="true"></span> github</span>
+          <p class="edrow__v">Most of what these notes describe ships as code — <a class="ln" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">github.com/gavinmcfarland ↗</a></p>
+        </div>
+        <div class="edrow">
+          <span class="edrow__k"><span class="ph ph--16" aria-hidden="true"></span> boards</span>
+          <p class="edrow__v">The working notes behind each project stay on their <a class="ln" href="board.html">boards</a> — the honest version of how the work went.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>sheet</dt><dd>02 / 08</dd></div>
+      <div><dt>form</dt><dd>09 · imposition</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>renderPosts(document.getElementById('posts'));</script>
+</body>
+</html>

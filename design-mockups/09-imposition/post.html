@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two programs, one plugin — Journal</title>
+<meta name="description" content="A Figma plugin looks like one thing and behaves like two. Almost every difficulty in building one comes from that gap.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23161511'/%3E%3Crect x='18' y='6' width='8' height='8' fill='%23C23A08'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="journal" class="page">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="rail">
+  <a class="rail__mark" href="index.html"><span class="ph ph--16" aria-hidden="true"></span>g.mcfarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">theme</button>
+    <span>london, uk</span>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── Title block — the page's inversion and its display line ──── -->
+  <section class="inv masthead">
+    <span class="tx tx-dots" aria-hidden="true"></span>
+    <div class="sheet">
+      <p class="micro" style="color:var(--faint)">
+        field note · 2026-05 · 6 min ·
+        <a class="ln" href="journal.html" style="text-transform:none;letter-spacing:0">journal</a>
+      </p>
+      <h1 class="display" style="margin-top:1rem;max-width:22ch">Two programs, one plugin</h1>
+    </div>
+  </section>
+
+  <!-- ── The asymmetric spread — prose 1–8, marginalia 10–12 ───────── -->
+  <section class="section">
+    <div class="sheet">
+      <div class="asym">
+
+        <article class="asym__main prose">
+          <p>
+            A Figma plugin looks like one thing and behaves like two. Almost every
+            difficulty in building one comes from that gap, and almost every tool
+            that helps is a tool that hides it.
+          </p>
+
+          <p class="micro" style="margin:1.5rem 0 .75rem;border-top:1px solid var(--rule);padding-top:.5rem"><span class="num">§1</span> the split</p>
+          <p>
+            When a plugin runs, Figma starts two separate programs. The first runs
+            in a sandbox with access to the document — nodes, selection, pages —
+            and no DOM at all. The second runs in an iframe with a full DOM and no
+            access to the document whatsoever.
+          </p>
+          <p>
+            They cannot call each other. They cannot share objects. Everything
+            that crosses between them is a message, serialised on the way out and
+            parsed on the way in.
+          </p>
+
+          <p class="micro" style="margin:1.5rem 0 .75rem;border-top:1px solid var(--rule);padding-top:.5rem"><span class="num">§2</span> what that costs</p>
+          <p>
+            The obvious cost is ceremony. Any behaviour that spans both halves
+            needs a message type, a sender, a listener, and a shape agreed in two
+            places at once:
+          </p>
+          <pre><code>// sandbox half — document access, no DOM
+figma.ui.onmessage = (msg) =&gt; {
+  if (msg.type === 'resize') {
+    figma.ui.resize(msg.w, msg.h)
+  }
+}</code></pre>
+          <p>
+            The less obvious cost is the development loop. Neither half can be
+            served from disk the way an ordinary web app can, so the UI has to be
+            inlined into the built file — and every edit means a rebuild, a
+            re-run, and the loss of whatever state you were testing against.
+          </p>
+
+          <p class="micro" style="margin:1.5rem 0 .75rem;border-top:1px solid var(--rule);padding-top:.5rem"><span class="num">§3</span> the fix</p>
+          <p>
+            Plugma puts all of that underneath a single command. In development
+            the UI is served from a dev server and pointed at by the manifest; at
+            build time the same UI is inlined into the output. The sandbox half
+            never notices the difference, so hot module reloading works the way it
+            does anywhere else — edits appear without a rebuild, and without
+            dropping the plugin state you were testing against.
+          </p>
+          <p>
+            Interface work stops being a stop-start loop. That is the whole
+            return on the tool, and the substrate for every plugin I built after
+            it.<span class="mono faint"> [1]</span>
+          </p>
+        </article>
+
+        <aside class="asym__side">
+          <div class="aside">
+            <span class="micro">this note</span>
+            published&nbsp;&nbsp;2026-05<br>
+            reading&nbsp;&nbsp;&nbsp;&nbsp;6 min<br>
+            about&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="ln" href="project.html">plugma</a>
+            <div style="display:flex;gap:.375rem;margin-top:.75rem">
+              <span class="chip">figma</span><span class="chip">tooling</span>
+            </div>
+          </div>
+          <div class="aside">
+            <span class="micro">fig. a</span>
+            <span class="ph ph--40 ph--hatch" aria-hidden="true" style="display:block;margin:.375rem 0"></span>
+            the two halves and the bridge — drawn properly on
+            <a class="ln" href="board.html">the board</a>
+          </div>
+          <div class="aside">
+            <span class="micro">more notes</span>
+            <a class="ln--bare" style="display:block;padding:.15rem 0" href="post.html">the tool nobody owns</a>
+            <a class="ln--bare" style="display:block;padding:.15rem 0" href="post.html">tokens are a contract</a>
+            <a class="ln--bare" style="display:block;padding:.15rem 0" href="post.html">draw it first</a>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── The air + the one pull-quote the system allows ─────────────── -->
+  <div class="air" style="padding-block:5rem">
+    <div class="sheet">
+      <blockquote class="pull">
+        The sandbox knows what the user selected. The iframe knows what the user
+        clicked. Neither knows both.
+      </blockquote>
+    </div>
+  </div>
+
+  <!-- ── 01 · Footnotes — the spec-table treatment, small ──────────── -->
+  <section class="section" aria-labelledby="fn-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="fn-h">footnotes &amp; further</h2>
+      </div>
+      <div class="tbl tbl--spec">
+        <div class="tbl__row">
+          <span class="tbl__num">[1]</span>
+          <span class="tbl__val">plugma — the toolchain this note describes · <a class="ln" href="https://github.com/gavinmcfarland/plugma" target="_blank" rel="noopener noreferrer">source ↗</a></span>
+        </div>
+        <div class="tbl__row">
+          <span class="tbl__num">[2]</span>
+          <span class="tbl__val">Figma plugin API — how the sandbox and the iframe are documented officially</span>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:1.5rem" class="mono">
+        <a class="ln" href="journal.html">← all entries</a>
+        <a class="ln" href="post.html">next: the tool nobody owns →</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>sheet</dt><dd>02 / 08</dd></div>
+      <div><dt>form</dt><dd>09 · imposition</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>

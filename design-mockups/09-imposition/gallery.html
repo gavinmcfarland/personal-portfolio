@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallery — Gavin McFarland</title>
+<meta name="description" content="Tools, plug-ins and libraries, laid out as plates.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23161511'/%3E%3Crect x='18' y='6' width='8' height='8' fill='%23C23A08'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="gallery" class="page">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="rail">
+  <a class="rail__mark" href="index.html"><span class="ph ph--16" aria-hidden="true"></span>g.mcfarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">theme</button>
+    <span>london, uk</span>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="section" style="margin-top:2rem">
+    <div class="sheet">
+      <p class="micro dim">sheet 03 / 08 · gallery</p>
+      <p class="mono dim" style="margin-top:.75rem;max-width:52ch">
+        The same <span data-count="projects">—</span> items as the index table,
+        printed as plates. Uneven spans on the same twelve columns; empty cells
+        are hatched and say so.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── 01 · Plates, filtered by kind ─────────────────────────────── -->
+  <section class="section" aria-labelledby="pl-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="pl-h">plates</h2>
+        <a class="head__x ln" href="index.html">table view →</a>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Filter by kind" id="kind-tabs">
+        <button class="tab" role="tab" aria-selected="true"  data-mode="all"     aria-controls="plates">all</button>
+        <button class="tab" role="tab" aria-selected="false" data-mode="tool"    aria-controls="plates" tabindex="-1">tools</button>
+        <button class="tab" role="tab" aria-selected="false" data-mode="plugin"  aria-controls="plates" tabindex="-1">plug-ins</button>
+        <button class="tab" role="tab" aria-selected="false" data-mode="library" aria-controls="plates" tabindex="-1">libraries</button>
+      </div>
+
+      <div class="swap" id="plates" role="tabpanel" aria-live="polite"></div>
+      <p class="micro dim" style="margin-top:.75rem" id="plate-count"></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>sheet</dt><dd>03 / 08</dd></div>
+      <div><dt>form</dt><dd>09 · imposition</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const stage = document.getElementById('plates');
+    const count = document.getElementById('plate-count');
+
+    /* The full set gets a feature row — the first plate takes the
+       whole sheet, the asymmetry the smaller sets do not earn. */
+    const show = (kind) => {
+      const ps = kind === 'all' ? DATA.projects : DATA.projects.filter((p) => p.kind === kind);
+      const spans = kind === 'all'
+        ? ['c12', 'c6', 'c6', 'c4', 'c4', 'c4']
+        : ['c6', 'c3', 'c3', 'c4', 'c4', 'c4'];
+      renderProjects(stage, 'bento', ps, spans);
+      count.textContent = `${pad2(ps.length)} / ${pad2(DATA.projects.length)} plates shown`;
+    };
+
+    show('all');
+    wireTabs(document.getElementById('kind-tabs'), stage, (mode) => show(mode));
+  })();
+</script>
+</body>
+</html>

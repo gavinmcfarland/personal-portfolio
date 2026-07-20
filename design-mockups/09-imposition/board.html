@@ -1,0 +1,51 @@
+<!doctype html>
+<!-- The board is always dark — the one surface that ignores the
+     theme. The class is hard-set and the theme script is not loaded. -->
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Board · plugma — Gavin McFarland</title>
+<meta name="description" content="The plugma working board — notes, code and the argument, laid out spatially.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23161511'/%3E%3Crect x='18' y='6' width='8' height='8' fill='%23C23A08'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="board">
+
+<div class="board__bar">
+  <a class="ln" href="index.html">← index</a>
+  <span class="crumb">work / <b>plugma</b> / board</span>
+  <div class="board__zoom">
+    <output id="board-zoomval" aria-live="off">100%</output>
+    <button class="btn" id="board-reset" type="button" style="padding:.25rem .75rem">reset view</button>
+  </div>
+</div>
+
+<div class="board" id="board" style="top:2.6rem"></div>
+
+<p class="board__hint" id="board-hint" aria-hidden="true">drag or scroll to pan · pinch to zoom · 0 fits</p>
+
+<script src="data.js"></script>
+<script src="board.js"></script>
+<script>
+  (() => {
+    const api = Board.mount(document.getElementById('board'), DATA.board.notes);
+    document.getElementById('board-reset').addEventListener('click', () => api.fit());
+
+    /* The hint earns its keep once, then leaves. */
+    const hint = document.getElementById('board-hint');
+    const dismiss = () => { hint.style.opacity = '0'; };
+    addEventListener('pointerdown', dismiss, { once: true });
+    addEventListener('wheel', dismiss, { once: true });
+    setTimeout(dismiss, 8000);
+  })();
+</script>
+</body>
+</html>

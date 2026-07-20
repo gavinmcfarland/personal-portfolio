@@ -1,0 +1,807 @@
+/* ══════════════════════════════════════════════════════════════════
+   09 · IMPOSITION — the design system
+   ------------------------------------------------------------------
+   Imposition is the press-room craft of arranging many different
+   pages onto one sheet so they all print from the same form. That is
+   the brief here: nine page types — landing, journal, article,
+   project, gallery, specimen, archive, contact, board — imposed on
+   one form. Same rail, same rules, same two type sizes.
+
+   THE DOCTRINE, stated once and obeyed everywhere:
+
+     1. NO CURVES.    `border-radius: 0` is set globally on
+        *, *::before, *::after and never overridden.
+     2. NO SHADOWS.   There is not one box-shadow declaration in this
+        file. Surfaces sit on the stock because they are ruled or
+        filled, not because they float.
+     3. NO GRADIENTS. Nothing blends. The `repeating-*-gradient`
+        calls inside the .tx-* utilities are HARD-STOP patterns —
+        adjacent colour stops at identical positions, zero tonal
+        transition. A gradient that does not grade is a pattern.
+     4. FLAT TYPE.    Everything is 13px mono or 15px sans at 400.
+        Rank is carried by micro-labels, two-digit numbering,
+        inversion, rules and pattern — not by size. Three sanctioned
+        exceptions, and only three:
+          a. one --t-display line per page, maximum;
+          b. oversized folio numerals (~64px, faint) as decoration
+             on plates and the board — ornament, not hierarchy;
+          c. one 21px pull-quote, and only post.html may set it.
+     5. FEW BUTTONS.  One .btn style exists. It appears exactly twice
+        in the whole set: the contact form submit and the board's
+        reset control. Everything else is an underlined text link.
+
+   COLOUR: muted cream stock and near-black ink do the talking; five
+   bold flats (orange accent, yellow, cyan, navy, pink) appear only
+   as filled blocks or bordered chips, each with its own paired ink
+   set on top. Bold colour is never body text; the accent alone may
+   colour a line or a link.
+
+   DENSITY: the default register is dense — 32px table rows, 40px
+   section gaps. Emptiness is a deliberate move: the .air utility
+   buys 120px of nothing and each page may spend it at most twice.
+
+   §1 tokens · §2 primitives · §3 components · §4 board
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+
+:root {
+  /* Muted set — cream stock, near-black ink. */
+  --paper:     #EDEAE1;
+  --surface:   #F6F4EE;
+  --sunk:      #E2DED2;
+  --ink:       #161511;
+  --muted:     #57544B;
+  --faint:     #8B887D;
+  --rule:      #161511;   /* the drawn line — full ink, 1px */
+  --rule-hair: #C6C2B4;   /* the secondary line */
+
+  /* Bold set — block fills and chips only, each with a paired ink.
+     ACCENT is the one bold colour allowed to be text or line:
+     links, active markers, focus. 4.6:1 on the stock. */
+  --accent:   #C23A08;
+  --b-yellow: #F2C400;  --b-yellow-ink: #231C00;
+  --b-cyan:   #37B6CE;  --b-cyan-ink:   #04262C;
+  --b-navy:   #1B2A6B;  --b-navy-ink:   #E9ECF9;
+  --b-pink:   #EE4D9B;  --b-pink-ink:   #2E0518;
+
+  /* Muted tints — pattern fills and quiet plates. */
+  --m-sage:  #ABAF97;  --m-sage-ink:  #23251A;
+  --m-clay:  #C7A488;  --m-clay-ink:  #2E2013;
+  --m-slate: #97A2B4;  --m-slate-ink: #161C26;
+
+  /* Type — mono carries structure, sans carries argument. */
+  --f-sans: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* The flat ramp. --t-body is the ONLY prose size; --t-quote and
+     --t-display are the sanctioned exceptions (see doctrine). */
+  --t-micro:   .6875rem;   /* 11 — uppercase micro-labels */
+  --t-mono:    .8125rem;   /* 13 — all mono content        */
+  --t-body:    .9375rem;   /* 15 — all sans prose          */
+  --t-quote:   1.3125rem;  /* 21 — post.html only          */
+  --t-display: clamp(1.5rem, 3vw, 1.8125rem); /* ≤29       */
+  --t-folio:   4rem;       /* 64 — decorative numerals     */
+
+  /* Grid — 12 columns, spacing in multiples of 4, dense default. */
+  --sheet:  72rem;
+  --gutter: 1rem;
+  --pad:    clamp(1rem, 3vw, 2rem);
+  --rail-w: 13.5rem;
+
+  /* Texture hooks — every .tx-* draws with this ink unless a
+     component overrides it. */
+  --tx-ink: var(--rule-hair);
+
+  color-scheme: light;
+}
+
+.dark {
+  --paper:     #131311;
+  --surface:   #1B1B18;
+  --sunk:      #0E0E0C;
+  --ink:       #E9E6DB;
+  --muted:     #A5A296;
+  --faint:     #6E6B60;
+  --rule:      #E9E6DB;
+  --rule-hair: #33322C;
+
+  --accent: #F2622A;
+
+  color-scheme: dark;
+}
+
+
+/* ── §2 · PRIMITIVES ───────────────────────────────────────────── */
+
+/* Doctrine rule 1, never undone. */
+*, *::before, *::after { box-sizing: border-box; border-radius: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-sans);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, p, figure, dl, dd, ul, ol, blockquote { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+img, svg { display: block; max-width: 100%; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+table { border-collapse: collapse; }
+
+::selection { background: var(--b-yellow); color: var(--b-yellow-ink); }
+
+[hidden] { display: none !important; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.skip { position: absolute; left: -9999px; z-index: 200; }
+.skip:focus {
+  left: var(--rail-w); top: 0;
+  padding: .5rem 1rem;
+  background: var(--ink); color: var(--paper);
+  font-family: var(--f-mono); font-size: var(--t-mono);
+}
+
+/* Sheet + 12 columns. Press G to draw them. */
+.sheet { max-width: var(--sheet); margin: 0 auto; padding: 0 var(--pad); }
+
+.g12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--gutter);
+}
+.c2  { grid-column: span 2; }  .c3  { grid-column: span 3; }
+.c4  { grid-column: span 4; }  .c5  { grid-column: span 5; }
+.c6  { grid-column: span 6; }  .c7  { grid-column: span 7; }
+.c8  { grid-column: span 8; }  .c9  { grid-column: span 9; }
+.c10 { grid-column: span 10; } .c12 { grid-column: span 12; }
+
+/* Below the rail breakpoint the twelve columns fold in half:
+   narrow spans pair up, wide spans take the sheet. */
+@media (max-width: 879px) {
+  .c2, .c3, .c4 { grid-column: span 6; }
+  .c5, .c6, .c7, .c8, .c9, .c10 { grid-column: span 12; }
+}
+
+/* The construction grid overlay — built from .sheet > .g12 so it
+   inherits the real grid's box model exactly. 02 shipped a version
+   that approximated the box model and drew ~33px off the columns;
+   reusing the primitives is what prevents that. */
+#gridlines {
+  position: fixed; inset: 0; left: 0;
+  z-index: 90; pointer-events: none;
+  display: none;
+}
+#gridlines[data-on="true"] { display: block; }
+#gridlines .sheet { height: 100%; }
+#gridlines .g12 { height: 100%; }
+#gridlines i { background: rgba(194, 58, 8, .07); border-inline: 1px solid rgba(194, 58, 8, .25); }
+
+/* Rules — the drawn line does the structural work. */
+.rule      { border: 0; border-top: 1px solid var(--rule); margin: 0; }
+.rule-hair { border: 0; border-top: 1px solid var(--rule-hair); margin: 0; }
+
+/* Inversion — rank without size. An ink block with paper text. */
+.inv { background: var(--ink); color: var(--paper); }
+.inv ::selection { background: var(--b-yellow); color: var(--b-yellow-ink); }
+.inv a { color: inherit; }
+
+/* Negative space, bought deliberately. ≤2 uses per page. */
+.air { padding-block: 7.5rem; }
+
+/* ── Textures — hard-stop patterns, one per surface ─────────────── */
+
+.tx-dots {
+  background-image: radial-gradient(circle, var(--tx-ink) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+.tx-hatch {
+  background-image: repeating-linear-gradient(45deg, var(--tx-ink) 0 1px, transparent 1px 6px);
+}
+.tx-scan {
+  background-image: repeating-linear-gradient(0deg, var(--tx-ink) 0 1px, transparent 1px 4px);
+}
+.tx-check {
+  background-image: repeating-conic-gradient(var(--tx-ink) 0% 25%, transparent 0% 50%);
+  background-size: 16px 16px;
+}
+.tx-ruled {
+  background-image: repeating-linear-gradient(0deg, transparent 0 27px, var(--tx-ink) 27px 28px);
+}
+
+/* ── Type utilities ─────────────────────────────────────────────── */
+
+.micro {
+  font-family: var(--f-mono); font-size: var(--t-micro); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.mono  { font-family: var(--f-mono); font-size: var(--t-mono); font-weight: 400; }
+.body  { font-size: var(--t-body); }
+.dim   { color: var(--muted); }
+.faint { color: var(--faint); }
+
+/* Exception (a): one per page, maximum. */
+.display {
+  font-family: var(--f-sans); font-size: var(--t-display);
+  font-weight: 600; line-height: 1.2; letter-spacing: -.01em;
+}
+
+/* Exception (b): ornament, not hierarchy. */
+.folio {
+  font-family: var(--f-mono); font-size: var(--t-folio);
+  font-weight: 400; line-height: 1; color: var(--faint);
+}
+
+/* Two-digit numbering — the actual hierarchy. */
+.num { font-family: var(--f-mono); font-size: var(--t-mono); color: var(--accent); }
+
+/* Links — underlined text, accent on hover. The default verb. */
+a { color: inherit; }
+.ln, .prose a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--faint);
+}
+.ln:hover, .prose a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+.ln--bare { text-decoration: none; }
+.ln--bare:hover { color: var(--accent); }
+
+/* The one button. Two appearances in the whole set. */
+.btn {
+  display: inline-block;
+  padding: .5rem 1.25rem;
+  border: 1px solid var(--rule);
+  background: var(--paper); color: var(--ink);
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  text-decoration: none;
+}
+.btn:hover { background: var(--ink); color: var(--paper); }
+
+/* Icon placeholder — a transparent square with a border. It stands
+   where an icon would; the system never pretends to have drawn one.
+   Used sparingly: rail, contact rows, capability rows. Never in
+   tables. */
+.ph {
+  display: inline-block; flex: none;
+  width: 24px; height: 24px;
+  border: 1px solid currentColor;
+  background: transparent;
+}
+.ph--16 { width: 16px; height: 16px; }
+.ph--40 { width: 40px; height: 40px; }
+.ph--hatch { background-image: repeating-linear-gradient(45deg, currentColor 0 1px, transparent 1px 5px); }
+
+/* Chips — 1px-bordered flags. Tone fills come from the bold set. */
+.chip {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .1rem .5rem;
+  border: 1px solid var(--rule-hair);
+  font-family: var(--f-mono); font-size: var(--t-micro);
+  text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted);
+  text-decoration: none;
+}
+.chip .sw { width: 8px; height: 8px; border: 1px solid var(--rule); flex: none; }
+
+[data-tone="yellow"] > .sw, .sw[data-tone="yellow"] { background: var(--b-yellow); }
+[data-tone="cyan"]   > .sw, .sw[data-tone="cyan"]   { background: var(--b-cyan); }
+[data-tone="navy"]   > .sw, .sw[data-tone="navy"]   { background: var(--b-navy); }
+[data-tone="pink"]   > .sw, .sw[data-tone="pink"]   { background: var(--b-pink); }
+[data-tone="sage"]   > .sw, .sw[data-tone="sage"]   { background: var(--m-sage); }
+[data-tone="slate"]  > .sw, .sw[data-tone="slate"]  { background: var(--m-slate); }
+[data-tone="clay"]   > .sw, .sw[data-tone="clay"]   { background: var(--m-clay); }
+
+/* Motion — one rule. Content swaps fade 120ms linear; nothing eases,
+   nothing slides. Flat motion for flat type. */
+.swap { transition: opacity 120ms linear; }
+.swap[data-fading="true"] { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .swap { transition: none; }
+}
+
+
+/* ── §3 · COMPONENTS ───────────────────────────────────────────── */
+
+/* ── The rail ─────────────────────────────────────────────────────
+   Fixed, inverted, numbered. The strongest block on every page is
+   the navigation, which is what makes nine templates read as one
+   set. Collapses to a top strip under 880px. */
+
+.rail {
+  position: fixed; top: 0; bottom: 0; left: 0;
+  width: var(--rail-w);
+  background: var(--ink); color: var(--paper);
+  display: flex; flex-direction: column;
+  padding: 1.5rem 1.25rem;
+  z-index: 100;
+}
+.rail__mark {
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  text-decoration: none;
+  display: flex; align-items: center; gap: .6rem;
+  margin-bottom: 2.5rem;
+}
+.rail__mark .ph { color: var(--accent); }
+
+.rail nav { display: flex; flex-direction: column; gap: .125rem; }
+.rail nav a {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .3rem 0;
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  text-decoration: none;
+  color: var(--faint);
+}
+.rail nav a:hover { color: var(--paper); }
+.rail nav a .rail__n { width: 2ch; flex: none; }
+.rail nav a[aria-current="page"] { color: var(--paper); }
+.rail nav a[aria-current="page"] .rail__n { color: var(--accent); }
+/* The active marker — a filled accent square, the same 8px unit as
+   the chip swatch. */
+.rail nav a::before {
+  content: ''; width: 8px; height: 8px; flex: none;
+  background: transparent;
+}
+.rail nav a[aria-current="page"]::before { background: var(--accent); }
+
+.rail__foot {
+  margin-top: auto;
+  display: flex; flex-direction: column; gap: .5rem;
+  font-family: var(--f-mono); font-size: var(--t-micro);
+  color: var(--faint);
+}
+.rail__foot button {
+  text-align: left; color: var(--faint);
+  font-family: var(--f-mono); font-size: var(--t-micro);
+  text-transform: uppercase; letter-spacing: .08em;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
+}
+.rail__foot button:hover { color: var(--paper); }
+
+/* Pages sit beside the rail. */
+.page { padding-left: var(--rail-w); }
+#gridlines { left: var(--rail-w); }
+
+@media (max-width: 879px) {
+  .rail {
+    position: sticky; width: auto; bottom: auto;
+    flex-direction: row; align-items: center;
+    padding: .75rem var(--pad);
+    gap: 1rem;
+    overflow-x: auto;
+  }
+  .rail__mark { margin-bottom: 0; }
+  .rail nav { flex-direction: row; gap: 1rem; }
+  .rail nav a { padding: 0; }
+  .rail nav a::before { display: none; }
+  .rail nav a .rail__n { display: none; }
+  .rail__foot { margin-top: 0; margin-left: auto; flex-direction: row; }
+  .page { padding-left: 0; }
+  #gridlines { left: 0; }
+  .skip:focus { left: 0; }
+}
+
+/* ── Section head — micro-label + number + hairline ─────────────── */
+
+.head {
+  display: flex; align-items: baseline; gap: .75rem;
+  border-top: 1px solid var(--rule);
+  padding-top: .5rem;
+  margin-bottom: 1.25rem;
+}
+.head .num { font-weight: 600; }
+.head h1, .head h2, .head h3 {
+  font-family: var(--f-mono); font-size: var(--t-micro); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.head__x { margin-left: auto; font-family: var(--f-mono); font-size: var(--t-micro); }
+
+.section { margin-block: 2.5rem; }
+
+/* ── Ruled table — treatment T1 ───────────────────────────────────
+   NO. / ITEM / DESCRIPTION / YEAR. Dense 32px rows, hairlines
+   between, full rules top and bottom. Variants share the .tbl shell
+   and differ only in their column template. */
+
+.tbl { border-bottom: 1px solid var(--rule); }
+.tbl__row {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(9rem, 1fr) 2fr 7rem 3.5rem;
+  align-items: center;
+  min-height: 2rem;
+  gap: var(--gutter);
+  padding: .25rem 0;
+  border-top: 1px solid var(--rule-hair);
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  text-decoration: none;
+}
+.tbl__row:first-child { border-top: 1px solid var(--rule); }
+a.tbl__row:hover { background: var(--surface); }
+a.tbl__row:hover .tbl__item { color: var(--accent); }
+
+.tbl__head {
+  min-height: 1.75rem;
+  color: var(--faint);
+  font-size: var(--t-micro); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.tbl__num  { color: var(--faint); }
+.tbl__row:not(.tbl__head) .tbl__num { color: var(--accent); }
+.tbl__desc { color: var(--muted); font-family: var(--f-sans); font-size: var(--t-body); }
+.tbl__year { color: var(--faint); text-align: right; }
+.tbl__kind { justify-self: start; }
+
+/* Spec variant — PROPERTY / VALUE. */
+.tbl--spec .tbl__row { grid-template-columns: 9rem 1fr; }
+.tbl--spec .tbl__val { font-family: var(--f-sans); font-size: var(--t-body); }
+
+/* Archive variant — NO. / TYPE / ITEM / YEAR. Maximum density. */
+.tbl--arch .tbl__row {
+  grid-template-columns: 3.5rem 6.5rem minmax(0, 1fr) 2fr 3.5rem;
+  min-height: 1.75rem; padding: .125rem 0;
+}
+
+/* Wide tables scroll sideways rather than stack — the denser
+   choice. The caption tells the reader so. */
+.scroll-x { overflow-x: auto; }
+.scroll-x > * { min-width: 40rem; }
+.scroll-hint { display: none; color: var(--faint); margin-top: .375rem; }
+@media (max-width: 879px) { .scroll-hint { display: block; } }
+
+/* ── Ledger — treatment T2 ────────────────────────────────────────
+   Dense mono rows on ruled stock. The journal's register. */
+
+.ledger { border-top: 1px solid var(--rule); }
+.ledger__row {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr) auto 4rem;
+  align-items: baseline;
+  gap: var(--gutter);
+  padding: .375rem 0;
+  border-bottom: 1px solid var(--rule-hair);
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  text-decoration: none;
+}
+.ledger__row:hover { background: var(--surface); }
+.ledger__row:hover .ledger__t { color: var(--accent); }
+.ledger__date { color: var(--faint); }
+.ledger__t { font-weight: 600; }
+.ledger__lede { color: var(--muted); font-family: var(--f-sans); font-size: var(--t-body); font-weight: 400; }
+.ledger__mins { color: var(--faint); text-align: right; }
+
+/* ── Bento — treatment T3 ─────────────────────────────────────────
+   Filled plates on the 12-column grid. Cells span unevenly; empty
+   cells are hatched and say so. */
+
+.bento {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--gutter);
+}
+.bento > * { min-height: 8.5rem; }
+.bento__cell {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: .875rem;
+  display: flex; flex-direction: column;
+  text-decoration: none;
+  position: relative;
+}
+a.bento__cell:hover { outline: 2px solid var(--accent); outline-offset: -1px; }
+.bento__cell .micro { color: var(--muted); }
+.bento__spacer {
+  border: 1px solid var(--rule-hair);
+  color: var(--rule-hair);
+  display: flex; align-items: flex-end; padding: .5rem;
+}
+.bento__spacer .micro { color: var(--faint); }
+
+/* The plate — a flat tone with a texture printed over it and an
+   oversized folio numeral. Decoration carries the identity. */
+.plate {
+  position: relative;
+  flex: 1;
+  min-height: 4.5rem;
+  border: 1px solid var(--rule);
+  overflow: hidden;
+}
+.plate::after {
+  content: ''; position: absolute; inset: 0;
+  background-image: inherit; background-size: inherit;
+}
+.plate[data-tone="yellow"] { background-color: var(--b-yellow); color: var(--b-yellow-ink); }
+.plate[data-tone="cyan"]   { background-color: var(--b-cyan);   color: var(--b-cyan-ink); }
+.plate[data-tone="navy"]   { background-color: var(--b-navy);   color: var(--b-navy-ink); }
+.plate[data-tone="pink"]   { background-color: var(--b-pink);   color: var(--b-pink-ink); }
+.plate[data-tone="sage"]   { background-color: var(--m-sage);   color: var(--m-sage-ink); }
+.plate[data-tone="slate"]  { background-color: var(--m-slate);  color: var(--m-slate-ink); }
+.plate[data-tone="clay"]   { background-color: var(--m-clay);   color: var(--m-clay-ink); }
+.plate .tx { position: absolute; inset: 0; --tx-ink: currentColor; opacity: .28; }
+.plate .folio {
+  position: absolute; right: .375rem; bottom: -.375rem;
+  color: currentColor; opacity: .55;
+}
+
+/* ── Asymmetric article grid — treatment T4 ───────────────────────
+   Prose on columns 1–8, mono marginalia on 10–12. The measure is
+   capped at 62ch; the gap is structural, not accidental. */
+
+.asym { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gutter); }
+.asym__main { grid-column: 1 / span 8; }
+.asym__side { grid-column: 10 / span 3; }
+
+.prose { max-width: 62ch; }
+.prose p { margin-block: 0 1rem; }
+.prose code {
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  background: var(--sunk); padding: 0 .3rem;
+}
+.prose pre {
+  margin: 0 0 1rem;
+  padding: .875rem 1rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  line-height: 1.6;
+  overflow-x: auto;
+}
+.prose pre code { background: none; padding: 0; }
+
+/* Exception (c): the pull-quote. 21px, post.html only, once. */
+.pull {
+  font-size: var(--t-quote); line-height: 1.45;
+  border-left: 2px solid var(--accent);
+  padding-left: 1.25rem;
+  max-width: 44ch;
+}
+
+.aside {
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  color: var(--muted);
+  border-top: 1px solid var(--rule);
+  padding-top: .5rem;
+  margin-bottom: 1.5rem;
+}
+.aside .micro { display: block; color: var(--faint); margin-bottom: .375rem; }
+
+@media (max-width: 879px) {
+  .asym__main { grid-column: 1 / -1; }
+  .asym__side { grid-column: 1 / -1; }
+}
+
+/* ── Editorial rows — treatment T5 ────────────────────────────────
+   Mono key on the left, sans argument on the right, hairline
+   between each pair. */
+
+.edrows { border-top: 1px solid var(--rule); }
+.edrow {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) 2fr;
+  gap: var(--gutter);
+  padding: .875rem 0;
+  border-bottom: 1px solid var(--rule-hair);
+}
+.edrow__k {
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  display: flex; align-items: flex-start; gap: .75rem;
+}
+.edrow__v { color: var(--muted); max-width: 56ch; }
+.edrow__v a { color: var(--ink); }
+@media (max-width: 639px) {
+  .edrow { grid-template-columns: 1fr; gap: .25rem; }
+}
+
+/* ── Definition list — colophon, facts ──────────────────────────── */
+
+.defs { display: grid; gap: .25rem; }
+.defs > div {
+  display: grid; grid-template-columns: 7rem 1fr;
+  gap: var(--gutter);
+  font-family: var(--f-mono); font-size: var(--t-mono);
+}
+.defs dt { color: var(--faint); }
+.defs dd { margin: 0; }
+
+/* ── Tabs — treatment T6 ──────────────────────────────────────────
+   A mono strip over a hairline. The active tab gets the same 8px
+   accent square the rail uses — one marker, everywhere. */
+
+.tabs {
+  display: flex; gap: 1.25rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+.tab {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .375rem 0;
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  color: var(--faint);
+  white-space: nowrap;
+}
+.tab::before { content: ''; width: 8px; height: 8px; background: transparent; border: 1px solid var(--rule-hair); }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--ink); }
+.tab[aria-selected="true"]::before { background: var(--accent); border-color: var(--accent); }
+
+/* ── Accordion — treatment T7 ─────────────────────────────────────
+   Native <details>, unanimated. The marker is a drawn + that
+   becomes a − when open; no triangle, no motion. */
+
+.fold { border-top: 1px solid var(--rule-hair); }
+.fold:last-of-type { border-bottom: 1px solid var(--rule-hair); }
+.fold summary {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: baseline; gap: .75rem;
+  padding: .5rem 0;
+  font-family: var(--f-mono); font-size: var(--t-mono);
+}
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary::before { content: '+'; color: var(--accent); width: 1ch; }
+.fold[open] summary::before { content: '−'; }
+.fold summary:hover { color: var(--accent); }
+.fold__body { padding: .25rem 0 1rem 1.75ch; color: var(--muted); max-width: 60ch; }
+
+/* Year-group variant used by the journal — the summary is a group
+   heading, not a question. */
+.fold--year summary { font-weight: 600; }
+.fold--year .fold__body { padding: 0 0 .75rem; max-width: none; color: inherit; }
+
+/* ── The note — board vocabulary ──────────────────────────────────
+   A flat filled square with a mono label. Lives on the board;
+   allowed to leak into document pages (the journal's pinned entry,
+   the project figure) as the system's one loud move. */
+
+.note {
+  border: 1px solid var(--rule);
+  padding: .75rem;
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  white-space: pre-line;
+  display: flex; flex-direction: column; gap: .75rem;
+}
+.note__label { font-size: var(--t-micro); font-weight: 600; letter-spacing: .06em; opacity: .75; }
+.note[data-tone="yellow"] { background: var(--b-yellow); color: var(--b-yellow-ink); }
+.note[data-tone="cyan"]   { background: var(--b-cyan);   color: var(--b-cyan-ink); }
+.note[data-tone="navy"]   { background: var(--b-navy);   color: var(--b-navy-ink); }
+.note[data-tone="pink"]   { background: var(--b-pink);   color: var(--b-pink-ink); }
+.note[data-tone="sage"]   { background: var(--m-sage);   color: var(--m-sage-ink); }
+
+/* ── Form — square fields, hairline borders, the one .btn ───────── */
+
+.field { display: flex; flex-direction: column; gap: .375rem; margin-bottom: 1rem; }
+.field label { font-family: var(--f-mono); font-size: var(--t-micro); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.input {
+  border: 1px solid var(--rule-hair);
+  background: var(--surface);
+  padding: .5rem .625rem;
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  width: 100%;
+}
+.input:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+textarea.input { resize: vertical; min-height: 7rem; }
+.field[data-invalid="true"] .input { border-color: var(--accent); }
+.err { font-family: var(--f-mono); font-size: var(--t-micro); color: var(--accent); min-height: 1em; }
+
+/* ── Masthead + footer ──────────────────────────────────────────── */
+
+.masthead {
+  --tx-ink: currentColor;
+  position: relative;
+  padding: 2rem var(--pad) 1.5rem;
+}
+.masthead .tx { position: absolute; inset: 0; opacity: .12; pointer-events: none; }
+.masthead > * { position: relative; }
+
+.foot {
+  border-top: 1px solid var(--rule);
+  margin-top: 4rem;
+  padding: 1.25rem 0 2.5rem;
+}
+
+
+/* ── §4 · BOARD ─────────────────────────────────────────────────── */
+
+/* The board is always dark — it is the one surface that ignores the
+   theme, like a darkened print room at the back of the shop.
+   board.html hard-sets .dark on <html> and never loads the theme
+   script. */
+
+.board {
+  position: fixed; inset: 0;
+  background: var(--paper);
+  overflow: hidden;
+  --tx-ink: var(--rule-hair);
+}
+.board__vp {
+  position: absolute; inset: 0;
+  cursor: grab; touch-action: none;
+  background-image: radial-gradient(circle, var(--tx-ink) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.board__vp:active { cursor: grabbing; }
+.board__world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+
+.board__node { position: absolute; }
+.board__node .note { width: 100%; min-height: 8rem; }
+
+.nd-doc {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: .75rem;
+  font-size: var(--t-body); color: var(--muted);
+}
+.nd-doc .micro { display: flex; align-items: center; gap: .5rem; color: var(--ink); border-bottom: 1px solid var(--rule-hair); padding-bottom: .5rem; margin-bottom: .5rem; }
+
+.nd-code {
+  border: 1px solid var(--rule);
+  background: var(--sunk);
+}
+.nd-code__bar {
+  border-bottom: 1px solid var(--rule-hair);
+  padding: .375rem .625rem;
+  font-family: var(--f-mono); font-size: var(--t-micro); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+}
+.nd-code pre {
+  margin: 0; padding: .625rem;
+  font-family: var(--f-mono); font-size: var(--t-mono); line-height: 1.6;
+  white-space: pre;
+}
+
+/* Board chrome — a mono strip pinned top-left, and zoom readout. */
+.board__bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; gap: 1rem;
+  padding: .625rem var(--pad);
+  background: var(--ink); color: var(--paper);
+  font-family: var(--f-mono); font-size: var(--t-mono);
+  z-index: 10;
+}
+.board__bar .crumb { color: var(--faint); }
+.board__bar .crumb b { color: var(--paper); font-weight: 600; }
+.board__zoom { margin-left: auto; display: flex; align-items: center; gap: .75rem; }
+.board__zoom output { font-size: var(--t-micro); color: var(--faint); min-width: 4ch; text-align: right; }
+.board__hint {
+  position: fixed; bottom: .75rem; left: var(--pad);
+  font-family: var(--f-mono); font-size: var(--t-micro);
+  color: var(--faint);
+  transition: opacity 120ms linear;
+  z-index: 10;
+}
+
+/* The embedded, non-interactive figure of the board used on
+   project.html — same vocabulary at reduced scale. */
+.boardfig {
+  position: relative;
+  border: 1px solid var(--rule);
+  background: var(--sunk);
+  overflow: hidden;
+  height: 17rem;
+  --tx-ink: var(--rule-hair);
+}
+.boardfig__world { position: absolute; left: 1rem; top: 1rem; transform: scale(.52); transform-origin: 0 0; width: 200%; }
+.boardfig__bar {
+  display: flex; justify-content: space-between; align-items: center;
+  border: 1px solid var(--rule); border-top: 0;
+  padding: .375rem .625rem;
+  font-family: var(--f-mono); font-size: var(--t-micro);
+  color: var(--muted);
+}
+
+/* ── Print: the rail is chrome, the sheet is the artefact ───────── */
+@media print {
+  .rail, #gridlines, .board__bar, .board__hint { display: none; }
+  .page { padding-left: 0; }
+}
