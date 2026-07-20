@@ -12,22 +12,22 @@
    Earlier sets in this folder used texture as a flat pattern poured
    into a bordered box — an abstract stand-in for a picture that was
    never going to exist. Here the texture IS the picture. §3 builds
-   1-bit fields the way a dithering algorithm does: hard-stop dot
-   grids at deliberately mismatched pitches, interfering with each
-   other, with denser grids masked into organic shapes so the field
-   clumps and opens like a halftone photograph rather than repeating
-   like wallpaper. Nothing fades anywhere — dithering is the art of
-   making tone out of dots that are either there or not, which is
-   exactly what this system's no-gradients rule already required.
+   1-bit fields out of SQUARE dots — a dither is a decision made per
+   pixel, and a pixel is square — arranged on grids that are visibly
+   constructed rather than scattered. Denser passages are masked into
+   repeating geometry: checkerboards of rectangles, grids of true
+   circles, horizontal bands. Nothing fades anywhere; dithering is the
+   art of making tone out of marks that are either there or not,
+   which is exactly what this system's no-gradients rule required.
 
    The same engine then does two more jobs:
 
-     · GROUNDS — whole sections and the page itself carry a faint
-       field, so the sheet reads as printed matter rather than as a
-       background colour.
-     · DECALS — seals, crop marks, tabs, blots and stripes, placed
+     · GROUNDS — whole sections carry a faint field, so the sheet
+       reads as printed matter rather than as a background colour.
+     · DECALS — seals, crop marks, tabs, chips and stripes, placed
        half off the edge of things. This is where the set is allowed
-       to be playful; everything else is deadpan.
+       to be playful; the playfulness is in where they land, not in
+       the geometry, which stays rectangles and true circles.
 
    THE DOCTRINE, unchanged across 09–13:
      1. NO CURVES — `border-radius: 0` globally, never overridden.
@@ -64,6 +64,19 @@
      weaker ink. A field you can read a paragraph through is the
      whole point; one you cannot is just noise. */
   --tx-ground: rgba(217, 215, 203, .085);
+
+  /* THE DOT. A conic-gradient's first quadrant fills exactly one
+     quarter of its tile, and that quarter is a square — so these
+     four values are the only marks §3 ever paints. `--sq` is 25%
+     ink; two offset --sq layers make 50%; `--check` is a 50%
+     checker. They are declared once here and resolve against
+     whatever --tx is in scope, which is why a note can quieten its
+     whole field by re-declaring one property. */
+  --sq:           conic-gradient(var(--tx) 0deg 90deg, transparent 90deg);
+  --sq-strong:    conic-gradient(var(--tx-strong) 0deg 90deg, transparent 90deg);
+  --sq-ground:    conic-gradient(var(--tx-ground) 0deg 90deg, transparent 90deg);
+  --check:        repeating-conic-gradient(var(--tx) 0% 25%, transparent 0% 50%);
+  --check-strong: repeating-conic-gradient(var(--tx-strong) 0% 25%, transparent 0% 50%);
 
   --f: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, 'Courier New', monospace;
 
@@ -164,21 +177,28 @@ a { color: inherit; }
 
 /* ══════════════════════════════════════════════════════════════════
    §3 · DITHER
-   The engine. Three layers per field:
+   The engine. Two rules govern all of it:
 
-     layer 0  the element background — a fine, even dot grid; the
-              base tone the whole field never drops below.
-     layer 1  ::before — a coarser grid at a mismatched pitch, MASKED
-              into a union of hard-edged circles so it appears only
-              in patches. This is what makes the field clump.
-     layer 2  ::after — coarser still, masked differently again, so
-              the clumps themselves have denser cores.
+     THE DOT IS A SQUARE. Every mark in every field is a square,
+     never a circle — a dither is a decision made per pixel, and a
+     pixel is square. Squares are cut with `conic-gradient`, whose
+     first quadrant fills exactly a quarter of its tile: one layer
+     gives 25% ink, two offset layers give 50%, and a
+     `repeating-conic-gradient` gives a 50% checker. No dot in this
+     file is round.
 
-   Mismatched pitches matter more than anything else here. Grids at
-   5 and 9 and 14 never line up, so the eye reads drift instead of
-   repetition; grids at 4 and 8 would beat in step and look like a
-   screen door. Every stop below is hard — a dot is present or it is
-   not, which is the whole definition of a dither.
+     THE CLUMPING IS ORDERED. The denser passages are not scattered.
+     They are masked into repeating geometry — checkerboards of
+     rectangles, grids of true circles, and horizontal bands — so a
+     field reads as something built on a grid rather than as noise
+     that happened. Where a circle appears it is a PERFECT circle,
+     cut with an explicit pixel radius (`circle 26px`) so it stays
+     round whatever the aspect of the box it is drawn in. There are
+     no ellipses anywhere below.
+
+   Each field is three layers: an even base of square dots, then two
+   coarser grids masked into that repeating geometry so the field has
+   structure at two scales. Every stop is hard.
    ══════════════════════════════════════════════════════════════════ */
 
 .plate {
@@ -194,127 +214,93 @@ a { color: inherit; }
 }
 .plate::before, .plate::after { content: ''; position: absolute; inset: 0; pointer-events: none; }
 
-/* ── a · drift ────────────────────────────────────────────────────
-   Open clumping, three well-separated patches. The default field:
-   legible as an illustration at any size, and quiet enough to sit
-   beside a paragraph without competing with it. */
-.plate[data-plate="a"] {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx) 26%, transparent 27%);
-  background-size: 5px 5px;
-}
+/* ── a · grid ─────────────────────────────────────────────────────
+   Square dots on a 6px pitch; the denser passages fall on a 72px
+   checkerboard, so the clumping is laid out on a grid rather than
+   dropped at random. The default field. */
+.plate[data-plate="a"] { background-image: var(--sq); background-size: 6px 6px; }
 .plate[data-plate="a"]::before {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 32%, transparent 33%);
-  background-size: 9px 9px;
-  -webkit-mask-image: radial-gradient(circle at 20% 32%, #000 30%, transparent 31%), radial-gradient(circle at 63% 58%, #000 34%, transparent 35%), radial-gradient(circle at 88% 22%, #000 18%, transparent 19%);
-          mask-image: radial-gradient(circle at 20% 32%, #000 30%, transparent 31%), radial-gradient(circle at 63% 58%, #000 34%, transparent 35%), radial-gradient(circle at 88% 22%, #000 18%, transparent 19%);
+  background-image: var(--sq-strong); background-size: 6px 6px; background-position: 3px 3px;
+  -webkit-mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%); -webkit-mask-size: 72px 72px;
+          mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%);         mask-size: 72px 72px;
 }
 .plate[data-plate="a"]::after {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 38%, transparent 39%);
-  background-size: 14px 14px;
-  -webkit-mask-image: radial-gradient(circle at 38% 76%, #000 20%, transparent 21%), radial-gradient(circle at 74% 44%, #000 15%, transparent 16%);
-          mask-image: radial-gradient(circle at 38% 76%, #000 20%, transparent 21%), radial-gradient(circle at 74% 44%, #000 15%, transparent 16%);
+  background-image: var(--check-strong); background-size: 10px 10px;
+  -webkit-mask-image: radial-gradient(circle 18px at 50% 50%, #000 99%, transparent 100%); -webkit-mask-size: 96px 96px;
+          mask-image: radial-gradient(circle 18px at 50% 50%, #000 99%, transparent 100%);         mask-size: 96px 96px;
 }
 
-/* ── b · shoal ────────────────────────────────────────────────────
-   Banded. The masks are ellipses stretched on the horizontal, so
-   the clumps run in rows like a shoal. Wants a wide crop; a tall
-   one cuts the bands and looks like an accident. */
-.plate[data-plate="b"] {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx) 24%, transparent 25%);
-  background-size: 4px 7px;
-}
+/* ── b · band ─────────────────────────────────────────────────────
+   Rectangular bands at a fixed 62px repeat — a wide band of checker
+   with a narrower, denser rule sitting inside it. Wants a wide crop;
+   a tall one cuts the rhythm. */
+.plate[data-plate="b"] { background-image: var(--sq); background-size: 5px 5px; }
 .plate[data-plate="b"]::before {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 30%, transparent 31%);
-  background-size: 9px 11px;
-  -webkit-mask-image: radial-gradient(ellipse 46% 14% at 34% 28%, #000 99%, transparent 100%), radial-gradient(ellipse 38% 12% at 70% 62%, #000 99%, transparent 100%), radial-gradient(ellipse 30% 10% at 22% 82%, #000 99%, transparent 100%);
-          mask-image: radial-gradient(ellipse 46% 14% at 34% 28%, #000 99%, transparent 100%), radial-gradient(ellipse 38% 12% at 70% 62%, #000 99%, transparent 100%), radial-gradient(ellipse 30% 10% at 22% 82%, #000 99%, transparent 100%);
+  background-image: var(--check-strong); background-size: 8px 8px;
+  -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 26px, transparent 26px 62px);
+          mask-image: repeating-linear-gradient(180deg, #000 0 26px, transparent 26px 62px);
 }
 .plate[data-plate="b"]::after {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 36%, transparent 37%);
-  background-size: 13px 15px;
-  -webkit-mask-image: radial-gradient(ellipse 34% 9% at 52% 44%, #000 99%, transparent 100%);
-          mask-image: radial-gradient(ellipse 34% 9% at 52% 44%, #000 99%, transparent 100%);
+  background-image: var(--sq-strong); background-size: 12px 12px;
+  -webkit-mask-image: repeating-linear-gradient(180deg, transparent 0 34px, #000 34px 46px, transparent 46px 62px);
+          mask-image: repeating-linear-gradient(180deg, transparent 0 34px, #000 34px 46px, transparent 46px 62px);
 }
 
-/* ── c · static ───────────────────────────────────────────────────
-   Fine and nearly even — barely masked at all. The quietest field:
-   use it when the plate is decoration and the words beside it are
-   carrying the entry. */
-.plate[data-plate="c"] {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 20%, transparent 21%);
-  background-size: 4px 4px;
-}
+/* ── c · fine ─────────────────────────────────────────────────────
+   An even 4px field with a single true circle of denser dots at the
+   centre. The quietest of the six: use it when the plate is
+   decoration and the words beside it are carrying the entry. */
+.plate[data-plate="c"] { background-image: var(--sq); background-size: 4px 4px; }
 .plate[data-plate="c"]::before {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx) 26%, transparent 27%);
-  background-size: 5px 5px;
-  background-position: 1px 2px;
-  -webkit-mask-image: radial-gradient(circle at 44% 46%, #000 52%, transparent 53%);
-          mask-image: radial-gradient(circle at 44% 46%, #000 52%, transparent 53%);
-}
-.plate[data-plate="c"]::after {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 24%, transparent 25%);
-  background-size: 7px 7px;
-  -webkit-mask-image: radial-gradient(circle at 68% 30%, #000 22%, transparent 23%);
-          mask-image: radial-gradient(circle at 68% 30%, #000 22%, transparent 23%);
+  background-image: var(--sq-strong); background-size: 4px 4px; background-position: 2px 2px;
+  -webkit-mask-image: radial-gradient(circle 74px at 50% 50%, #000 99%, transparent 100%);
+  -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
+          mask-image: radial-gradient(circle 74px at 50% 50%, #000 99%, transparent 100%);
+          mask-repeat: no-repeat;         mask-position: center;
 }
 
-/* ── d · bloom ────────────────────────────────────────────────────
-   Large clumps with open ground between them. The loudest field in
-   the set — one per page, or the sheet starts to look like weather. */
-.plate[data-plate="d"] {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx) 20%, transparent 21%);
-  background-size: 6px 6px;
-}
+/* ── d · disc ─────────────────────────────────────────────────────
+   A regular grid of true circles at 78px, each with a smaller
+   concentric circle of coarser dots inside it. The loudest field —
+   one per page. */
+.plate[data-plate="d"] { background-image: var(--sq); background-size: 7px 7px; }
 .plate[data-plate="d"]::before {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 34%, transparent 35%);
-  background-size: 11px 11px;
-  -webkit-mask-image: radial-gradient(circle at 30% 44%, #000 42%, transparent 43%), radial-gradient(circle at 76% 62%, #000 30%, transparent 31%);
-          mask-image: radial-gradient(circle at 30% 44%, #000 42%, transparent 43%), radial-gradient(circle at 76% 62%, #000 30%, transparent 31%);
+  background-image: var(--check-strong); background-size: 7px 7px;
+  -webkit-mask-image: radial-gradient(circle 26px at 50% 50%, #000 99%, transparent 100%); -webkit-mask-size: 78px 78px;
+          mask-image: radial-gradient(circle 26px at 50% 50%, #000 99%, transparent 100%);         mask-size: 78px 78px;
 }
 .plate[data-plate="d"]::after {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 42%, transparent 43%);
-  background-size: 17px 17px;
-  -webkit-mask-image: radial-gradient(circle at 28% 40%, #000 24%, transparent 25%), radial-gradient(circle at 80% 66%, #000 16%, transparent 17%);
-          mask-image: radial-gradient(circle at 28% 40%, #000 24%, transparent 25%), radial-gradient(circle at 80% 66%, #000 16%, transparent 17%);
+  background-image: var(--sq-strong); background-size: 14px 14px;
+  -webkit-mask-image: radial-gradient(circle 11px at 50% 50%, #000 99%, transparent 100%); -webkit-mask-size: 78px 78px;
+          mask-image: radial-gradient(circle 11px at 50% 50%, #000 99%, transparent 100%);         mask-size: 78px 78px;
 }
 
-/* ── e · weave ────────────────────────────────────────────────────
-   Two grids at close pitch — 6 and 7 — so they beat against each
-   other and produce broad interference bands. Reads as woven cloth
-   rather than as noise, which is the one field here that looks
-   deliberately made rather than photographed. */
-.plate[data-plate="e"] {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx) 28%, transparent 29%);
-  background-size: 6px 6px;
-}
-.plate[data-plate="e"]::before {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx) 28%, transparent 29%);
-  background-size: 7px 7px;
-}
+/* ── e · moiré ────────────────────────────────────────────────────
+   Two square-dot grids at 7px and 8px. They beat against each other
+   and produce broad interference — the one field here whose pattern
+   is generated by arithmetic rather than drawn by a mask. */
+.plate[data-plate="e"] { background-image: var(--sq); background-size: 7px 7px; }
+.plate[data-plate="e"]::before { background-image: var(--sq); background-size: 8px 8px; }
 .plate[data-plate="e"]::after {
-  background-image: repeating-linear-gradient(90deg, var(--tx-strong) 0 1px, transparent 1px 13px);
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 60%, transparent 61%);
-          mask-image: radial-gradient(circle at 50% 50%, #000 60%, transparent 61%);
+  background-image: var(--check-strong); background-size: 9px 9px;
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 30px, transparent 30px 70px);
+          mask-image: repeating-linear-gradient(90deg, #000 0 30px, transparent 30px 70px);
 }
 
-/* ── f · burr ─────────────────────────────────────────────────────
-   Coarse, irregular, slightly damaged — a hatch laid across the
-   dots at an angle that divides into neither pitch. The mezzotint
-   of the set; good for anything old. */
-.plate[data-plate="f"] {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx) 30%, transparent 31%);
-  background-size: 5px 8px;
-}
+/* ── f · block ────────────────────────────────────────────────────
+   Two checkerboards of rectangles, at 40px and 120px — a modular
+   mosaic. Every edge in this field is vertical or horizontal, which
+   makes it the most obviously constructed of the six. */
+.plate[data-plate="f"] { background-image: var(--sq); background-size: 5px 5px; }
 .plate[data-plate="f"]::before {
-  background-image: repeating-linear-gradient(37deg, var(--tx-strong) 0 1px, transparent 1px 6px);
-  -webkit-mask-image: radial-gradient(circle at 34% 38%, #000 38%, transparent 39%), radial-gradient(circle at 72% 70%, #000 28%, transparent 29%);
-          mask-image: radial-gradient(circle at 34% 38%, #000 38%, transparent 39%), radial-gradient(circle at 72% 70%, #000 28%, transparent 29%);
+  background-image: var(--check-strong); background-size: 5px 5px;
+  -webkit-mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%); -webkit-mask-size: 40px 40px;
+          mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%);         mask-size: 40px 40px;
 }
 .plate[data-plate="f"]::after {
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 40%, transparent 41%);
-  background-size: 12px 9px;
-  -webkit-mask-image: radial-gradient(ellipse 30% 34% at 24% 66%, #000 99%, transparent 100%), radial-gradient(ellipse 22% 26% at 84% 30%, #000 99%, transparent 100%);
-          mask-image: radial-gradient(ellipse 30% 34% at 24% 66%, #000 99%, transparent 100%), radial-gradient(ellipse 22% 26% at 84% 30%, #000 99%, transparent 100%);
+  background-image: var(--sq-strong); background-size: 10px 10px;
+  -webkit-mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%); -webkit-mask-size: 120px 120px;
+          mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%);         mask-size: 120px 120px;
 }
 
 /* A plate is an illustration, so it gets a caption rather than a
@@ -322,49 +308,48 @@ a { color: inherit; }
 .plate-cap { margin-top: .4rem; font-size: var(--t-sm); color: var(--faint); }
 
 /* ── Grounds ──────────────────────────────────────────────────────
-   The same engine at low strength, poured over a whole region so
-   the sheet reads as printed matter rather than a background
-   colour. Always behind content, never over it. */
+   The same square dots at about a third the ink, poured over a whole
+   region so the sheet reads as printed matter rather than a
+   background colour. Always behind content, never over it. */
 .ground { position: relative; }
 .ground > * { position: relative; z-index: 1; }
 .ground::before {
   content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-ground) 18%, transparent 19%);
-  background-size: 5px 5px;
+  background-image: var(--sq-ground); background-size: 5px 5px;
 }
-/* Cut off at one edge — masked, not gradated: the mask is itself a
-   hard-stop ellipse, so the field simply stops. Anchored RIGHT,
-   because the man-page column is indented from the left and a patch
-   under the first line of every section would be unreadable. */
+/* Cut to a rectangle occupying the right of the region — a single
+   hard stop, so the field simply stops. Anchored right because the
+   man-page column is indented from the left and a patch under the
+   first line of every section would be unreadable. */
 .ground--patch::before {
   background-size: 6px 6px;
-  -webkit-mask-image: radial-gradient(ellipse 58% 130% at 92% 50%, #000 99%, transparent 100%);
-          mask-image: radial-gradient(ellipse 58% 130% at 92% 50%, #000 99%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0 46%, #000 46%);
+          mask-image: linear-gradient(90deg, transparent 0 46%, #000 46%);
 }
 .ground--band::before {
-  background-size: 4px 9px;
-  -webkit-mask-image: repeating-linear-gradient(0deg, #000 0 22px, transparent 22px 44px);
-          mask-image: repeating-linear-gradient(0deg, #000 0 22px, transparent 22px 44px);
+  background-size: 5px 5px;
+  -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 22px, transparent 22px 44px);
+          mask-image: repeating-linear-gradient(180deg, #000 0 22px, transparent 22px 44px);
 }
 
 /* ── Decals ───────────────────────────────────────────────────────
-   Where this set is allowed to enjoy itself. Each is a small
-   dithered shape meant to be placed half off the edge of something,
-   the way a sticker or a register mark is. Everything else on the
-   page is deadpan; these are not. */
+   Where this set is allowed to enjoy itself. Each is a small square-
+   dotted shape meant to be placed half off the edge of something,
+   the way a sticker or a register mark is. The shapes themselves are
+   strictly rectangles and true circles — the playfulness is in where
+   they land, not in the geometry. */
 .decal { position: absolute; pointer-events: none; z-index: 2; }
 .decal--tr { top: -14px; right: -14px; }
 .decal--tl { top: -14px; left: -14px; }
 .decal--br { bottom: -14px; right: -14px; }
 .decal--bl { bottom: -14px; left: -14px; }
 
-/* seal — a dithered ring, stamped. */
+/* seal — a true circular ring, cut with an explicit radius. */
 .decal--seal {
   width: 64px; height: 64px;
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 34%, transparent 35%);
-  background-size: 4px 4px;
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 42%, #000 43%, #000 66%, transparent 67%);
-          mask-image: radial-gradient(circle at 50% 50%, transparent 42%, #000 43%, #000 66%, transparent 67%);
+  background-image: var(--sq-strong); background-size: 4px 4px;
+  -webkit-mask-image: radial-gradient(circle 32px at 50% 50%, transparent 0 40%, #000 41% 78%, transparent 79%);
+          mask-image: radial-gradient(circle 32px at 50% 50%, transparent 0 40%, #000 41% 78%, transparent 79%);
 }
 
 /* crop — register marks. Lines, not dots; the one decal that is not
@@ -374,28 +359,28 @@ a { color: inherit; }
 .decal--crop::before { left: 0; top: 50%; width: 100%; height: 1px; }
 .decal--crop::after  { top: 0; left: 50%; height: 100%; width: 1px; }
 
-/* tab — a hatched flag that hangs off an edge like a sticker. */
+/* tab — a rectangle of checkered squares that hangs off an edge. */
 .decal--tab {
   width: 46px; height: 18px;
-  background-image: repeating-linear-gradient(45deg, var(--tx-strong) 0 2px, transparent 2px 6px);
+  background-image: var(--check-strong); background-size: 4px 4px;
   border: 1px solid var(--line);
 }
 
-/* blot — an irregular dithered blob, deliberately overlapping. */
-.decal--blot {
-  width: 84px; height: 58px;
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 30%, transparent 31%);
-  background-size: 5px 5px;
-  -webkit-mask-image: radial-gradient(circle at 32% 44%, #000 40%, transparent 41%), radial-gradient(circle at 62% 56%, #000 34%, transparent 35%), radial-gradient(circle at 74% 32%, #000 22%, transparent 23%);
-          mask-image: radial-gradient(circle at 32% 44%, #000 40%, transparent 41%), radial-gradient(circle at 62% 56%, #000 34%, transparent 35%), radial-gradient(circle at 74% 32%, #000 22%, transparent 23%);
+/* chip — a rectangle with a true circle set beside it, both filled
+   with the same dots. Geometric rather than blobby: it overlaps what
+   it is placed on, but it is plainly a constructed shape. */
+.decal--chip {
+  width: 92px; height: 44px;
+  background-image: var(--sq-strong); background-size: 5px 5px;
+  -webkit-mask-image: linear-gradient(90deg, #000 0 52%, transparent 52%), radial-gradient(circle 20px at 76% 50%, #000 99%, transparent 100%);
+          mask-image: linear-gradient(90deg, #000 0 52%, transparent 52%), radial-gradient(circle 20px at 76% 50%, #000 99%, transparent 100%);
 }
 
-/* stripe — a dithered band used as a rule with weight. This one is
-   in the flow rather than absolute. */
+/* stripe — a band of squares used as a rule with weight. In the flow
+   rather than absolute. */
 .stripe {
   position: relative; height: 14px;
-  background-image: radial-gradient(circle at 50% 50%, var(--tx-strong) 32%, transparent 33%);
-  background-size: 4px 4px;
+  background-image: var(--check-strong); background-size: 4px 4px;
 }
 
 
@@ -484,11 +469,23 @@ textarea.input { resize: vertical; min-height: 6rem; }
 /* ── §5 · BOARD ────────────────────────────────────────────────── */
 
 .board { position: fixed; inset: var(--bar) 0 0; background: var(--bg); overflow: hidden; }
-.board__vp {
-  position: absolute; inset: 0; cursor: grab; touch-action: none;
-  background-image: radial-gradient(circle at 50% 50%, var(--tx) 12%, transparent 13%);
-  background-size: 24px 24px;
+.board__vp { position: absolute; inset: 0; cursor: grab; touch-action: none; }
+/* The canvas grid is square dots too. It is drawn on a ::before
+   rather than on the viewport itself, because the square is cut by
+   intersecting a mask with the background — and a mask on the
+   viewport would clip the notes inside it. board.js moves it by
+   setting --gx / --gy / --g. */
+.board__vp::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  --g: 24px;
+  background-image: repeating-linear-gradient(180deg, var(--tx) 0 2px, transparent 2px var(--g));
+  background-position: var(--gx, 0) var(--gy, 0);
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 2px, transparent 2px var(--g));
+  -webkit-mask-position: var(--gx, 0) var(--gy, 0);
+          mask-image: repeating-linear-gradient(90deg, #000 0 2px, transparent 2px var(--g));
+          mask-position: var(--gx, 0) var(--gy, 0);
 }
+.board__world { z-index: 1; }
 .board__vp:active { cursor: grabbing; }
 .board__world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 .board__node { position: absolute; }

@@ -62,8 +62,9 @@ window.Board = (() => {
     function apply() {
       world.style.transform = `translate(${view.x}px,${view.y}px) scale(${view.scale})`;
       const step = GRID * view.scale;
-      vp.style.backgroundSize = `${step}px ${step}px`;
-      vp.style.backgroundPosition = `${view.x % step}px ${view.y % step}px`;
+      vp.style.setProperty('--g', `${step}px`);
+      vp.style.setProperty('--gx', `${view.x % step}px`);
+      vp.style.setProperty('--gy', `${view.y % step}px`);
       if (readout) readout.textContent = Math.round(view.scale * 100) + '%';
     }
 
