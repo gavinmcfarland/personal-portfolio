@@ -1,0 +1,400 @@
+/* ══════════════════════════════════════════════════════════════════
+   12 · ENAMEL — the design system
+   ------------------------------------------------------------------
+   Vitreous enamel is powdered glass fused onto steel. It cannot
+   gradate, it cannot soften an edge, and it comes off the kiln in
+   exactly the colour it went in. Everything this set needs to be, the
+   material already is.
+
+   Where 11 · Galley rationed colour to almost nothing and spent
+   viewports on emptiness, this one inverts both: the ground is
+   graphite rather than paper, colour is the primary carrier of rank,
+   and the sheet is worked at a comfortable density instead of a
+   luxurious one.
+
+   THE CONSTRAINT THAT SHAPES EVERYTHING ELSE
+
+     THERE IS NO DISPLAY SIZE. The largest type in this system that
+     carries meaning is 15px. No headline, no lead, no pull-quote, no
+     hero. Every sheet in this folder is set in three sizes that span
+     four pixels — 11px marks, 12px mono, 15px text — and a heading
+     differs from a caption only in weight and colour.
+
+     That is a severe constraint and it has one consequence: rank has
+     to be made some other way. §3 is the eight devices that do it —
+     enamel fill, inversion, weight, accent text, rule weight,
+     numbering, edge marker, and space — and `signal.html` runs the
+     same content through all eight so they can be judged against
+     each other. The only exception is ornamental numerals, which
+     carry no meaning and are excluded on that basis.
+
+   PALETTE — a graphite ground, not a paper one
+
+     The default is mid-dark graphite; the alternate is cool steel.
+     Neither is white and neither is cream: this system is not
+     pretending to be printed. Four enamels sit on top as flat fills,
+     each with a paired ink. Vermilion is the only one permitted to be
+     text rather than a fill.
+
+   TYPE — Chivo for prose, JetBrains Mono for structure. Both
+   screen-native; nothing here has a serif on it.
+
+   THE DOCTRINE, unchanged across 09–12:
+     1. NO CURVES — `border-radius: 0` globally, never overridden.
+     2. NO SHADOWS — not one box-shadow declaration.
+     3. NO GRADIENTS — the .tx-* utilities are hard-stop patterns.
+        Enamel could not gradate if it tried.
+     4. FLAT TYPE — see above; flatter here than in any earlier set.
+     5. FEW BUTTONS — one .btn, appearing twice in the whole set.
+
+   §1 tokens · §2 primitives · §3 rank · §4 components · §5 board
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+
+:root {
+  /* Graphite. A worked surface, not a sheet of paper. */
+  --ground: #24282D;
+  --panel:  #2C3138;
+  --sunk:   #1B1E22;
+  --ink:    #E7EAED;
+  --mid:    #9AA1A9;
+  --faint:  #6B727A;
+  --edge:   #3A4048;   /* hairline */
+  --rule:   #E7EAED;   /* the drawn line */
+
+  /* The four enamels. Flat fills with paired inks — never tinted,
+     never overlaid on each other. VERMILION is the working accent
+     and the only one allowed to be text on the ground. */
+  --vermilion: #FF6A4D;  --vermilion-ink: #2B0700;
+  --blue:      #3B6DFF;  --blue-ink:      #F0F4FF;
+  --lime:      #C9F23A;  --lime-ink:      #1A2200;
+  --teal:      #24BDB8;  --teal-ink:      #02231F;
+
+  --accent: var(--vermilion);
+
+  /* Type. Two families, three sizes, four pixels between the
+     smallest and the largest. */
+  --f-text: 'Chivo', ui-sans-serif, system-ui, sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --t-mark: .6875rem;   /* 11 — tracked uppercase mono marks */
+  --t-mono: .75rem;     /* 12 — all structural mono          */
+  --t-text: .9375rem;   /* 15 — everything else, including
+                                every heading on every sheet  */
+  --t-numeral: 3.25rem; /* ornament only — carries no meaning */
+
+  /* Density: comfortable, not luxurious. Roughly two thirds of the
+     air 11 · Galley spent, and half again what 09 allowed. */
+  --pad:  clamp(1.25rem, 4vw, 3rem);
+  --gap:  1rem;
+  --sheet: 80rem;
+  --bar:  2.75rem;
+
+  --tx-ink: var(--edge);
+
+  color-scheme: dark;
+}
+
+/* The alternate is cool steel — still not paper. */
+.light {
+  --ground: #C3C8CD;
+  --panel:  #D0D4D8;
+  --sunk:   #B0B6BC;
+  --ink:    #16191C;
+  --mid:    #4A4F55;
+  --faint:  #767C83;
+  --edge:   #A6ACB2;
+  --rule:   #16191C;
+
+  --vermilion: #C8341A;  --vermilion-ink: #FFF1EE;
+  --blue:      #1E4FD8;  --blue-ink:      #EFF3FF;
+  --lime:      #A8CC1F;  --lime-ink:      #161C00;
+  --teal:      #12897F;  --teal-ink:      #ECFFFD;
+
+  color-scheme: light;
+}
+
+
+/* ── §2 · PRIMITIVES ───────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; border-radius: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  padding-top: var(--bar);
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--f-text);
+  font-size: var(--t-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Every heading is body size. This is the constraint, enforced
+   rather than merely intended. */
+h1, h2, h3, h4, h5, h6 { font-size: var(--t-text); font-weight: 600; margin: 0; line-height: 1.4; }
+p, figure, dl, dd, ul, ol, blockquote { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+img, svg { display: block; max-width: 100%; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+table { border-collapse: collapse; }
+
+::selection { background: var(--accent); color: var(--vermilion-ink); }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.skip { position: absolute; left: -9999px; z-index: 300; }
+.skip:focus { left: 0; top: 0; padding: .5rem 1rem; background: var(--ink); color: var(--ground); font-family: var(--f-mono); font-size: var(--t-mono); }
+
+.sheet { max-width: var(--sheet); margin: 0 auto; padding-inline: var(--pad); }
+.sheet--narrow { max-width: 46rem; }
+
+.band { padding-block: 2.25rem; }
+.band--tight { padding-block: 1.25rem; }
+.band + .band { border-top: 1px solid var(--edge); }
+
+.g12 { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: var(--gap); }
+.c2{grid-column:span 2}  .c3{grid-column:span 3}  .c4{grid-column:span 4}
+.c5{grid-column:span 5}  .c6{grid-column:span 6}  .c7{grid-column:span 7}
+.c8{grid-column:span 8}  .c9{grid-column:span 9}  .c12{grid-column:span 12}
+@media (max-width: 899px) {
+  .c2, .c3, .c4 { grid-column: span 6; }
+  .c5, .c6, .c7, .c8, .c9 { grid-column: span 12; }
+}
+
+#gridlines { position: fixed; inset: var(--bar) 0 0; z-index: 90; pointer-events: none; display: none; }
+#gridlines[data-on="true"] { display: block; }
+#gridlines .sheet, #gridlines .g12 { height: 100%; }
+#gridlines i { background: rgba(255,106,77,.05); border-inline: 1px solid rgba(255,106,77,.24); }
+
+.hr   { border: 0; border-top: 1px solid var(--edge); margin: 0; }
+.hr--strong { border-top: 2px solid var(--rule); }
+
+/* Textures — hard-stop patterns. Enamel cannot gradate. */
+.tx-grid  { background-image: repeating-linear-gradient(0deg, var(--tx-ink) 0 1px, transparent 1px 10px),
+                              repeating-linear-gradient(90deg, var(--tx-ink) 0 1px, transparent 1px 10px); }
+.tx-rule  { background-image: repeating-linear-gradient(0deg, var(--tx-ink) 0 2px, transparent 2px 9px); }
+.tx-dot   { background-image: radial-gradient(circle, var(--tx-ink) 1.5px, transparent 1.6px); background-size: 10px 10px; }
+.tx-hatch { background-image: repeating-linear-gradient(45deg, var(--tx-ink) 0 2px, transparent 2px 9px); }
+.tx-bar   { background-image: repeating-linear-gradient(90deg, var(--tx-ink) 0 4px, transparent 4px 14px); }
+
+/* ── Type utilities. Three sizes, and that is the whole scale. ─── */
+.mark { font-family: var(--f-mono); font-size: var(--t-mark); text-transform: uppercase; letter-spacing: .1em; line-height: 1.4; }
+.mono { font-family: var(--f-mono); font-size: var(--t-mono); line-height: 1.5; font-variant-numeric: tabular-nums; }
+.dim   { color: var(--mid); }
+.faint { color: var(--faint); }
+.strong { font-weight: 600; }
+
+/* Ornament. Carries no meaning, which is why it is allowed to be
+   large in a system that forbids large type. */
+.numeral { font-family: var(--f-mono); font-size: var(--t-numeral); line-height: .85; font-weight: 700; letter-spacing: -.04em; }
+
+a { color: inherit; }
+.ln { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: var(--faint); }
+.ln:hover { color: var(--accent); text-decoration-color: var(--accent); }
+.ln--bare { text-decoration: none; }
+.ln--bare:hover { color: var(--accent); }
+
+.btn { display: inline-block; padding: .45rem 1.15rem; border: 1px solid var(--rule); background: transparent; color: var(--ink); font-family: var(--f-mono); font-size: var(--t-mono); font-weight: 500; }
+.btn:hover { background: var(--ink); color: var(--ground); }
+
+.ph { display: inline-block; flex: none; width: 20px; height: 20px; border: 1px solid currentColor; background: transparent; }
+.ph--12 { width: 12px; height: 12px; }
+.ph--32 { width: 32px; height: 32px; }
+.ph--hatch { background-image: repeating-linear-gradient(45deg, currentColor 0 1px, transparent 1px 5px); }
+
+.swap { transition: opacity 120ms linear; }
+.swap[data-fading="true"] { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .swap { transition: none; } }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §3 · RANK
+   Eight devices for saying "this matters more than that" without
+   changing the type size, because in this system the type size
+   never changes. signal.html demonstrates all eight on identical
+   content.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* R1 · Enamel fill — the loudest device, and the reason no display
+   size is needed. Each tone brings its own paired ink. */
+.fill { padding: 1rem; }
+.fill[data-tone="vermilion"] { background: var(--vermilion); color: var(--vermilion-ink); }
+.fill[data-tone="blue"]      { background: var(--blue);      color: var(--blue-ink); }
+.fill[data-tone="lime"]      { background: var(--lime);      color: var(--lime-ink); }
+.fill[data-tone="teal"]      { background: var(--teal);      color: var(--teal-ink); }
+.fill[data-tone="ink"]       { background: var(--ink);       color: var(--ground); }
+.fill .dim, .fill .faint { color: inherit; opacity: .72; }
+.fill .ln { text-decoration-color: currentColor; }
+.fill .ln:hover { color: inherit; opacity: .78; }
+
+/* R2 · Inversion — loud without spending a colour. */
+.invert { background: var(--ink); color: var(--ground); padding: 1rem; }
+.invert .dim, .invert .faint { color: inherit; opacity: .7; }
+
+/* R3 · Weight is just .strong, declared in §2.
+   R4 · Accent text. */
+.accent { color: var(--accent); }
+
+/* R5 · Rule weight — structural rank at no cost in colour or space. */
+.topped     { border-top: 1px solid var(--edge); padding-top: .6rem; }
+.topped--hi { border-top: 2px solid var(--rule); }
+
+/* R6 · Numbering. */
+.n { font-family: var(--f-mono); font-size: var(--t-mono); font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+/* R7 · Edge marker — binds a run of content without boxing it. */
+.edged { border-left: 3px solid var(--edge); padding-left: .875rem; }
+.edged[data-tone="vermilion"] { border-left-color: var(--vermilion); }
+.edged[data-tone="blue"]      { border-left-color: var(--blue); }
+.edged[data-tone="lime"]      { border-left-color: var(--lime); }
+.edged[data-tone="teal"]      { border-left-color: var(--teal); }
+
+/* R8 · Space — rank by isolation. The most expensive device here,
+   so it is the one used least. */
+.isolated { padding-block: 3.5rem; }
+
+
+/* ── §4 · COMPONENTS ───────────────────────────────────────────── */
+
+/* ── The bar ───────────────────────────────────────────────────── */
+.bar {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--bar); z-index: 100;
+  background: var(--sunk); border-bottom: 1px solid var(--edge);
+  display: flex; align-items: center; gap: 1.25rem; padding-inline: var(--pad);
+  font-family: var(--f-mono); font-size: var(--t-mono);
+}
+.bar__name { text-decoration: none; font-weight: 700; white-space: nowrap; }
+.bar nav { display: flex; gap: .25rem; overflow-x: auto; scrollbar-width: none; }
+.bar nav::-webkit-scrollbar { display: none; }
+.bar nav a { text-decoration: none; color: var(--mid); padding: .15rem .5rem; white-space: nowrap; }
+.bar nav a:hover { color: var(--ink); }
+/* The live sheet is filled, not underlined — rank by fill, the
+   system's own first device, applied to its own navigation. */
+.bar nav a[aria-current="page"] { background: var(--accent); color: var(--vermilion-ink); font-weight: 700; }
+.bar__tools { margin-left: auto; display: flex; gap: .875rem; }
+.bar__tools button { font-family: var(--f-mono); font-size: var(--t-mark); text-transform: uppercase; letter-spacing: .1em; color: var(--faint); }
+.bar__tools button:hover { color: var(--ink); }
+@media (max-width: 699px) { .bar__name { display: none; } }
+
+/* ── Section head — a 2px rule, a number, a name at body size ──── */
+.head { display: flex; align-items: baseline; gap: .75rem; border-top: 2px solid var(--rule); padding-top: .5rem; margin-bottom: 1rem; }
+.head__x { margin-left: auto; font-family: var(--f-mono); font-size: var(--t-mark); text-transform: uppercase; letter-spacing: .1em; color: var(--faint); }
+
+/* ── Panel ─────────────────────────────────────────────────────── */
+.panel { background: var(--panel); border: 1px solid var(--edge); padding: 1rem; display: flex; flex-direction: column; }
+a.panel { text-decoration: none; }
+a.panel:hover { border-color: var(--accent); }
+.panel--sunk { background: var(--sunk); }
+
+/* ── Plate — an enamel field with a texture and an ornament ────── */
+.plate { position: relative; min-height: 7rem; overflow: hidden; display: block; }
+.plate[data-tone="vermilion"] { background: var(--vermilion); color: var(--vermilion-ink); }
+.plate[data-tone="blue"]      { background: var(--blue);      color: var(--blue-ink); }
+.plate[data-tone="lime"]      { background: var(--lime);      color: var(--lime-ink); }
+.plate[data-tone="teal"]      { background: var(--teal);      color: var(--teal-ink); }
+.plate .tx { position: absolute; inset: 0; --tx-ink: currentColor; opacity: .22; }
+.plate .numeral { position: absolute; right: .5rem; bottom: -.35rem; opacity: .5; }
+
+/* ── The table ─────────────────────────────────────────────────── */
+.tbl { width: 100%; font-family: var(--f-mono); font-size: var(--t-mono); font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { text-align: left; padding: .55rem .75rem .55rem 0; border-bottom: 1px solid var(--edge); vertical-align: baseline; }
+.tbl thead th { border-bottom: 2px solid var(--rule); color: var(--faint); font-size: var(--t-mark); text-transform: uppercase; letter-spacing: .1em; font-weight: 500; }
+.tbl tbody tr:hover { background: var(--panel); }
+.tbl tbody tr:hover .t-name { color: var(--accent); }
+.tbl .t-n { color: var(--accent); font-weight: 700; width: 3rem; }
+.tbl .t-name { font-weight: 600; }
+.tbl .t-desc { font-family: var(--f-text); font-size: var(--t-text); color: var(--mid); }
+.tbl .t-year { text-align: right; color: var(--faint); width: 4rem; }
+.scroll-x { overflow-x: auto; }
+.scroll-x > * { min-width: 44rem; }
+.scroll-hint { display: none; color: var(--faint); margin-top: .4rem; }
+@media (max-width: 899px) { .scroll-hint { display: block; } }
+
+/* ── Tag — a bordered mark with an enamel square ───────────────── */
+.tag { display: inline-flex; align-items: center; gap: .4rem; padding: .1rem .45rem; border: 1px solid var(--edge); font-family: var(--f-mono); font-size: var(--t-mark); text-transform: uppercase; letter-spacing: .08em; color: var(--mid); text-decoration: none; }
+.tag .sw { width: 8px; height: 8px; flex: none; }
+.sw[data-tone="vermilion"] { background: var(--vermilion); }
+.sw[data-tone="blue"]      { background: var(--blue); }
+.sw[data-tone="lime"]      { background: var(--lime); }
+.sw[data-tone="teal"]      { background: var(--teal); }
+
+/* ── Rows, definition lists ────────────────────────────────────── */
+.rows { border-top: 2px solid var(--rule); }
+.row { display: grid; grid-template-columns: minmax(8rem, 1fr) 2.4fr; gap: var(--gap); padding: .8rem 0; border-bottom: 1px solid var(--edge); }
+.row__k { display: flex; align-items: flex-start; gap: .6rem; font-weight: 600; }
+.row__v { color: var(--mid); max-width: 60ch; }
+@media (max-width: 599px) { .row { grid-template-columns: 1fr; gap: .25rem; } }
+
+.defs { display: grid; gap: .25rem; font-family: var(--f-mono); font-size: var(--t-mono); }
+.defs > div { display: grid; grid-template-columns: 8rem 1fr; gap: var(--gap); }
+.defs dt { color: var(--faint); }
+.defs dd { margin: 0; }
+
+/* ── Tabs ──────────────────────────────────────────────────────── */
+.tabs { display: flex; gap: .3rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.tab { font-family: var(--f-mono); font-size: var(--t-mono); padding: .25rem .6rem; border: 1px solid var(--edge); color: var(--mid); }
+.tab:hover { color: var(--ink); border-color: var(--rule); }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--vermilion-ink); border-color: var(--accent); font-weight: 700; }
+
+/* ── Accordion ─────────────────────────────────────────────────── */
+.fold { border-top: 1px solid var(--edge); }
+.fold:last-of-type { border-bottom: 1px solid var(--edge); }
+.fold summary { list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: .7rem; padding: .55rem 0; font-weight: 600; }
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary::before { content: '+'; color: var(--accent); font-family: var(--f-mono); width: 1ch; }
+.fold[open] summary::before { content: '−'; }
+.fold summary:hover { color: var(--accent); }
+.fold__body { padding: 0 0 .9rem 1.7ch; color: var(--mid); max-width: 62ch; }
+
+/* ── Form — filled fields on a graphite ground ─────────────────── */
+.field { display: flex; flex-direction: column; gap: .3rem; margin-bottom: .9rem; }
+.field label { font-family: var(--f-mono); font-size: var(--t-mark); text-transform: uppercase; letter-spacing: .1em; color: var(--mid); }
+.input { border: 1px solid var(--edge); background: var(--sunk); color: var(--ink); padding: .5rem .625rem; font-family: var(--f-mono); font-size: var(--t-mono); width: 100%; }
+.input:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+textarea.input { resize: vertical; min-height: 6rem; }
+.field[data-invalid="true"] .input { border-color: var(--accent); }
+.err { font-family: var(--f-mono); font-size: var(--t-mark); color: var(--accent); min-height: 1em; }
+
+.foot { border-top: 2px solid var(--rule); margin-top: 2.5rem; padding: 1.25rem 0 2.5rem; }
+
+
+/* ── §5 · BOARD ────────────────────────────────────────────────── */
+
+.board { position: fixed; inset: var(--bar) 0 0; background: var(--sunk); overflow: hidden; --tx-ink: var(--edge); }
+.board__vp {
+  position: absolute; inset: 0; cursor: grab; touch-action: none;
+  background-image: radial-gradient(circle, var(--tx-ink) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.board__vp:active { cursor: grabbing; }
+.board__world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.board__node { position: absolute; }
+
+.note { border: 1px solid var(--edge); padding: .75rem; font-family: var(--f-mono); font-size: var(--t-mono); white-space: pre-line; display: flex; flex-direction: column; gap: .65rem; min-height: 7rem; }
+.note__label { font-size: var(--t-mark); text-transform: uppercase; letter-spacing: .1em; opacity: .7; }
+.note[data-tone="vermilion"] { background: var(--vermilion); color: var(--vermilion-ink); border-color: var(--vermilion); }
+.note[data-tone="blue"]      { background: var(--blue);      color: var(--blue-ink);      border-color: var(--blue); }
+.note[data-tone="lime"]      { background: var(--lime);      color: var(--lime-ink);      border-color: var(--lime); }
+.note[data-tone="teal"]      { background: var(--teal);      color: var(--teal-ink);      border-color: var(--teal); }
+.note[data-tone="ink"]       { background: var(--ink);       color: var(--ground);        border-color: var(--ink); }
+
+.nd-doc { border: 1px solid var(--edge); background: var(--panel); padding: .75rem; color: var(--mid); }
+.nd-doc .mark { display: flex; align-items: center; gap: .5rem; color: var(--ink); border-bottom: 1px solid var(--edge); padding-bottom: .45rem; margin-bottom: .45rem; }
+.nd-code { border: 1px solid var(--edge); background: var(--ground); }
+.nd-code__bar { border-bottom: 1px solid var(--edge); padding: .35rem .6rem; font-family: var(--f-mono); font-size: var(--t-mark); text-transform: uppercase; letter-spacing: .1em; color: var(--mid); }
+.nd-code pre { margin: 0; padding: .6rem; font-family: var(--f-mono); font-size: var(--t-mono); line-height: 1.55; white-space: pre; }
+
+.board__hint { position: fixed; bottom: .875rem; left: var(--pad); font-family: var(--f-mono); font-size: var(--t-mark); text-transform: uppercase; letter-spacing: .1em; color: var(--faint); transition: opacity 120ms linear; z-index: 10; }
+
+.boardfig { position: relative; border: 1px solid var(--edge); background: var(--sunk); overflow: hidden; height: 16rem; --tx-ink: var(--edge); }
+.boardfig__world { position: absolute; left: 1rem; top: 1rem; transform: scale(.5); transform-origin: 0 0; width: 200%; }
+.boardfig__bar { display: flex; justify-content: space-between; border: 1px solid var(--edge); border-top: 0; padding: .35rem .6rem; font-family: var(--f-mono); font-size: var(--t-mark); text-transform: uppercase; letter-spacing: .1em; color: var(--mid); }
+
+@media print { .bar, #gridlines, .board__hint { display: none; } body { padding-top: 0; } }

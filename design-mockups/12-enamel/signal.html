@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signal — Enamel</title>
+<meta name="description" content="Eight ways to make rank without changing the type size, compared on identical content.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2324282D'/%3E%3Crect x='4' y='4' width='11' height='11' fill='%23FF6A4D'/%3E%3Crect x='17' y='4' width='11' height='11' fill='%233B6DFF'/%3E%3Crect x='4' y='17' width='11' height='11' fill='%23C9F23A'/%3E%3Crect x='17' y='17' width='11' height='11' fill='%2324BDB8'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-surface');document.documentElement.classList.toggle('light',s?s==='steel':matchMedia('(prefers-color-scheme: light)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="signal">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="bar__name" href="index.html">G.McF</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="bar__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Surface</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── The premise. Note that this is the largest type on the
+       sheet, and it is 15px — same as everything else. ──────────── -->
+  <section class="band band--tight">
+    <div class="sheet">
+      <div class="g12">
+        <div class="c7">
+          <p class="mark faint">Signal</p>
+          <h1 style="margin-top:.6rem">Eight ways to say “this one matters more” without changing the type size.</h1>
+          <p class="dim" style="margin-top:.6rem;max-width:60ch">
+            This system has no display size. The largest type on any sheet in this
+            folder is 15px, and every heading — including the one above — is set at
+            it. Rank has to come from somewhere else, so it comes from these.
+          </p>
+        </div>
+        <div class="c4" style="grid-column:9 / span 4">
+          <div class="fill" data-tone="lime">
+            <p class="mark" style="opacity:.72">The rule</p>
+            <p class="strong" style="margin-top:.3rem">11px · 12px · 15px</p>
+            <p style="opacity:.8;margin-top:.2rem">
+              Three sizes, four pixels apart. Ornamental numerals are excluded
+              because they carry no meaning.
+            </p>
+          </div>
+          <p class="mono faint" style="margin-top:.6rem">
+            <span data-count="ranks">—</span> devices · press G for the grid
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── All eight, side by side on identical content ─────────────── -->
+  <section class="band" aria-labelledby="cmp-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">01</span>
+        <h2 id="cmp-h">The eight, on the same three items</h2>
+        <span class="head__x">Identical content</span>
+      </div>
+      <p class="dim" style="max-width:64ch;margin-bottom:1.5rem">
+        Each panel below contains the same three projects and the same words. The
+        only difference is how the first one is marked as the lead — which makes
+        this the one comparison that actually isolates the device.
+      </p>
+      <div class="g12" id="grid"></div>
+    </div>
+  </section>
+
+  <!-- ── One at a time, larger ────────────────────────────────────── -->
+  <section class="band" aria-labelledby="one-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">02</span>
+        <h2 id="one-h">One at a time</h2>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Rank devices" id="tabs"></div>
+      <div class="g12">
+        <div class="c5">
+          <div class="swap" id="stage" role="tabpanel" aria-live="polite"
+               style="border:1px solid var(--edge);padding:1rem;min-height:14rem"></div>
+        </div>
+        <div class="c6" style="grid-column:7 / span 6">
+          <p class="mark faint" id="stage-name">—</p>
+          <p class="dim" style="margin-top:.5rem;max-width:52ch" id="stage-note">—</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── The palette, stated plainly ──────────────────────────────── -->
+  <section class="band" aria-labelledby="pal-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">03</span>
+        <h2 id="pal-h">The enamels</h2>
+        <span class="head__x">Fills, not tints</span>
+      </div>
+      <p class="dim" style="max-width:64ch;margin-bottom:1.25rem">
+        Four enamels on a graphite ground. Each is a flat fill with its own paired
+        ink and is never tinted, faded or laid over another. Vermilion is the only
+        one permitted to be text rather than a fill, which is what makes it the
+        accent.
+      </p>
+      <div class="g12">
+        <div class="c3"><div class="fill" data-tone="vermilion" style="min-height:7rem;display:flex;flex-direction:column;justify-content:space-between">
+          <span class="mark">Vermilion</span><span class="mono">Accent · fill or text</span></div></div>
+        <div class="c3"><div class="fill" data-tone="blue" style="min-height:7rem;display:flex;flex-direction:column;justify-content:space-between">
+          <span class="mark">Blue</span><span class="mono">Fill only</span></div></div>
+        <div class="c3"><div class="fill" data-tone="lime" style="min-height:7rem;display:flex;flex-direction:column;justify-content:space-between">
+          <span class="mark">Lime</span><span class="mono">Fill only</span></div></div>
+        <div class="c3"><div class="fill" data-tone="teal" style="min-height:7rem;display:flex;flex-direction:column;justify-content:space-between">
+          <span class="mark">Teal</span><span class="mono">Fill only</span></div></div>
+      </div>
+      <div class="g12" style="margin-top:.75rem">
+        <div class="c3"><div class="panel" style="min-height:5rem;justify-content:space-between">
+          <span class="mark faint">Ground</span><span class="mono dim">Graphite / steel</span></div></div>
+        <div class="c3"><div class="invert" style="min-height:5rem;display:flex;flex-direction:column;justify-content:space-between">
+          <span class="mark" style="opacity:.7">Inversion</span><span class="mono">Ink block</span></div></div>
+        <div class="c6" style="display:flex;align-items:flex-end">
+          <p class="mono faint">
+            Neither surface is white and neither is cream. This system does not
+            pretend to be printed.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Sheet</dt><dd>Signal</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Set</dt><dd>12 · Enamel</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+    const ranks = DATA.ranks;
+
+    /* All eight, in a grid — the honest comparison. */
+    document.getElementById('grid').innerHTML = ranks.map((r, i) => `
+      <div class="c3">
+        <p class="mark faint" style="border-top:1px solid var(--edge);padding-top:.4rem;margin-bottom:.5rem">
+          <span class="n">R${i + 1}</span> ${esc(r.name)}
+        </p>
+        <div data-rank="${esc(r.id)}"></div>
+      </div>`).join('');
+    document.querySelectorAll('[data-rank]').forEach((el) => renderRank(el, el.dataset.rank));
+
+    /* One at a time, with the argument for it beside. */
+    document.getElementById('tabs').innerHTML = ranks.map((r, i) => `
+      <button class="tab" role="tab" data-mode="${esc(r.id)}"
+              aria-selected="${i === 0}" ${i === 0 ? '' : 'tabindex="-1"'}
+              aria-controls="stage">${esc(r.name)}</button>`).join('');
+
+    const stage = document.getElementById('stage');
+    wireTabs(document.getElementById('tabs'), stage, (id, i) => {
+      renderRank(stage, id);
+      const r = ranks[i];
+      document.getElementById('stage-name').textContent = `R${i + 1} · ${r.name}`;
+      document.getElementById('stage-note').textContent = r.note;
+    });
+  })();
+</script>
+</body>
+</html>

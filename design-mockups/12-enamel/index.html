@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gavin McFarland — Design engineer</title>
+<meta name="description" content="Gavin McFarland, design engineer. Design systems and the developer tooling they are built with.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2324282D'/%3E%3Crect x='4' y='4' width='11' height='11' fill='%23FF6A4D'/%3E%3Crect x='17' y='4' width='11' height='11' fill='%233B6DFF'/%3E%3Crect x='4' y='17' width='11' height='11' fill='%23C9F23A'/%3E%3Crect x='17' y='17' width='11' height='11' fill='%2324BDB8'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-surface');document.documentElement.classList.toggle('light',s?s==='steel':matchMedia('(prefers-color-scheme: light)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="index">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="bar__name" href="index.html">G.McF</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="bar__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Surface</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── The opening. No display size, so the enamel fill and the
+       ornamental numeral do the work a headline would. ──────────── -->
+  <section class="band band--tight">
+    <div class="sheet">
+      <div class="g12">
+
+        <div class="c7">
+          <div class="fill" data-tone="vermilion" style="min-height:13rem;justify-content:space-between;display:flex;flex-direction:column">
+            <div>
+              <p class="mark" style="opacity:.75">Gavin McFarland · design engineer · London</p>
+              <p class="strong" style="margin-top:.6rem;max-width:34ch">
+                I build the tools design systems are made with — and the systems themselves.
+              </p>
+              <p style="opacity:.82;margin-top:.5rem;max-width:44ch">
+                Fifteen years between design and front-end, mostly spent on the seam:
+                token pipelines, component APIs, and the editor plugins that keep the
+                two halves honest with each other.
+              </p>
+            </div>
+            <p class="mono" style="margin-top:1rem">
+              <a class="ln" href="work.html">The work</a>
+              <span style="opacity:.6;margin:0 .5rem">·</span>
+              <a class="ln" href="signal.html">How this reads without headings</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="c5">
+          <div class="g12" style="--gap:.5rem">
+            <div class="c6">
+              <div class="panel" style="min-height:6.25rem;justify-content:space-between">
+                <span class="mark faint">Status</span>
+                <span class="strong">Independent · available autumn 2026</span>
+              </div>
+            </div>
+            <div class="c6">
+              <div class="panel panel--sunk" style="min-height:6.25rem;justify-content:space-between">
+                <span class="mark faint">Based</span>
+                <span class="strong">London, UK · GMT</span>
+              </div>
+            </div>
+            <div class="c12">
+              <div class="panel" style="min-height:6.25rem;justify-content:space-between">
+                <span class="mark faint">Direct</span>
+                <span class="strong"><a class="ln" data-email href="#">—</a></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Work, as the table ───────────────────────────────────────── -->
+  <section class="band" aria-labelledby="work-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">01</span>
+        <h2 id="work-h">Work</h2>
+        <a class="head__x ln" href="work.html">Plates →</a>
+      </div>
+      <div data-table></div>
+      <p class="mark scroll-hint">Scroll →</p>
+      <p class="mono faint" style="margin-top:.6rem">
+        <span data-count="projects">—</span> items · tools, plug-ins and libraries
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Capabilities — edge markers bind each row without boxing ─── -->
+  <section class="band" aria-labelledby="cap-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">02</span>
+        <h2 id="cap-h">What I am useful for</h2>
+      </div>
+      <div class="g12" id="capabilities"></div>
+    </div>
+  </section>
+
+  <!-- ── The one isolated block on this sheet ─────────────────────── -->
+  <section class="band">
+    <div class="sheet">
+      <div class="isolated" style="border-top:1px solid var(--edge);border-bottom:1px solid var(--edge)">
+        <p class="mark faint">Working principle</p>
+        <p class="strong" style="margin-top:.5rem;max-width:42ch">
+          A problem you cannot draw is a problem you do not understand yet.
+        </p>
+        <p class="mono" style="margin-top:.75rem"><a class="ln" href="journal.html">Field notes →</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Previously ───────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="cl-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">03</span>
+        <h2 id="cl-h">Previously, for</h2>
+      </div>
+      <ul id="clients" style="display:flex;flex-wrap:wrap;gap:.4rem"></ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Sheet</dt><dd>Index</dd></div>
+      <div><dt>Set</dt><dd>12 · Enamel</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+    const tones = ['blue', 'lime', 'teal'];
+
+    document.getElementById('capabilities').innerHTML = DATA.capabilities.map((c, i) => `
+      <div class="c4">
+        <div class="edged" data-tone="${tones[i % tones.length]}" style="padding-block:.5rem">
+          <p class="mark faint"><span class="n">${pad2(i + 1)}</span> ${esc(c.k)}</p>
+          <p class="dim" style="margin-top:.4rem">${esc(c.v)}</p>
+        </div>
+      </div>`).join('');
+
+    document.getElementById('clients').innerHTML =
+      DATA.clients.map((c) => `<li class="tag">${esc(c)}</li>`).join('');
+  })();
+</script>
+</body>
+</html>
