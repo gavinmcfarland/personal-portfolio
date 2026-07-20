@@ -395,9 +395,27 @@
     ],
   };
 
-  const SETS = { 16:G16, 32:G32 };
+  /* icons48.js registers the large set and the dither table before
+     this file runs. Both are optional. */
+  const G48 = window.ICON_G48 || {};
+  const DITHER = window.ICON_DITHER || {};
 
-  /* Merge horizontal runs of one colour into a single rect. */
+  const SETS = { 16:G16, 32:G32, 48:G48 };
+
+  /* Resolve one cell to a hex. An UPPERCASE key is a 50% chequer of
+     its pair, alternating on (x + y) — which is how a 16-colour icon
+     gets a third tone out of two colours. */
+  function colourAt(ch, x, y) {
+    const pair = DITHER[ch];
+    if (pair) return PAL[pair[(x + y) % 2]];
+    return PAL[ch];
+  }
+
+  /* Merge horizontal runs of one resolved colour into a single rect.
+     A dithered area cannot merge — its colour alternates every pixel
+     — so it costs one rect per cell. That is the price of the
+     chequer, and it is why dither is used for shading rather than
+     for whole icons. */
   function toSvg(grid, size, cls, label) {
     let rects = '';
     grid.forEach((row, y) => {
@@ -405,9 +423,10 @@
       while (x < row.length) {
         const ch = row[x];
         if (ch === '.') { x++; continue; }
+        const fill = colourAt(ch, x, y);
         let run = 1;
-        while (x + run < row.length && row[x + run] === ch) run++;
-        rects += `<rect x="${x}" y="${y}" width="${run}" height="1" fill="${PAL[ch] || '#000'}"/>`;
+        while (x + run < row.length && row[x + run] === ch && colourAt(ch, x + run, y) === fill) run++;
+        rects += `<rect x="${x}" y="${y}" width="${run}" height="1" fill="${fill || '#000'}"/>`;
         x += run;
       }
     });
@@ -417,14 +436,27 @@
 
   const CACHE = {};
 
+  /* Prefer the requested size; otherwise step down to the nearest
+     one that has actually been drawn. Never scale up — an icon
+     enlarged past its own grid is just big mud. */
+  const ORDER = [48, 32, 16];
+
   window.icon = function icon(name, opts) {
     const o = opts || {};
-    const want = o.size === 32 ? 32 : 16;
-    /* fall back to whichever size actually exists for this name */
-    const size = SETS[want][name] ? want : (SETS[want === 32 ? 16 : 32][name] ? (want === 32 ? 16 : 32) : want);
-    const grid = SETS[size] && SETS[size][name];
+    const want = ORDER.includes(o.size) ? o.size : 16;
+    const size = SETS[want][name]
+      ? want
+      : ORDER.filter((s) => s <= want).find((s) => SETS[s][name])
+        || ORDER.find((s) => SETS[s][name]);
+    const grid = size && SETS[size][name];
     if (!grid) return '';
-    const cls = 'ico ico--' + want;
+    /* The box follows the RESOLVED size, not the requested one. If a
+       name was only ever drawn at 48, asking for 32 gets a 48px icon
+       — larger than asked for, but never a resampled one. Rendering
+       a 48 grid into a 32 box is the mud this whole format exists to
+       avoid, and a fallback that quietly does it is worse than no
+       fallback. `specimen.html` lists which sizes exist. */
+    const cls = 'ico ico--' + size;
     const key = `${name}|${size}|${cls}|${o.label || ''}`;
     if (!CACHE[key]) CACHE[key] = toSvg(grid, size, cls, o.label);
     return CACHE[key];
@@ -433,5 +465,7 @@
   /* specimen.html reads these */
   window.ICON_SETS = SETS;
   window.ICON_PALETTE = PAL;
-  window.ICON_NAMES = [...new Set([...Object.keys(G32), ...Object.keys(G16)])];
+  window.ICON_DITHER_TABLE = DITHER;
+  window.ICON_COLOUR_AT = colourAt;
+  window.ICON_NAMES = [...new Set([...Object.keys(G48), ...Object.keys(G32), ...Object.keys(G16)])];
 })();

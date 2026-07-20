@@ -162,6 +162,7 @@
   </div>
 </footer>
 
+<script src="icons48.js"></script>
 <script src="icons.js"></script>
 <script src="data.js"></script>
 <script src="system.js"></script>
@@ -174,24 +175,26 @@
   /* ── The set ─────────────────────────────────────────────────
      Each cell reports which sizes actually exist, so a missing
      drawing is visible rather than silently substituted. */
+  const SIZES = [48, 32, 16];
   const spec = document.getElementById('spec');
+
   spec.innerHTML = NAMES.map((n) => {
-    const has32 = !!SETS[32][n], has16 = !!SETS[16][n];
+    const has = SIZES.filter((s) => SETS[s][n]);
     return `
       <div class="spec__cell">
         <span class="spec__row">
-          ${has32 ? icon(n, { size:32, label:n + ' at 32 pixels' }) : '<span class="spec__missing">32</span>'}
-          ${has16 ? icon(n, { size:16, label:n + ' at 16 pixels' }) : '<span class="spec__missing">16</span>'}
+          ${SIZES.map((s) => SETS[s][n]
+            ? icon(n, { size:s, label:`${n} at ${s} pixels` })
+            : `<span class="spec__missing">${s}</span>`).join('')}
         </span>
         <span class="spec__name">${esc(n)}</span>
-        <span class="spec__sizes">${[has16 && '16', has32 && '32'].filter(Boolean).join(' · ')}</span>
+        <span class="spec__sizes">${has.slice().reverse().join(' · ')}</span>
       </div>`;
   }).join('');
 
-  const cells32 = NAMES.filter((n) => SETS[32][n]).length;
-  document.getElementById('set-count').textContent = `${NAMES.length} names · ${cells32} at 32px`;
-  document.getElementById('tb-cells').textContent =
-    `${Object.keys(SETS[16]).length} + ${Object.keys(SETS[32]).length}`;
+  const counts = SIZES.map((s) => `${Object.keys(SETS[s]).length}×${s}`).reverse().join(' · ');
+  document.getElementById('set-count').textContent = `${NAMES.length} names · ${counts}`;
+  document.getElementById('tb-cells').textContent = counts;
 
   /* ── The magnifier ───────────────────────────────────────────
      Renders the grid as literal cells, which is what the source

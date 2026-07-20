@@ -90,6 +90,7 @@ img, svg { display:block; max-width:100%; }
 .ico { flex:none; }
 .ico--16 { width:16px; height:16px; }
 .ico--32 { width:32px; height:32px; }
+.ico--48 { width:48px; height:48px; }
 
 /* strip — the ruled band at the head of every sheet */
 .strip { border-bottom:1px solid var(--rule); background:var(--paper); }

@@ -184,6 +184,7 @@
   </div>
 </footer>
 
+<script src="icons48.js"></script>
 <script src="icons.js"></script>
 <script src="data.js"></script>
 <script>
@@ -199,7 +200,7 @@
       return `
         <a class="tbl__row" data-kind="${p.kind}" data-name="${p.name} ${p.desc}"
            href="${p.href}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ''}>
-          <span class="c-ico">${icon(p.icon, { size:32 })}</span>
+          <span class="c-ico">${icon(p.icon, { size:48 })}</span>
           <span class="c-name">${p.name}${ext ? ' ↗' : ''}</span>
           <span class="c-desc">${p.desc}</span>
           <span class="c-meta"><span class="swatch" style="background:${k.colour}"></span>${k.label} · ${p.year}</span>
