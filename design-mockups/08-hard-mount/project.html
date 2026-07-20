@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plugma — Gavin McFarland</title>
+<meta name="description" content="Plugma — a zero-config toolchain for building Figma plugins, with real hot reloading.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A0A0A'/%3E%3Crect x='16' y='0' width='16' height='16' fill='%23F2C300'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+<style>
+  /* Page-local: the figure's height. Everything else is §3. */
+  .figure__board { height: clamp(320px, 50vh, 480px); border-bottom: 1px solid var(--rule); }
+  @media (min-width: 900px) {
+    .doc__meta { position: sticky; top: calc(48px + 1.5rem); }
+  }
+</style>
+</head>
+
+<body data-page="project">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="sheet topbar__in">
+    <a class="mark" href="index.html">
+      <span class="mark__glyph" aria-hidden="true"></span>
+      <span class="mark__name">G. McFarland</span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Primary"></nav>
+    <div class="tools">
+      <button class="ghost" id="grid-toggle" type="button" aria-label="Show construction grid" title="Construction grid (G)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/>
+        </svg>
+      </button>
+      <button class="ghost" id="theme-toggle" type="button" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" aria-hidden="true">
+          <path d="M8 8h8v8H8z"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="section">
+    <div class="sheet">
+
+      <nav class="micro" aria-label="Breadcrumb" style="margin-bottom:1rem">
+        <a class="lnq" href="gallery.html" style="font:inherit; text-transform:inherit; letter-spacing:inherit">Gallery</a>
+        <span aria-hidden="true"> / </span>
+        <span style="color:var(--ink)" aria-current="page">Plugma</span>
+      </nav>
+
+      <div class="g12">
+
+        <!-- ── Document ─────────────────────────────────────────── -->
+        <div class="c8 stack-l">
+
+          <div>
+            <span class="block">Sheet 03 / 05 — Detail</span>
+            <h1 class="display" style="margin-top:1rem">plugma</h1>
+            <p class="lead" style="margin-top:.5rem; max-width:52ch">
+              A zero-config toolchain for building Figma plugins — with the hot reloading
+              the platform never shipped.
+            </p>
+          </div>
+
+          <!-- The figure. Boxed mode: the page still scrolls through it. -->
+          <figure class="frame frame--bare">
+            <div class="figure__board"><div class="board" id="board"></div></div>
+            <figcaption class="frame__bar" style="border-top:0">
+              <span>Fig. 01 — the working board</span>
+              <a class="lnq" href="project-canvas.html" style="font:inherit; text-transform:inherit; letter-spacing:inherit">Open full screen →</a>
+            </figcaption>
+          </figure>
+
+          <div>
+            <div class="head">
+              <span class="head__num">01</span>
+              <h2 class="head__t">The problem</h2>
+            </div>
+            <div class="prose">
+              <p>
+                A Figma plugin is two programs that cannot see each other. One runs in a
+                sandbox with access to the document and no DOM; the other runs in an iframe
+                with a DOM and no document. They communicate only by passing messages.
+              </p>
+              <p>
+                Nothing about that is unreasonable, but it means every plugin began the same
+                way: <strong>most of a day</strong> assembling a bundler, a manifest, a
+                message bridge, and a build step that inlines the UI into a single file.
+                Every plugin author wrote the same four things, slightly differently.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <div class="head">
+              <span class="head__num">02</span>
+              <h2 class="head__t">The approach</h2>
+            </div>
+            <div class="prose">
+              <p>
+                Plugma puts all of it underneath. One command scaffolds a project, one
+                develops it, one ships it — and the framework stays your choice rather than
+                the tool's.
+              </p>
+              <p>
+                The part worth having is real hot module reloading. The UI is served from a
+                dev server while you work and inlined at build time, so the sandbox half
+                never notices the difference and <code>figma.ui</code> behaves identically in
+                both. Edits appear without a rebuild and <strong>without losing plugin
+                state</strong>, which is the thing that actually breaks concentration.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <div class="head">
+              <span class="head__num">03</span>
+              <h2 class="head__t">The result</h2>
+            </div>
+            <div class="prose">
+              <p>
+                Setup went from most of a day to a single command. It is still maintained,
+                and it is the substrate under every plugin I have built since — which is the
+                only endorsement of a tool that means anything.
+              </p>
+            </div>
+          </div>
+
+          <!-- Paging -->
+          <nav class="frame frame--sunk" aria-label="More projects">
+            <div class="spread">
+              <div>
+                <span class="micro">Previous</span><br>
+                <a class="ln" href="gallery.html">icon-preview</a>
+              </div>
+              <div style="text-align:right">
+                <span class="micro">Next</span><br>
+                <a class="ln" href="gallery.html">askeroo</a>
+              </div>
+            </div>
+          </nav>
+
+        </div>
+
+        <!-- ── Meta ─────────────────────────────────────────────── -->
+        <aside class="c4">
+          <div class="doc__meta stack">
+            <div class="frame">
+              <span class="label label--ink">Specification</span>
+              <dl class="defs" id="facts" style="margin-top:.6rem"></dl>
+            </div>
+
+            <div class="frame">
+              <span class="label label--ink">Links</span>
+              <div class="stack-s" style="margin-top:.6rem">
+                <a class="ln mono" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">plugma.dev ↗</a>
+                <a class="ln mono" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">source ↗</a>
+                <a class="lnq mono" href="project-canvas.html">the board →</a>
+              </div>
+            </div>
+
+            <div class="frame">
+              <span class="label label--ink">Built with</span>
+              <div class="tags" style="margin-top:.6rem">
+                <span class="tag">Node</span>
+                <span class="tag">TypeScript</span>
+                <span class="tag">Vite</span>
+                <span class="tag">Figma API</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="titleblock">
+  <div class="sheet">
+    <dl class="tb">
+      <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Sheet</dt><dd>03 / 05</dd></div>
+      <div><dt>Variation</dt><dd>08 · Hard Mount</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script src="board.js"></script>
+<script>
+  Board.mount(document.getElementById('board'), { mode: 'boxed' });
+</script>
+</body>
+</html>

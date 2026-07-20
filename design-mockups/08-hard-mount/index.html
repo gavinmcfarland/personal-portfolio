@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gavin McFarland — Design engineer</title>
+<meta name="description" content="Gavin McFarland, design engineer. Design systems and the developer tooling they are built with.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A0A0A'/%3E%3Crect x='16' y='0' width='16' height='16' fill='%23F2C300'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Set the theme before first paint so there is no flash of the wrong mode. -->
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="home">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="sheet topbar__in">
+    <a class="mark" href="index.html">
+      <span class="mark__glyph" aria-hidden="true"></span>
+      <span class="mark__name">G. McFarland</span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Primary"></nav>
+    <div class="tools">
+      <button class="ghost" id="grid-toggle" type="button" aria-label="Show construction grid" title="Construction grid (G)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/>
+        </svg>
+      </button>
+      <button class="ghost" id="theme-toggle" type="button" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" aria-hidden="true">
+          <path d="M8 8h8v8H8z"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── Sheet head ─────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="sheet">
+      <div class="g12">
+
+        <div class="c8">
+          <span class="block">Sheet 01 / 05 — Index</span>
+          <h1 class="display" style="margin-top:1rem">
+            I build the tools design systems are made with — and the systems themselves.
+          </h1>
+          <p class="lead" style="margin-top:1rem; max-width:46ch">
+            Fifteen years between design and front-end, mostly spent on the seam: token
+            pipelines, component APIs, and the editor plugins that keep the two halves
+            honest with each other.
+          </p>
+          <div class="row" style="margin-top:1.5rem">
+            <a class="btn" href="gallery.html">See the work</a>
+            <a class="btn btn--quiet" href="contact.html">Start a conversation</a>
+          </div>
+        </div>
+
+        <div class="c4">
+          <div class="frame frame--bare">
+            <div style="padding:.5rem">
+              <div class="plate plate--tall">
+                <div class="plate__art" data-art="arcs"></div>
+                <span class="plate__glyph" aria-hidden="true">G</span>
+              </div>
+            </div>
+            <div class="frame__bar">
+              <span>Plate 01</span>
+              <span>Independent</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Work schedule ──────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="work-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="head__num">01</span>
+        <h2 class="head__t" id="work-h">Work schedule</h2>
+        <a class="lnq mono head__x" href="gallery.html">Gallery view →</a>
+      </div>
+
+      <div class="sched" id="project-rows">
+        <noscript>
+          <p class="small" style="padding:.6rem .5rem">The schedule is rendered from a shared data file. It needs JavaScript.</p>
+        </noscript>
+      </div>
+
+      <p class="micro" style="margin-top:.75rem">
+        <span data-count="projects">—</span> items — tools, plug-ins and libraries
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Capabilities ───────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="cap-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="head__num">02</span>
+        <h2 class="head__t" id="cap-h">What I am useful for</h2>
+      </div>
+      <div class="g12" id="capabilities"></div>
+    </div>
+  </section>
+
+  <!-- ── Method ─────────────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="board-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="head__num">03</span>
+        <h2 class="head__t" id="board-h">Every project starts on a board</h2>
+      </div>
+
+      <div class="g12">
+        <div class="c6">
+          <p class="body" style="max-width:48ch">
+            Notes, sketches, links and half-written code on one surface, before any of it
+            becomes a page. The boards are kept — they are the honest version of how the
+            work actually went, and they are drawn from the same components this sheet is.
+          </p>
+          <div class="row" style="margin-top:1.5rem">
+            <a class="btn btn--quiet" href="project-canvas.html">Open a board</a>
+          </div>
+        </div>
+
+        <div class="c6">
+          <div class="g12" style="gap:.5rem">
+            <div class="keep c3"><div class="plate"><div class="plate__art" data-art="grid"></div></div></div>
+            <div class="keep c3"><div class="plate"><div class="plate__art" data-art="stack"></div></div></div>
+            <div class="keep c3"><div class="plate"><div class="plate__art" data-art="dots"></div></div></div>
+            <div class="keep c3"><div class="plate"><div class="plate__art" data-art="bars"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Clients ────────────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="cl-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="head__num">04</span>
+        <h2 class="head__t" id="cl-h">Previously, for</h2>
+      </div>
+      <ul class="tags" id="clients"></ul>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── Title block ──────────────────────────────────────────────── -->
+<footer class="titleblock">
+  <div class="sheet">
+    <dl class="tb">
+      <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Sheet</dt><dd>01 / 05</dd></div>
+      <div><dt>Variation</dt><dd>08 · Hard Mount</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  /* Page-local: the client list is the only thing unique to the index. */
+  (() => {
+    const el = document.getElementById('clients');
+    if (el && window.DATA) {
+      el.innerHTML = DATA.clients.map((c) => `<li class="tag">${esc(c)}</li>`).join('');
+    }
+  })();
+</script>
+</body>
+</html>
