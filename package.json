@@ -6,7 +6,8 @@
     "build": "pnpm --filter portfolio build",
     "lint": "pnpm --filter portfolio lint",
     "generate": "pnpm --filter abstract-illustrations generate",
-    "preview": "pnpm --filter abstract-illustrations preview"
+    "preview": "pnpm --filter abstract-illustrations preview",
+    "mockups": "node scripts/browse-mockups.mjs"
   },
   "packageManager": "pnpm@10.28.2"
 }
