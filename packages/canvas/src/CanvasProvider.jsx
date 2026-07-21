@@ -2747,7 +2747,7 @@ export function CanvasProvider({
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
-    publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden, reflow,
+    publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,

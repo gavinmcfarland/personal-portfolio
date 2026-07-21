@@ -39,7 +39,7 @@ export function resolveGrid(node) {
 /* Shared node wiring: register the DOM element into the engine's id→el map and
    emit the data-* attributes the imperative engine (drag/chrome/fit/save) reads. */
 export function useRegister(node) {
-  const { nodeEls, reflow } = useCanvas();
+  const { nodeEls, reflow, collide, readOnly } = useCanvas();
   const setRef = useCallback(
     (el) => { if (el) nodeEls.set(node.id, el); else nodeEls.delete(node.id); },
     [node.id, nodeEls]
@@ -67,12 +67,16 @@ export function useRegister(node) {
   // about its top-left (transform-origin 0 0); the screen-space chrome/geometry
   // in CanvasProvider multiplies offsetWidth/Height by data-scale to match.
   const style = { transform: `translate(${x}px,${y}px) scale(${scale})`, zIndex: node.z };
-  // Ease reflow-driven moves; a plain view (no overlay) and edit-mode drags stay
-  // crisp. Only node transforms carry this — the world (pan/zoom) transform is a
-  // separate element — so pan/zoom is never slowed by it.
-  if (reflow) style.transition = 'transform 200ms ease';
-  // `x`/`y` are the resolved (possibly reflowed) position and `reflowed` the
-  // ease flag, for nodes that build their own transform (Frame/Markdown/Code)
-  // rather than using `style`.
-  return { setRef, dataProps, style, x, y, reflowed: !!reflow };
+  // Ease reflow-driven moves. Gated on collision view mode (not on `reflow` being
+  // set) so objects animate BOTH ways — breaking apart as the container narrows
+  // AND settling home as it widens (where `reflow` clears to null); keying it on
+  // `reflow` skipped the settle-back. Edit-mode drags stay crisp (readOnly is
+  // false then), and only node transforms carry this — the world (pan/zoom)
+  // transform is a separate element — so pan/zoom is never slowed by it.
+  const animate = !!(collide && readOnly);
+  if (animate) style.transition = 'transform 200ms ease';
+  // `x`/`y` are the resolved (possibly reflowed) position and `reflowed` the ease
+  // flag, for nodes that build their own transform (Frame/Markdown/Code) rather
+  // than using `style`.
+  return { setRef, dataProps, style, x, y, reflowed: animate };
 }
