@@ -1,26 +1,27 @@
 import { Canvas } from "@gavinmcfarland/canvas";
+import { boardSaver, publishedBoard, uploadMedia, unfurlLink } from "../data/canvasBoards";
 import { ACCENT } from "../theme";
 
-/* Collision-reflow demo. A read-only board whose objects reposition themselves
-   so they never overlap once the container is too narrow to fit their authored
-   layout. The container is user-resizable (drag its bottom-right corner) —
-   narrowing it shrinks the responsive width band, and `collide` pushes the
-   cards that no longer fit down into a single column, snapping them back as it
-   widens again.
+/* Collision-reflow demo — a fully editable board that ALSO reflows responsively.
+   The two compose through the board's mode: in Edit mode you author at real
+   positions (collision off); switch to View and the cards reposition so they
+   never overlap once the container is too narrow to fit their authored layout,
+   snapping back as it widens. Resize the panel (drag its bottom-right corner) to
+   watch the reflow.
 
-   View-mode only (collide never runs while editing), so no persistence wiring
-   is needed. An explicit top-left `view` (rather than initialView="fit") keeps
-   the row anchored to the top so the reflowed column grows down into the frame
-   instead of off the bottom; the default top-left resizeAnchor keeps that top
-   pinned as the container resizes. */
+   Wired like the site's other boards (dev-authorable + persistence); `collide`
+   is the only addition. An explicit top-left `view` in the seed keeps the row
+   anchored to the top so the reflowed column grows down into the frame. */
 const cards = [
   { id: "c-a", text: "### Resize me →\nDrag the corner" },
   { id: "c-b", text: "### No overlaps\nWe reposition" },
   { id: "c-c", text: "### Out of room?\nWe stack down" },
   { id: "c-d", text: "### Room again?\nWe snap back" },
 ];
-const collideState = {
-  view: { x: 40, y: 36, scale: 0.9 },
+const collideSeed = {
+  // Framed top-left (below the board chrome) so the reflowed column grows down
+  // into the frame rather than off the bottom.
+  view: { x: 40, y: 64, scale: 0.82 },
   nodes: cards.map((c, i) => ({ ...c, type: "md", x: i * 232, y: 0, w: 210, z: i + 1 })),
   shapes: [],
 };
@@ -29,10 +30,10 @@ const CollisionDemo = () => (
   <section className="mx-auto w-full max-w-5xl px-5 sm:px-6 pt-4 pb-14">
     <div className="section-label">Responsive collisions</div>
     <p className="mt-4 max-w-[52ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">
-      The same canvas, made responsive. Grab the panel’s bottom-right corner and
-      drag it narrower — when the cards no longer fit side by side, they
-      reposition themselves into a single column instead of overlapping, and slot
-      back as you widen it again.
+      An editable canvas, made responsive. Grab the panel’s bottom-right corner
+      and drag it narrower — in view mode the cards reposition themselves into a
+      single column instead of overlapping, and slot back as you widen it again.
+      It’s a normal board underneath: hit <em>Edit</em> to rearrange it yourself.
     </p>
 
     <div className="mt-8">
@@ -49,19 +50,25 @@ const CollisionDemo = () => (
         <Canvas
           fit="contain"
           accent={ACCENT}
-          editable={false}
-          ui={false}
+          editable={import.meta.env.DEV}
           cooperativeGestures
           collide
           collideStrategy="push-down"
           layoutWidth="viewport"
           collideGap={22}
-          initialState={collideState}
+          base={{ nodes: collideSeed.nodes, shapes: [], brand: { title: "collide", subtitle: "responsive" } }}
+          storageKey="collide-demo"
+          initialState={publishedBoard("collide-demo") || collideSeed}
+          onPublish={boardSaver("collide-demo")}
+          onUploadImage={uploadMedia}
+          onUploadVideo={uploadMedia}
+          onUploadHtml={uploadMedia}
+          onUnfurl={unfurlLink}
         />
       </div>
       <p className="mt-3 text-[0.8125rem] text-faint">
-        Powered by the <code className="font-sans">collide</code> prop —{" "}
-        <code className="font-sans">{'<Canvas collide collideStrategy="push-down" />'}</code>.
+        Editable and responsive at once — the same board, with the{" "}
+        <code className="font-sans">collide</code> prop added.
       </p>
     </div>
   </section>
