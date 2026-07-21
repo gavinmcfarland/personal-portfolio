@@ -631,12 +631,13 @@ export function CanvasProvider({
       const w = worldRef.current, vp = viewportRef.current;
       if (!w || !vp) return;
       // A deliberate framing (user pan/zoom, fit) at the current size becomes the
-      // canonical reference that later resizes reframe from — and that gets
-      // persisted. Captured only in edit mode (in view mode the persisted view is
-      // the stale edit-mode one, and visitor pans are transient) and never during
-      // a resize reframe (that would re-baseline and break reversibility). Uses
-      // the cached size, so no layout read on the pan path.
-      if (!S.readOnly && !reframing.current && lastVpSize.current) {
+      // canonical reference that later resizes reframe from. Captured in BOTH
+      // modes so a visitor's view-mode pan/zoom survives a container resize
+      // instead of snapping back to the last edit-mode framing (persisting the
+      // change stays edit-only, see below). Never captured during a resize
+      // reframe (`reframing`) — that would re-baseline and break reversibility.
+      // Uses the cached size, so no layout read on the pan path.
+      if (!reframing.current && lastVpSize.current) {
         framedRef.current = { w: lastVpSize.current.w, h: lastVpSize.current.h, x: viewRef.x, y: viewRef.y, scale: viewRef.scale };
       }
       w.style.transform = `translate(${viewRef.x}px,${viewRef.y}px) scale(${viewRef.scale})`;
