@@ -121,9 +121,14 @@ function pushDownBoxes(boxes, originX, availW, gap) {
    any loose boxes settled before it). So when the container narrows, only the
    objects that no longer fit relocate — flowing downward while keeping the
    board's left-to-right arrangement — rather than reflowing into a grid or
-   resolving overlaps the author made on purpose. `rect` is the visible world
-   box { x, y, w, h }. */
-function organicResolveBoxes(boxes, rect, gap) {
+   resolving overlaps the author made on purpose.
+
+   `separate` (opt-in) controls whether a loose box is pushed DOWN to clear the
+   boxes already placed. When off (the default), a loose box simply returns to
+   view at its authored height and is allowed to overlap — reflow keeps things
+   on-screen without ever prising overlapping objects apart. `rect` is the
+   visible world box { x, y, w, h }. */
+function organicResolveBoxes(boxes, rect, gap, separate) {
   const bandL = rect.x, bandR = rect.x + rect.w;
   const placed = [], loose = [];
   for (const b of boxes) {
@@ -132,16 +137,19 @@ function organicResolveBoxes(boxes, rect, gap) {
   }
   loose.sort((a, b) => a.y - b.y || a.x - b.x);
   for (const b of loose) {
-    const maxX = bandR - b.w; b.x = maxX >= bandL ? Math.min(Math.max(b.x, bandL), maxX) : bandL;
-    let y = b.y, moved = true;
-    while (moved) {
-      moved = false;
-      for (const p of placed) {
-        const xOver = b.x < p.x + p.w + gap && b.x + b.w + gap > p.x;
-        if (xOver && y < p.y + p.h + gap && y + b.h + gap > p.y) { y = p.y + p.h + gap; moved = true; }
+    const maxX = bandR - b.w; b.x = maxX >= bandL ? Math.min(Math.max(b.x, bandL), maxX) : bandL; // pull back into view
+    if (separate) { // push down to clear already-placed boxes (else overlaps are left intact)
+      let y = b.y, moved = true;
+      while (moved) {
+        moved = false;
+        for (const p of placed) {
+          const xOver = b.x < p.x + p.w + gap && b.x + b.w + gap > p.x;
+          if (xOver && y < p.y + p.h + gap && y + b.h + gap > p.y) { y = p.y + p.h + gap; moved = true; }
+        }
       }
+      b.y = y;
     }
-    b.y = y; placed.push(b);
+    placed.push(b);
   }
 }
 
@@ -407,6 +415,7 @@ export function CanvasProvider({
   layoutWidth = 'viewport', // the responsive band's width: 'viewport' (the container's width in world units, so it tracks resizes / scaleWithContainer) or an explicit number of world px.
   collideGap = 16, // minimum gap (world px) kept between repositioned objects.
   collideOrigin = 'content', // the band's left edge: 'content' (the left-most object) or an explicit world x.
+  collideSeparate = false, // ('organic' strategy) push overlapping objects apart when repositioning. Default false: reflow only brings out-of-view objects back on-screen and leaves overlaps (authored or resize-induced) intact.
 }) {
   const EDITABLE = editable;
   const COOP = cooperativeGestures;
@@ -522,6 +531,7 @@ export function CanvasProvider({
   const LAYOUT_WIDTH = useRef(layoutWidth).current;
   const COLLIDE_GAP = useRef(Number(collideGap) || 0).current;
   const COLLIDE_ORIGIN = useRef(collideOrigin).current;
+  const COLLIDE_SEPARATE = useRef(!!collideSeparate).current;
   const reflowRAF = useRef(0); // debounces reflowObjects to one run per frame
   const lastVpSize = useRef(null); // latest measured container size {w,h}
   const reframing = useRef(false); // true while reframeOnResize applies, so applyView doesn't re-capture the reference
@@ -735,7 +745,7 @@ export function CanvasProvider({
           h: Math.max(1, vpH() / s - 2 * pad),
         };
         if (COLLIDE_STRATEGY === 'pack') packCenteredBoxes(boxes, rect, COLLIDE_GAP);
-        else organicResolveBoxes(boxes, rect, COLLIDE_GAP);
+        else organicResolveBoxes(boxes, rect, COLLIDE_GAP, COLLIDE_SEPARATE);
       }
       const map = new Map();
       for (const b of boxes) {

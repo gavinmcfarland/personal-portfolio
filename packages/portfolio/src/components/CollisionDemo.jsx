@@ -55,6 +55,7 @@ const CollisionDemo = () => (
           cooperativeGestures
           collide
           collideStrategy="organic"
+          collideSeparate
           collideGap={22}
           base={{ nodes: collideSeed.nodes, shapes: [], brand: { title: "collide", subtitle: "responsive" } }}
           storageKey="collide-demo"
