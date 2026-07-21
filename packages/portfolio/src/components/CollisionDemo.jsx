@@ -31,10 +31,10 @@ const CollisionDemo = () => (
     <div className="section-label">Responsive collisions</div>
     <p className="mt-4 max-w-[52ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">
       An editable canvas, made responsive. Grab the panel’s bottom-right corner
-      and drag it narrower — in view mode the cards that would fall off the edge
-      slide back into view, keeping their positions and moving only what no longer
-      fits (nothing shifts while it all still fits). It’s a normal board
-      underneath: hit <em>Edit</em> to rearrange it yourself.
+      and drag it narrower — in view mode the cards that no longer fit flow around
+      the others to stay in view, keeping their arrangement (nothing shifts while
+      it all still fits, and overlaps you make on purpose are kept). It’s a normal
+      board underneath: hit <em>Edit</em> to rearrange it yourself.
     </p>
 
     <div className="mt-8">

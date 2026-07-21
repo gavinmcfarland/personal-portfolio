@@ -120,16 +120,22 @@ function pushDownBoxes(boxes, originX, availW, gap) {
    its authored y until it clears every box already placed (the frozen ones and
    any loose boxes settled before it). So when the container narrows, only the
    objects that no longer fit relocate — flowing downward while keeping the
-   board's left-to-right arrangement — rather than reflowing into a grid or
-   resolving overlaps the author made on purpose.
+   board's left-to-right arrangement — rather than reflowing into a grid.
 
-   `separate` (opt-in) controls whether a loose box is pushed DOWN to clear the
-   boxes already placed. When off (the default), a loose box simply returns to
-   view at its authored height and is allowed to overlap — reflow keeps things
-   on-screen without ever prising overlapping objects apart. `rect` is the
-   visible world box { x, y, w, h }. */
+   A loose box drops down to clear the boxes it collides with, but an INTENTIONAL
+   overlap is preserved: it never pushes off a box it already overlapped in the
+   authored layout, so an overlapping pair reflows AROUND unrelated objects while
+   staying overlapped with each other. `separate` (opt-in) drops that exemption
+   and prises every overlap apart. `rect` is the visible world box { x,y,w,h }. */
 function organicResolveBoxes(boxes, rect, gap, separate) {
   const bandL = rect.x, bandR = rect.x + rect.w;
+  // Authored rects, captured before any repositioning, so we can tell an
+  // intentional overlap (preserve) from a collision the reflow creates (avoid).
+  const homeOf = new Map(boxes.map((b) => [b, { x: b.x, y: b.y, w: b.w, h: b.h }]));
+  const authoredOverlap = (a, b) => {
+    const ha = homeOf.get(a), hb = homeOf.get(b);
+    return ha.x < hb.x + hb.w && ha.x + ha.w > hb.x && ha.y < hb.y + hb.h && ha.y + ha.h > hb.y;
+  };
   const placed = [], loose = [];
   for (const b of boxes) {
     if (b.x >= bandL && b.x + b.w <= bandR) placed.push(b); // frozen at its authored (x, y)
@@ -138,18 +144,16 @@ function organicResolveBoxes(boxes, rect, gap, separate) {
   loose.sort((a, b) => a.y - b.y || a.x - b.x);
   for (const b of loose) {
     const maxX = bandR - b.w; b.x = maxX >= bandL ? Math.min(Math.max(b.x, bandL), maxX) : bandL; // pull back into view
-    if (separate) { // push down to clear already-placed boxes (else overlaps are left intact)
-      let y = b.y, moved = true;
-      while (moved) {
-        moved = false;
-        for (const p of placed) {
-          const xOver = b.x < p.x + p.w + gap && b.x + b.w + gap > p.x;
-          if (xOver && y < p.y + p.h + gap && y + b.h + gap > p.y) { y = p.y + p.h + gap; moved = true; }
-        }
+    let y = b.y, moved = true;
+    while (moved) {
+      moved = false;
+      for (const p of placed) {
+        if (!separate && authoredOverlap(b, p)) continue; // keep an intentional overlap intact
+        const xOver = b.x < p.x + p.w + gap && b.x + b.w + gap > p.x;
+        if (xOver && y < p.y + p.h + gap && y + b.h + gap > p.y) { y = p.y + p.h + gap; moved = true; }
       }
-      b.y = y;
     }
-    placed.push(b);
+    b.y = y; placed.push(b);
   }
 }
 
@@ -415,7 +419,7 @@ export function CanvasProvider({
   layoutWidth = 'viewport', // the responsive band's width: 'viewport' (the container's width in world units, so it tracks resizes / scaleWithContainer) or an explicit number of world px.
   collideGap = 16, // minimum gap (world px) kept between repositioned objects.
   collideOrigin = 'content', // the band's left edge: 'content' (the left-most object) or an explicit world x.
-  collideSeparate = false, // ('organic' strategy) push overlapping objects apart when repositioning. Default false: reflow only brings out-of-view objects back on-screen and leaves overlaps (authored or resize-induced) intact.
+  collideSeparate = false, // ('organic' strategy) also prise apart INTENTIONAL overlaps when reflowing. Default false: reflow still routes objects around collisions it would create, but overlaps present in the authored layout are kept. Set true to separate every overlap.
 }) {
   const EDITABLE = editable;
   const COOP = cooperativeGestures;
