@@ -67,9 +67,10 @@ export function useRegister(node) {
   // about its top-left (transform-origin 0 0); the screen-space chrome/geometry
   // in CanvasProvider multiplies offsetWidth/Height by data-scale to match.
   // Ease reflow moves in collision view mode. Shapes are wrapped in a <div> and
-  // transformed there too (see Shape.jsx) so both are on the same <div> transition
-  // path — the theory being an <svg>'s transition (main thread) drifts from a
-  // <div>'s (compositor) under fast-resize load.
+  // transformed there too (see Shape.jsx) so both animate a <div> transform on
+  // the same path: an <svg>'s transform transition repaints on the main thread
+  // and drifts from a <div>'s (composited) under fast-resize load, so a shape and
+  // the nodes it clusters with would otherwise fall out of step.
   const animate = !!(collide && readOnly);
   const style = { transform: `translate(${x}px,${y}px) scale(${scale})`, zIndex: node.z };
   if (animate) style.transition = 'transform 200ms ease';
