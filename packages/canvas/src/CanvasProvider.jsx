@@ -90,8 +90,10 @@ function resizeScaleFactor(mode, W0, H0, W, H) {
    preserved. Deterministic; no oscillation. */
 function pushDownBoxes(boxes, originX, availW, gap) {
   for (const b of boxes) {
-    const maxX = originX + availW - b.w;
-    b.x = maxX >= originX ? Math.max(originX, Math.min(b.x, maxX)) : originX; // wider than band → pin left, overflow right
+    // Keep the authored x while the box still fits the band; otherwise pin it to
+    // the band's left edge so everything that overflows collapses into a tidy
+    // left-aligned column (a box wider than the band pins left and overflows right).
+    if (b.x < originX || b.x + b.w > originX + availW) b.x = originX;
   }
   boxes.sort((a, b) => a.y - b.y || a.x - b.x);
   const placed = [];

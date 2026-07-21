@@ -1,6 +1,7 @@
 import { Canvas } from "@gavinmcfarland/canvas";
 import { boardSaver, publishedBoard, uploadMedia, unfurlLink } from "../data/canvasBoards";
 import { ACCENT } from "../theme";
+import CollisionDemo from "./CollisionDemo";
 
 /* A self-contained board for the footer playground. `card` is a portfolio-only
    node type, so the demo sticks to the canvas's built-in nodes (markdown, sticky,
@@ -64,6 +65,8 @@ const Footer = () => (
         <code className="font-sans">{'<Canvas fit="contain" />'}</code> component.
       </p>
     </div>
+
+    <CollisionDemo />
 
     <div className="mx-auto w-full max-w-2xl px-5 sm:px-6 pb-16">
       <p className="text-[0.8125rem] text-faint">© 2026 Gavin McFarland</p>
