@@ -83,16 +83,18 @@ function Shape({ shape, draft }) {
 
   const svgStyle = { zIndex: draft ? 2147483647 : shape.z };
   // In collision view mode always carry a translate (identity when there's no
-  // offset) plus the transition, so the move AND the settle-back animate — and
-  // so the transition is always transform→transform. Going to/from `none` (which
-  // is what a shape with no offset would be) doesn't animate reliably across
-  // browsers, which made the shape snap while the nodes glided. Nodes never hit
-  // this because they always carry a translate; matching that keeps them in sync.
+  // offset) plus the transition, so the move AND the settle-back animate, and the
+  // transition is always transform→transform (to/from `none` doesn't animate
+  // reliably). Use translate3d + will-change to promote the shape's SVG to its own
+  // compositor layer: browsers composite CSS-transform transitions on <div>s but
+  // not on <svg>, so without this the SVG repaints on the main thread and lags
+  // the (composited) nodes during a fast resize. This keeps them in lockstep.
   if (collide && readOnly) {
-    svgStyle.transform = `translate(${rp ? rp.dx : 0}px,${rp ? rp.dy : 0}px)`;
+    svgStyle.transform = `translate3d(${rp ? rp.dx : 0}px,${rp ? rp.dy : 0}px,0)`;
     svgStyle.transition = 'transform 200ms ease';
+    svgStyle.willChange = 'transform';
   } else if (rp) {
-    svgStyle.transform = `translate(${rp.dx}px,${rp.dy}px)`;
+    svgStyle.transform = `translate3d(${rp.dx}px,${rp.dy}px,0)`;
   }
   return (
     // A draft has no z yet (assigned on commit), so pin it above the whole
