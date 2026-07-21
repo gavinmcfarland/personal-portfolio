@@ -8,7 +8,7 @@ import { mdParse, mdHighlight } from '../markdown';
    the syntax highlight and drives the box height. */
 function Markdown({ node }) {
   const { editingId, readOnly, eng, nodeEls } = useCanvas();
-  const { setRef, dataProps, x: rx, y: ry } = useRegister(node);
+  const { setRef, dataProps, x: rx, y: ry, reflowed } = useRegister(node);
   const taRef = useRef(null);
   const [src, setSrc] = useState(node.text || '');
   const editing = editingId === node.id;
@@ -65,7 +65,7 @@ function Markdown({ node }) {
 
   const rendered = mdParse(node.text || '') || '<span class="md-empty">Empty — double-click to edit</span>';
 
-  const style = { transform: `translate(${rx}px,${ry}px) scale(${node.scale || 1})`, zIndex: node.z, width: (node.w || 340) + 'px' };
+  const style = { transform: `translate(${rx}px,${ry}px) scale(${node.scale || 1})`, zIndex: node.z, width: (node.w || 340) + 'px', ...(reflowed ? { transition: 'transform 200ms ease' } : null) };
 
   return (
     <div

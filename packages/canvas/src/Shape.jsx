@@ -5,11 +5,11 @@ import { themeInk } from './constants';
 /* One freehand / vector drawing, rendered as its own overlaid SVG (matching the
    mockup so each shape keeps an independent z-index in the shared stack). */
 function Shape({ shape, draft }) {
-  const { shapeEls, reflow } = useCanvas();
+  const { shapeEls, reflow, collide, readOnly } = useCanvas();
   // Collision reflow publishes a derived {dx,dy} offset; a shape that overlaps a
-  // moved node clusters with it and shifts by the same delta. Applied instantly
-  // (no transition) as a transform on the shape's own SVG so its stored coords
-  // stay authored and it moves in the same commit as the nodes.
+  // moved node clusters with it and shifts by the same delta. The offset (and its
+  // transition) is applied to a wrapping <div> — not the <svg> — so a shape moves
+  // on the same rendering path as the nodes (which are <div>s) and can't drift.
   const rp = draft ? null : reflow && reflow.get(shape.id);
   const setRef = useCallback(
     (el) => {
@@ -82,15 +82,19 @@ function Shape({ shape, draft }) {
     );
   }
 
-  const svgStyle = { zIndex: draft ? 2147483647 : shape.z };
-  if (rp) svgStyle.transform = `translate(${rp.dx}px,${rp.dy}px)`;
+  // The wrapper carries the z-index and the reflow transform/transition; the SVG
+  // inside just draws the shape at its authored coords. A draft has no z yet
+  // (assigned on commit), so pin it above the whole stack.
+  const wrapStyle = { zIndex: draft ? 2147483647 : shape.z };
+  if (rp) wrapStyle.transform = `translate(${rp.dx}px,${rp.dy}px)`;
+  if (collide && readOnly) wrapStyle.transition = 'transform 200ms ease';
   return (
-    // A draft has no z yet (assigned on commit), so pin it above the whole
-    // stack — otherwise it renders behind existing objects while drawing.
-    <svg className="shapeSvg" data-id={shape.id} style={svgStyle}>
-      {defs}
-      {el}
-    </svg>
+    <div className="shapeWrap" data-id={shape.id} style={wrapStyle}>
+      <svg className="shapeSvg">
+        {defs}
+        {el}
+      </svg>
+    </div>
   );
 }
 

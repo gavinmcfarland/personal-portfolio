@@ -39,7 +39,7 @@ export function resolveGrid(node) {
 /* Shared node wiring: register the DOM element into the engine's id→el map and
    emit the data-* attributes the imperative engine (drag/chrome/fit/save) reads. */
 export function useRegister(node) {
-  const { nodeEls, reflow } = useCanvas();
+  const { nodeEls, reflow, collide, readOnly } = useCanvas();
   const setRef = useCallback(
     (el) => { if (el) nodeEls.set(node.id, el); else nodeEls.delete(node.id); },
     [node.id, nodeEls]
@@ -66,13 +66,14 @@ export function useRegister(node) {
   // A per-node scale multiplies the whole object (content, borders, media)
   // about its top-left (transform-origin 0 0); the screen-space chrome/geometry
   // in CanvasProvider multiplies offsetWidth/Height by data-scale to match.
-  // Reflow is applied instantly (no CSS transition): every object gets its new
-  // position in a single React commit, painted together, so a node and a shape
-  // it clusters with can never drift. A per-element transition can't guarantee
-  // that — a <div> transition runs on the compositor thread and an <svg> one on
-  // the main thread, so under fast-resize load they fall out of step.
+  // Ease reflow moves in collision view mode. Shapes are wrapped in a <div> and
+  // transformed there too (see Shape.jsx) so both are on the same <div> transition
+  // path — the theory being an <svg>'s transition (main thread) drifts from a
+  // <div>'s (compositor) under fast-resize load.
+  const animate = !!(collide && readOnly);
   const style = { transform: `translate(${x}px,${y}px) scale(${scale})`, zIndex: node.z };
-  // `x`/`y` are the resolved (possibly reflowed) position, for the nodes that
-  // build their own transform (Frame/Markdown/Code) rather than using `style`.
-  return { setRef, dataProps, style, x, y };
+  if (animate) style.transition = 'transform 200ms ease';
+  // `x`/`y` are the resolved (possibly reflowed) position and `reflowed` the ease
+  // flag, for nodes that build their own transform (Frame/Markdown/Code).
+  return { setRef, dataProps, style, x, y, reflowed: animate };
 }

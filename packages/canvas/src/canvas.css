@@ -326,6 +326,17 @@
   transform-origin: 0 0;
 }
 
+/* The wrapper is a zero-size box at the world origin that carries the shape's
+   z-index and its collision-reflow transform (so shapes move on the same <div>
+   path as nodes). The SVG inside overflows it to draw at the shape's coords. */
+.canvas-root .shapeWrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
 .canvas-root .shapeSvg {
   position: absolute;
   top: 0;
