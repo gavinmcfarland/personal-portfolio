@@ -82,9 +82,18 @@ function Shape({ shape, draft }) {
   }
 
   const svgStyle = { zIndex: draft ? 2147483647 : shape.z };
-  if (rp) svgStyle.transform = `translate(${rp.dx}px,${rp.dy}px)`;
-  // Ease reflow moves both ways in collision view mode (matches the nodes).
-  if (collide && readOnly) svgStyle.transition = 'transform 200ms ease';
+  // In collision view mode always carry a translate (identity when there's no
+  // offset) plus the transition, so the move AND the settle-back animate — and
+  // so the transition is always transform→transform. Going to/from `none` (which
+  // is what a shape with no offset would be) doesn't animate reliably across
+  // browsers, which made the shape snap while the nodes glided. Nodes never hit
+  // this because they always carry a translate; matching that keeps them in sync.
+  if (collide && readOnly) {
+    svgStyle.transform = `translate(${rp ? rp.dx : 0}px,${rp ? rp.dy : 0}px)`;
+    svgStyle.transition = 'transform 200ms ease';
+  } else if (rp) {
+    svgStyle.transform = `translate(${rp.dx}px,${rp.dy}px)`;
+  }
   return (
     // A draft has no z yet (assigned on commit), so pin it above the whole
     // stack — otherwise it renders behind existing objects while drawing.
