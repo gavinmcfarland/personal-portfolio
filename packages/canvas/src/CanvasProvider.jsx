@@ -110,43 +110,70 @@ function pushDownBoxes(boxes, originX, availW, gap) {
   }
 }
 
-/* relax: general 2D separation. Each pass pushes every overlapping pair apart
-   along its smaller (minimum-translation) axis. A box that's still overlapping
-   something is NOT pulled toward its authored position — only settled (free)
-   boxes drift home — so separation is monotonic and can't be undone by the pull
-   (which otherwise deadlocks when the band is narrower than the boxes). A tiny
-   index-based tie-break keeps identical stacks from cancelling to a standstill.
-   Less predictable than push-down (it can move objects up as well as down) — for
-   boards with no dedicated scroll axis. */
-function relaxBoxes(boxes, originX, availW, gap) {
-  const home = boxes.map((b) => ({ x: b.x, y: b.y }));
-  const clampX = (b) => { const maxX = originX + availW - b.w; b.x = maxX >= originX ? Math.max(originX, Math.min(b.x, maxX)) : originX; };
-  for (const b of boxes) clampX(b); // pin into the band FIRST, so pass 0 already sees the overlaps clamping creates
-  const ITER = 200, PULL = 0.06, EPS = 0.001;
-  for (let it = 0; it < ITER; it += 1) {
-    const busy = new Set();
-    let any = false;
-    for (let i = 0; i < boxes.length; i += 1) {
-      for (let j = i + 1; j < boxes.length; j += 1) {
-        const a = boxes[i], b = boxes[j];
-        const ox = Math.min(a.x + a.w + gap, b.x + b.w + gap) - Math.max(a.x, b.x);
-        const oy = Math.min(a.y + a.h + gap, b.y + b.h + gap) - Math.max(a.y, b.y);
-        if (ox > 0 && oy > 0) {
-          any = true; busy.add(i); busy.add(j);
-          // Break exact ties (identical position) deterministically so symmetric
-          // stacks don't push equal-and-opposite to a frozen overlap.
-          if (ox < oy) { const dir = a.x !== b.x ? (a.x < b.x ? 1 : -1) : (i < j ? 1 : -1); const d = (ox / 2 + EPS) * dir; a.x -= d; b.x += d; }
-          else { const dir = a.y !== b.y ? (a.y < b.y ? 1 : -1) : (i < j ? 1 : -1); const d = (oy / 2 + EPS) * dir; a.y -= d; b.y += d; }
-        }
+/* organic: minimal-displacement resolve. Every object keeps its AUTHORED
+   position and moves only to satisfy two constraints — stay within the visible
+   box horizontally, and don't overlap (keeping `gap` between them). Each box's x
+   is preserved, pulled in only enough to stay in view; then, in reading order,
+   each box drops straight DOWN from its authored y just far enough to clear the
+   boxes already placed above it. So an object that still fits never moves (a
+   layout that already fits — e.g. toggling edit→view at the same size — is left
+   exactly as authored), and when the box narrows only the objects that overflow
+   flow downward, keeping the board's left-to-right arrangement and its top
+   anchor rather than reflowing into a grid or drifting off-screen. `rect` is the
+   visible world box { x, y, w, h }. */
+function organicResolveBoxes(boxes, rect, gap) {
+  const bandL = rect.x, bandR = rect.x + rect.w;
+  for (const b of boxes) { const maxX = bandR - b.w; b.x = maxX >= bandL ? Math.min(Math.max(b.x, bandL), maxX) : bandL; }
+  const order = boxes.slice().sort((a, b) => a.y - b.y || a.x - b.x);
+  const placed = [];
+  for (const b of order) {
+    let y = b.y, moved = true;
+    while (moved) {
+      moved = false;
+      for (const p of placed) {
+        const xOver = b.x < p.x + p.w + gap && b.x + b.w + gap > p.x;
+        if (xOver && y < p.y + p.h + gap && y + b.h + gap > p.y) { y = p.y + p.h + gap; moved = true; }
       }
     }
-    for (let i = 0; i < boxes.length; i += 1) {
-      const b = boxes[i];
-      if (!busy.has(i)) { b.x += (home[i].x - b.x) * PULL; b.y += (home[i].y - b.y) * PULL; } // only settled boxes drift home
-      clampX(b);
-    }
-    if (!any) break;
+    b.y = y; placed.push(b);
   }
+}
+
+/* pack: recompute every object's position into a balanced arrangement that fits
+   the visible box and is centred within it. Objects are shelf-packed, in their
+   authored reading order (top-to-bottom, then left-to-right), into as many
+   columns as the box width allows — so the same board is a centred row when
+   wide, a centred grid at medium widths, and a centred single column only when
+   the box is too narrow to sit two side by side. Each row is centred
+   horizontally and the whole block centred vertically, so it reads as a natural
+   cluster filling both axes rather than a left-pinned column. `rect` is the
+   available world box { x, y, w, h }.
+
+   (A literal force-directed simulation was tried first — gravity toward the
+   centre plus pairwise repulsion — but four equal cards settle into a wide
+   diamond that overflows the box, and hard containment reintroduces overlaps;
+   deterministic shelf-packing gives the balanced, everything-fits result the
+   physics sim was chasing, without the instability.) */
+function packCenteredBoxes(boxes, rect, gap) {
+  const cx = rect.x + rect.w / 2, cy = rect.y + rect.h / 2;
+  const order = boxes.slice().sort((a, b) => a.y - b.y || a.x - b.x);
+  // Greedily fill rows that each fit the box width (always ≥1 box per row).
+  const rows = []; let cur = [], curW = 0;
+  for (const b of order) {
+    const add = (cur.length ? gap : 0) + b.w;
+    if (cur.length && curW + add > rect.w) { rows.push(cur); cur = []; curW = 0; }
+    cur.push(b); curW += (cur.length > 1 ? gap : 0) + b.w;
+  }
+  if (cur.length) rows.push(cur);
+  const rowH = rows.map((r) => Math.max(...r.map((b) => b.h)));
+  const totalH = rowH.reduce((s, h) => s + h, 0) + gap * (rows.length - 1);
+  let y = cy - totalH / 2; // centre the block vertically in the box
+  rows.forEach((row, ri) => {
+    const rowW = row.reduce((s, b) => s + b.w, 0) + gap * (row.length - 1);
+    let x = cx - rowW / 2; // centre each row horizontally
+    for (const b of row) { b.x = x; b.y = y + (rowH[ri] - b.h) / 2; x += b.w + gap; }
+    y += rowH[ri] + gap;
+  });
 }
 
 /* True when two reflow maps describe the same positions (within a sub-pixel
@@ -370,7 +397,7 @@ export function CanvasProvider({
   cooperativeGestures = false, // opt-in: in VIEW mode, let the page scroll past — plain wheel scrolls the page (⌘/Ctrl+wheel zooms), one finger scrolls the page (two fingers pan/zoom). Automatically inactive while EDITING (readOnly false), where authoring needs full gesture control — so a board that toggles between view/edit cooperates only in view mode.
   clickToInteract = false, // gate the board behind a "Click to interact" overlay: locked = the page scrolls past untouched; click unlocks normal pan/zoom; scrolling the page / clicking off / Esc relocks. Supersedes the cooperativeGestures hints.
   collide = false, // reposition objects so they don't overlap when the responsive width band can't fit their authored layout. Positions are DERIVED (never persisted) so the board snaps back when the container grows again. View-mode only. Pairs with a pinned horizontal view (see resizeAnchor/scaleWithContainer).
-  collideStrategy = 'push-down', // 'push-down' = pin x into the band and push overlaps down the (free) vertical axis, preserving reading order; 'relax' = general 2D separation with a weak pull back to authored positions (for boards with no scroll axis).
+  collideStrategy = 'organic', // 'organic' = minimal-displacement: keep every object at its authored position and move only what overlaps / falls out of view, preserving the board's arrangement (nothing moves if it already fits); 'push-down' = pin x into the band and push overlaps down the vertical axis, preserving reading order (grows downward); 'pack' = recompute all positions into a balanced grid centred in the visible box.
   layoutWidth = 'viewport', // the responsive band's width: 'viewport' (the container's width in world units, so it tracks resizes / scaleWithContainer) or an explicit number of world px.
   collideGap = 16, // minimum gap (world px) kept between repositioned objects.
   collideOrigin = 'content', // the band's left edge: 'content' (the left-most object) or an explicit world x.
@@ -485,7 +512,7 @@ export function CanvasProvider({
   const SCALE_MODE = useRef(resolveScaleMode(scaleWithContainer)).current;
   // Responsive collision resolver config (captured once, like the view config).
   const COLLIDE = useRef(!!collide).current;
-  const COLLIDE_STRATEGY = useRef(collideStrategy === 'relax' ? 'relax' : 'push-down').current;
+  const COLLIDE_STRATEGY = useRef(collideStrategy === 'push-down' ? 'push-down' : (collideStrategy === 'pack' || collideStrategy === 'force') ? 'pack' : 'organic').current; // 'force' → 'pack'; anything else → 'organic'
   const LAYOUT_WIDTH = useRef(layoutWidth).current;
   const COLLIDE_GAP = useRef(Number(collideGap) || 0).current;
   const COLLIDE_ORIGIN = useRef(collideOrigin).current;
@@ -687,10 +714,23 @@ export function CanvasProvider({
       }
       if (!boxes.length) { if (S.reflow) setReflow(null); return; }
       const s = viewRef.scale || 1;
-      const availW = LAYOUT_WIDTH === 'viewport' ? vpW() / s : (Number(LAYOUT_WIDTH) || Infinity);
-      const originX = COLLIDE_ORIGIN === 'content' ? Math.min(...boxes.map((b) => b.x)) : (Number(COLLIDE_ORIGIN) || 0);
-      if (COLLIDE_STRATEGY === 'relax') relaxBoxes(boxes, originX, availW, COLLIDE_GAP);
-      else pushDownBoxes(boxes, originX, availW, COLLIDE_GAP);
+      if (COLLIDE_STRATEGY === 'push-down') {
+        const availW = LAYOUT_WIDTH === 'viewport' ? vpW() / s : (Number(LAYOUT_WIDTH) || Infinity);
+        const originX = COLLIDE_ORIGIN === 'content' ? Math.min(...boxes.map((b) => b.x)) : (Number(COLLIDE_ORIGIN) || 0);
+        pushDownBoxes(boxes, originX, availW, COLLIDE_GAP);
+      } else {
+        // 'organic' (default) and 'pack' both work within the visible viewport,
+        // mapped to world coords and inset by a gap so objects don't hug the edges.
+        const pad = COLLIDE_GAP;
+        const rect = {
+          x: -viewRef.x / s + pad,
+          y: -viewRef.y / s + pad,
+          w: Math.max(1, vpW() / s - 2 * pad),
+          h: Math.max(1, vpH() / s - 2 * pad),
+        };
+        if (COLLIDE_STRATEGY === 'pack') packCenteredBoxes(boxes, rect, COLLIDE_GAP);
+        else organicResolveBoxes(boxes, rect, COLLIDE_GAP);
+      }
       const map = new Map();
       for (const b of boxes) {
         const n = byId[b.id];

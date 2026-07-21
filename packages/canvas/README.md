@@ -60,34 +60,31 @@ All are optional.
 | `onUploadVideo` | `(file, dataUrl) => Promise<url>` | IndexedDB | Resolve a `src` for dropped videos. |
 | `onUploadAudio` | `(file, dataUrl) => Promise<url>` | inline / IndexedDB | Resolve a `src` for dropped / pasted / recorded sound clips. |
 | `onChange` | `(snapshot) => void` | `null` | Fires after every autosave. |
-| `collide` | `boolean` | `false` | Reposition objects so they don't overlap when the responsive width band can't fit their authored layout. View-mode only; positions are derived, never persisted. |
-| `collideStrategy` | `'push-down' \| 'relax'` | `'push-down'` | `push-down` pins each object's x into the band and pushes overlaps down the (free) vertical axis, preserving reading order; `relax` does general 2D separation (for boards with no scroll axis). |
-| `layoutWidth` | `'viewport' \| number` | `'viewport'` | The band's width. `viewport` = the container's width in world units (tracks resizes / `scaleWithContainer`); a number fixes it in world px. |
+| `collide` | `boolean` | `false` | Reposition objects so they don't overlap when the container is too narrow to fit their authored layout. View-mode only; positions are derived, never persisted. |
+| `collideStrategy` | `'organic' \| 'push-down' \| 'pack'` | `'organic'` | `organic` (default) keeps every object at its authored position and moves only what overlaps / falls out of view, flowing the overflow downward — nothing moves if it already fits; `push-down` pins each object's x to the band's left edge and stacks overlaps into a reading-order column; `pack` recomputes all positions into a balanced grid centred in the visible box. |
 | `collideGap` | `number` | `16` | Minimum gap (world px) kept between repositioned objects. |
-| `collideOrigin` | `'content' \| number` | `'content'` | The band's left edge: `content` = the left-most object, or an explicit world x. |
+| `layoutWidth` | `'viewport' \| number` | `'viewport'` | (`push-down` only) the band's width. `viewport` = the container's width in world units; a number fixes it in world px. |
+| `collideOrigin` | `'content' \| number` | `'content'` | (`push-down` only) the band's left edge: `content` = the left-most object, or an explicit world x. |
 
 ### Responsive collision resolution
 
 With `collide`, the canvas measures its container and, when the authored layout no
-longer fits the available width, repositions whole objects so they don't overlap —
-without changing anything *inside* an object. Reflowed positions are **derived**: the
-node model (and saved snapshot) keep their authored coordinates, so growing the
-container back snaps everything home. Resolution runs in view mode only — while
-editing you author at the real positions.
-
-It's designed to pair with a pinned horizontal view (so "available width" is stable):
+longer fits, repositions whole objects so they don't overlap — without changing
+anything *inside* an object. Repositioned coordinates are **derived**: the node model
+(and saved snapshot) keep their authored positions, so an object that still fits never
+moves, and growing the container back returns everything to exactly where it was.
+Resolution runs in view mode only — while editing you author at the real positions, so
+a board can be both edited and collision-driven (the two just don't run at once).
 
 ```jsx
-<Canvas
-  collide
-  collideStrategy="push-down"
-  layoutWidth="viewport"
-  resizeAnchor="top"
-  scaleWithContainer="width"
-/>
+<Canvas collide />                 {/* default: organic, minimal-displacement */}
+<Canvas collide collideStrategy="pack" />   {/* balanced centred grid */}
 ```
 
-Frames are treated as section/background regions — they neither push nor get pushed.
+The default `organic` strategy preserves the board's arrangement — as the container
+narrows, each object holds its authored position until it would overlap or leave the
+view, then only the overflow flows downward. Frames are treated as section/background
+regions — they neither push nor get pushed.
 
 Built-in node types: `sticky`, `tblock` (text), `md` (markdown), `frame`, `image`,
 `video`, `sound`, plus freehand `shape`s.

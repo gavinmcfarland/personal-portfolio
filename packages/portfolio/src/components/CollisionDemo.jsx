@@ -31,9 +31,10 @@ const CollisionDemo = () => (
     <div className="section-label">Responsive collisions</div>
     <p className="mt-4 max-w-[52ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">
       An editable canvas, made responsive. Grab the panel’s bottom-right corner
-      and drag it narrower — in view mode the cards reposition themselves into a
-      single column instead of overlapping, and slot back as you widen it again.
-      It’s a normal board underneath: hit <em>Edit</em> to rearrange it yourself.
+      and drag it narrower — in view mode the cards nudge out of each other’s way
+      to stay in view, keeping their arrangement and moving only what no longer
+      fits (nothing shifts while it all still fits). It’s a normal board
+      underneath: hit <em>Edit</em> to rearrange it yourself.
     </p>
 
     <div className="mt-8">
@@ -53,8 +54,7 @@ const CollisionDemo = () => (
           editable={import.meta.env.DEV}
           cooperativeGestures
           collide
-          collideStrategy="push-down"
-          layoutWidth="viewport"
+          collideStrategy="organic"
           collideGap={22}
           base={{ nodes: collideSeed.nodes, shapes: [], brand: { title: "collide", subtitle: "responsive" } }}
           storageKey="collide-demo"
