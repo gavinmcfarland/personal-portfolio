@@ -47,7 +47,7 @@ function MediaNode({ node }) {
   // Single asset: keep the original DOM/chrome (a lone SVG stays vector art).
   if (assets.length === 1) {
     const a = assets[0];
-    const cls = a.kind === 'video' ? 'node video' : a.svg ? 'node image svg' : 'node image';
+    const cls = a.kind === 'video' ? 'cv-node cv-video' : a.svg ? 'cv-node cv-image cv-svg' : 'cv-node cv-image';
     // A cmd-drag crop shows a sub-window of the media: render the full media at
     // 1/crop of the box, shifted so the window's top-left lands on the box's
     // (translate % is self-relative, so the offset fractions map directly), and
@@ -72,7 +72,7 @@ function MediaNode({ node }) {
       ? { '--cv-df-bar': `${node.frameScale ? Math.max(1, (node.h || 0) * node.frameScale) : frameBarH(node.frame)}px` }
       : null;
     return (
-      <div ref={setRef} className={framed ? `${cls} framed` : cls} {...dataProps} style={{ ...style, width: w, height: h, ...barStyle }}>
+      <div ref={setRef} className={framed ? `${cls} cv-framed` : cls} {...dataProps} style={{ ...style, width: w, height: h, ...barStyle }}>
         {framed ? <DeviceFrame node={node}>{media}</DeviceFrame> : media}
       </div>
     );
@@ -83,7 +83,7 @@ function MediaNode({ node }) {
   return (
     <div
       ref={setRef}
-      className="node media"
+      className="cv-node cv-media"
       {...dataProps}
       style={{
         ...style,
@@ -94,7 +94,7 @@ function MediaNode({ node }) {
       }}
     >
       {assets.map((a, i) => (
-        <div key={i} className={a.svg ? 'media-cell svg' : 'media-cell'} data-media-idx={i}>
+        <div key={i} className={a.svg ? 'cv-media-cell cv-svg' : 'cv-media-cell'} data-media-idx={i}>
           <MediaContent nodeId={node.id} asset={a} index={i} bare />
         </div>
       ))}

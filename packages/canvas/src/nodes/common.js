@@ -53,6 +53,7 @@ export function useRegister(node) {
   const x = node.x + (rp ? rp.dx : 0);
   const y = node.y + (rp ? rp.dy : 0);
   const dataProps = {
+    'data-cv-part': 'node',
     'data-id': node.id,
     'data-type': node.type,
     'data-x': x,

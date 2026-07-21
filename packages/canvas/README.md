@@ -48,6 +48,7 @@ All are optional.
 | `base` | `{ nodes, shapes, brand }` | empty | Data-derived starting content. `brand` shows in the top bar. |
 | `managedTypes` | `string[]` | `[]` | Node types whose **content** is regenerated from `base` each load; only their position is persisted. |
 | `nodeTypes` | `{ [type]: Component }` | `{}` | Custom node renderers, merged over the built-ins. |
+| `classNames` | `{ [part]: string }` | `{}` | Extra classes merged onto the chrome parts, e.g. `{ root, canvas, toolbar, topbar, zoom, properties, pages, saveStatus }`. See [Styling](#styling). |
 | `initialState` | serialized snapshot | `null` | Committed board to load (the shape produced by `serialize()`). |
 | `editable` | `boolean` | `false` | Enables the toolbar, editing, and localStorage autosave. |
 | `storageKey` | `string` | `embed-canvas-v1` | localStorage key for the editable autosave. Unique per instance. |
@@ -124,6 +125,82 @@ garbage-collected on load) with only an `idb:<key>` reference in the snapshot �
 localStorage's ~5MB quota can't hold real video bytes. `idb:` refs only resolve
 in the browser profile that dropped them, so wire `onUploadImage`/`onUploadVideo`
 to real storage for boards you intend to publish for other viewers.
+
+## Styling
+
+Everything the canvas renders — the surface, the floating chrome, and every
+object — is styled through one **scoped, namespaced contract**. All rules live
+under `.canvas-root`, all custom properties are prefixed `--cv-`, and all classes
+are prefixed `cv-`, so the component never leaks into (or inherits from) the host
+page, and several boards can coexist with independent looks. Style it at whichever
+level you need:
+
+### 1. Design tokens — re-skin in a few lines
+
+Override any `--cv-*` custom property on your own `.canvas-root` (or a wrapping
+class / the `classNames.root` you pass). Tokens cascade: change `--cv-accent` and
+every accent-derived surface (selection, active tool, frames, hover, edit caret,
+`--cv-accent-soft`) re-tints with it.
+
+```css
+.my-board.canvas-root {
+  --cv-accent: #ff5c00;
+  --cv-surface: #12121a;
+  --cv-ink: #eaeaf0;
+  --cv-ui-radius: 8px;    /* chrome panel corners */
+  --cv-radius: 3px;       /* object/card corners  */
+  --cv-ui-blur: 0px;      /* flatten the frosted panels */
+  --cv-shadow: none;
+  --cv-sans: "Söhne", system-ui, sans-serif;
+}
+```
+
+| Token | Role | Token | Role |
+| --- | --- | --- | --- |
+| `--cv-bg` / `--cv-bg-base` | board background | `--cv-accent` | primary accent (also `--cv-accent-soft`) |
+| `--cv-surface` | raised object fill | `--cv-ink` / `--cv-muted` / `--cv-faint` | text tiers |
+| `--cv-line` / `--cv-line-strong` | borders / dividers | `--cv-grid` / `--cv-grid-strong` | grid dots |
+| `--cv-ui-bg` / `--cv-ui-border` | chrome panels | `--cv-shadow` | elevation |
+| `--cv-radius` / `--cv-ui-radius` | object / panel corners | `--cv-ui-blur` | panel frost |
+| `--cv-sans` / `--cv-serif` / `--cv-mono` / `--cv-hand` | font families | `--cv-snap-guide` | snap guides |
+
+Dark mode overrides the colour tokens automatically under a `.dark` ancestor (or
+`.canvas-root.dark`); shape tokens (`--cv-radius`, `--cv-ui-radius`, `--cv-ui-blur`)
+are theme-independent. The `accent` prop is just a scoped, per-instance writer for
+`--cv-accent`.
+
+### 2. Part hooks — restyle specific regions and objects
+
+Every region and object carries a stable `data-cv-part` attribute — target these
+rather than internal class names (which are implementation detail):
+
+`canvas` (the pannable surface) · `toolbar` · `topbar` · `zoom` · `properties`
+(the swatches panel) · `pages` · `recorder` · `context-menu` · `lightbox` ·
+`save-status` · `node` · `shape`
+
+Objects also expose `data-type` (`sticky`, `tblock`, `md`, `code`, `frame`,
+`image`, `video`, `sound`, `link`, `html`) and state via `cv-`-prefixed classes
+(`cv-active`, `cv-editing`, `cv-on`, `cv-show`, `cv-dragging`, …):
+
+```css
+.canvas-root [data-cv-part="toolbar"] { border-radius: 0; }
+.canvas-root [data-cv-part="node"][data-type="sticky"] { border-radius: 0; }
+.canvas-root [data-cv-part="node"][data-type="code"] { --cv-mono: "Fira Code"; }
+```
+
+### 3. `classNames` prop — inject your own classes
+
+For the singleton chrome parts, merge a class of your own without any specificity
+fight (yours always comes last):
+
+```jsx
+<Canvas classNames={{ root: 'my-board', toolbar: 'my-toolbar', canvas: 'my-surface' }} />
+```
+
+Keys: `root`, `canvas`, `toolbar`, `topbar`, `zoom`, `properties`, `pages`,
+`saveStatus`. Per-object classes aren't needed — style objects via the
+`data-cv-part="node"` / `data-type` hooks above, or replace their markup entirely
+with the `nodeTypes` prop.
 
 ## Build
 

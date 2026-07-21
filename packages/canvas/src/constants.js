@@ -1,5 +1,9 @@
 /* Tunables for the canvas viewport & tools. */
 
+/* Join class-name fragments, dropping falsy ones. Used to merge a consumer's
+   per-part `classNames` overrides onto the built-in chrome classes. */
+export const cx = (...parts) => parts.filter(Boolean).join(' ');
+
 export const ZOOM = {
 	min: 0.08,
 	max: 8,
@@ -85,7 +89,7 @@ export const INK_FILL = '#1414174D';
 export function themeInk(color) {
 	if (!color) return color;
 	const c = color.toLowerCase();
-	if (c === INK_STROKE.toLowerCase()) return 'var(--ink)';
-	if (c === INK_FILL.toLowerCase()) return 'var(--ink-fill)';
+	if (c === INK_STROKE.toLowerCase()) return 'var(--cv-ink)';
+	if (c === INK_FILL.toLowerCase()) return 'var(--cv-ink-fill)';
 	return color;
 }

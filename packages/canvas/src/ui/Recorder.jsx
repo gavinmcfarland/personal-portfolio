@@ -28,13 +28,13 @@ export default function Recorder() {
   if (!recording) return null;
 
   return (
-    <div className="ui panel show" id="recorder">
-      <span className="rec-dot" />
-      <span className="rec-time">{fmt(elapsed)}</span>
-      <button className="rec-btn stop" title="Stop &amp; add" onClick={() => eng.stopRecording()}>
+    <div className="cv-ui cv-panel cv-show" data-cv-part="recorder">
+      <span className="cv-rec-dot" />
+      <span className="cv-rec-time">{fmt(elapsed)}</span>
+      <button className="cv-rec-btn cv-stop" title="Stop &amp; add" onClick={() => eng.stopRecording()}>
         <Square />
       </button>
-      <button className="rec-btn cancel" title="Cancel" onClick={() => eng.cancelRecording()}>
+      <button className="cv-rec-btn cv-cancel" title="Cancel" onClick={() => eng.cancelRecording()}>
         <X />
       </button>
     </div>

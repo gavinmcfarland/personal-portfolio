@@ -70,17 +70,17 @@ function Markdown({ node }) {
   return (
     <div
       ref={setRef}
-      className={`node md${editing ? ' md-editing' : ''}`}
+      className={`cv-node cv-md${editing ? ' cv-md-editing' : ''}`}
       {...dataProps}
       style={style}
       onDoubleClick={onDoubleClick}
       onClick={onClickCapture}
     >
-      <div className="md-render" dangerouslySetInnerHTML={{ __html: rendered }} />
-      <div className="md-edit">
-        <pre className="md-hl" aria-hidden="true"><code dangerouslySetInnerHTML={{ __html: mdHighlight(src) + '\n' }} /></pre>
+      <div className="cv-md-render" dangerouslySetInnerHTML={{ __html: rendered }} />
+      <div className="cv-md-edit">
+        <pre className="cv-md-hl" aria-hidden="true"><code dangerouslySetInnerHTML={{ __html: mdHighlight(src) + '\n' }} /></pre>
         <textarea
-          className="md-src"
+          className="cv-md-src"
           spellCheck={false}
           ref={taRef}
           defaultValue={node.text || ''}

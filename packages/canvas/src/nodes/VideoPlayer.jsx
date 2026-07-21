@@ -99,21 +99,21 @@ export default function VideoPlayer({ src, alt, mediaKey, bare, mediaStyle }) {
       <video ref={setVid} src={src || undefined} autoPlay muted loop playsInline aria-label={alt || ''} style={mediaStyle} />
       {!bare && (
         <div
-          className="vctrl"
+          className="cv-vctrl"
           onPointerDown={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}
         >
-          <button className="vplay" title={playing ? 'Pause' : 'Play'} onClick={toggle}>
+          <button className="cv-vplay" title={playing ? 'Pause' : 'Play'} onClick={toggle}>
             {playing ? <Pause /> : <Play />}
           </button>
           <div
-            className="vbar"
+            className="cv-vbar"
             onPointerDown={onScrubDown}
             onPointerMove={onScrubMove}
             onPointerUp={onScrubUp}
             onPointerCancel={onScrubUp}
           >
-            <div className="vtrack"><div className="vfill" ref={fillRef} /></div>
+            <div className="cv-vtrack"><div className="cv-vfill" ref={fillRef} /></div>
           </div>
         </div>
       )}

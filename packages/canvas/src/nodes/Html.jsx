@@ -74,7 +74,7 @@ function HtmlNode({ node }) {
     ? { '--cv-df-bar': `${node.frameScale ? Math.max(1, (node.h || 0) * node.frameScale) : frameBarH(node.frame)}px` }
     : null;
 
-  const cls = `node html${live ? ' live' : ''}${node.frame ? ' framed' : ''}`;
+  const cls = `cv-node cv-html${live ? ' cv-live' : ''}${node.frame ? ' cv-framed' : ''}`;
   // The cv-df/cv-df-screen skeleton renders permanently (frameless too, where
   // it's invisible) with the chrome bar as a conditional FIRST child — so
   // toggling a device frame on/off never re-parents the iframe. Re-parenting

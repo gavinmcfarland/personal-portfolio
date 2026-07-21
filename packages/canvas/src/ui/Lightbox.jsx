@@ -60,16 +60,16 @@ export default function Lightbox() {
   const nav = (dir) => (e) => { e.stopPropagation(); eng.stepFullscreen(dir); };
 
   return (
-    <div id="lightbox" onPointerDown={close}>
+    <div data-cv-part="lightbox" onPointerDown={close}>
       <button
-        className="lb-close"
+        className="cv-lb-close"
         title="Close (Esc)"
         onPointerDown={(e) => { e.stopPropagation(); close(); }}
       >
         ✕
       </button>
       {many && (
-        <button className="lb-nav lb-prev" title="Previous (←)" onPointerDown={nav(-1)}>
+        <button className="cv-lb-nav cv-lb-prev" title="Previous (←)" onPointerDown={nav(-1)}>
           <ChevronLeft />
         </button>
       )}
@@ -118,11 +118,11 @@ export default function Lightbox() {
         />
       )}
       {many && (
-        <button className="lb-nav lb-next" title="Next (→)" onPointerDown={nav(1)}>
+        <button className="cv-lb-nav cv-lb-next" title="Next (→)" onPointerDown={nav(1)}>
           <ChevronRight />
         </button>
       )}
-      {many && <div className="lb-count">{index + 1} / {assets.length}</div>}
+      {many && <div className="cv-lb-count">{index + 1} / {assets.length}</div>}
     </div>
   );
 }

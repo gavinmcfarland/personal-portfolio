@@ -24,7 +24,7 @@ function Shape({ shape, draft }) {
   // the resolved stroke below so its head matches.
   const stroke = themeInk(shape.stroke);
   const width = shape.width || 3;
-  const common = { className: 'shape', stroke, strokeWidth: width, 'data-id': shape.id, ref: setRef };
+  const common = { className: 'cv-shape', stroke, strokeWidth: width, 'data-id': shape.id, ref: setRef };
   // Inline style wins over the `.shape.fillable` CSS rule, so a per-shape fill
   // (or 'none' for a hollow shape) is the source of truth for rect/ellipse.
   const fillStyle = { fill: shape.fill && shape.fill !== 'none' ? themeInk(shape.fill) : 'none' };
@@ -59,7 +59,7 @@ function Shape({ shape, draft }) {
     el = (
       <rect
         {...common}
-        className="shape fillable"
+        className="cv-shape cv-fillable"
         style={fillStyle}
         x={Math.min(shape.x1, shape.x2)}
         y={Math.min(shape.y1, shape.y2)}
@@ -72,7 +72,7 @@ function Shape({ shape, draft }) {
     el = (
       <ellipse
         {...common}
-        className="shape fillable"
+        className="cv-shape cv-fillable"
         style={fillStyle}
         cx={(shape.x1 + shape.x2) / 2}
         cy={(shape.y1 + shape.y2) / 2}
@@ -89,8 +89,8 @@ function Shape({ shape, draft }) {
   if (rp) wrapStyle.transform = `translate(${rp.dx}px,${rp.dy}px)`;
   if (collide && readOnly) wrapStyle.transition = 'transform 200ms ease';
   return (
-    <div className="shapeWrap" data-id={shape.id} style={wrapStyle}>
-      <svg className="shapeSvg">
+    <div className="cv-shapeWrap" data-cv-part="shape" data-id={shape.id} style={wrapStyle}>
+      <svg className="cv-shapeSvg">
         {defs}
         {el}
       </svg>

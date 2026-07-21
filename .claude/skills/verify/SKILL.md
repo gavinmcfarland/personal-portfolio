@@ -39,11 +39,15 @@ browser caches also exist under `~/Library/Caches/ms-playwright`).
 Useful selectors (scope to `footer .canvas-root` — other canvases exist on
 other routes):
 
-- Nodes: `.node` with `data-id`; stickies are `.node.sticky`
+- Nodes: `.cv-node` (or `[data-cv-part="node"]`) with `data-id`; stickies are
+  `.cv-node.cv-sticky` (or `[data-cv-part="node"][data-type="sticky"]`)
 - Camera: `.cv-world` — read `el.style.transform` to assert pan/zoom
 - Selection box / hover / marquee: `.cv-sel`, `.cv-hov`, `.cv-marquee`
   (screen-space chrome; assert `display` block/none)
-- Context menu: `#ctxmenu`
+- Context menu: `[data-cv-part="context-menu"]`
+- All canvas classes are `cv-`-prefixed and tokens are `--cv-*`; regions expose
+  `data-cv-part` (`toolbar`, `topbar`, `zoom`, `properties`, `pages`, `canvas`,
+  `node`, `shape`, …). See the README's Styling section.
 
 Gotchas:
 

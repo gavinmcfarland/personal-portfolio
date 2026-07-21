@@ -430,6 +430,7 @@ export function CanvasProvider({
   storageKey = DEFAULT_STORE,
   homeId = DEFAULT_HOME_ID,
   nodeTypes = null,
+  classNames = null, // per-part class overrides merged onto the chrome, e.g. { root, canvas, toolbar, topbar, zoom, properties, pages, saveStatus }. See the styling contract in the README.
   highlightCode = null, // optional custom code highlighter (src, lang) => html; falls back to the built-in tokeniser
   formatCode = null, // optional code formatter (src, lang, {cursorOffset}) => string | {formatted, cursorOffset}; falls back to the built-in reindenter
   formatOnType: formatOnTypeDefault = true, // initial global default for reformat-on-type (persisted user pref wins)
@@ -659,8 +660,8 @@ export function CanvasProvider({
       }
       w.style.transform = `translate(${viewRef.x}px,${viewRef.y}px) scale(${viewRef.scale})`;
       const step = GRID * viewRef.scale;
-      vp.style.setProperty('--gx', (viewRef.x % step) + 'px');
-      vp.style.setProperty('--gy', (viewRef.y % step) + 'px');
+      vp.style.setProperty('--cv-gx', (viewRef.x % step) + 'px');
+      vp.style.setProperty('--cv-gy', (viewRef.y % step) + 'px');
       vp.style.backgroundSize = step + 'px ' + step + 'px';
       if (zoomLabelRef.current) zoomLabelRef.current.textContent = Math.round(viewRef.scale * 100) + '%';
       // Panning clears the hover outline (it would otherwise cling to the object
@@ -2694,9 +2695,9 @@ export function CanvasProvider({
   useEffect(() => {
     const b = rootRef.current;
     if (!b) return;
-    [...b.classList].forEach((c) => { if (c.startsWith('tool-')) b.classList.remove(c); });
-    b.classList.add('tool-' + tool);
-    b.classList.toggle('read-only', readOnly);
+    [...b.classList].forEach((c) => { if (c.startsWith('cv-tool-')) b.classList.remove(c); });
+    b.classList.add('cv-tool-' + tool);
+    b.classList.toggle('cv-read-only', readOnly);
     // Entering/leaving scale mode changes which handles show on the selection,
     // so re-place the chrome (it otherwise only re-syncs on data changes).
     eng.syncChrome();
@@ -2808,7 +2809,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
-    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
+    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
     // refs

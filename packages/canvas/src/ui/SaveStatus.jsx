@@ -1,5 +1,6 @@
 import { Upload, Check, TriangleAlert } from "lucide-react";
 import { useCanvas } from "../CanvasProvider";
+import { cx } from "../constants";
 
 const PUBLISH_ICON = <Upload />;
 const CHECK_ICON = <Check />;
@@ -17,12 +18,12 @@ const PUBLISH = {
 };
 
 export default function SaveStatus() {
-  const { canPublish, publishState, saveStatus } = useCanvas();
+  const { canPublish, publishState, saveStatus, classNames } = useCanvas();
   if (!saveStatus || !canPublish) return null;
   const pub = PUBLISH[publishState];
   if (!pub) return null;
   return (
-    <span className="ui save-status" title={pub.title} aria-live="polite">
+    <span className={cx("cv-ui cv-save-status", classNames?.saveStatus)} title={pub.title} aria-live="polite">
       {pub.icon}
     </span>
   );

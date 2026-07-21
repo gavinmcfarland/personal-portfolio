@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef } from 'react';
 import { useCanvas } from './CanvasProvider';
-import { ZOOM, PAN, DRAW_TOOLS, FILLABLE_SHAPES } from './constants';
+import { ZOOM, PAN, DRAW_TOOLS, FILLABLE_SHAPES, cx } from './constants';
 import World from './World';
 import Chrome from './Chrome';
 import TopBar from './ui/TopBar';
@@ -37,18 +37,18 @@ function buildAccentCss(sel, accent) {
   const rules = [];
   if (light) {
     const c = editCursor(light, '#fff');
-    rules.push(`${sel}{--accent:${light};--cur-edit:${c.edit};--cur-edit-hover:${c.hover};}`);
+    rules.push(`${sel}{--cv-accent:${light};--cv-cur-edit:${c.edit};--cv-cur-edit-hover:${c.hover};}`);
   }
   if (dark) {
     const c = editCursor(dark, '#0C0C0E');
-    rules.push(`.dark ${sel},${sel}.dark{--accent:${dark};--cur-edit:${c.edit};--cur-edit-hover:${c.hover};}`);
+    rules.push(`.dark ${sel},${sel}.dark{--cv-accent:${dark};--cv-cur-edit:${c.edit};--cv-cur-edit-hover:${c.hover};}`);
   }
   return rules.join('');
 }
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames } = ctx;
   // Cooperative gestures only apply in view mode; while editing the board keeps
   // full gesture control. `readOnly` (reactive) drives the CSS attribute/render;
   // the imperative handlers read the live `S.readOnly` instead.
@@ -70,13 +70,13 @@ export default function Canvas() {
   const flashMsg = () => {
     const el = msgRef.current;
     if (!el) return;
-    el.classList.add('show');
+    el.classList.add('cv-show');
     clearTimeout(msgTimer.current);
-    msgTimer.current = setTimeout(() => el.classList.remove('show'), 1400);
+    msgTimer.current = setTimeout(() => el.classList.remove('cv-show'), 1400);
   };
   const hideMsg = () => {
     const el = msgRef.current;
-    if (el) el.classList.remove('show');
+    if (el) el.classList.remove('cv-show');
     clearTimeout(msgTimer.current);
   };
 
@@ -114,7 +114,7 @@ export default function Canvas() {
      short way into the base (`--bg-base`) the way a shape fill composites over
      the board, so the same value reads soft in light mode and dark-tinted (no
      light hue) in dark mode. See the `[data-cv-bg="custom"]` rule. */
-  const bgStyle = bgColor ? { '--bg-pick': bgColor } : undefined;
+  const bgStyle = bgColor ? { '--cv-bg-pick': bgColor } : undefined;
 
   /* Per-instance accent override. A unique attribute scopes the injected rules to
      this board so several canvases with different accents can share a page. */
@@ -161,11 +161,11 @@ export default function Canvas() {
       eng.freezeView();
       // Remember media / links under the pointer so a stationary tap opens them.
       // For a grid, the specific cell (data-media-idx) decides which asset opens.
-      const nodeUnder = e.target.closest && e.target.closest('.node');
+      const nodeUnder = e.target.closest && e.target.closest('.cv-node');
       const isMedia = nodeUnder && (nodeUnder.dataset.type === 'image' || nodeUnder.dataset.type === 'video');
       const cellEl = e.target.closest && e.target.closest('[data-media-idx]');
-      const linkEl = e.target.closest && e.target.closest('.node.link');
-      const htmlEl = e.target.closest && e.target.closest('.node.html');
+      const linkEl = e.target.closest && e.target.closest('.cv-node.cv-link');
+      const htmlEl = e.target.closest && e.target.closest('.cv-node.cv-html');
       actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: isMedia ? nodeUnder.dataset.id : null, imgIdx: cellEl ? +cellEl.dataset.mediaIdx : 0, linkId: linkEl ? linkEl.dataset.id : null, htmlId: htmlEl ? htmlEl.dataset.id : null };
       rootClass('panning', true);
       vp.setPointerCapture(e.pointerId);
@@ -184,8 +184,8 @@ export default function Canvas() {
     }
     eng.freezeView();
 
-    const nodeEl = e.target.closest('.node');
-    const shapeEl = e.target.closest('.shape');
+    const nodeEl = e.target.closest('.cv-node');
+    const shapeEl = e.target.closest('.cv-shape');
     const spacePan = e.button === 1 || panKey.current;
     const tool = S.tool;
 
@@ -207,7 +207,7 @@ export default function Canvas() {
       // anything else collapses the selection to the grabbed object.
       const items = eng.moveItemsFor({ kind, id });
       if (!eng.isSelected(kind, id)) (kind === 'node' ? eng.selectNode : eng.selectShape)(id);
-      if (nodeEl) { nodeEl.dataset.moved = ''; nodeEl.classList.add('dragging'); }
+      if (nodeEl) { nodeEl.dataset.moved = ''; nodeEl.classList.add('cv-dragging'); }
       // A stationary click on a link card opens it (a drag still just moves it);
       // remembered here, acted on in onUp when the gesture turns out not to move.
       const linkId = nodeEl && nodeEl.dataset.type === 'link' ? id : null;
@@ -294,7 +294,7 @@ export default function Canvas() {
      elementFromPoint since the drop lands on the viewport. */
   const mediaNodeAt = (x, y) => {
     const el = document.elementFromPoint(x, y);
-    const nodeEl = el && el.closest && el.closest('.node');
+    const nodeEl = el && el.closest && el.closest('.cv-node');
     return nodeEl && (nodeEl.dataset.type === 'image' || nodeEl.dataset.type === 'video') ? nodeEl.dataset.id : null;
   };
   const onDrop = (e) => {
@@ -328,7 +328,7 @@ export default function Canvas() {
   const onDoubleClick = (e) => {
     if (S.readOnly) return;
     const el = document.elementFromPoint(e.clientX, e.clientY);
-    const nodeEl = el && el.closest && el.closest('.node');
+    const nodeEl = el && el.closest && el.closest('.cv-node');
     if (!nodeEl) return;
     const type = nodeEl.dataset.type;
     const id = nodeEl.dataset.id;
@@ -350,8 +350,8 @@ export default function Canvas() {
   const onContextMenu = (e) => {
     if (S.readOnly) return;
     e.preventDefault();
-    const nodeEl = e.target.closest('.node');
-    const shapeEl = e.target.closest('.shape');
+    const nodeEl = e.target.closest('.cv-node');
+    const shapeEl = e.target.closest('.cv-shape');
     // Empty space → a canvas menu whose only action is Paste, dropped at the
     // click point (world coords captured now so a later paste lands where the
     // user right-clicked, not the viewport centre).
@@ -381,7 +381,7 @@ export default function Canvas() {
       const a = actionRef.current;
       if (!a) {
         // No gesture in progress → track the node under the cursor for the hover hint.
-        const nodeEl = e.target.closest && e.target.closest('.node');
+        const nodeEl = e.target.closest && e.target.closest('.cv-node');
         eng.setHover(nodeEl ? nodeEl.dataset.id : null);
         return;
       }
@@ -659,7 +659,7 @@ export default function Canvas() {
         const nodePatches = {}, shapePatches = {};
         for (const it of a.items) {
           if (it.kind === 'node') {
-            it.el.classList.remove('dragging');
+            it.el.classList.remove('cv-dragging');
             if (a.moved) nodePatches[it.id] = { x: it.ox + a.dx, y: it.oy + a.dy };
           } else {
             it.el.removeAttribute('transform');
@@ -737,7 +737,7 @@ export default function Canvas() {
       setCtxMenu(null);
       const zoomKey = e.ctrlKey || e.metaKey;
       if (!zoomKey && e.target.closest) {
-        if (e.target.closest('.ui.panel')) return;
+        if (e.target.closest('.cv-ui.cv-panel')) return;
         // Defer to a textarea only if it can actually scroll — the markdown
         // source editor is overflow:hidden, so the wheel should pan the canvas.
         const ta = e.target.closest('textarea');
@@ -966,7 +966,7 @@ export default function Canvas() {
 
   return (
     <div
-      className="canvas-root"
+      className={cx('canvas-root', classNames?.root)}
       ref={rootRef}
       data-fit={fit}
       data-coop={coopView && !engaged ? '' : undefined}
@@ -979,13 +979,13 @@ export default function Canvas() {
       onPointerLeave={() => { hoverInsideRef.current = false; }}
     >
       {accentCss && <style dangerouslySetInnerHTML={{ __html: accentCss }} />}
-      <div className="cv-viewport" ref={viewportRef} onPointerDown={onPointerDown} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu} onDragOver={onDragOver} onDrop={onDrop}>
+      <div className={cx('cv-viewport', classNames?.canvas)} data-cv-part="canvas" ref={viewportRef} onPointerDown={onPointerDown} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu} onDragOver={onDragOver} onDrop={onDrop}>
         <World />
       </div>
       <Chrome />
       {ui && (
         <>
-          <TopBar className="ui panel pl-[8px]" />
+          <TopBar className="cv-ui cv-panel pl-[8px]" />
           {EDITABLE && <Toolbar />}
           {EDITABLE && <Recorder />}
           <ZoomControls />

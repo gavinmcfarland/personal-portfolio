@@ -5,7 +5,7 @@ import {
   AlignLeft, AlignCenter, AlignRight, GripVertical,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
-import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, themeInk } from '../constants';
+import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, themeInk, cx } from '../constants';
 
 /* Vector shape tools grouped behind a single dropdown button in the toolbar. */
 const SHAPE_TOOLS = [
@@ -66,13 +66,13 @@ function ShapeMenu() {
   const pick = (t) => { setLastShape(t); eng.setTool(t); setOpen(false); };
 
   return (
-    <div className="shape-menu-wrap" ref={wrapRef}>
+    <div className="cv-shape-menu-wrap" ref={wrapRef}>
       {open && (
-        <div className="ui panel shape-menu">
+        <div className="cv-ui cv-panel cv-shape-menu">
           {SHAPE_TOOLS.map((s) => (
             <button
               key={s.t}
-              className={`tool${tool === s.t ? ' active' : ''}`}
+              className={`cv-tool${tool === s.t ? ' cv-active' : ''}`}
               title={`${s.label} (${s.key})`}
               onClick={() => pick(s.t)}
             >
@@ -82,12 +82,12 @@ function ShapeMenu() {
         </div>
       )}
       <button
-        className={`tool${activeShape ? ' active' : ''}`}
+        className={`cv-tool${activeShape ? ' cv-active' : ''}`}
         onClick={() => setOpen((o) => !o)}
       >
-        <span className="tip">Shapes</span>
+        <span className="cv-tip">Shapes</span>
         {shown.icon}
-        <span className="shape-caret" />
+        <span className="cv-shape-caret" />
       </button>
     </div>
   );
@@ -101,11 +101,11 @@ function RecordButton() {
   if (!eng.recordingSupported()) return null;
   return (
     <button
-      className={`tool${recording ? ' active recording' : ''}`}
+      className={`cv-tool${recording ? ' cv-active cv-recording' : ''}`}
       data-tool="record"
       onClick={() => { if (!recording) eng.startRecording(); }}
     >
-      <span className="tip">Record sound<b>S</b></span>
+      <span className="cv-tip">Record sound<b>S</b></span>
       <Mic />
     </button>
   );
@@ -131,7 +131,7 @@ function Swatches() {
   const {
     tool, noteColor, textFont, strokeColor, fillColor,
     setNoteColor, setTextFont, setStrokeColor, setFillColor,
-    selected, nodes, shapes, eng,
+    selected, nodes, shapes, eng, classNames,
   } = useCanvas();
   const panelRef = useRef(null);
   const dragRef = useRef(null);
@@ -181,7 +181,7 @@ function Swatches() {
   const showStroke = DRAW_TOOLS.includes(tool) || editingShapes;
   const showFill = FILLABLE_SHAPES.includes(tool) || fillableSel.length > 0;
 
-  if (!showNote && !showFont && !showStroke && !showFill) return <div className="ui panel" id="swatches" />;
+  if (!showNote && !showFont && !showStroke && !showFill) return <div className={cx('cv-ui cv-panel', classNames?.properties)} data-cv-part="properties" />;
 
   const pickNote = (name) => {
     if (editingStickies) selStickies.forEach((n) => eng.updateNode(n.id, { color: name }));
@@ -211,13 +211,13 @@ function Swatches() {
 
   return (
     <div
-      className="ui panel show"
-      id="swatches"
+      className={cx('cv-ui cv-panel cv-show', classNames?.properties)}
+      data-cv-part="properties"
       ref={panelRef}
       style={pos ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined}
     >
       <div
-        className="props-handle"
+        className="cv-props-handle"
         onPointerDown={startDrag}
         onPointerMove={moveDrag}
         onPointerUp={endDrag}
@@ -227,11 +227,11 @@ function Swatches() {
         Properties
       </div>
       {showNote && (
-        <div className="swatch-row">
+        <div className="cv-swatch-row">
           {COLORS.note.map(([hex, name]) => (
             <button
               key={name}
-              className={`swatch${curNote === name ? ' active' : ''}`}
+              className={`cv-swatch${curNote === name ? ' cv-active' : ''}`}
               style={{ background: hex }}
               title={name}
               onClick={() => pickNote(name)}
@@ -240,11 +240,11 @@ function Swatches() {
         </div>
       )}
       {showFont && (
-        <div className="swatch-row">
+        <div className="cv-swatch-row">
           {FONTS.map(([name, label]) => (
             <button
               key={name}
-              className={`font-btn${curFont === name ? ' active' : ''}`}
+              className={`cv-font-btn${curFont === name ? ' cv-active' : ''}`}
               data-font={name}
               title={label}
               onClick={() => pickFont(name)}
@@ -255,11 +255,11 @@ function Swatches() {
         </div>
       )}
       {editingTexts && (
-        <div className="swatch-row">
+        <div className="cv-swatch-row">
           {ALIGNS.map(([dir, label, icon]) => (
             <button
               key={dir}
-              className={`align-btn${curAlign === dir ? ' active' : ''}`}
+              className={`cv-align-btn${curAlign === dir ? ' cv-active' : ''}`}
               title={label}
               onClick={() => pickAlign(dir)}
             >
@@ -269,12 +269,12 @@ function Swatches() {
         </div>
       )}
       {showStroke && (
-        <div className="swatch-row">
-          <span className="swatch-label">Stroke</span>
+        <div className="cv-swatch-row">
+          <span className="cv-swatch-label">Stroke</span>
           {COLORS.stroke.map(([hex]) => (
             <button
               key={hex}
-              className={`swatch${curStroke === hex ? ' active' : ''}`}
+              className={`cv-swatch${curStroke === hex ? ' cv-active' : ''}`}
               // Black flips to white in dark mode so the chip matches the stroke it draws.
               style={{ background: themeInk(hex) }}
               onClick={() => pickStroke(hex)}
@@ -283,14 +283,14 @@ function Swatches() {
         </div>
       )}
       {showFill && (
-        <div className="swatch-row">
-          <span className="swatch-label">Fill</span>
+        <div className="cv-swatch-row">
+          <span className="cv-swatch-label">Fill</span>
           {COLORS.fill.map(([hex, name]) => {
             const none = hex === 'none';
             return (
               <button
                 key={hex}
-                className={`swatch${none ? ' swatch-none' : ''}${curFill === hex ? ' active' : ''}`}
+                className={`cv-swatch${none ? ' cv-swatch-none' : ''}${curFill === hex ? ' cv-active' : ''}`}
                 // Composite the translucent fill over white so the chip reads the
                 // same over any board bg. Black flips to white in dark mode (themeInk)
                 // to match the fill it draws.
@@ -307,14 +307,14 @@ function Swatches() {
 }
 
 export default function Toolbar() {
-  const { tool, eng } = useCanvas();
+  const { tool, eng, classNames } = useCanvas();
   return (
     <>
       <Swatches />
-      <div className="ui panel" id="toolbar">
+      <div className={cx('cv-ui cv-panel', classNames?.toolbar)} data-cv-part="toolbar">
         {TOOLS.map((item, i) =>
           item.sep ? (
-            <span className="sep" key={`sep-${i}`} />
+            <span className="cv-sep" key={`sep-${i}`} />
           ) : item.shapeMenu ? (
             <ShapeMenu key="shape-menu" />
           ) : item.record ? (
@@ -322,11 +322,11 @@ export default function Toolbar() {
           ) : (
             <button
               key={item.t}
-              className={`tool${tool === item.t ? ' active' : ''}`}
+              className={`cv-tool${tool === item.t ? ' cv-active' : ''}`}
               data-tool={item.t}
               onClick={() => eng.setTool(item.t)}
             >
-              <span className="tip">{item.label}<b>{item.key}</b></span>
+              <span className="cv-tip">{item.label}<b>{item.key}</b></span>
               {item.icon}
             </button>
           )

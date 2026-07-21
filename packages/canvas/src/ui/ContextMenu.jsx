@@ -7,7 +7,7 @@ export default function ContextMenu() {
 
   useEffect(() => {
     if (!ctxMenu) return undefined;
-    const close = (e) => { if (!e.target.closest || !e.target.closest('#ctxmenu')) setCtxMenu(null); };
+    const close = (e) => { if (!e.target.closest || !e.target.closest('[data-cv-part="context-menu"]')) setCtxMenu(null); };
     const onBlur = () => setCtxMenu(null);
     window.addEventListener('pointerdown', close, true);
     window.addEventListener('blur', onBlur);
@@ -27,13 +27,13 @@ export default function ContextMenu() {
     const cx = Math.min(ctxMenu.x, innerWidth - 190);
     const cy = Math.min(ctxMenu.y, innerHeight - 120);
     return (
-      <div className="panel show" id="ctxmenu" style={{ left: cx, top: cy }}>
+      <div className="cv-panel cv-show" data-cv-part="context-menu" style={{ left: cx, top: cy }}>
         <button onClick={run(() => eng.pasteFromMenu(target.wx, target.wy))}>
           <ClipboardPaste />
           Paste here
         </button>
-        <div className="ctxsep" />
-        <button className={!gridHidden ? 'active' : ''} onClick={run(() => eng.toggleGrid())}>
+        <div className="cv-ctxsep" />
+        <button className={!gridHidden ? 'cv-active' : ''} onClick={run(() => eng.toggleGrid())}>
           <Grid2x2 />
           {gridHidden ? 'Show dot grid' : 'Hide dot grid'}
         </button>
@@ -62,20 +62,20 @@ export default function ContextMenu() {
   // Device-frame toggles, shared by single-asset photos/videos and html nodes.
   const frameButtons = node && (
     <>
-      <button className={node.frame === 'browser' ? 'active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'browser'))}>
+      <button className={node.frame === 'browser' ? 'cv-active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'browser'))}>
         <AppWindow />
         Browser frame
       </button>
-      <button className={node.frame === 'plugin' ? 'active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'plugin'))}>
+      <button className={node.frame === 'plugin' ? 'cv-active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'plugin'))}>
         <Puzzle />
         Plugin frame
       </button>
-      <button className={node.frame === 'terminal' ? 'active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'terminal'))}>
+      <button className={node.frame === 'terminal' ? 'cv-active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'terminal'))}>
         <Terminal />
         Terminal frame
       </button>
       {node.frame && (
-        <button className={node.frameScale ? 'active' : ''} onClick={run(() => eng.toggleFrameScale(node.id))}>
+        <button className={node.frameScale ? 'cv-active' : ''} onClick={run(() => eng.toggleFrameScale(node.id))}>
           <Expand />
           Scale with object
         </button>
@@ -90,7 +90,7 @@ export default function ContextMenu() {
   );
 
   return (
-    <div className="panel show" id="ctxmenu" style={{ left: x, top: y }}>
+    <div className="cv-panel cv-show" data-cv-part="context-menu" style={{ left: x, top: y }}>
       {isMedia && (!loneSvg || singleAsset) && (
         <>
           {!loneSvg && (
@@ -124,7 +124,7 @@ export default function ContextMenu() {
               )}
             </>
           )}
-          <div className="ctxsep" />
+          <div className="cv-ctxsep" />
         </>
       )}
       {isHtml && (
@@ -134,16 +134,16 @@ export default function ContextMenu() {
             Open in new tab
           </button>
           {frameButtons}
-          <div className="ctxsep" />
+          <div className="cv-ctxsep" />
         </>
       )}
       {node && (
         <>
-          <div className="ctxscale" onPointerDown={(e) => e.stopPropagation()}>
+          <div className="cv-ctxscale" onPointerDown={(e) => e.stopPropagation()}>
             <Scaling />
             <span>Scale</span>
             <input
-              className="ctxscale-input"
+              className="cv-ctxscale-input"
               type="number"
               min="0.05"
               step="0.1"
@@ -157,7 +157,7 @@ export default function ContextMenu() {
               onBlur={(e) => { const v = parseFloat(e.currentTarget.value); if (v > 0 && v !== (node.scale ?? 1)) eng.setNodeScale(node.id, v); }}
             />
           </div>
-          <div className="ctxsep" />
+          <div className="cv-ctxsep" />
         </>
       )}
       <button onClick={run(() => { eng.copySelected(); })}>
@@ -176,7 +176,7 @@ export default function ContextMenu() {
         <ClipboardPaste />
         Paste here
       </button>
-      <div className="ctxsep" />
+      <div className="cv-ctxsep" />
       <button onClick={run(() => eng.bringFront(target))}>
         <BringToFront />
         Bring to front
@@ -187,15 +187,15 @@ export default function ContextMenu() {
       </button>
       {anchorable && (
         <>
-          <div className="ctxsep" />
+          <div className="cv-ctxsep" />
           <button onClick={run(() => eng.toggleAnchor(node.id))}>
             <Anchor />
             {node.anchor ? 'Remove anchor' : 'Add anchor'}
           </button>
         </>
       )}
-      <div className="ctxsep" />
-      <button className="danger" onClick={run(() => eng.deleteTarget(target))}>
+      <div className="cv-ctxsep" />
+      <button className="cv-danger" onClick={run(() => eng.deleteTarget(target))}>
         <Trash2 />
         {count > 1 ? `Delete ${count} objects` : 'Delete'}
       </button>

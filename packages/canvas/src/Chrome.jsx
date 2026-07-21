@@ -151,7 +151,7 @@ function FrameLabel({ node }) {
     const items = eng.moveItemsFor({ kind: 'node', id: node.id });
     if (!eng.isSelected('node', node.id)) eng.selectNode(node.id);
     const el = nodeEls.get(node.id);
-    if (el) { el.dataset.moved = ''; el.classList.add('dragging'); }
+    if (el) { el.dataset.moved = ''; el.classList.add('cv-dragging'); }
     actionRef.current = { type: 'move', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, items, clickItem: { kind: 'node', id: node.id } };
     // NB: no setPointerCapture here — capturing the pointer retargets click/dblclick
     // away from the label and breaks double-click-to-rename. The drag is driven by
@@ -160,10 +160,10 @@ function FrameLabel({ node }) {
 
   if (renaming) {
     return (
-      <div ref={setRef} className="frame-label editing" onPointerDown={(e) => e.stopPropagation()}>
+      <div ref={setRef} className="cv-frame-label cv-editing" onPointerDown={(e) => e.stopPropagation()}>
         <input
           ref={inputRef}
-          className="frame-rename"
+          className="cv-frame-rename"
           defaultValue={node.name || ''}
           onBlur={commit}
           onKeyDown={(e) => {
@@ -178,7 +178,7 @@ function FrameLabel({ node }) {
   return (
     <div
       ref={setRef}
-      className="frame-label"
+      className="cv-frame-label"
       onPointerDown={onPointerDown}
       onDoubleClick={(e) => { if (readOnly) return; e.stopPropagation(); setRenaming(true); }}
       onContextMenu={(e) => {
@@ -190,9 +190,9 @@ function FrameLabel({ node }) {
         setCtxMenu({ x: e.clientX, y: e.clientY, wx: w.x, wy: w.y, target: { kind: 'node', id: node.id } });
       }}
     >
-      <span className="txt">{node.name || 'Section'}</span>
+      <span className="cv-txt">{node.name || 'Section'}</span>
       <button
-        className="frame-go"
+        className="cv-frame-go"
         title="Go to this section"
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => { e.stopPropagation(); eng.flyTo(node.id); }}
@@ -285,7 +285,7 @@ export default function Chrome() {
       <div className="cv-sel" ref={selRef} />
       <div className="cv-marquee" ref={marqRef} />
       <div
-        className="cbtn"
+        className="cv-cbtn"
         title="Edit markdown"
         ref={editRef}
         onPointerDown={(e) => e.stopPropagation()}

@@ -81,7 +81,7 @@ function EditableNode({ node }) {
   };
 
   const isSticky = node.type === 'sticky';
-  const cls = `node ${isSticky ? 'sticky' : 'tblock'}${editing ? ' editing' : ''}`;
+  const cls = `cv-node ${isSticky ? 'cv-sticky' : 'cv-tblock'}${editing ? ' cv-editing' : ''}`;
   // A text block starts width-less (single line, grows as you type); once the
   // user resizes it, the stored width fixes the box and the text wraps inside.
   let sizedStyle = node.w != null ? { ...style, width: node.w + 'px' } : style;
@@ -98,7 +98,7 @@ function EditableNode({ node }) {
       style={sizedStyle}
       onDoubleClick={onDoubleClick}
     >
-      <div className="txt" ref={txtRef} onBlur={commit} suppressContentEditableWarning />
+      <div className="cv-txt" ref={txtRef} onBlur={commit} suppressContentEditableWarning />
     </div>
   );
 }

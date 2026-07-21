@@ -126,7 +126,7 @@ function Code({ node }) {
   // detect it via relatedTarget, falling back to the header pointer-down flag
   // (some browsers report a null relatedTarget when a native <select> opens).
   const onBlur = (e) => {
-    const nodeEl = e.currentTarget.closest('.node.code');
+    const nodeEl = e.currentTarget.closest('.cv-node.cv-code');
     const toHeader = e.relatedTarget && nodeEl && nodeEl.contains(e.relatedTarget);
     if (toHeader || headerHit.current) { headerHit.current = false; return; }
     commit();
@@ -242,13 +242,13 @@ function Code({ node }) {
   return (
     <div
       ref={setRef}
-      className={`node code${editing ? ' code-editing' : ''}${wrap ? '' : ' code-nowrap'}`}
+      className={`cv-node cv-code${editing ? ' cv-code-editing' : ''}${wrap ? '' : ' cv-code-nowrap'}`}
       {...dataProps}
       style={style}
       onDoubleClick={onDoubleClick}
     >
       <div
-        className="code-head"
+        className="cv-code-head"
         onPointerDown={(e) => {
           // Only the interactive controls swallow the gesture (so using them
           // doesn't drag the node or commit the edit); clicking bare header space
@@ -263,10 +263,10 @@ function Code({ node }) {
         {/* The visible language text is always this <span>, so it never shifts
             between states. While editing, a transparent <select> overlays it to
             provide the native dropdown; a chevron + border reveal the affordance. */}
-        <span className="code-langbox">
-          <span className="code-lang">{codeLangLabel(lang)}</span>
+        <span className="cv-code-langbox">
+          <span className="cv-code-lang">{codeLangLabel(lang)}</span>
           {editing && (
-            <select className="code-lang-sel" value={lang} onChange={setLang} aria-label="Language">
+            <select className="cv-code-lang-sel" value={lang} onChange={setLang} aria-label="Language">
               {CODE_LANGS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
             </select>
           )}
@@ -275,11 +275,11 @@ function Code({ node }) {
             mode (including view/readOnly, so viewers can grab the source). The
             format/wrap toggles are editing-only. Kept mounted so the header
             height stays constant. */}
-        <div className="code-head-actions">
+        <div className="cv-code-head-actions">
           {!readOnly && (
             <>
               <button
-                className={`code-toggle${fmtOn ? ' on' : ''}`}
+                className={`cv-code-toggle${fmtOn ? ' cv-on' : ''}`}
                 title={fmtOn ? 'Format on type: on' : 'Format on type: off'}
                 aria-pressed={fmtOn}
                 onClick={toggleFormat}
@@ -287,7 +287,7 @@ function Code({ node }) {
                 <Wand2 />
               </button>
               <button
-                className={`code-toggle${wrap ? ' on' : ''}`}
+                className={`cv-code-toggle${wrap ? ' cv-on' : ''}`}
                 title={wrap ? 'Wrap text: on' : 'Wrap text: off'}
                 aria-pressed={wrap}
                 onClick={toggleWrap}
@@ -296,16 +296,16 @@ function Code({ node }) {
               </button>
             </>
           )}
-          <button className="code-copy" title={copied ? 'Copied' : 'Copy'} onClick={copy}>
+          <button className="cv-code-copy" title={copied ? 'Copied' : 'Copy'} onClick={copy}>
             {copied ? <Check /> : <Copy />}
           </button>
         </div>
       </div>
-      <pre className="code-render"><code dangerouslySetInnerHTML={{ __html: rendered }} /></pre>
-      <div className="code-edit">
-        <pre className="code-hl" aria-hidden="true" ref={hlRef}><code dangerouslySetInnerHTML={{ __html: painted + '\n' }} /></pre>
+      <pre className="cv-code-render"><code dangerouslySetInnerHTML={{ __html: rendered }} /></pre>
+      <div className="cv-code-edit">
+        <pre className="cv-code-hl" aria-hidden="true" ref={hlRef}><code dangerouslySetInnerHTML={{ __html: painted + '\n' }} /></pre>
         <textarea
-          className="code-src"
+          className="cv-code-src"
           spellCheck={false}
           ref={taRef}
           defaultValue={node.text || ''}

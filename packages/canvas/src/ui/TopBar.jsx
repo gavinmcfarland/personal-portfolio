@@ -1,5 +1,6 @@
 import { Pencil, Sun, Moon, Monitor } from "lucide-react";
 import { useCanvas } from "../CanvasProvider";
+import { cx } from "../constants";
 import PageTabs from "./PageTabs";
 import BgColorMenu from "./BgColorMenu";
 
@@ -16,7 +17,7 @@ const THEME = {
 };
 
 export default function TopBar() {
-  const { brand, readOnly, EDITABLE, eng, theme, pages, nodes } = useCanvas();
+  const { brand, readOnly, EDITABLE, eng, theme, pages, nodes, classNames } = useCanvas();
   const mode = theme?.mode;
   const toggleTheme = theme?.toggle;
   const th = THEME[mode] || THEME.system;
@@ -31,12 +32,12 @@ export default function TopBar() {
   if (!hasContent) return null;
 
   return (
-    <div className="ui panel" id="topbar">
+    <div className={cx("cv-ui cv-panel", classNames?.topbar)} data-cv-part="topbar">
       <PageTabs />
       {EDITABLE && !readOnly && <BgColorMenu />}
       {theme && (
         <button
-          className="chip"
+          className="cv-chip"
           title="Cycle theme: system / light / dark"
           onClick={toggleTheme}
         >
@@ -46,7 +47,7 @@ export default function TopBar() {
       )}
       {EDITABLE && (
         <button
-          className={`chip${!readOnly ? " on" : ""}`}
+          className={`cv-chip${!readOnly ? " cv-on" : ""}`}
           title={readOnly ? "Edit this board" : "Editing — click to stop"}
           onClick={() => eng.setMode(!readOnly)}
         >

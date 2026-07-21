@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
+import { cx } from '../constants';
 
 const RENAME_ICON = <Pencil />;
 const DELETE_ICON = <Trash2 />;
@@ -32,7 +33,7 @@ function sectionLabel(node) {
    page opens a menu to rename or delete it, and right-clicking a frame section
    opens a menu to rename it. New pages are added from the footer button. */
 export default function PageTabs() {
-  const { pages, activePageId, nodes, pageData, readOnly, EDITABLE, homeId: HOME_ID, eng, rootRef } = useCanvas();
+  const { pages, activePageId, nodes, pageData, readOnly, EDITABLE, homeId: HOME_ID, eng, rootRef, classNames } = useCanvas();
   const editing = EDITABLE && !readOnly;
   const [open, setOpen] = useState(false);
   const [renaming, setRenaming] = useState(null); // {scope:'page'|'section', id}
@@ -45,7 +46,7 @@ export default function PageTabs() {
   useEffect(() => {
     if (!open) return undefined;
     const onDown = (e) => {
-      if (e.target.closest && e.target.closest('.page-ctx')) return;
+      if (e.target.closest && e.target.closest('.cv-page-ctx')) return;
       setMenu(null);
       if (wrapRef.current && !wrapRef.current.contains(e.target)) {
         setOpen(false);
@@ -111,28 +112,28 @@ export default function PageTabs() {
   );
 
   return (
-    <div className="page-nav" ref={wrapRef}>
+    <div className={cx('cv-page-nav', classNames?.pages)} data-cv-part="pages" ref={wrapRef}>
       <button
-        className={`chip page-nav-trigger${open ? ' on' : ''}`}
+        className={`cv-chip cv-page-nav-trigger${open ? ' cv-on' : ''}`}
         title="Pages & sections"
         onClick={() => setOpen((o) => !o)}
       >
-        <span className="page-nav-current">{active ? active.name : 'Page'}</span>
-        <ChevronDown className="page-nav-chev" />
+        <span className="cv-page-nav-current">{active ? active.name : 'Page'}</span>
+        <ChevronDown className="cv-page-nav-chev" />
       </button>
 
       {open && (
-        <div className="page-menu panel">
+        <div className="cv-page-menu cv-panel">
           {pages.map((p) => {
             const secs = sectionsFor(p.id);
             return (
-              <div key={p.id} className="page-group">
-                <div className={`page-menu-item${p.id === activePageId ? ' active' : ''}`}>
+              <div key={p.id} className="cv-page-group">
+                <div className={`cv-page-menu-item${p.id === activePageId ? ' cv-active' : ''}`}>
                   {renaming && renaming.scope === 'page' && renaming.id === p.id ? (
                     renameInput(p.name, 'page-rename')
                   ) : (
                     <button
-                      className="page-menu-btn"
+                      className="cv-page-menu-btn"
                       title={editing ? 'Click to switch · right-click for options' : p.name}
                       onClick={() => { eng.switchPage(p.id); setOpen(false); }}
                       onContextMenu={editing ? (e) => openMenu(e, { scope: 'page', id: p.id, canDelete: p.id !== HOME_ID }) : undefined}
@@ -147,8 +148,8 @@ export default function PageTabs() {
                   const canRename = editing && p.id === activePageId && n.type === 'frame';
                   if (renaming && renaming.scope === 'section' && renaming.id === n.id) {
                     return (
-                      <div key={n.id} className="section-item">
-                        <span className="section-num">{i + 1}</span>
+                      <div key={n.id} className="cv-section-item">
+                        <span className="cv-section-num">{i + 1}</span>
                         {renameInput(n.name || '', 'section-rename')}
                       </div>
                     );
@@ -156,13 +157,13 @@ export default function PageTabs() {
                   return (
                     <button
                       key={n.id}
-                      className="section-item"
+                      className="cv-section-item"
                       title={canRename ? 'Click to go · right-click to rename' : sectionLabel(n)}
                       onClick={() => { eng.goToSection(p.id, n.id); setOpen(false); }}
                       onContextMenu={canRename ? (e) => openMenu(e, { scope: 'section', id: n.id }) : undefined}
                     >
-                      <span className="section-num">{i + 1}</span>
-                      <span className="section-name">{sectionLabel(n)}</span>
+                      <span className="cv-section-num">{i + 1}</span>
+                      <span className="cv-section-name">{sectionLabel(n)}</span>
                     </button>
                   );
                 })}
@@ -171,8 +172,8 @@ export default function PageTabs() {
           })}
 
           {editing && (
-            <button className="page-menu-add" title="New page" onClick={() => eng.addPage()}>
-              <span className="page-add-plus">+</span> New page
+            <button className="cv-page-menu-add" title="New page" onClick={() => eng.addPage()}>
+              <span className="cv-page-add-plus">+</span> New page
             </button>
           )}
         </div>
@@ -180,7 +181,7 @@ export default function PageTabs() {
 
       {menu && createPortal(
         <div
-          className="panel page-ctx"
+          className="cv-panel cv-page-ctx"
           style={{ left: Math.min(menu.x, innerWidth - 170), top: Math.min(menu.y, innerHeight - 90) }}
         >
           <button onClick={() => { setRenaming({ scope: menu.scope, id: menu.id }); setMenu(null); }}>
@@ -188,7 +189,7 @@ export default function PageTabs() {
             Rename
           </button>
           {menu.canDelete && (
-            <button className="danger" onClick={() => { eng.removePage(menu.id); setMenu(null); }}>
+            <button className="cv-danger" onClick={() => { eng.removePage(menu.id); setMenu(null); }}>
               {DELETE_ICON}
               Delete
             </button>

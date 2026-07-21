@@ -13,8 +13,8 @@ function Frame({ node }) {
     ...(reflowed ? { transition: 'transform 200ms ease' } : null),
   };
   return (
-    <div ref={setRef} className="node frame" {...dataProps} data-name={node.name} style={style}>
-      <div className="frame-body" />
+    <div ref={setRef} className="cv-node cv-frame" {...dataProps} data-name={node.name} style={style}>
+      <div className="cv-frame-body" />
     </div>
   );
 }

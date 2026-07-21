@@ -23,7 +23,7 @@ function LinkCard({ node }) {
   return (
     <a
       ref={setRef}
-      className="node link"
+      className="cv-node cv-link"
       {...dataProps}
       style={s}
       href={node.url || undefined}
@@ -38,19 +38,19 @@ function LinkCard({ node }) {
       draggable={false}
     >
       {node.loading ? (
-        <div className="link-loading"><Loader2 className="spin" /><span>Fetching link…</span></div>
+        <div className="cv-link-loading"><Loader2 className="cv-spin" /><span>Fetching link…</span></div>
       ) : (
         <>
           {img ? (
-            <div className="link-thumb"><img src={img} alt="" draggable={false} /></div>
+            <div className="cv-link-thumb"><img src={img} alt="" draggable={false} /></div>
           ) : null}
-          <div className="link-body">
-            <div className="link-title">{node.title || host}</div>
-            {node.desc ? <div className="link-desc">{node.desc}</div> : null}
-            <div className="link-host">
+          <div className="cv-link-body">
+            <div className="cv-link-title">{node.title || host}</div>
+            {node.desc ? <div className="cv-link-desc">{node.desc}</div> : null}
+            <div className="cv-link-host">
               {node.favicon
-                ? <img className="link-favicon" src={node.favicon} alt="" draggable={false} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                : <Link2 className="link-favicon-fallback" />}
+                ? <img className="cv-link-favicon" src={node.favicon} alt="" draggable={false} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                : <Link2 className="cv-link-favicon-fallback" />}
               <span>{node.siteName || host}</span>
             </div>
           </div>

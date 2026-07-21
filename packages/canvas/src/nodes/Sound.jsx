@@ -130,22 +130,22 @@ function SoundNode({ node }) {
   const timeLabel = dur ? `${fmt(cur)} / ${fmt(dur)}` : '';
 
   return (
-    <div ref={setRef} className="node sound" {...dataProps} style={s}>
+    <div ref={setRef} className="cv-node cv-sound" {...dataProps} style={s}>
       <audio ref={audRef} src={src || undefined} preload="metadata" />
       <button
-        className="splay"
+        className="cv-splay"
         title={playing ? 'Pause' : 'Play'}
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => { e.stopPropagation(); toggle(); }}
       >
         {playing ? <Pause /> : <Play />}
       </button>
-      <div className="sbody">
-        <div className="srow">
+      <div className="cv-sbody">
+        <div className="cv-srow">
           {renaming ? (
             <input
               ref={nameRef}
-              className="sname-input"
+              className="cv-sname-input"
               defaultValue={node.name || ''}
               onPointerDown={(e) => e.stopPropagation()}
               onBlur={commitRename}
@@ -156,18 +156,18 @@ function SoundNode({ node }) {
               }}
             />
           ) : (
-            <span className="sname" title="Double-click to rename">{node.name || 'Audio'}</span>
+            <span className="cv-sname" title="Double-click to rename">{node.name || 'Audio'}</span>
           )}
-          <span className="stime">{timeLabel}</span>
+          <span className="cv-stime">{timeLabel}</span>
         </div>
         <div
-          className="sbar"
+          className="cv-sbar"
           onPointerDown={onScrubDown}
           onPointerMove={onScrubMove}
           onPointerUp={onScrubUp}
           onPointerCancel={onScrubUp}
         >
-          <div className="strack"><div className="sfill" ref={fillRef} /></div>
+          <div className="cv-strack"><div className="cv-sfill" ref={fillRef} /></div>
         </div>
       </div>
     </div>
