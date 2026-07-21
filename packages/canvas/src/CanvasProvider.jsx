@@ -213,16 +213,33 @@ function packCenteredBoxes(boxes, rect, gap) {
   });
 }
 
-/* True when two reflow maps describe the same positions (within a sub-pixel
+/* World-space bounding box of a shape (freehand/vector drawing), so shapes can
+   take part in collision reflow alongside nodes. Inflated by half the stroke
+   width so a thin line/arrow still reads as overlapping what it crosses. */
+function shapeBBox(s) {
+  const pad = (s.width || 3) / 2;
+  let x0, y0, x1, y1;
+  if (s.type === 'pen') {
+    if (!s.points || !s.points.length) return null;
+    x0 = y0 = Infinity; x1 = y1 = -Infinity;
+    for (const p of s.points) { x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]); }
+  } else {
+    if (s.x1 == null) return null;
+    x0 = Math.min(s.x1, s.x2); y0 = Math.min(s.y1, s.y2); x1 = Math.max(s.x1, s.x2); y1 = Math.max(s.y1, s.y2);
+  }
+  return { x: x0 - pad, y: y0 - pad, w: x1 - x0 + pad * 2, h: y1 - y0 + pad * 2 };
+}
+
+/* True when two reflow maps describe the same offsets (within a sub-pixel
    tolerance) — so a recompute that lands on the current layout skips the state
-   write (and the node re-render it would cause). Treats null as an empty map. */
+   write (and the re-render it would cause). Treats null as an empty map. */
 function reflowMapsEqual(a, b) {
   const sizeA = a ? a.size : 0, sizeB = b ? b.size : 0;
   if (sizeA !== sizeB) return false;
   if (!a || !b) return sizeA === 0; // both empty
   for (const [k, v] of a) {
     const w = b.get(k);
-    if (!w || Math.abs(w.x - v.x) > 0.01 || Math.abs(w.y - v.y) > 0.01) return false;
+    if (!w || Math.abs(w.dx - v.dx) > 0.01 || Math.abs(w.dy - v.dy) > 0.01) return false;
   }
   return true;
 }
@@ -739,7 +756,10 @@ export function CanvasProvider({
       // Only reflow a settled, non-editing view. Otherwise release any overlay
       // so the author sees (and drags) the real, authored positions.
       if (!S.readOnly || S.editingId) { if (S.reflow) setReflow(null); return; }
-      const boxes = [], byId = {};
+      // Each box carries its authored top-left (ax, ay) so the final offset is a
+      // delta from where it started — nodes and shapes then move by the same
+      // {dx, dy}, and a shape that overlaps a node clusters and moves with it.
+      const boxes = [];
       for (const n of S.nodes) {
         // Frames are section/background regions that content sits inside — they
         // neither push nor get pushed.
@@ -749,8 +769,11 @@ export function CanvasProvider({
         // Authored x/y come from the MODEL (the DOM dataset may already hold a
         // prior reflow); w/h are measured from the DOM (translate doesn't affect
         // offset size, so the reading is stable whatever the current overlay).
-        boxes.push({ id: n.id, x: n.x, y: n.y, w: el.offsetWidth * sc, h: el.offsetHeight * sc });
-        byId[n.id] = n;
+        boxes.push({ id: n.id, x: n.x, y: n.y, ax: n.x, ay: n.y, w: el.offsetWidth * sc, h: el.offsetHeight * sc });
+      }
+      for (const sh of S.shapes) {
+        const bb = shapeBBox(sh); if (!bb) continue;
+        boxes.push({ id: sh.id, x: bb.x, y: bb.y, ax: bb.x, ay: bb.y, w: bb.w, h: bb.h });
       }
       if (!boxes.length) { if (S.reflow) setReflow(null); return; }
       const s = viewRef.scale || 1;
@@ -773,8 +796,8 @@ export function CanvasProvider({
       }
       const map = new Map();
       for (const b of boxes) {
-        const n = byId[b.id];
-        if (Math.abs(b.x - n.x) > 0.01 || Math.abs(b.y - n.y) > 0.01) map.set(b.id, { x: b.x, y: b.y });
+        const dx = b.x - b.ax, dy = b.y - b.ay;
+        if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) map.set(b.id, { dx, dy });
       }
       if (!reflowMapsEqual(map, S.reflow)) setReflow(map.size ? map : null);
     }
@@ -865,10 +888,13 @@ export function CanvasProvider({
       }
       const el = shapeEls.get(sel.id); if (!el) return null;
       const bb = el.getBBox();
-      // getBBox ignores the transient translate a shape carries mid-drag, so add it.
+      // getBBox ignores the transient translate a shape carries mid-drag, and the
+      // collision-reflow offset (applied on its SVG wrapper), so add both.
       const a = actionRef.current;
       const moving = a && a.type === 'move' && a.items.some((it) => it.kind === 'shape' && it.id === sel.id);
-      return [bb.x + (moving ? a.dx || 0 : 0), bb.y + (moving ? a.dy || 0 : 0), bb.width, bb.height];
+      const rp = S.reflow && S.reflow.get(sel.id);
+      const rdx = rp ? rp.dx : 0, rdy = rp ? rp.dy : 0;
+      return [bb.x + (moving ? a.dx || 0 : 0) + rdx, bb.y + (moving ? a.dy || 0 : 0) + rdy, bb.width, bb.height];
     }
     function hideSelChrome() {
       for (const k of ['sel', 'edit', 'rz']) if (chrome[k]) chrome[k].style.display = 'none';

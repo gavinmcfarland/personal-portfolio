@@ -5,7 +5,11 @@ import { themeInk } from './constants';
 /* One freehand / vector drawing, rendered as its own overlaid SVG (matching the
    mockup so each shape keeps an independent z-index in the shared stack). */
 function Shape({ shape, draft }) {
-  const { shapeEls } = useCanvas();
+  const { shapeEls, reflow, collide, readOnly } = useCanvas();
+  // Collision reflow publishes a derived {dx,dy} offset; a shape that overlaps a
+  // moved node clusters with it and shifts by the same delta. Applied as a
+  // transform on the shape's own SVG so its stored coords stay authored.
+  const rp = draft ? null : reflow && reflow.get(shape.id);
   const setRef = useCallback(
     (el) => {
       if (draft) return;
@@ -77,10 +81,14 @@ function Shape({ shape, draft }) {
     );
   }
 
+  const svgStyle = { zIndex: draft ? 2147483647 : shape.z };
+  if (rp) svgStyle.transform = `translate(${rp.dx}px,${rp.dy}px)`;
+  // Ease reflow moves both ways in collision view mode (matches the nodes).
+  if (collide && readOnly) svgStyle.transition = 'transform 200ms ease';
   return (
     // A draft has no z yet (assigned on commit), so pin it above the whole
     // stack — otherwise it renders behind existing objects while drawing.
-    <svg className="shapeSvg" data-id={shape.id} style={{ zIndex: draft ? 2147483647 : shape.z }}>
+    <svg className="shapeSvg" data-id={shape.id} style={svgStyle}>
       {defs}
       {el}
     </svg>

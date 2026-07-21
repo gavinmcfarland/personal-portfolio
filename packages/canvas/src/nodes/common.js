@@ -45,13 +45,13 @@ export function useRegister(node) {
     [node.id, nodeEls]
   );
   const scale = node.scale || 1;
-  // The collision resolver publishes DERIVED positions in `reflow` (view-mode
-  // only, never persisted). When present for this node, render — and expose via
-  // data-x/data-y — the reflowed position instead of the authored one, so the
-  // imperative chrome/snapping/bounds all follow the responsive layout for free.
+  // The collision resolver publishes a DERIVED offset per object in `reflow`
+  // (view-mode only, never persisted). When present for this node, render — and
+  // expose via data-x/data-y — the offset position instead of the authored one,
+  // so the imperative chrome/snapping/bounds all follow the responsive layout.
   const rp = reflow && reflow.get(node.id);
-  const x = rp ? rp.x : node.x;
-  const y = rp ? rp.y : node.y;
+  const x = node.x + (rp ? rp.dx : 0);
+  const y = node.y + (rp ? rp.dy : 0);
   const dataProps = {
     'data-id': node.id,
     'data-type': node.type,

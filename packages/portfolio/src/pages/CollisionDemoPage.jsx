@@ -17,7 +17,11 @@ const cards = [
 const demoBase = {
   brand: { title: "Responsive canvas", subtitle: "collisions" },
   nodes: cards.map((c, i) => ({ ...c, type: "md", x: i * 232, y: 0, w: 210, z: i + 1 })),
-  shapes: [],
+  // A highlight rectangle overlapping the third card — it clusters with the card
+  // and reflows alongside it, showing shapes take part in collisions too.
+  shapes: [
+    { id: "s-hl", type: "rect", stroke: ACCENT.light, width: 3, fill: "none", z: 10, x1: 450, y1: -16, x2: 690, y2: 108 },
+  ],
 };
 
 export default function CollisionDemoPage() {
