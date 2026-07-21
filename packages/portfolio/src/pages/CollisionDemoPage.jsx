@@ -49,6 +49,7 @@ export default function CollisionDemoPage() {
         <Canvas
           fit="contain"
           initialView="fit"
+          resizeAnchor="center"
           accent={ACCENT}
           editable={import.meta.env.DEV}
           collide
