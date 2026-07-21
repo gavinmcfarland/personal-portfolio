@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>note(1) · Two programs, one plugin — Gavin McFarland</title>
+<meta name="description" content="A Figma plugin looks like one thing and behaves like two. Almost every difficulty in building one comes from that gap.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='1' y='1' width='7' height='7' fill='%23000080'/%3E%3Crect x='8' y='1' width='7' height='7' fill='%23008080'/%3E%3Crect x='1' y='8' width='7' height='7' fill='%23FFFF00'/%3E%3Crect x='8' y='8' width='7' height='7' fill='%23C0C0C0'/%3E%3C/svg%3E">
+<script>(()=>{document.documentElement.classList.toggle('dark',localStorage.getItem('gm-surface-14')==='dark');})();</script>
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="note">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<aside class="rail">
+  <a class="rail__mark" href="index.html"><span class="sw" data-c="navy"></span>gavin(1)</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="strip rail__strip" data-strip="a" id="rail-strip" aria-hidden="true"></div>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+    <span>14 · colourbar</span>
+  </div>
+</aside>
+
+<div class="page">
+<main id="main">
+  <div class="sheet">
+
+    <section class="sec">
+      <h1 class="man__h"><span class="num">01</span> Name <span class="man__x">note(1) · 2026-05 · 6 min</span></h1>
+      <div class="man__b">
+        <p class="ink"><span class="b">Two programs, one plugin</span> — a Figma plugin looks like one
+        thing and behaves like two.</p>
+      </div>
+    </section>
+
+    <!-- ── The article proper: prose on the wide column, mono
+         marginalia in the margin. The measure is capped; the gap is
+         structural rather than accidental. ────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">02</span> Description</h2>
+      <div class="asym" style="padding-left:var(--indent)">
+        <div class="asym__main dim">
+          <p>
+            One half of a plugin runs in a sandbox with access to the document and no DOM. The
+            other runs in an iframe with a DOM and no document. They cannot call each other;
+            they can only post messages, and every message is a string that used to be an
+            object and will have to become one again.
+          </p>
+          <p style="margin-top:.8rem">
+            The consequence nobody warns you about is that a plugin has no development loop. A
+            change to the UI reloads the iframe, which drops the state that took nine clicks to
+            reach, and the sandbox half restarts alongside it. So you make a change, you rebuild
+            the state, you look at the change. Then you do it again.
+          </p>
+          <p class="ink" style="margin-top:.8rem">
+            Every worthwhile plugin tool is really a tool for narrowing that gap. Not for making
+            the two halves into one — they cannot be — but for making the seam cheap to cross.
+          </p>
+          <p style="margin-top:.8rem">
+            The message bridge is the obvious place to start, and the wrong one. Types across the
+            bridge stop a rename in one half silently breaking the other, which is worth having,
+            but it does not touch the loop. The loop needs the UI to be replaceable without the
+            sandbox half restarting — which means serving it rather than bundling it, and then
+            inlining it at build time so the shipped plugin has no dev server in it.
+          </p>
+          <pre class="pre" style="margin-top:1rem"><span class="c">// sandbox half — document access, no DOM</span>
+figma.ui.onmessage = (msg) =&gt; {
+  if (msg.type === 'resize') {
+    figma.ui.resize(msg.w, msg.h)
+  }
+}</pre>
+          <p style="margin-top:.9rem">
+            Once the UI is served, the state survives the edit, and the plugin stops being a thing
+            you rebuild in order to look at. That is the entire argument for
+            <a class="ln" href="project.html">plugma(1)</a>, and it took four versions to say it
+            in one command.
+          </p>
+        </div>
+
+        <div class="asym__side">
+          <div class="aside">
+            <span class="micro">in the margin</span>
+            <p style="margin-bottom:.6rem">The sandbox half is not a worker. It is a QuickJS interpreter with the document bound into it, which is why nothing from Node is there.</p>
+            <p style="margin-bottom:.6rem">Message payloads are structured-cloned, so a Date survives and a class instance does not.</p>
+            <p>Nine clicks is not a figure of speech; that is the table-creator test file.</p>
+          </div>
+          <div class="strip" data-strip="c" style="height:9rem;margin-top:1rem" aria-hidden="true">
+            <i data-c="navy"></i><i data-c="silver"></i><i data-c="white"></i><i data-c="aqua"></i>
+          </div>
+          <span class="strip-cap">Strip 01 — quad. The quietest of the six, which is the right choice beside running prose.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">03</span> See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="project.html">plugma</a><span class="n">(1)</span>,
+          <a href="journal.html">journal</a><span class="n">(1)</span>,
+          <a href="article.html">article</a><span class="n">(7)</span>,
+          <a href="board.html">board</a><span class="n">(1)</span>
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="sheet"><p>note(1) &nbsp;·&nbsp; 2026-05 &nbsp;·&nbsp; 14 · Colourbar</p></div>
+</footer>
+</div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gavin(1) — Gavin McFarland</title>
+<meta name="description" content="Gavin McFarland, design engineer. Design systems and the developer tooling they are built with.">
+
+<!-- The favicon is a four-patch control strip, which is the whole set in 16px. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='1' y='1' width='7' height='7' fill='%23000080'/%3E%3Crect x='8' y='1' width='7' height='7' fill='%23008080'/%3E%3Crect x='1' y='8' width='7' height='7' fill='%23FFFF00'/%3E%3Crect x='8' y='8' width='7' height='7' fill='%23C0C0C0'/%3E%3C/svg%3E">
+
+<!-- No webfont. The faces are the system's own, which is 05's
+     position and the reason this sheet renders before it is styled. -->
+<script>(()=>{document.documentElement.classList.toggle('dark',localStorage.getItem('gm-surface-14')==='dark');})();</script>
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="index">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<aside class="rail">
+  <a class="rail__mark" href="index.html"><span class="sw" data-c="navy"></span>gavin(1)</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="strip rail__strip" data-strip="a" id="rail-strip" aria-hidden="true"></div>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+    <span>14 · colourbar</span>
+  </div>
+</aside>
+
+<div class="page">
+<main id="main">
+
+  <!-- ── The masthead. The one inverted block on the sheet, and the
+       one place a 20px line is spent. ─────────────────────────── -->
+  <div class="mast">
+    <div class="sheet" style="position:relative;padding-inline:0">
+      <span class="mark mark--tab" data-c="yellow" style="top:-1.5rem;right:0" aria-hidden="true">proof</span>
+      <p class="micro" style="color:var(--chrome);margin-bottom:.5rem">gavin(1) · general commands manual</p>
+      <p class="display">Design engineer. Builds the tools design systems are made with, and the systems themselves.</p>
+      <div class="strip" data-strip="a" style="height:14px;margin-top:1.25rem;border-color:var(--paper)" aria-hidden="true">
+        <i data-c="navy"></i><i data-c="teal"></i><i data-c="aqua"></i><i data-c="silver"></i><i data-c="white"></i><i data-c="yellow"></i><i data-c="olive"></i><i data-c="maroon"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet">
+
+    <!-- ── 01 NAME ────────────────────────────────────────────── -->
+    <section class="sec" style="position:relative">
+      <span class="mark mark--crop" style="top:1rem;left:-30px" aria-hidden="true"></span>
+      <h2 class="man__h"><span class="num">01</span> Name</h2>
+      <div class="man__b">
+        <p class="ink"><span class="b">gavin</span> — design engineer; builds the tools design systems are
+        made with, and the systems themselves.</p>
+      </div>
+    </section>
+
+    <!-- ── 02 SYNOPSIS ────────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">02</span> Synopsis</h2>
+      <div class="man__b">
+        <p class="cmd" style="margin-bottom:.4rem">
+          <span class="cmd__$">$</span>
+          <span><span class="b">gavin</span> <span class="dim">[--design-systems] [--front-end] [--tooling]</span></span>
+        </p>
+        <p class="cmd">
+          <span class="cmd__$">$</span>
+          <span><span class="b">gavin</span> <span class="dim">--hire</span> <span class="faint">[--remote | --london]</span></span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ── 03 DESCRIPTION ─────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">03</span> Description</h2>
+      <div class="man__b">
+        <p>
+          Fifteen years between design and front-end, mostly spent on the seam:
+          token pipelines, component APIs, and the editor plugins that keep the two
+          halves honest with each other.
+        </p>
+        <p>
+          Every tool listed under <a class="ln" href="work.html">work(1)</a> began as
+          a problem that kept recurring, and exists because the thing that would
+          have fixed it did not.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── 04 OPTIONS ─────────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">04</span> Options</h2>
+      <div class="man__dl" id="capabilities"></div>
+    </section>
+
+    <div class="bleed" aria-hidden="true">
+      <i data-c="navy"></i><i data-c="navy"></i><i data-c="teal"></i><i data-c="silver"></i><i data-c="yellow"></i><i data-c="maroon"></i>
+    </div>
+
+    <!-- ── 05 EXAMPLES — the ruled table, treatment T1 ─────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">05</span> Examples <span class="man__x">t1 · ruled table</span></h2>
+      <div class="man__b" style="margin-bottom:1rem;max-width:none">
+        <p>All <span data-count="projects">—</span>, imposed as a table. The same array is drawn
+        four other ways across this set; <a class="ln" href="colour.html">colour(7)</a> shows them
+        switched in place.</p>
+      </div>
+      <div data-render="table"></div>
+    </section>
+
+    <!-- ── 06 the entries, treatment T5 ───────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">06</span> Examples, illustrated <span class="man__x">t5 · entry</span></h2>
+      <div class="man__b" style="margin-bottom:1rem">
+        <p>Three of <span data-count="projects">—</span>, each printed with the strip it was
+        drawn for. The rest are under <a class="ln" href="work.html">work(1)</a>.</p>
+      </div>
+      <div id="entries"></div>
+    </section>
+
+    <!-- ── 07 ENVIRONMENT ─────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">07</span> Environment</h2>
+      <div class="man__dl" id="environment"></div>
+    </section>
+
+    <!-- ── 08 BUGS. Understated joke, stated deadpan. ─────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">08</span> Bugs</h2>
+      <div class="man__b" style="position:relative;display:inline-block">
+        <!-- The stamp straddles the bottom-right corner of the
+             block, landing past the end of the shorter second line —
+             so it overlaps the paragraph without sitting on a word. -->
+        <span class="mark mark--stamp" style="bottom:-1.75rem;right:-1rem" aria-hidden="true"></span>
+        <p>
+          Occasionally begins building the tool before finishing the design file.
+          Known behaviour; will not fix.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── 09 SEE ALSO ────────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">09</span> See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="work.html">work</a><span class="n">(1)</span>,
+          <a href="journal.html">journal</a><span class="n">(1)</span>,
+          <a href="article.html">article</a><span class="n">(7)</span>,
+          <a href="colour.html">colour</a><span class="n">(7)</span>,
+          <a href="board.html">board</a><span class="n">(1)</span>,
+          <a href="contact.html">contact</a><span class="n">(1)</span>,
+          <a href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">github</a><span class="n">(7)</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ── 10 AUTHOR ──────────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">10</span> Author</h2>
+      <div class="man__b">
+        <p class="ink">Written by Gavin McFarland.</p>
+        <p class="ink" style="margin-top:.3rem">
+          Report issues to <a class="ln" data-email href="#">—</a>
+          <button class="copy" type="button" data-copy aria-label="Copy address">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="M5 5V3h8v8h-2M3 5h8v8H3z"/>
+            </svg><span class="copy__label"></span>
+          </button>
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <p>gavin(1) &nbsp;·&nbsp; <span data-breakdown>—</span> &nbsp;·&nbsp; 14 · Colourbar &nbsp;·&nbsp; London, United Kingdom</p>
+  </div>
+</footer>
+</div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+
+    document.getElementById('capabilities').innerHTML = DATA.capabilities.map((c) => `
+      <div><dt style="text-transform:none">${esc(c.k)}</dt><dd>${esc(c.v)}</dd></div>`).join('');
+
+    document.getElementById('environment').innerHTML = DATA.environment.map((e) => `
+      <div><dt>${esc(e.k)}</dt><dd>${esc(e.v)}</dd></div>`).join('');
+
+    renderEntries(document.getElementById('entries'), DATA.projects.slice(0, 3));
+  })();
+</script>
+</body>
+</html>

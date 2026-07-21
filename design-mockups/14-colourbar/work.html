@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>work(1) — Gavin McFarland</title>
+<meta name="description" content="Every tool, library and plug-in, each printed with the colour strip it was drawn for.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='1' y='1' width='7' height='7' fill='%23000080'/%3E%3Crect x='8' y='1' width='7' height='7' fill='%23008080'/%3E%3Crect x='1' y='8' width='7' height='7' fill='%23FFFF00'/%3E%3Crect x='8' y='8' width='7' height='7' fill='%23C0C0C0'/%3E%3C/svg%3E">
+<script>(()=>{document.documentElement.classList.toggle('dark',localStorage.getItem('gm-surface-14')==='dark');})();</script>
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="work">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<aside class="rail">
+  <a class="rail__mark" href="index.html"><span class="sw" data-c="navy"></span>gavin(1)</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="strip rail__strip" data-strip="a" id="rail-strip" aria-hidden="true"></div>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+    <span>14 · colourbar</span>
+  </div>
+</aside>
+
+<div class="page">
+<main id="main">
+  <div class="sheet">
+
+    <section class="sec">
+      <h1 class="man__h"><span class="num">01</span> Name <span class="man__x">work(1)</span></h1>
+      <div class="man__b">
+        <p class="ink"><span class="b">work</span> — <span data-count="projects">—</span> tools, libraries and
+        plug-ins, each one begun because the thing that would have fixed the problem did not exist.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">02</span> Synopsis</h2>
+      <div class="man__b">
+        <p class="cmd"><span class="cmd__$">$</span>
+          <span><span class="b">gavin</span> <span class="dim">--list</span> <span class="faint">[--tool | --library | --plug-in]</span></span></p>
+      </div>
+    </section>
+
+    <!-- ── The entries. T5: a command line, then the strip beside
+         the description. This is the sheet the strips were drawn
+         for, so all six print here at full size. ──────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">03</span> Description <span class="man__x">t5 · entry</span></h2>
+      <div class="man__b" style="margin-bottom:1rem">
+        <p>Each entry carries the strip it was drawn for. The geometries are described
+        under <a class="ln" href="colour.html">colour(7)</a>; the ink is the project's, not
+        the category's.</p>
+      </div>
+      <div data-entries></div>
+    </section>
+
+    <div class="bleed" aria-hidden="true">
+      <i data-c="navy"></i><i data-c="teal"></i><i data-c="maroon"></i><i data-c="olive"></i><i data-c="purple"></i><i data-c="silver"></i>
+    </div>
+
+    <!-- ── The same six as a ledger. T2. ──────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">04</span> Register <span class="man__x">t2 · ledger</span></h2>
+      <div class="man__b" style="margin-bottom:1rem;max-width:none">
+        <p>The same <span data-count="projects">—</span> again, without the pictures. An 8px
+        swatch names the category, so the column can be scanned for one kind of thing
+        without reading a word of it.</p>
+      </div>
+      <div data-render="ledger"></div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">05</span> See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="project.html">plugma</a><span class="n">(1)</span>,
+          <a href="colour.html">colour</a><span class="n">(7)</span>,
+          <a href="board.html">board</a><span class="n">(1)</span>,
+          <a href="index.html">gavin</a><span class="n">(1)</span>
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="sheet"><p>work(1) &nbsp;·&nbsp; <span data-breakdown>—</span> &nbsp;·&nbsp; 14 · Colourbar</p></div>
+</footer>
+</div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>colour(7) — Gavin McFarland</title>
+<meta name="description" content="The sixteen inks, the six strip geometries, the four marks, and the same six projects drawn four ways.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='1' y='1' width='7' height='7' fill='%23000080'/%3E%3Crect x='8' y='1' width='7' height='7' fill='%23008080'/%3E%3Crect x='1' y='8' width='7' height='7' fill='%23FFFF00'/%3E%3Crect x='8' y='8' width='7' height='7' fill='%23C0C0C0'/%3E%3C/svg%3E">
+<script>(()=>{document.documentElement.classList.toggle('dark',localStorage.getItem('gm-surface-14')==='dark');})();</script>
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="colour">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<aside class="rail">
+  <a class="rail__mark" href="index.html"><span class="sw" data-c="navy"></span>gavin(1)</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="strip rail__strip" data-strip="a" id="rail-strip" aria-hidden="true"></div>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+    <span>14 · colourbar</span>
+  </div>
+</aside>
+
+<div class="page">
+<main id="main">
+  <div class="sheet">
+
+    <section class="sec">
+      <h1 class="man__h"><span class="num">01</span> Name <span class="man__x">colour(7)</span></h1>
+      <div class="man__b">
+        <p class="ink"><span class="b">colour</span> — <span data-count="inks">16</span> inks,
+        <span data-count="strips">—</span> strip geometries, <span data-count="marks">—</span> marks,
+        and no screen anywhere.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">02</span> Description</h2>
+      <div class="man__b">
+        <p>
+          13 · Dither made its illustrations out of screened fields: three dot grids at
+          mismatched pitches, clumping into something that behaved like a photograph. This set
+          is not allowed to do that, and the replacement is not a weaker version of it — it is
+          the other half of the same press.
+        </p>
+        <p>
+          A control strip is the ladder of solid patches a printer runs down the trim edge of a
+          sheet to prove the ink is laying at density. It is a picture that is entirely about
+          its colour, which makes it the right illustration for a set whose one inheritance
+          from <span class="ink">05 · Console</span> is the colour.
+        </p>
+        <p class="ink">
+          There is not a dot, a hatch, a stipple or a gradient in §3 of the stylesheet. Every
+          mark is a solid <span class="mono">background-color</span> and every edge is a 1px
+          rule. It is the first illustration engine in this folder with zero
+          <span class="mono">background-image</span> declarations.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── The sixteen. The one page allowed to spend its key. ─── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">03</span> The sixteen <span class="man__x">f · key</span></h2>
+      <div class="man__b" style="max-width:none">
+        <p style="margin-bottom:1rem">
+          The Windows 95 palette, unaltered. These sixteen do not change between surfaces:
+          stock and ink invert when you press <span class="mono">surface</span>, and the
+          palette does not. A control strip that shifted with the theme would not be a control
+          strip.
+        </p>
+        <div class="strip" data-strip="f" style="height:9rem" aria-hidden="true" id="key"></div>
+        <span class="strip-cap">Strip 01 — key. Eight across, two down; the only place all sixteen print together.</span>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">04</span> Inks and their pairings</h2>
+      <div class="man__b" style="margin-bottom:1rem;max-width:none">
+        <p>Each ink ships with the ink it may carry type in. Every pairing below clears 4.4:1;
+        the eight marked <span class="ink b">·</span> are the ones this set actually sets words
+        on, and the other eight appear as fills only.</p>
+      </div>
+      <div class="scroll-x"><div class="tbl" id="inks"></div></div>
+      <p class="scroll-hint mono">Table scrolls sideways rather than stacking.</p>
+    </section>
+
+    <div class="bleed" aria-hidden="true">
+      <i data-c="black"></i><i data-c="maroon"></i><i data-c="green"></i><i data-c="olive"></i><i data-c="navy"></i><i data-c="purple"></i><i data-c="teal"></i><i data-c="silver"></i>
+    </div>
+
+    <!-- ── The six geometries at full size. ───────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">05</span> Geometries</h2>
+      <div class="man__b" style="margin-bottom:1.25rem;max-width:none">
+        <p>Six ways of dividing a rectangle. The geometry is in the stylesheet, the colour is in
+        the markup — a strip's palette is a list of <span class="mono">data-c</span> attributes
+        you can read in a diff, rather than something buried in a mask.</p>
+      </div>
+      <div class="bento" id="geometries"></div>
+    </section>
+
+    <!-- ── The scale test. ────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">06</span> Scale</h2>
+      <div class="man__b" style="margin-bottom:1rem;max-width:none">
+        <p>
+          Because the cells are proportional rather than fixed, a small strip shows the
+          <span class="ink">same picture smaller</span>, not a crop of it — which is the exact
+          opposite of how 13's fields behaved, and the reason these read as diagrams where
+          those read as photographs.
+        </p>
+      </div>
+      <div style="padding-left:var(--indent);display:grid;gap:1rem">
+        <div>
+          <div class="strip" data-strip="b" style="height:6rem" aria-hidden="true">
+            <i data-c="silver"></i><i data-c="navy"></i><i data-c="teal"></i><i data-c="aqua"></i><i data-c="white"></i><i data-c="navy"></i>
+          </div>
+          <span class="strip-cap">Strip 08 — wedge at 96px.</span>
+        </div>
+        <div>
+          <div class="strip" data-strip="b" style="height:2.5rem" aria-hidden="true">
+            <i data-c="silver"></i><i data-c="navy"></i><i data-c="teal"></i><i data-c="aqua"></i><i data-c="white"></i><i data-c="navy"></i>
+          </div>
+          <span class="strip-cap">Strip 09 — the same wedge at 40px. Nothing is lost but height.</span>
+        </div>
+        <div>
+          <div class="strip" data-strip="b" style="height:14px" aria-hidden="true">
+            <i data-c="silver"></i><i data-c="navy"></i><i data-c="teal"></i><i data-c="aqua"></i><i data-c="white"></i><i data-c="navy"></i>
+          </div>
+          <span class="strip-cap">Strip 10 — and at 14px, where it stops being a picture and becomes a rule. That is the <span class="mono">.bleed</span> you have been reading past all set.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── The marks. ─────────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">07</span> Marks</h2>
+      <div class="man__b" style="margin-bottom:1.25rem;max-width:none">
+        <p>Four, each meant to sit <span class="ink">half off the edge</span> of something. A
+        mark that is not overlapping anything is just a shape.</p>
+      </div>
+      <div style="padding-left:var(--indent);display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:2.5rem 1.5rem">
+        <div style="position:relative">
+          <div class="strip" data-strip="e" style="height:6rem" aria-hidden="true"><i data-c="silver"></i></div>
+          <span class="mark mark--crop" style="top:-11px;left:-11px" aria-hidden="true"></span>
+          <span class="strip-cap">crop — register marks, exact by definition.</span>
+        </div>
+        <div style="position:relative">
+          <div class="strip" data-strip="e" style="height:6rem" aria-hidden="true"><i data-c="silver"></i></div>
+          <span class="mark mark--stamp" style="top:-14px;right:-14px" aria-hidden="true"></span>
+          <span class="strip-cap">stamp — a square ring; 13's seal without the curve.</span>
+        </div>
+        <div style="position:relative">
+          <div class="strip" data-strip="e" style="height:6rem" aria-hidden="true"><i data-c="silver"></i></div>
+          <span class="mark mark--tab" data-c="yellow" style="top:-9px;left:1.5rem" aria-hidden="true">proof</span>
+          <span class="strip-cap">tab — a flat flag, two words at most.</span>
+        </div>
+        <div>
+          <div class="bleed" style="height:14px;margin-top:2.75rem" aria-hidden="true">
+            <i data-c="navy"></i><i data-c="teal"></i><i data-c="aqua"></i><i data-c="yellow"></i><i data-c="maroon"></i>
+          </div>
+          <span class="strip-cap">bleed — a rule with weight, in the flow.</span>
+        </div>
+      </div>
+      <div class="man__dl" id="marks" style="margin-top:2rem"></div>
+    </section>
+
+    <!-- ── The argument: one array, four treatments, in place. ── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">08</span> Treatments <span class="man__x">t1–t4</span></h2>
+      <div class="man__b" style="margin-bottom:1.25rem;max-width:none">
+        <p>
+          The same <span data-count="projects">—</span> projects, drawn four ways from one array.
+          If two treatments ever disagreed about the content, this page would show it.
+        </p>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Treatments" id="tabs">
+        <button role="tab" data-mode="table"  aria-selected="true"  tabindex="0">t1 · table</button>
+        <button role="tab" data-mode="ledger" aria-selected="false" tabindex="-1">t2 · ledger</button>
+        <button role="tab" data-mode="bento"  aria-selected="false" tabindex="-1">t3 · bento</button>
+        <button role="tab" data-mode="asym"   aria-selected="false" tabindex="-1">t4 · spread</button>
+      </div>
+      <div class="stage" id="stage" data-fading="false"></div>
+    </section>
+
+    <!-- ── Type. Five steps, flat, no webfont. ────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">09</span> Type</h2>
+      <div class="man__b" style="max-width:none">
+        <p style="margin-bottom:1rem">
+          Two faces, neither fetched: the system UI face carries prose and the system mono
+          carries structure. Five steps, all at 400 or 700, and rank comes from bold capitals,
+          indent, two-digit numbering and inversion instead of from size.
+        </p>
+        <div class="tbl tbl--spec">
+          <div class="tbl__row"><span class="tbl__num">11px</span><span class="micro tbl__val" style="font-family:var(--f-mono)">micro — uppercase labels, rail numerals</span></div>
+          <div class="tbl__row"><span class="tbl__num">12px</span><span class="mono tbl__val" style="font-family:var(--f-mono)">ui — mono structure, captions, meta</span></div>
+          <div class="tbl__row"><span class="tbl__num">13px</span><span class="tbl__val">body — every word of prose in the set is this size</span></div>
+          <div class="tbl__row"><span class="tbl__num">15px</span><span class="tbl__val lead">lead — command lines only; the set's one step up</span></div>
+          <div class="tbl__row"><span class="tbl__num">20px</span><span class="tbl__val display">display — one line per sheet, maximum</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">10</span> See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="work.html">work</a><span class="n">(1)</span>,
+          <a href="board.html">board</a><span class="n">(1)</span>,
+          <a href="index.html">gavin</a><span class="n">(1)</span>
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="sheet"><p>colour(7) &nbsp;·&nbsp; <span data-count="inks">16</span> inks, <span data-count="strips">—</span> geometries, <span data-count="marks">—</span> marks &nbsp;·&nbsp; 14 · Colourbar</p></div>
+</footer>
+</div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    /* The sixteen, in the order Windows declared them. Named once
+       here and reused by both the key and the table below, so the
+       page cannot contradict itself about what the palette is. */
+    const INKS = [
+      ['black',  '#000000', 'white',  true],
+      ['maroon', '#800000', 'white',  true],
+      ['green',  '#008000', 'white',  true],
+      ['olive',  '#808000', 'black',  false],
+      ['navy',   '#000080', 'white',  true],
+      ['purple', '#800080', 'white',  true],
+      ['teal',   '#008080', 'white',  true],
+      ['silver', '#C0C0C0', 'black',  true],
+      ['gray',   '#808080', 'black',  false],
+      ['red',    '#FF0000', 'black',  false],
+      ['lime',   '#00FF00', 'black',  false],
+      ['yellow', '#FFFF00', 'black',  true],
+      ['blue',   '#0000FF', 'white',  false],
+      ['fuchsia','#FF00FF', 'black',  false],
+      ['aqua',   '#00FFFF', 'black',  false],
+      ['white',  '#FFFFFF', 'black',  false],
+    ];
+
+    document.getElementById('key').innerHTML = cells(INKS.map((i) => i[0]));
+
+    document.getElementById('inks').innerHTML =
+      `<div class="tbl__row tbl__head" style="grid-template-columns:3rem 8rem 7rem 7rem 1fr">
+         <span>no.</span><span>ink</span><span>value</span><span>type in</span><span>sets words</span>
+       </div>` +
+      INKS.map((ink, i) => `
+      <div class="tbl__row" style="grid-template-columns:3rem 8rem 7rem 7rem 1fr">
+        <span class="tbl__num">${pad2(i + 1)}</span>
+        <span class="tbl__item" style="display:flex;align-items:center;gap:.5rem"><span class="sw" data-c="${ink[0]}"></span>${ink[0]}</span>
+        <span class="faint">${ink[1]}</span>
+        <span class="faint">${ink[2]}</span>
+        <span class="tbl__desc">${ink[3] ? '· yes' : 'fill only'}</span>
+      </div>`).join('');
+
+    /* Each geometry, drawn at the cell count it was designed for. */
+    const SAMPLE = {
+      a: ['navy', 'teal', 'aqua', 'silver', 'white', 'yellow', 'olive', 'maroon'],
+      b: ['silver', 'navy', 'teal', 'aqua', 'white', 'navy'],
+      c: ['maroon', 'silver', 'white', 'red'],
+      d: ['navy', 'aqua', 'teal', 'silver', 'white'],
+      e: ['olive'],
+      f: INKS.map((i) => i[0]),
+    };
+    document.getElementById('geometries').innerHTML = DATA.strips.map((s, i) => `
+      <div class="bento__cell ${s.id === 'f' ? 'c12' : 'c6'}">
+        <span class="micro" style="display:flex;justify-content:space-between;color:var(--muted)">
+          <span><span class="num">${esc(s.id)}</span> ${esc(s.name)}</span><span>${esc(s.cells)} cells</span>
+        </span>
+        <span class="strip" data-strip="${esc(s.id)}" aria-hidden="true">${
+          cells(SAMPLE[s.id], s.id === 'e' ? pad2(i + 2) : null)}</span>
+        <span class="mono dim">${esc(s.use)}</span>
+      </div>`).join('');
+
+    document.getElementById('marks').innerHTML = DATA.marks.map((m) => `
+      <div><dt style="text-transform:none">${esc(m.name)}</dt><dd>${esc(m.use)}</dd></div>`).join('');
+
+    const stage = document.getElementById('stage');
+    renderProjects(stage, 'table');
+    wireTabs(document.getElementById('tabs'), stage, (mode, el) => renderProjects(el, mode));
+  })();
+</script>
+</body>
+</html>
