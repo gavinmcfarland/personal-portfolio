@@ -4,6 +4,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import ThemeToggle from "./components/ThemeToggle";
 import Home from "./pages/Home";
 import ProjectPage from "./pages/ProjectPage";
+import CollisionDemoPage from "./pages/CollisionDemoPage";
 import NotFound from "./pages/NotFound";
 import { projects } from "./data/projects";
 
@@ -41,14 +42,20 @@ function App() {
 
         {/* Home stays mounted for the life of the app: navigating into a
             project overlays it rather than unmounting it, so its scroll
-            position and one-time reveal animations are preserved on return. */}
-        <Home />
+            position and one-time reveal animations are preserved on return.
+            `isolate` traps its content's stacking context (the footer canvas
+            chrome is z-100) below the route overlay, so nothing bleeds through
+            when an overlay is open over a footer-scrolled page. */}
+        <div className="isolate">
+          <Home />
+        </div>
 
         {/* Non-home routes render as a full-screen overlay above Home. */}
         {!isHome && (
           <div className="fixed inset-0 z-10 overflow-y-auto bg-base">
             <Routes>
               <Route path="/projects/:id" element={<ProjectRoute />} />
+              <Route path="/responsive" element={<CollisionDemoPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

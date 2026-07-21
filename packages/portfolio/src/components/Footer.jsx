@@ -1,7 +1,8 @@
+import { Link } from "react-router-dom";
 import { Canvas } from "@gavinmcfarland/canvas";
 import { boardSaver, publishedBoard, uploadMedia, unfurlLink } from "../data/canvasBoards";
 import { ACCENT } from "../theme";
-import CollisionDemo from "./CollisionDemo";
+import { ArrowRight } from "./ui";
 
 /* A self-contained board for the footer playground. `card` is a portfolio-only
    node type, so the demo sticks to the canvas's built-in nodes (markdown, sticky,
@@ -66,7 +67,21 @@ const Footer = () => (
       </p>
     </div>
 
-    <CollisionDemo />
+    <section className="mx-auto w-full max-w-2xl px-5 sm:px-6 pt-4 pb-14">
+      <div className="section-label">Responsive collisions</div>
+      <p className="mt-4 max-w-[52ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">
+        The canvas adapts to its container: as space runs out, objects reflow to
+        stay in view — routing around each other and keeping the overlaps you make
+        on purpose. See it fill the screen:
+      </p>
+      <Link
+        to="/responsive"
+        className="group mt-6 inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 font-sans text-[0.875rem] font-medium text-ink transition-colors duration-200 hover:bg-surface"
+      >
+        Open the full-screen demo
+        <ArrowRight className="h-4 w-4 text-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-accent" />
+      </Link>
+    </section>
 
     <div className="mx-auto w-full max-w-2xl px-5 sm:px-6 pb-16">
       <p className="text-[0.8125rem] text-faint">© 2026 Gavin McFarland</p>
