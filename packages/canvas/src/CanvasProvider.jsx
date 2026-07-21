@@ -78,6 +78,89 @@ function resizeScaleFactor(mode, W0, H0, W, H) {
   return Math.min(rw, rh); // 'min' (default): contain-like
 }
 
+/* ── Responsive collision-resolution strategies ──────────────────────
+   Both take an array of mutable world-space boxes ({ id, x, y, w, h }, x/y the
+   authored top-left) and reposition them so none overlap (keeping `gap` between
+   them) within a band [originX, originX+availW]. They mutate `x`/`y` in place. */
+
+/* push-down: pin each box's x into the band (pin-left when wider than it), then
+   sweep top-to-bottom and drop each box just far enough to clear every already
+   placed box it overlaps horizontally. Only the (assumed-free) vertical axis is
+   consumed, and authored reading order — top-to-bottom, then left-to-right — is
+   preserved. Deterministic; no oscillation. */
+function pushDownBoxes(boxes, originX, availW, gap) {
+  for (const b of boxes) {
+    const maxX = originX + availW - b.w;
+    b.x = maxX >= originX ? Math.max(originX, Math.min(b.x, maxX)) : originX; // wider than band → pin left, overflow right
+  }
+  boxes.sort((a, b) => a.y - b.y || a.x - b.x);
+  const placed = [];
+  for (const b of boxes) {
+    let y = b.y, moved = true;
+    while (moved) {
+      moved = false;
+      for (const p of placed) {
+        const xOverlap = b.x < p.x + p.w + gap && b.x + b.w + gap > p.x;
+        if (xOverlap && y < p.y + p.h + gap && y + b.h + gap > p.y) { y = p.y + p.h + gap; moved = true; }
+      }
+    }
+    b.y = y; placed.push(b);
+  }
+}
+
+/* relax: general 2D separation. Each pass pushes every overlapping pair apart
+   along its smaller (minimum-translation) axis. A box that's still overlapping
+   something is NOT pulled toward its authored position — only settled (free)
+   boxes drift home — so separation is monotonic and can't be undone by the pull
+   (which otherwise deadlocks when the band is narrower than the boxes). A tiny
+   index-based tie-break keeps identical stacks from cancelling to a standstill.
+   Less predictable than push-down (it can move objects up as well as down) — for
+   boards with no dedicated scroll axis. */
+function relaxBoxes(boxes, originX, availW, gap) {
+  const home = boxes.map((b) => ({ x: b.x, y: b.y }));
+  const clampX = (b) => { const maxX = originX + availW - b.w; b.x = maxX >= originX ? Math.max(originX, Math.min(b.x, maxX)) : originX; };
+  for (const b of boxes) clampX(b); // pin into the band FIRST, so pass 0 already sees the overlaps clamping creates
+  const ITER = 200, PULL = 0.06, EPS = 0.001;
+  for (let it = 0; it < ITER; it += 1) {
+    const busy = new Set();
+    let any = false;
+    for (let i = 0; i < boxes.length; i += 1) {
+      for (let j = i + 1; j < boxes.length; j += 1) {
+        const a = boxes[i], b = boxes[j];
+        const ox = Math.min(a.x + a.w + gap, b.x + b.w + gap) - Math.max(a.x, b.x);
+        const oy = Math.min(a.y + a.h + gap, b.y + b.h + gap) - Math.max(a.y, b.y);
+        if (ox > 0 && oy > 0) {
+          any = true; busy.add(i); busy.add(j);
+          // Break exact ties (identical position) deterministically so symmetric
+          // stacks don't push equal-and-opposite to a frozen overlap.
+          if (ox < oy) { const dir = a.x !== b.x ? (a.x < b.x ? 1 : -1) : (i < j ? 1 : -1); const d = (ox / 2 + EPS) * dir; a.x -= d; b.x += d; }
+          else { const dir = a.y !== b.y ? (a.y < b.y ? 1 : -1) : (i < j ? 1 : -1); const d = (oy / 2 + EPS) * dir; a.y -= d; b.y += d; }
+        }
+      }
+    }
+    for (let i = 0; i < boxes.length; i += 1) {
+      const b = boxes[i];
+      if (!busy.has(i)) { b.x += (home[i].x - b.x) * PULL; b.y += (home[i].y - b.y) * PULL; } // only settled boxes drift home
+      clampX(b);
+    }
+    if (!any) break;
+  }
+}
+
+/* True when two reflow maps describe the same positions (within a sub-pixel
+   tolerance) — so a recompute that lands on the current layout skips the state
+   write (and the node re-render it would cause). Treats null as an empty map. */
+function reflowMapsEqual(a, b) {
+  const sizeA = a ? a.size : 0, sizeB = b ? b.size : 0;
+  if (sizeA !== sizeB) return false;
+  if (!a || !b) return sizeA === 0; // both empty
+  for (const [k, v] of a) {
+    const w = b.get(k);
+    if (!w || Math.abs(w.x - v.x) > 0.01 || Math.abs(w.y - v.y) > 0.01) return false;
+  }
+  return true;
+}
+
 /* Normalise a persisted (serialised) annotation node back into the live model. */
 /* Recognise an SVG from a node's stored src/alt, so boards saved before the
    `svg` flag existed still render without the photo card chrome. An `idb:` ref
@@ -284,6 +367,11 @@ export function CanvasProvider({
   saveStatus = true, // show the background-save status indicator (bottom-right) while editing
   cooperativeGestures = false, // opt-in: in VIEW mode, let the page scroll past — plain wheel scrolls the page (⌘/Ctrl+wheel zooms), one finger scrolls the page (two fingers pan/zoom). Automatically inactive while EDITING (readOnly false), where authoring needs full gesture control — so a board that toggles between view/edit cooperates only in view mode.
   clickToInteract = false, // gate the board behind a "Click to interact" overlay: locked = the page scrolls past untouched; click unlocks normal pan/zoom; scrolling the page / clicking off / Esc relocks. Supersedes the cooperativeGestures hints.
+  collide = false, // reposition objects so they don't overlap when the responsive width band can't fit their authored layout. Positions are DERIVED (never persisted) so the board snaps back when the container grows again. View-mode only. Pairs with a pinned horizontal view (see resizeAnchor/scaleWithContainer).
+  collideStrategy = 'push-down', // 'push-down' = pin x into the band and push overlaps down the (free) vertical axis, preserving reading order; 'relax' = general 2D separation with a weak pull back to authored positions (for boards with no scroll axis).
+  layoutWidth = 'viewport', // the responsive band's width: 'viewport' (the container's width in world units, so it tracks resizes / scaleWithContainer) or an explicit number of world px.
+  collideGap = 16, // minimum gap (world px) kept between repositioned objects.
+  collideOrigin = 'content', // the band's left edge: 'content' (the left-most object) or an explicit world x.
 }) {
   const EDITABLE = editable;
   const COOP = cooperativeGestures;
@@ -343,6 +431,7 @@ export function CanvasProvider({
   const [htmlActiveId, setHtmlActiveId] = useState(null); // html node whose iframe is live (receives pointer events)
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
   const [gridHidden, setGridHidden] = useState(init.gridHidden || false); // board-wide dot-grid toggle (false = grid shown)
+  const [reflow, setReflow] = useState(null); // Map<id,{x,y}> of derived positions from the collision resolver (null = objects at authored positions). Not persisted.
   const [publishState, setPublishState] = useState('idle'); // idle|saving|done|error
   const [recording, setRecording] = useState(null); // {} while capturing mic audio, else null
   const recRef = useRef(null); // { rec: MediaRecorder, stream, cancelled } during a recording
@@ -392,6 +481,13 @@ export function CanvasProvider({
   // viewport size to diff against. Captured once, like the other view config.
   const RESIZE_ANCHOR = useRef(resolveAnchor(resizeAnchor)).current;
   const SCALE_MODE = useRef(resolveScaleMode(scaleWithContainer)).current;
+  // Responsive collision resolver config (captured once, like the view config).
+  const COLLIDE = useRef(!!collide).current;
+  const COLLIDE_STRATEGY = useRef(collideStrategy === 'relax' ? 'relax' : 'push-down').current;
+  const LAYOUT_WIDTH = useRef(layoutWidth).current;
+  const COLLIDE_GAP = useRef(Number(collideGap) || 0).current;
+  const COLLIDE_ORIGIN = useRef(collideOrigin).current;
+  const reflowRAF = useRef(0); // debounces reflowObjects to one run per frame
   const lastVpSize = useRef(null); // latest measured container size {w,h}
   const reframing = useRef(false); // true while reframeOnResize applies, so applyView doesn't re-capture the reference
   // The CANONICAL reference {w,h,x,y,scale}: the container size + view of the
@@ -456,6 +552,7 @@ export function CanvasProvider({
   S.activePageId = activePageId;
   S.bgColor = bgColor;
   S.gridHidden = gridHidden;
+  S.reflow = reflow;
 
   /* ── Engine (defined once; reads fresh state via refs/S) ─────── */
   const eng = useMemo(() => {
@@ -557,6 +654,52 @@ export function CanvasProvider({
       targetRef.x = nx; targetRef.y = ny; targetRef.scale = s1;
       applyView(); // repaints the transform + chrome
       reframing.current = false;
+      scheduleReflow(); // the band width changed → re-resolve collisions
+    }
+
+    /* ── Responsive collision resolver ────────────────────────────
+       When `collide` is on, objects whose authored layout no longer fits the
+       responsive width band are repositioned so they don't overlap. The result
+       is published into the `reflow` map (consumed by useRegister) and NEVER
+       written to the node model, so authored positions stay pristine and the
+       board snaps back when the container grows again — mirroring how a resize
+       reframes the camera from a canonical reference without overwriting it.
+       View-mode only: while editing, authoring happens at base positions. */
+    function reflowObjects() {
+      if (!COLLIDE) return;
+      // Only reflow a settled, non-editing view. Otherwise release any overlay
+      // so the author sees (and drags) the real, authored positions.
+      if (!S.readOnly || S.editingId) { if (S.reflow) setReflow(null); return; }
+      const boxes = [], byId = {};
+      for (const n of S.nodes) {
+        // Frames are section/background regions that content sits inside — they
+        // neither push nor get pushed.
+        if (n.type === 'frame') continue;
+        const el = nodeEls.get(n.id); if (!el) continue;
+        const sc = nodeScale(el);
+        // Authored x/y come from the MODEL (the DOM dataset may already hold a
+        // prior reflow); w/h are measured from the DOM (translate doesn't affect
+        // offset size, so the reading is stable whatever the current overlay).
+        boxes.push({ id: n.id, x: n.x, y: n.y, w: el.offsetWidth * sc, h: el.offsetHeight * sc });
+        byId[n.id] = n;
+      }
+      if (!boxes.length) { if (S.reflow) setReflow(null); return; }
+      const s = viewRef.scale || 1;
+      const availW = LAYOUT_WIDTH === 'viewport' ? vpW() / s : (Number(LAYOUT_WIDTH) || Infinity);
+      const originX = COLLIDE_ORIGIN === 'content' ? Math.min(...boxes.map((b) => b.x)) : (Number(COLLIDE_ORIGIN) || 0);
+      if (COLLIDE_STRATEGY === 'relax') relaxBoxes(boxes, originX, availW, COLLIDE_GAP);
+      else pushDownBoxes(boxes, originX, availW, COLLIDE_GAP);
+      const map = new Map();
+      for (const b of boxes) {
+        const n = byId[b.id];
+        if (Math.abs(b.x - n.x) > 0.01 || Math.abs(b.y - n.y) > 0.01) map.set(b.id, { x: b.x, y: b.y });
+      }
+      if (!reflowMapsEqual(map, S.reflow)) setReflow(map.size ? map : null);
+    }
+    /* Coalesce bursts of resize callbacks into one reflow per frame. */
+    function scheduleReflow() {
+      if (!COLLIDE || reflowRAF.current) return;
+      reflowRAF.current = requestAnimationFrame(() => { reflowRAF.current = 0; reflowObjects(); });
     }
 
     /* smooth zoom glide */
@@ -2383,7 +2526,7 @@ export function CanvasProvider({
 
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
-      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, reframeOnResize, hideSelChrome, placeSel, setHover, setGridEditGeom,
+      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, reframeOnResize, reflowObjects, scheduleReflow, hideSelChrome, placeSel, setHover, setGridEditGeom,
       selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, snapResize, setSnapGuides,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
@@ -2480,6 +2623,10 @@ export function CanvasProvider({
   /* ── Keep chrome + persistence in sync with the model ───────── */
   useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, gridHidden, eng]);
 
+  /* Reflow is a display-only overlay (derived positions, never persisted): keep
+     the screen-space chrome aligned to it, but don't schedule a save/publish. */
+  useEffect(() => { eng.syncChrome(); }, [reflow, eng]);
+
   /* ── Record undo/redo history on every committed content change ──
      One entry per change (bursts of typing coalesce, see recordHistory). Keyed
      on the model only — selection/view changes aren't undoable. */
@@ -2520,8 +2667,19 @@ export function CanvasProvider({
     }
     // From here on, view changes are user-driven and should publish.
     booted.current = true;
+    // Resolve collisions for the size the board actually opened at.
+    eng.scheduleReflow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /* Re-resolve collisions when the content model or the edit/view mode changes
+     (entering view mode, a node added/removed/resized, …). Resize-driven
+     reflow is handled by the ResizeObserver effect below. No-op unless `collide`
+     is on; a recompute that matches the current layout skips the state write. */
+  useEffect(() => {
+    if (COLLIDE) eng.scheduleReflow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodes, readOnly, editingId]);
 
   /* Reframe (per `resizeAnchor`) and re-sync chrome whenever the container
      resizes (section reflow, window resize, sidebar toggles, …) — measured on
@@ -2529,11 +2687,11 @@ export function CanvasProvider({
   useEffect(() => {
     const vp = viewportRef.current;
     if (!vp || typeof ResizeObserver === 'undefined') {
-      const onResize = () => eng.reframeOnResize();
+      const onResize = () => { eng.reframeOnResize(); eng.scheduleReflow(); };
       window.addEventListener('resize', onResize);
       return () => window.removeEventListener('resize', onResize);
     }
-    const ro = new ResizeObserver(() => eng.reframeOnResize());
+    const ro = new ResizeObserver(() => { eng.reframeOnResize(); eng.scheduleReflow(); });
     ro.observe(vp);
     return () => ro.disconnect();
   }, [eng]);
@@ -2541,7 +2699,7 @@ export function CanvasProvider({
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
-    publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden,
+    publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden, reflow,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,

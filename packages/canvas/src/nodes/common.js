@@ -39,17 +39,24 @@ export function resolveGrid(node) {
 /* Shared node wiring: register the DOM element into the engine's id→el map and
    emit the data-* attributes the imperative engine (drag/chrome/fit/save) reads. */
 export function useRegister(node) {
-  const { nodeEls } = useCanvas();
+  const { nodeEls, reflow } = useCanvas();
   const setRef = useCallback(
     (el) => { if (el) nodeEls.set(node.id, el); else nodeEls.delete(node.id); },
     [node.id, nodeEls]
   );
   const scale = node.scale || 1;
+  // The collision resolver publishes DERIVED positions in `reflow` (view-mode
+  // only, never persisted). When present for this node, render — and expose via
+  // data-x/data-y — the reflowed position instead of the authored one, so the
+  // imperative chrome/snapping/bounds all follow the responsive layout for free.
+  const rp = reflow && reflow.get(node.id);
+  const x = rp ? rp.x : node.x;
+  const y = rp ? rp.y : node.y;
   const dataProps = {
     'data-id': node.id,
     'data-type': node.type,
-    'data-x': node.x,
-    'data-y': node.y,
+    'data-x': x,
+    'data-y': y,
     'data-z': node.z,
     'data-scale': scale,
     'data-anchor': node.anchor ? '1' : '',
@@ -59,6 +66,13 @@ export function useRegister(node) {
   // A per-node scale multiplies the whole object (content, borders, media)
   // about its top-left (transform-origin 0 0); the screen-space chrome/geometry
   // in CanvasProvider multiplies offsetWidth/Height by data-scale to match.
-  const style = { transform: `translate(${node.x}px,${node.y}px) scale(${scale})`, zIndex: node.z };
-  return { setRef, dataProps, style };
+  const style = { transform: `translate(${x}px,${y}px) scale(${scale})`, zIndex: node.z };
+  // Ease reflow-driven moves; a plain view (no overlay) and edit-mode drags stay
+  // crisp. Only node transforms carry this — the world (pan/zoom) transform is a
+  // separate element — so pan/zoom is never slowed by it.
+  if (reflow) style.transition = 'transform 200ms ease';
+  // `x`/`y` are the resolved (possibly reflowed) position and `reflowed` the
+  // ease flag, for nodes that build their own transform (Frame/Markdown/Code)
+  // rather than using `style`.
+  return { setRef, dataProps, style, x, y, reflowed: !!reflow };
 }

@@ -19,7 +19,7 @@ const INDENT = '  ';         // one indent step (matches tab-size / Tab handling
    to Shiki / Prism), keeping any such library entirely optional. */
 function Code({ node }) {
   const { editingId, readOnly, eng, nodeEls, highlightCode, formatCode, formatOnType, setFormatOnType } = useCanvas();
-  const { setRef, dataProps } = useRegister(node);
+  const { setRef, dataProps, x: rx, y: ry, reflowed } = useRegister(node);
   const taRef = useRef(null);
   const hlRef = useRef(null);      // the highlight <pre>, kept scroll-synced with the textarea
   const headerHit = useRef(false); // true between a header pointer-down and the resulting blur
@@ -237,7 +237,7 @@ function Code({ node }) {
     ? painted
     : '<span class="code-empty">Empty — double-click to edit</span>';
 
-  const style = { transform: `translate(${node.x}px,${node.y}px) scale(${node.scale || 1})`, zIndex: node.z, width: (node.w || 420) + 'px' };
+  const style = { transform: `translate(${rx}px,${ry}px) scale(${node.scale || 1})`, zIndex: node.z, width: (node.w || 420) + 'px', ...(reflowed ? { transition: 'transform 200ms ease' } : null) };
 
   return (
     <div

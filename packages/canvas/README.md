@@ -60,6 +60,34 @@ All are optional.
 | `onUploadVideo` | `(file, dataUrl) => Promise<url>` | IndexedDB | Resolve a `src` for dropped videos. |
 | `onUploadAudio` | `(file, dataUrl) => Promise<url>` | inline / IndexedDB | Resolve a `src` for dropped / pasted / recorded sound clips. |
 | `onChange` | `(snapshot) => void` | `null` | Fires after every autosave. |
+| `collide` | `boolean` | `false` | Reposition objects so they don't overlap when the responsive width band can't fit their authored layout. View-mode only; positions are derived, never persisted. |
+| `collideStrategy` | `'push-down' \| 'relax'` | `'push-down'` | `push-down` pins each object's x into the band and pushes overlaps down the (free) vertical axis, preserving reading order; `relax` does general 2D separation (for boards with no scroll axis). |
+| `layoutWidth` | `'viewport' \| number` | `'viewport'` | The band's width. `viewport` = the container's width in world units (tracks resizes / `scaleWithContainer`); a number fixes it in world px. |
+| `collideGap` | `number` | `16` | Minimum gap (world px) kept between repositioned objects. |
+| `collideOrigin` | `'content' \| number` | `'content'` | The band's left edge: `content` = the left-most object, or an explicit world x. |
+
+### Responsive collision resolution
+
+With `collide`, the canvas measures its container and, when the authored layout no
+longer fits the available width, repositions whole objects so they don't overlap —
+without changing anything *inside* an object. Reflowed positions are **derived**: the
+node model (and saved snapshot) keep their authored coordinates, so growing the
+container back snaps everything home. Resolution runs in view mode only — while
+editing you author at the real positions.
+
+It's designed to pair with a pinned horizontal view (so "available width" is stable):
+
+```jsx
+<Canvas
+  collide
+  collideStrategy="push-down"
+  layoutWidth="viewport"
+  resizeAnchor="top"
+  scaleWithContainer="width"
+/>
+```
+
+Frames are treated as section/background regions — they neither push nor get pushed.
 
 Built-in node types: `sticky`, `tblock` (text), `md` (markdown), `frame`, `image`,
 `video`, `sound`, plus freehand `shape`s.
