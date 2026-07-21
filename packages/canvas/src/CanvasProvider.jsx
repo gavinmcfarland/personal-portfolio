@@ -110,23 +110,29 @@ function pushDownBoxes(boxes, originX, availW, gap) {
   }
 }
 
-/* organic: minimal-displacement resolve. Every object keeps its AUTHORED
-   position and moves only to satisfy two constraints — stay within the visible
-   box horizontally, and don't overlap (keeping `gap` between them). Each box's x
-   is preserved, pulled in only enough to stay in view; then, in reading order,
-   each box drops straight DOWN from its authored y just far enough to clear the
-   boxes already placed above it. So an object that still fits never moves (a
-   layout that already fits — e.g. toggling edit→view at the same size — is left
-   exactly as authored), and when the box narrows only the objects that overflow
-   flow downward, keeping the board's left-to-right arrangement and its top
-   anchor rather than reflowing into a grid or drifting off-screen. `rect` is the
-   visible world box { x, y, w, h }. */
+/* organic: minimal-displacement resolve. The ONLY thing that makes an object
+   move is falling out of the visible box — never merely overlapping another
+   object. An object whose authored position sits fully within the box is
+   "frozen": it stays exactly where the author put it, so an intentional overlap
+   between two in-view objects is preserved, and toggling edit→view at the same
+   size moves nothing. An object that overflows the box is "loose": its x is
+   pulled in just enough to come back into view, then it drops straight DOWN from
+   its authored y until it clears every box already placed (the frozen ones and
+   any loose boxes settled before it). So when the container narrows, only the
+   objects that no longer fit relocate — flowing downward while keeping the
+   board's left-to-right arrangement — rather than reflowing into a grid or
+   resolving overlaps the author made on purpose. `rect` is the visible world
+   box { x, y, w, h }. */
 function organicResolveBoxes(boxes, rect, gap) {
   const bandL = rect.x, bandR = rect.x + rect.w;
-  for (const b of boxes) { const maxX = bandR - b.w; b.x = maxX >= bandL ? Math.min(Math.max(b.x, bandL), maxX) : bandL; }
-  const order = boxes.slice().sort((a, b) => a.y - b.y || a.x - b.x);
-  const placed = [];
-  for (const b of order) {
+  const placed = [], loose = [];
+  for (const b of boxes) {
+    if (b.x >= bandL && b.x + b.w <= bandR) placed.push(b); // frozen at its authored (x, y)
+    else loose.push(b);
+  }
+  loose.sort((a, b) => a.y - b.y || a.x - b.x);
+  for (const b of loose) {
+    const maxX = bandR - b.w; b.x = maxX >= bandL ? Math.min(Math.max(b.x, bandL), maxX) : bandL;
     let y = b.y, moved = true;
     while (moved) {
       moved = false;
