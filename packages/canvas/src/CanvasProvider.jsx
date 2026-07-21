@@ -122,38 +122,57 @@ function pushDownBoxes(boxes, originX, availW, gap) {
    objects that no longer fit relocate — flowing downward while keeping the
    board's left-to-right arrangement — rather than reflowing into a grid.
 
-   A loose box drops down to clear the boxes it collides with, but an INTENTIONAL
-   overlap is preserved: it never pushes off a box it already overlapped in the
-   authored layout, so an overlapping pair reflows AROUND unrelated objects while
-   staying overlapped with each other. `separate` (opt-in) drops that exemption
-   and prises every overlap apart. `rect` is the visible world box { x,y,w,h }. */
+   Objects that overlap in the authored layout are grouped into a rigid CLUSTER
+   that reflows as a single unit: the whole group is pulled into view and pushed
+   down together to clear other objects, so an intentional overlap is preserved
+   exactly (its members never shift relative to each other) yet still routes
+   around unrelated objects. `separate` (opt-in) makes every object its own
+   cluster, prising all overlaps apart. `rect` is the visible box { x,y,w,h }. */
 function organicResolveBoxes(boxes, rect, gap, separate) {
   const bandL = rect.x, bandR = rect.x + rect.w;
-  // Authored rects, captured before any repositioning, so we can tell an
-  // intentional overlap (preserve) from a collision the reflow creates (avoid).
-  const homeOf = new Map(boxes.map((b) => [b, { x: b.x, y: b.y, w: b.w, h: b.h }]));
-  const authoredOverlap = (a, b) => {
-    const ha = homeOf.get(a), hb = homeOf.get(b);
-    return ha.x < hb.x + hb.w && ha.x + ha.w > hb.x && ha.y < hb.y + hb.h && ha.y + ha.h > hb.y;
-  };
-  const placed = [], loose = [];
-  for (const b of boxes) {
-    if (b.x >= bandL && b.x + b.w <= bandR) placed.push(b); // frozen at its authored (x, y)
-    else loose.push(b);
+  const overlaps = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  // Union-find the authored overlaps into clusters (each box its own when separating).
+  let clusters;
+  if (separate) clusters = boxes.map((b) => [b]);
+  else {
+    const parent = boxes.map((_, i) => i);
+    const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+    for (let i = 0; i < boxes.length; i += 1) for (let j = i + 1; j < boxes.length; j += 1) if (overlaps(boxes[i], boxes[j])) parent[find(i)] = find(j);
+    const groups = new Map();
+    boxes.forEach((b, i) => { const r = find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(b); });
+    clusters = [...groups.values()];
   }
-  loose.sort((a, b) => a.y - b.y || a.x - b.x);
-  for (const b of loose) {
-    const maxX = bandR - b.w; b.x = maxX >= bandL ? Math.min(Math.max(b.x, bandL), maxX) : bandL; // pull back into view
-    let y = b.y, moved = true;
+  const bboxOf = (c) => {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const b of c) { x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); }
+    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  };
+  // A cluster fully in view is frozen (members stay authored); one that overflows
+  // is pulled in and pushed down as a unit to clear everything already placed.
+  const placed = [], loose = [];
+  for (const c of clusters) {
+    const bb = bboxOf(c);
+    if (bb.x >= bandL && bb.x + bb.w <= bandR) { for (const b of c) placed.push(b); }
+    else loose.push({ c, bb });
+  }
+  loose.sort((a, b) => a.bb.y - b.bb.y || a.bb.x - b.bb.x);
+  for (const { c, bb } of loose) {
+    const maxX = bandR - bb.w;
+    const dx = (maxX >= bandL ? Math.min(Math.max(bb.x, bandL), maxX) : bandL) - bb.x; // pull the cluster into view
+    let dy = 0, moved = true;
     while (moved) {
       moved = false;
-      for (const p of placed) {
-        if (!separate && authoredOverlap(b, p)) continue; // keep an intentional overlap intact
-        const xOver = b.x < p.x + p.w + gap && b.x + b.w + gap > p.x;
-        if (xOver && y < p.y + p.h + gap && y + b.h + gap > p.y) { y = p.y + p.h + gap; moved = true; }
+      for (const m of c) {
+        const mx = m.x + dx;
+        for (const p of placed) {
+          const xOver = mx < p.x + p.w + gap && mx + m.w + gap > p.x;
+          if (xOver && m.y + dy < p.y + p.h + gap && m.y + dy + m.h + gap > p.y) {
+            const need = p.y + p.h + gap - m.y; if (need > dy) { dy = need; moved = true; }
+          }
+        }
       }
     }
-    b.y = y; placed.push(b);
+    for (const b of c) { b.x += dx; b.y += dy; placed.push(b); }
   }
 }
 
