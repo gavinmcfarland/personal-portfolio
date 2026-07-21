@@ -39,7 +39,7 @@ export function resolveGrid(node) {
 /* Shared node wiring: register the DOM element into the engine's id→el map and
    emit the data-* attributes the imperative engine (drag/chrome/fit/save) reads. */
 export function useRegister(node) {
-  const { nodeEls, reflow, collide, readOnly } = useCanvas();
+  const { nodeEls, reflow } = useCanvas();
   const setRef = useCallback(
     (el) => { if (el) nodeEls.set(node.id, el); else nodeEls.delete(node.id); },
     [node.id, nodeEls]
@@ -66,17 +66,13 @@ export function useRegister(node) {
   // A per-node scale multiplies the whole object (content, borders, media)
   // about its top-left (transform-origin 0 0); the screen-space chrome/geometry
   // in CanvasProvider multiplies offsetWidth/Height by data-scale to match.
+  // Reflow is applied instantly (no CSS transition): every object gets its new
+  // position in a single React commit, painted together, so a node and a shape
+  // it clusters with can never drift. A per-element transition can't guarantee
+  // that — a <div> transition runs on the compositor thread and an <svg> one on
+  // the main thread, so under fast-resize load they fall out of step.
   const style = { transform: `translate(${x}px,${y}px) scale(${scale})`, zIndex: node.z };
-  // Ease reflow-driven moves. Gated on collision view mode (not on `reflow` being
-  // set) so objects animate BOTH ways — breaking apart as the container narrows
-  // AND settling home as it widens (where `reflow` clears to null); keying it on
-  // `reflow` skipped the settle-back. Edit-mode drags stay crisp (readOnly is
-  // false then), and only node transforms carry this — the world (pan/zoom)
-  // transform is a separate element — so pan/zoom is never slowed by it.
-  const animate = !!(collide && readOnly);
-  if (animate) style.transition = 'transform 200ms ease';
-  // `x`/`y` are the resolved (possibly reflowed) position and `reflowed` the ease
-  // flag, for nodes that build their own transform (Frame/Markdown/Code) rather
-  // than using `style`.
-  return { setRef, dataProps, style, x, y, reflowed: animate };
+  // `x`/`y` are the resolved (possibly reflowed) position, for the nodes that
+  // build their own transform (Frame/Markdown/Code) rather than using `style`.
+  return { setRef, dataProps, style, x, y };
 }
