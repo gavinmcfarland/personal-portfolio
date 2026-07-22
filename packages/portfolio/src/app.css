@@ -19,43 +19,84 @@
 /* ── Design tokens ─────────────────────────────────────────────
    The Enamel system (design-mockups/12-enamel): vitreous enamel on steel —
    flat fills, hairline edges, a graphite ground rather than paper, vermilion
-   as the single working accent. Light is cool steel, `.dark` is graphite. */
-:root {
-  --bg: #c3c8cd; /* ground */
-  --surface: #d0d4d8; /* panel — hover / raised fill */
-  --ink: #16191c; /* primary text */
-  --muted: #4a4f55; /* secondary prose (--mid) */
-  --faint: #767c83; /* meta / captions */
-  --line: #a6acb2; /* hairline edge */
-  --line-strong: #767c83; /* stronger hairline (link underline at rest) */
-  --rule: #16191c; /* the drawn line — section header rule */
-  --accent: #c8341a; /* vermilion */
-  --accent-soft: rgba(200, 52, 26, 0.14);
+   as the single working accent. Light is cool steel, `.dark` is graphite.
 
-  /* The four enamels — used as flat swatches / tags (e.g. the Work table's
-     Kind column). Paired with the graphite/steel ground. */
-  --tone-vermilion: #c8341a;
-  --tone-blue: #1e4fd8;
-  --tone-lime: #a8cc1f;
-  --tone-teal: #12897f;
+   Two tiers. Primitives are the ONLY place a raw colour value is written; they
+   are named for the material, not the role, and never change between themes.
+   Semantic tokens below carry the roles (--bg, --ink, --accent…) and are the
+   only tokens the components/utilities reference — each one derives from a
+   primitive via var(). To retune a colour, edit the primitive once. */
+:root {
+  /* Primitives — steel/graphite neutral ramp, lightest → darkest */
+  --white: #ffffff;
+  --steel-50: #e7eaed;
+  --steel-100: #d0d4d8;
+  --steel-200: #c3c8cd;
+  --steel-300: #a6acb2;
+  --steel-400: #9aa1a9;
+  --steel-500: #767c83;
+  --steel-550: #6b727a;
+  --steel-600: #4a4f55;
+  --steel-700: #3a4048;
+  --steel-800: #2c3138;
+  --steel-900: #24282d;
+  --steel-950: #16191c;
+
+  /* Primitives — the four enamels, each a light-ground / graphite-ground pair.
+     The -400 (lifted) variant is used on the dark ground. */
+  --vermilion-500: #c8341a;
+  --vermilion-400: #ff6a4d;
+  --blue-500: #1e4fd8;
+  --blue-400: #3b6dff;
+  --lime-500: #a8cc1f;
+  --lime-400: #c9f23a;
+  --teal-500: #12897f;
+  --teal-400: #24bdb8;
+
+  /* Semantic tokens — Light (cool steel). Each derives from a primitive. */
+  --bg: var(--steel-200); /* ground */
+  --surface: var(--steel-100); /* panel — hover / raised fill */
+  --ink: var(--steel-950); /* primary text */
+  --muted: var(--steel-600); /* secondary prose (--mid) */
+  --faint: var(--steel-500); /* meta / captions */
+  --line: var(--steel-300); /* hairline edge */
+  --line-strong: var(--steel-500); /* stronger hairline (link underline at rest) */
+  --rule: var(--steel-950); /* the drawn line — section header rule */
+  --accent: var(--vermilion-500); /* vermilion */
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --on-accent: var(--white); /* text/fill on an --accent fill (selection, etc.) */
+
+  /* Scrim that dims Home behind the route panel. Light mode dims with a light
+     grey; dark mode (overridden in .dark) dims with a darker grey. */
+  --scrim: var(--steel-300);
+
+  /* The four enamels as flat swatches / tags (e.g. the Work table's Kind
+     column). Paired with the graphite/steel ground. */
+  --tone-vermilion: var(--vermilion-500);
+  --tone-blue: var(--blue-500);
+  --tone-lime: var(--lime-500);
+  --tone-teal: var(--teal-500);
 }
 
+/* Semantic tokens — Dark (graphite). Only the aliases flip; primitives above
+   are inherited unchanged. */
 .dark {
-  --bg: #24282d; /* graphite ground */
-  --surface: #2c3138; /* panel */
-  --ink: #e7eaed;
-  --muted: #9aa1a9;
-  --faint: #6b727a;
-  --line: #3a4048;
-  --line-strong: #6b727a;
-  --rule: #e7eaed;
-  --accent: #ff6a4d; /* lifted vermilion for the graphite ground */
-  --accent-soft: rgba(255, 106, 77, 0.16);
+  --bg: var(--steel-900); /* graphite ground */
+  --surface: var(--steel-800); /* panel */
+  --ink: var(--steel-50);
+  --muted: var(--steel-400);
+  --faint: var(--steel-550);
+  --line: var(--steel-700);
+  --line-strong: var(--steel-550);
+  --rule: var(--steel-50);
+  --accent: var(--vermilion-400); /* lifted vermilion for the graphite ground */
+  --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
+  --scrim: var(--steel-800); /* darker grey scrim for the graphite ground */
 
-  --tone-vermilion: #ff6a4d;
-  --tone-blue: #3b6dff;
-  --tone-lime: #c9f23a;
-  --tone-teal: #24bdb8;
+  --tone-vermilion: var(--vermilion-400);
+  --tone-blue: var(--blue-400);
+  --tone-lime: var(--lime-400);
+  --tone-teal: var(--teal-400);
 }
 
 html {
@@ -87,7 +128,7 @@ body {
 
 ::selection {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 /* ── Enamel doctrine — no curves, no shadows ──────────────────────

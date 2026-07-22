@@ -1,5 +1,9 @@
-/* Single source of truth for the portfolio's accent/theme colour. The CSS tokens
-   in app.css (`--accent`) carry it across the site chrome; this constant feeds the
-   same colour to the embedded <Canvas> instances via their `accent` prop, and
-   seeds the on-brand accent arrows. Keep the values in sync with app.css. */
+/* The JS mirror of the accent primitives. The <Canvas> library renders to a JS
+   surface and needs concrete colour strings, not CSS var()s, so the accent can't
+   be read from the `--accent` token at paint time — this is the single token the
+   canvas side derives from (every `accent=` prop and `stroke: ACCENT.*` imports
+   it; none write their own literal).
+     light === --vermilion-500, dark === --vermilion-400 in app.css.
+   These are the only raw colour values outside the app.css primitive palette —
+   keep them in sync with those two primitives. */
 export const ACCENT = { light: '#C8341A', dark: '#FF6A4D' };

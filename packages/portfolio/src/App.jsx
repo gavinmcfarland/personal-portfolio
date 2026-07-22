@@ -110,7 +110,7 @@ function App() {
                 out with the panel. */}
             <div
               aria-hidden="true"
-              className={`fixed inset-0 z-10 bg-[#2c3138] transition-opacity duration-340 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`fixed inset-0 z-10 bg-[var(--scrim)] transition-opacity duration-340 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 open ? "opacity-60" : "opacity-0"
               }`}
             />
