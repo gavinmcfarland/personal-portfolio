@@ -108,12 +108,12 @@ function App() {
                 so the page stays dimmed while the panel slides across it; the
                 panel then covers all of it but the peeking strip. Fades in and
                 out with the panel. */}
-            <div
+            {/* <div
               aria-hidden="true"
               className={`fixed inset-0 z-10 bg-[var(--scrim)] transition-opacity duration-340 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 open ? "opacity-60" : "opacity-0"
               }`}
-            />
+            /> */}
             {/* The exposed strip doubles as a back affordance — tap the peek of
                 Home to dismiss the overlay. */}
             <button
