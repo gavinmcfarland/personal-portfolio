@@ -69,6 +69,7 @@ export default function ProjectCanvas({ project }) {
       fit="contain"
       resizeAnchor="center"
       scaleWithContainer
+      classNames={{ root: "enamel" }}
       accent={ACCENT}
       editable={import.meta.env.DEV}
       saveStatus

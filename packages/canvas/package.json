@@ -13,7 +13,8 @@
     ".": "./dist/index.js",
     "./styles.css": "./src/styles.css",
     "./core.css": "./src/core.css",
-    "./theme.css": "./src/theme.css"
+    "./theme.css": "./src/theme.css",
+    "./enamel.css": "./src/enamel.css"
   },
   "files": [
     "dist",

@@ -48,6 +48,7 @@ const Footer = () => (
         <Canvas
           fit="contain"
           initialView="fit"
+          classNames={{ root: "enamel" }}
           accent={ACCENT}
           editable={import.meta.env.DEV}
           cooperativeGestures

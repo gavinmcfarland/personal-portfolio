@@ -50,6 +50,7 @@ export default function CollisionDemoPage() {
           fit="contain"
           initialView="fit"
           resizeAnchor="center"
+          classNames={{ root: "enamel" }}
           accent={ACCENT}
           editable={import.meta.env.DEV}
           collide

@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Canvas } from '../src/index.js';
 import '../src/styles.css'; // the canvas's own default stylesheet (core + theme)
-import './enamel.css'; // the bespoke Enamel skin — pure CSS over the styling contract
+import '../src/enamel.css'; // the bespoke Enamel skin — pure CSS over the styling contract
 
 /* A rebuild of design-mockups/12-enamel/board.html using @gavinmcfarland/canvas.
    The layout/content mirror that board's `DATA.board.notes`; the ENTIRE look is

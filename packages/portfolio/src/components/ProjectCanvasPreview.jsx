@@ -143,6 +143,7 @@ export default function ProjectCanvasPreview({ project, children }) {
                   <Canvas
                     key={project.id}
                     fit="contain"
+                    classNames={{ root: "enamel" }}
                     accent={ACCENT}
                     ui={false}
                     initialView="fit"

@@ -3,9 +3,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans:
-    "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-serif: "Tinos", "Times New Roman", Times, Georgia, serif;
+  /* Enamel — Chivo for prose and structure, JetBrains Mono for tracked marks.
+     No serif; --font-serif is kept as a token so existing `font-serif` usages
+     resolve to Chivo rather than a browser default. */
+  --font-sans: "Chivo", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Chivo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Registered so `bg-surface` (and its `hover:` variant) are real Tailwind
      utilities. Points at the token var, so it still flips in dark mode. */
@@ -13,33 +17,33 @@
 }
 
 /* ── Design tokens ─────────────────────────────────────────────
-   Matched to the printed CV: white canvas, inky serif prose, bold
-   sans structure, a single purple accent, crisp dark rules.
-   `.dark` on <html> flips it. */
+   The Enamel system (design-mockups/12-enamel): vitreous enamel on steel —
+   flat fills, hairline edges, a graphite ground rather than paper, vermilion
+   as the single working accent. Light is cool steel, `.dark` is graphite. */
 :root {
-  --bg: #ffffff;
-  --surface: #f3f2f0; /* hover / raised fill */
-  --ink: #16161a; /* primary text */
-  --muted: #3e3e44; /* secondary prose — kept inky, like the CV */
-  --faint: #8a8a90; /* meta / captions */
-  --line: rgba(0, 0, 0, 0.1);
-  --line-strong: rgba(0, 0, 0, 0.22);
-  --rule: rgba(0, 0, 0, 0.55); /* section header hairline */
-  --accent: #1e7a4d; /* portfolio green */
-  --accent-soft: rgba(30, 122, 77, 0.1);
+  --bg: #c3c8cd; /* ground */
+  --surface: #d0d4d8; /* panel — hover / raised fill */
+  --ink: #16191c; /* primary text */
+  --muted: #4a4f55; /* secondary prose (--mid) */
+  --faint: #767c83; /* meta / captions */
+  --line: #a6acb2; /* hairline edge */
+  --line-strong: #767c83; /* stronger hairline (link underline at rest) */
+  --rule: #16191c; /* the drawn line — section header rule */
+  --accent: #c8341a; /* vermilion */
+  --accent-soft: rgba(200, 52, 26, 0.14);
 }
 
 .dark {
-  --bg: #0c0c0d;
-  --surface: #17171a;
-  --ink: #f3f3f0;
-  --muted: #b2b2b7;
-  --faint: #67676c;
-  --line: rgba(243, 243, 240, 0.1);
-  --line-strong: rgba(243, 243, 240, 0.24);
-  --rule: rgba(243, 243, 240, 0.42);
-  --accent: #56d49b; /* lifted green for dark canvas */
-  --accent-soft: rgba(86, 212, 155, 0.14);
+  --bg: #24282d; /* graphite ground */
+  --surface: #2c3138; /* panel */
+  --ink: #e7eaed;
+  --muted: #9aa1a9;
+  --faint: #6b727a;
+  --line: #3a4048;
+  --line-strong: #6b727a;
+  --rule: #e7eaed;
+  --accent: #ff6a4d; /* lifted vermilion for the graphite ground */
+  --accent-soft: rgba(255, 106, 77, 0.16);
 }
 
 html {
@@ -49,7 +53,7 @@ html {
 
 body {
   margin: 0;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.6;
   background: var(--bg);
@@ -62,6 +66,16 @@ body {
 ::selection {
   background: var(--accent);
   color: #fff;
+}
+
+/* ── Enamel doctrine — no curves, no shadows ──────────────────────
+   Enamel cannot round a corner or cast a shadow, so square everything and
+   drop every shadow site-wide (this overrides the Tailwind rounded-* / shadow-*
+   utilities without touching the markup). The embedded <Canvas> carries its
+   own visual system, so it and its descendants are exempt. */
+body :not(.canvas-root, .canvas-root *) {
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 /* ── Token helper classes ───────────────────────────────────── */
@@ -124,20 +138,21 @@ body {
   background: var(--rule);
 }
 
-/* Small lettermark tile — initials in place of a photo */
+/* Small lettermark tile — initials in place of a photo. Enamel: a flat panel
+   with a hairline edge and a tracked mono mark. */
 .mark {
   display: grid;
   place-items: center;
   flex: none;
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: 0.5rem;
   background: var(--surface);
   border: 1px solid var(--line);
   color: var(--muted);
-  font-family: var(--font-serif);
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
 }
 
 /* Row — the two-column CV list primitive */

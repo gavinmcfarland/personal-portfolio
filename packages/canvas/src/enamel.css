@@ -7,14 +7,19 @@
      · the classNames.root='enamel' scope
    Doctrine, inherited from the mockup: no curves, no shadows, no gradients
    (bar the grid dots), flat tiny type, Chivo + JetBrains Mono.
+
+   Shared skin: imported by the package demo (packages/canvas/demo) and by the
+   portfolio (which sets the same Enamel palette on its own chrome), so the
+   embedded boards match the surrounding page. Apply with
+   `<Canvas classNames={{ root: 'enamel' }} />` and import this file once.
    ══════════════════════════════════════════════════════════════════ */
 
 /* ── Tokens ────────────────────────────────────────────────────────────
-   Two Enamel surfaces, switched by the system colour scheme. The demo mirrors
-   prefers-color-scheme onto <html class="dark"> (see index.html), and the canvas
-   activates its dark tokens from that `.dark` ancestor — so the light palette
-   lives on `.canvas-root.enamel` and the dark one on `.dark .canvas-root.enamel`
-   (which also out-specifies the package's own `.dark .canvas-root` defaults). */
+   Two Enamel surfaces, switched by the system colour scheme. Consumers mirror
+   prefers-color-scheme onto <html class="dark">, and the canvas activates its
+   dark tokens from that `.dark` ancestor — so the light palette lives on
+   `.canvas-root.enamel` and the dark one on `.dark .canvas-root.enamel` (which
+   also out-specifies the package's own `.dark .canvas-root` defaults). */
 
 /* Shape & type — identical in both surfaces (the doctrine: no curves, no
    shadows, no frost; Chivo + JetBrains Mono, notes mono via --cv-hand). */
@@ -46,6 +51,7 @@
   --cv-ui-bg: #d0d4d8;
   --cv-ui-border: #a6acb2;
   --cv-note-green: #a8cc1f;  --cv-note-green-ink: #161c00;   /* lime      */
+  --cv-note-yellow: #a8cc1f; --cv-note-yellow-ink: #161c00;  /* lime (no yellow enamel) */
   --cv-note-blue: #1e4fd8;   --cv-note-blue-ink: #eff3ff;    /* blue      */
   --cv-note-purple: #12897f; --cv-note-purple-ink: #ecfffd;  /* teal      */
   --cv-note-orange: #c8341a; --cv-note-orange-ink: #fff1ee;  /* vermilion */
@@ -75,6 +81,7 @@
   --cv-ui-bg: #2c3138;
   --cv-ui-border: #3a4048;
   --cv-note-green: #c9f23a;  --cv-note-green-ink: #1a2200;   /* lime      */
+  --cv-note-yellow: #c9f23a; --cv-note-yellow-ink: #1a2200;  /* lime (no yellow enamel) */
   --cv-note-blue: #3b6dff;   --cv-note-blue-ink: #f0f4ff;    /* blue      */
   --cv-note-purple: #24bdb8; --cv-note-purple-ink: #02231f;  /* teal      */
   --cv-note-orange: #ff6a4d; --cv-note-orange-ink: #2b0700;  /* vermilion */
