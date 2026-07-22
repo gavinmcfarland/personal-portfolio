@@ -53,6 +53,17 @@ const Projects = () => {
   const MARGIN = 8; // keep this far from the viewport edges
 
   const followCursor = (e, p) => {
+    // Touch devices synthesize mouse events on tap/scroll but never fire a
+    // matching mouseleave (there's no cursor to move away), so the tooltip
+    // would appear "randomly" on load and stick. Only drive it from a real
+    // hover-capable pointer.
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      !window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    )
+      return;
+
     // Measure the actual popover so we only flip when it genuinely won't fit —
     // not against a fixed guess. Falls back to the max width before first paint.
     const el = tipRef.current;
