@@ -4,7 +4,7 @@ import { useTheme } from '../contexts/ThemeContext';
    which stacking context) is passed in via `className` so the same toggle can be
    scoped to a page or to the sliding overlay panel — see App.jsx. */
 const BASE =
-  'flex h-9 w-9 items-center justify-center rounded-full border border-line bg-base text-muted transition-colors duration-200 hover:text-ink';
+  'flex h-9 w-9 items-center justify-center rounded-full border border-line bg-transparent text-muted transition-colors duration-200 hover:text-ink';
 
 /* Minimal single-button theme cycle — system → light → dark. */
 const ThemeToggle = ({ className = 'fixed right-4 top-4 z-50 sm:right-6 sm:top-6' }) => {
