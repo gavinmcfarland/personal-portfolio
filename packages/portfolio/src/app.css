@@ -135,8 +135,9 @@ body {
    Enamel cannot round a corner or cast a shadow, so square everything and
    drop every shadow site-wide (this overrides the Tailwind rounded-* / shadow-*
    utilities without touching the markup). The embedded <Canvas> carries its
-   own visual system, so it and its descendants are exempt. */
-body :not(.canvas-root, .canvas-root *) {
+   own visual system, so it and its descendants are exempt — as is the sliding
+   .route-panel, which casts a shadow to lift the project page off Home. */
+body :not(.canvas-root, .canvas-root *, .route-panel) {
   border-radius: 0 !important;
   box-shadow: none !important;
 }

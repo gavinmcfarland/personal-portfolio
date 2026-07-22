@@ -123,7 +123,7 @@ function App() {
               className={`fixed inset-y-0 left-0 z-10 ${PEEK_WIDTH} cursor-pointer`}
             />
             <div
-              className={`route-panel fixed inset-y-0 right-0 ${PEEK_INSET} z-20 overflow-y-auto border-l border-line bg-base transition-transform duration-340 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`route-panel fixed inset-y-0 right-0 ${PEEK_INSET} z-20 overflow-y-auto border-l border-line bg-base shadow-[-8px_0_24px_rgba(0,0,0,0.08)] transition-transform duration-340 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 open ? "translate-x-0" : "translate-x-full"
               }`}
             >
