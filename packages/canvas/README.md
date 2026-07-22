@@ -49,6 +49,7 @@ All are optional.
 | `managedTypes` | `string[]` | `[]` | Node types whose **content** is regenerated from `base` each load; only their position is persisted. |
 | `nodeTypes` | `{ [type]: Component }` | `{}` | Custom node renderers, merged over the built-ins. |
 | `classNames` | `{ [part]: string }` | `{}` | Extra classes merged onto the chrome parts, e.g. `{ root, canvas, toolbar, topbar, zoom, properties, pages, saveStatus }`. See [Styling](#styling). |
+| `components` | `{ [slot]: Component \| null }` | `{}` | Replace or hide whole chrome pieces: `{ TopBar, Toolbar, ZoomControls, SaveStatus, Recorder, ContextMenu, Lightbox }`. A component swaps the built-in; `null` hides it. See [Styling](#styling). |
 | `initialState` | serialized snapshot | `null` | Committed board to load (the shape produced by `serialize()`). |
 | `editable` | `boolean` | `false` | Enables the toolbar, editing, and localStorage autosave. |
 | `storageKey` | `string` | `embed-canvas-v1` | localStorage key for the editable autosave. Unique per instance. |
@@ -202,6 +203,44 @@ Keys: `root`, `canvas`, `toolbar`, `topbar`, `zoom`, `properties`, `pages`,
 `data-cv-part="node"` / `data-type` hooks above, or replace their markup entirely
 with the `nodeTypes` prop.
 
+### 4. Headless — build the chrome and skin from scratch
+
+The stylesheet ships as two layers:
+
+```jsx
+import '@gavinmcfarland/canvas/core.css'   // structure: geometry, camera, interaction — REQUIRED
+import '@gavinmcfarland/canvas/theme.css'  // the default skin (colour/border/radius/font) — OPTIONAL
+```
+
+`@gavinmcfarland/canvas/styles.css` is just those two together (the default). Import
+**`core.css` alone** to get a fully working but unstyled board — nodes are
+positioned, the camera pans/zooms, tools work — with none of the default look, then
+write your own skin against the tokens and `data-cv-part` hooks. `core.css` never
+depends on a colour token, so nothing you leave unstyled breaks the engine.
+
+(`core.css` / `theme.css` are generated from the authored `canvas.css` by
+`npm run split-css`; `prepublishOnly` regenerates them.)
+
+To replace the **chrome components** themselves — not just their styles — pass
+`components`. Each replacement reads board state through `useCanvas()`, so it needs
+no props; `null` hides a piece entirely:
+
+```jsx
+import { useCanvas } from '@gavinmcfarland/canvas'
+
+function MyToolbar() {
+  const { tool, eng } = useCanvas()
+  return <div className="my-toolbar">{/* your buttons calling eng.setTool(…) */}</div>
+}
+
+<Canvas editable
+  components={{ Toolbar: MyToolbar, ZoomControls: null }}  // custom toolbar, no zoom control
+/>
+```
+
+Slots: `TopBar`, `Toolbar`, `ZoomControls`, `SaveStatus`, `Recorder`, `ContextMenu`,
+`Lightbox`. Objects are swapped the same way through `nodeTypes`.
+
 ## Build
 
 ```bash
@@ -209,8 +248,10 @@ pnpm --filter @gavinmcfarland/canvas build   # → dist/index.js (ESM, React ext
 ```
 
 `vite build` (lib mode) bundles the engine to `dist/index.js` with React marked as
-a peer/external. `prepublishOnly` runs it automatically on `npm publish`. The
-stylesheet is plain CSS shipped as-is via the `./styles.css` export.
+a peer/external. Styles are plain CSS shipped as-is: `canvas.css` is the authored
+source, from which `npm run split-css` generates `core.css` (structure) +
+`theme.css` (skin); `styles.css` is the two combined (the `./styles.css` export).
+`prepublishOnly` regenerates the split and runs the bundle on `npm publish`.
 
 Inside this monorepo the portfolio consumes the package **as source** through a
 Vite alias (see `packages/portfolio/vite.config.js`) for instant HMR across

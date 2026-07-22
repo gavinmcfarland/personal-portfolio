@@ -1,0 +1,7 @@
+/* @gavinmcfarland/canvas — the full default stylesheet.
+   This is core.css (structure) + theme.css (default skin), both GENERATED from
+   the authored canvas.css by scripts/split-css.mjs. Import this for the default
+   look; import core.css ALONE to go headless and build a bespoke skin from
+   scratch. See the README's Styling section. */
+@import './core.css';
+@import './theme.css';

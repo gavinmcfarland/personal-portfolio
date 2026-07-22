@@ -3,13 +3,13 @@ import { useCanvas } from './CanvasProvider';
 import { ZOOM, PAN, DRAW_TOOLS, FILLABLE_SHAPES, cx } from './constants';
 import World from './World';
 import Chrome from './Chrome';
-import TopBar from './ui/TopBar';
-import Toolbar from './ui/Toolbar';
-import ZoomControls from './ui/ZoomControls';
-import ContextMenu from './ui/ContextMenu';
-import SaveStatus from './ui/SaveStatus';
-import Recorder from './ui/Recorder';
-import Lightbox from './ui/Lightbox';
+import DefaultTopBar from './ui/TopBar';
+import DefaultToolbar from './ui/Toolbar';
+import DefaultZoomControls from './ui/ZoomControls';
+import DefaultContextMenu from './ui/ContextMenu';
+import DefaultSaveStatus from './ui/SaveStatus';
+import DefaultRecorder from './ui/Recorder';
+import DefaultLightbox from './ui/Lightbox';
 
 /* Recolour the custom edit caret (the inline-SVG cursor) to a given accent, with
    a contrasting outline so it stays legible over the board — white on light
@@ -48,7 +48,19 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames, components } = ctx;
+  // Chrome slots: a consumer's `components` entry replaces the built-in piece;
+  // an explicit `null` hides it. Each piece reads state via useCanvas(), so a
+  // replacement needs no props. `key in obj` (not truthiness) so `null` hides.
+  const cmp = components || {};
+  const slot = (key, Def) => (key in cmp ? cmp[key] : Def);
+  const TopBar = slot('TopBar', DefaultTopBar);
+  const Toolbar = slot('Toolbar', DefaultToolbar);
+  const ZoomControls = slot('ZoomControls', DefaultZoomControls);
+  const ContextMenu = slot('ContextMenu', DefaultContextMenu);
+  const SaveStatus = slot('SaveStatus', DefaultSaveStatus);
+  const Recorder = slot('Recorder', DefaultRecorder);
+  const Lightbox = slot('Lightbox', DefaultLightbox);
   // Cooperative gestures only apply in view mode; while editing the board keeps
   // full gesture control. `readOnly` (reactive) drives the CSS attribute/render;
   // the imperative handlers read the live `S.readOnly` instead.
@@ -985,15 +997,15 @@ export default function Canvas() {
       <Chrome />
       {ui && (
         <>
-          <TopBar className="cv-ui cv-panel pl-[8px]" />
-          {EDITABLE && <Toolbar />}
-          {EDITABLE && <Recorder />}
-          <ZoomControls />
-          <ContextMenu />
-          <SaveStatus />
+          {TopBar && <TopBar />}
+          {EDITABLE && Toolbar && <Toolbar />}
+          {EDITABLE && Recorder && <Recorder />}
+          {ZoomControls && <ZoomControls />}
+          {ContextMenu && <ContextMenu />}
+          {SaveStatus && <SaveStatus />}
         </>
       )}
-      <Lightbox />
+      {Lightbox && <Lightbox />}
       {coopView && (
         /* Bottom-left lock control: locked = the page scrolls past the board;
            tapping the lock unlocks scroll/one-finger pan (engaged). */

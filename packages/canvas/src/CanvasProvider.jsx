@@ -431,6 +431,7 @@ export function CanvasProvider({
   homeId = DEFAULT_HOME_ID,
   nodeTypes = null,
   classNames = null, // per-part class overrides merged onto the chrome, e.g. { root, canvas, toolbar, topbar, zoom, properties, pages, saveStatus }. See the styling contract in the README.
+  components = null, // replace whole chrome pieces: { TopBar, Toolbar, ZoomControls, SaveStatus, Recorder, ContextMenu, Lightbox }. A component swaps the built-in (it reads state via useCanvas()); `null` hides that piece. See the README.
   highlightCode = null, // optional custom code highlighter (src, lang) => html; falls back to the built-in tokeniser
   formatCode = null, // optional code formatter (src, lang, {cursorOffset}) => string | {formatted, cursorOffset}; falls back to the built-in reindenter
   formatOnType: formatOnTypeDefault = true, // initial global default for reformat-on-type (persisted user pref wins)
@@ -2809,7 +2810,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
-    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
+    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
     // refs

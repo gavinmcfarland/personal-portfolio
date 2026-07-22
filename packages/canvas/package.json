@@ -11,7 +11,9 @@
   "module": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js",
-    "./styles.css": "./src/canvas.css"
+    "./styles.css": "./src/styles.css",
+    "./core.css": "./src/core.css",
+    "./theme.css": "./src/theme.css"
   },
   "files": [
     "dist",
@@ -20,7 +22,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "prepublishOnly": "vite build"
+    "split-css": "node scripts/split-css.mjs",
+    "prepublishOnly": "node scripts/split-css.mjs && vite build"
   },
   "peerDependencies": {
     "react": ">=18",

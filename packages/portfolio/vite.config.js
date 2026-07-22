@@ -10,7 +10,7 @@ import { canvasSave } from "./vite-plugin-canvas-save.js";
 // @vitejs/plugin-react (a symlinked node_modules dep would be skipped). Exact
 // regexes so the bare specifier and the ./styles.css subpath resolve cleanly.
 const canvasSrc = fileURLToPath(new URL("../canvas/src/index.js", import.meta.url));
-const canvasCss = fileURLToPath(new URL("../canvas/src/canvas.css", import.meta.url));
+const canvasCss = fileURLToPath(new URL("../canvas/src/styles.css", import.meta.url));
 
 // https://vite.dev/config/
 export default defineConfig({
