@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "pnpm --filter portfolio dev",
     "build": "pnpm --filter portfolio build",
+    "canvas:demo": "pnpm --filter @gavinmcfarland/canvas demo",
     "lint": "pnpm --filter portfolio lint",
     "generate": "pnpm --filter abstract-illustrations generate",
     "preview": "pnpm --filter abstract-illustrations preview",

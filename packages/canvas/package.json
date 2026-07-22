@@ -22,6 +22,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
+    "demo": "vite --config vite.demo.config.js",
     "split-css": "node scripts/split-css.mjs",
     "prepublishOnly": "node scripts/split-css.mjs && vite build"
   },

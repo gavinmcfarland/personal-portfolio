@@ -1,0 +1,191 @@
+/* ══════════════════════════════════════════════════════════════════
+   ENAMEL skin for @gavinmcfarland/canvas
+   A faithful re-skin of design-mockups/12-enamel/board.html achieved with
+   NOTHING BUT the public styling contract — no package internals touched:
+     · --cv-* design tokens          (colour / font / radius / shadow / palette)
+     · data-cv-part / data-type hooks (per-region / per-object structure)
+     · the classNames.root='enamel' scope
+   Doctrine, inherited from the mockup: no curves, no shadows, no gradients
+   (bar the grid dots), flat tiny type, Chivo + JetBrains Mono.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Tokens ────────────────────────────────────────────────────────────
+   Two Enamel surfaces, switched by the system colour scheme. The demo mirrors
+   prefers-color-scheme onto <html class="dark"> (see index.html), and the canvas
+   activates its dark tokens from that `.dark` ancestor — so the light palette
+   lives on `.canvas-root.enamel` and the dark one on `.dark .canvas-root.enamel`
+   (which also out-specifies the package's own `.dark .canvas-root` defaults). */
+
+/* Shape & type — identical in both surfaces (the doctrine: no curves, no
+   shadows, no frost; Chivo + JetBrains Mono, notes mono via --cv-hand). */
+.canvas-root.enamel {
+  --cv-radius: 0;
+  --cv-ui-radius: 0;
+  --cv-ui-blur: 0px;
+  --cv-shadow: none;
+  --cv-accent-soft: color-mix(in srgb, var(--cv-accent) 16%, transparent);
+  --cv-sans: "Chivo", ui-sans-serif, system-ui, sans-serif;
+  --cv-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --cv-hand: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Light surface — cool steel (system light; the default). `--en-ground` is a
+   private var for the code note's ground fill (the engine ignores non --cv-*). */
+.canvas-root.enamel {
+  --cv-bg-base: #b0b6bc;   /* sunk board */
+  --cv-grid: #a6acb2;
+  --cv-grid-strong: #a6acb2;
+  --cv-surface: #d0d4d8;   /* panel */
+  --en-ground: #c3c8cd;
+  --cv-ink: #16191c;
+  --cv-muted: #4a4f55;
+  --cv-faint: #767c83;
+  --cv-line: #a6acb2;
+  --cv-line-strong: #16191c;
+  --cv-accent: #c8341a;    /* vermilion (light) */
+  --cv-ui-bg: #d0d4d8;
+  --cv-ui-border: #a6acb2;
+  --cv-note-green: #a8cc1f;  --cv-note-green-ink: #161c00;   /* lime      */
+  --cv-note-blue: #1e4fd8;   --cv-note-blue-ink: #eff3ff;    /* blue      */
+  --cv-note-purple: #12897f; --cv-note-purple-ink: #ecfffd;  /* teal      */
+  --cv-note-orange: #c8341a; --cv-note-orange-ink: #fff1ee;  /* vermilion */
+  --cv-note-pink: #16191c;   --cv-note-pink-ink: #c3c8cd;    /* ink       */
+  --cv-code-comment: #767c83;
+  --cv-code-keyword: #c8341a;
+  --cv-code-string: #12897f;
+  --cv-code-number: #1e4fd8;
+  --cv-code-function: #1e4fd8;
+  --cv-code-tag: #c8341a;
+  --cv-code-punctuation: #4a4f55;
+}
+
+/* Dark surface — graphite (system dark, via the .dark ancestor). */
+.dark .canvas-root.enamel {
+  --cv-bg-base: #1b1e22;   /* sunk board ground */
+  --cv-grid: #3a4048;
+  --cv-grid-strong: #3a4048;
+  --cv-surface: #2c3138;   /* panel */
+  --en-ground: #24282d;
+  --cv-ink: #e7eaed;
+  --cv-muted: #9aa1a9;
+  --cv-faint: #6b727a;
+  --cv-line: #3a4048;      /* --edge hairline */
+  --cv-line-strong: #e7eaed;
+  --cv-accent: #ff6a4d;    /* vermilion (dark) */
+  --cv-ui-bg: #2c3138;
+  --cv-ui-border: #3a4048;
+  --cv-note-green: #c9f23a;  --cv-note-green-ink: #1a2200;   /* lime      */
+  --cv-note-blue: #3b6dff;   --cv-note-blue-ink: #f0f4ff;    /* blue      */
+  --cv-note-purple: #24bdb8; --cv-note-purple-ink: #02231f;  /* teal      */
+  --cv-note-orange: #ff6a4d; --cv-note-orange-ink: #2b0700;  /* vermilion */
+  --cv-note-pink: #e7eaed;   --cv-note-pink-ink: #24282d;    /* ink       */
+  --cv-code-comment: #6b727a;
+  --cv-code-keyword: #ff6a4d;
+  --cv-code-string: #c9f23a;
+  --cv-code-number: #24bdb8;
+  --cv-code-function: #3b6dff;
+  --cv-code-tag: #ff6a4d;
+  --cv-code-punctuation: #9aa1a9;
+}
+
+/* Doctrine: NO CURVES anywhere. --cv-radius / --cv-ui-radius flatten most of it,
+   but many chrome parts (the zoom & page pills, chips, swatches) and controls
+   (context-menu items, hover states) carry a bespoke radius the tokens don't
+   reach — so square everything the canvas draws in one sweep, exactly as the
+   mockup's global `* { border-radius: 0 }` does. !important beats the specific
+   base rules regardless of their specificity. */
+.enamel,
+.enamel * { border-radius: 0 !important; }
+
+/* ── Sticky note → enamel fill ─────────────────────────────────────────
+   A saturated flat panel with its paired ink; mono, small, tight, no shadow. */
+.enamel [data-cv-part="node"][data-type="sticky"] {
+  min-height: 0;
+  padding: 0.75rem;
+  font-family: var(--cv-mono);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  box-shadow: none;
+  border: 1px solid transparent; /* enamel border = the fill colour: invisible but keeps the metric */
+}
+.enamel [data-cv-part="node"][data-type="sticky"] .cv-txt {
+  min-height: 0;
+  white-space: pre-line;
+}
+/* The leading "0N" line reads as the enamel label (tracked mono mark). */
+.enamel [data-cv-part="node"][data-type="sticky"] .cv-txt::first-line {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+/* ── Markdown → doc panel ──────────────────────────────────────────────
+   Sunk panel, hairline edge, a small uppercase label rule over prose. */
+.enamel [data-cv-part="node"][data-type="md"] {
+  background: var(--cv-surface);
+  border: 1px solid var(--cv-line);
+  padding: 0.75rem;
+  color: var(--cv-muted);
+  font-family: var(--cv-sans);
+  font-size: 13px;
+}
+.enamel [data-cv-part="node"][data-type="md"] .cv-md-render h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--cv-line);
+  font-family: var(--cv-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cv-ink);
+}
+/* The enamel edge-marker square that precedes every doc label. */
+.enamel [data-cv-part="node"][data-type="md"] .cv-md-render h1::before {
+  content: "";
+  flex: none;
+  width: 0.8em;
+  height: 0.8em;
+  border: 1px solid currentColor;
+}
+.enamel [data-cv-part="node"][data-type="md"] .cv-md-render p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── Code node → code note ─────────────────────────────────────────────
+   Graphite ground, hairline edge, a mono bar header. */
+.enamel [data-cv-part="node"][data-type="code"] {
+  background: var(--en-ground);
+  border: 1px solid var(--cv-line);
+}
+.enamel [data-cv-part="node"][data-type="code"] .cv-code-head {
+  border-bottom: 1px solid var(--cv-line);
+  font-family: var(--cv-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cv-muted);
+}
+.enamel [data-cv-part="node"][data-type="code"] .cv-code-render,
+.enamel [data-cv-part="node"][data-type="code"] .cv-code-src {
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* ── Chrome — flat, square, mono, vermilion focus ──────────────────────
+   Panels inherit the flat graphite tokens (--cv-ui-*); corners are already
+   squared by the doctrine sweep above. */
+.enamel [data-cv-part="zoom"] {
+  font-family: var(--cv-mono);
+  font-size: 12px;
+  border: 1px solid var(--cv-line);
+}
+.enamel [data-cv-part="zoom"] button:hover,
+.enamel .cv-tool:hover {
+  background: var(--cv-line);
+}

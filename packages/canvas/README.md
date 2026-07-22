@@ -247,6 +247,21 @@ function MyToolbar() {
 Slots: `TopBar`, `Toolbar`, `ZoomControls`, `SaveStatus`, `Recorder`, `ContextMenu`,
 `Lightbox`. Objects are swapped the same way through `nodeTypes`.
 
+### Worked example — a completely bespoke skin
+
+`demo/enamel` re-skins the whole board to a bespoke "Enamel" look (flat enamel
+colour-fills, no curves or shadows, mono type) — using **only** this contract:
+`--cv-*` tokens, `data-cv-part`/`data-type` selectors and the `classNames.root`
+scope, with **zero** changes to the package. It follows the system colour scheme,
+serving two surfaces (dark graphite / light steel) off the canvas's own `.dark`
+ancestor mechanism. The whole look lives in one stylesheet,
+[`demo/enamel.css`](demo/enamel.css); the board itself is an editable
+`<Canvas base={…} classNames={{ root: 'enamel' }} />`. Run it with:
+
+```bash
+npm run demo   # → http://localhost:5178  (Vite, consumes the package from source)
+```
+
 ## Build
 
 ```bash
