@@ -310,16 +310,16 @@
   opacity: 1;
 }
 .canvas-root .cv-scrollbar-x {
-  left: 2px;
+  left: 4px;
   right: 12px; /* leave the corner clear for the y bar */
-  bottom: 2px;
-  height: 8px;
+  bottom: 4px;
+  height: 5px;
 }
 .canvas-root .cv-scrollbar-y {
-  top: 2px;
+  top: 4px;
   bottom: 12px;
-  right: 2px;
-  width: 8px;
+  right: 4px;
+  width: 5px;
 }
 .canvas-root .cv-scrollbar-thumb {
   position: absolute;
