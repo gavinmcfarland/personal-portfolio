@@ -27,6 +27,24 @@ export default function ZoomControls() {
     return () => window.removeEventListener('keydown', onKey);
   }, [fullscreenButton, mode, fullBleed, setFullBleed]);
 
+  /* Document mode: hook the browser back button into unmaximising. On entering
+     full-bleed we push a history entry, so a browser Back pops it and fires
+     `popstate`, which closes the overlay. Closing via the button or Esc instead
+     sets `fullBleed` false directly, which runs this cleanup and calls
+     `history.back()` to drop the entry we pushed — keeping the stack balanced. */
+  useEffect(() => {
+    if (!fullscreenButton || mode !== 'document' || !fullBleed) return;
+    window.history.pushState({ cvFullBleed: true }, '');
+    const onPop = () => setFullBleed(false);
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      // Closed some other way (button/Esc) while our entry is still on top:
+      // pop it so we don't leave a stale history state behind.
+      if (window.history.state?.cvFullBleed) window.history.back();
+    };
+  }, [fullscreenButton, mode, fullBleed, setFullBleed]);
+
   const toggleFullscreen = () => {
     if (mode === 'document') { setFullBleed(!fullBleed); return; }
     const el = rootRef.current;
