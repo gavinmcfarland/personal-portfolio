@@ -104,7 +104,7 @@
   padding: 0.75rem;
   font-family: var(--cv-mono);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.5;
   box-shadow: none;
   border: 1px solid transparent; /* enamel border = the fill colour: invisible but keeps the metric */
@@ -112,11 +112,6 @@
 .enamel [data-cv-part="node"][data-type="sticky"] .cv-txt {
   min-height: 0;
   white-space: pre-line;
-}
-/* The leading "0N" line reads as the enamel label (tracked mono mark). */
-.enamel [data-cv-part="node"][data-type="sticky"] .cv-txt::first-line {
-  font-size: 11px;
-  letter-spacing: 0.14em;
 }
 
 /* ── Markdown → doc panel ──────────────────────────────────────────────
@@ -127,7 +122,17 @@
   padding: 0.75rem;
   color: var(--cv-muted);
   font-family: var(--cv-sans);
-  font-size: 13px;
+  font-size: 15px;
+}
+/* The render element carries the package's own font/colour/padding directly, so
+   it must be re-pointed here — otherwise prose stays serif+ink and the node's
+   0.75rem padding stacks on top of the render's own, doubling it. */
+.enamel [data-cv-part="node"][data-type="md"] .cv-md-render {
+  padding: 0;
+  font-family: var(--cv-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--cv-muted);
 }
 .enamel [data-cv-part="node"][data-type="md"] .cv-md-render h1 {
   display: flex;
@@ -138,7 +143,7 @@
   border-bottom: 1px solid var(--cv-line);
   font-family: var(--cv-mono);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--cv-ink);
@@ -153,7 +158,7 @@
 }
 .enamel [data-cv-part="node"][data-type="md"] .cv-md-render p {
   margin: 0;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
@@ -164,11 +169,27 @@
   border: 1px solid var(--cv-line);
 }
 .enamel [data-cv-part="node"][data-type="code"] .cv-code-head {
+  /* The mockup's bar carries no fill — it sits transparent over the node's
+     ground. The package default paints it --cv-bg-base (the sunk board), which
+     reads as a darker band; clear it so the header matches the code ground. */
+  background: transparent;
   border-bottom: 1px solid var(--cv-line);
   font-family: var(--cv-mono);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  color: var(--cv-muted);
+}
+/* The label text lives in .cv-code-langbox, which the package sets to Chivo 600
+   directly — so re-point it to the mockup's mono/400 bar type here. */
+.enamel [data-cv-part="node"][data-type="code"] .cv-code-langbox {
+  font-family: var(--cv-mono);
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.enamel [data-cv-part="node"][data-type="code"] .cv-code-lang {
   color: var(--cv-muted);
 }
 .enamel [data-cv-part="node"][data-type="code"] .cv-code-render,
