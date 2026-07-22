@@ -452,6 +452,7 @@ export function CanvasProvider({
   accent = null, // theme/accent colour: a single CSS colour, or { light, dark } per theme (default: purple)
   fit = 'contain', // 'contain' fills the parent box; 'fullscreen' covers the browser viewport
   ui = true, // set false to hide the overlay panels (top bar, toolbar, zoom, context menu)
+  fullscreenButton = false, // show a button next to the zoom controls that expands the canvas. true / 'native' = the browser Fullscreen API (covers the whole screen, escapes the page); 'document' = a full-bleed overlay that covers the document's viewport but stays inside the page (Esc exits).
   initialView = null, // 'fit' frames all content on mount instead of restoring the saved pan/zoom
   resizeAnchor = 'top-left', // which point of the board stays fixed when the container resizes: one of the 9 named points ('top-left','top','top-right','left','center','right','bottom-left','bottom','bottom-right') or an { x, y } fraction pair. 'top-left' = the historical behaviour.
   scaleWithContainer = false, // zoom the board in/out as the container grows/shrinks (scaling about `resizeAnchor`). false = constant zoom; true = 'min' (contain-like, keeps the same region framed); or pick the driving axis-ratio with 'width' | 'height' | 'min' | 'max'.
@@ -521,6 +522,7 @@ export function CanvasProvider({
   const [fullscreen, setFullscreen] = useState(null); // { id, index } of the media asset shown in the lightbox
   const [gridEditId, setGridEditId] = useState(null); // media node whose grid proportions are being edited
   const [htmlActiveId, setHtmlActiveId] = useState(null); // html node whose iframe is live (receives pointer events)
+  const [fullBleed, setFullBleed] = useState(false); // `fullscreenButton="document"` overlay: covers the document's viewport (portaled to body so an ancestor transform can't trap it)
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
   const [gridHidden, setGridHidden] = useState(init.gridHidden || false); // board-wide dot-grid toggle (false = grid shown)
   const [reflow, setReflow] = useState(null); // Map<id,{x,y}> of derived positions from the collision resolver (null = objects at authored positions). Not persisted.
@@ -2814,7 +2816,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
-    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, saveStatus,
+    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
     // refs

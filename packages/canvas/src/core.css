@@ -114,6 +114,17 @@
   width: auto;
   height: auto;
 }
+/* Full-bleed toggle: cover the document's viewport at runtime (position:fixed),
+   like data-fit="fullscreen" but driven by the zoom-panel button — it stays
+   inside the page (no native browser fullscreen), so it needs a high z-index to
+   sit above the host content. */
+.canvas-root[data-cv-fullbleed] {
+  position: fixed;
+  inset: 0;
+  width: auto;
+  height: auto;
+  z-index: 2147483000;
+}
 .canvas-root * {
   box-sizing: border-box;
 }

@@ -53,6 +53,7 @@ const Home = () => (
           <Canvas
             fit="contain"
             initialView="fit"
+            fullscreenButton="document"
             classNames={{ root: "enamel" }}
             accent={ACCENT}
             editable={import.meta.env.DEV}

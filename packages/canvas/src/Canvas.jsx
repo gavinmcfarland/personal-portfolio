@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useCanvas } from './CanvasProvider';
 import { ZOOM, PAN, DRAW_TOOLS, FILLABLE_SHAPES, cx } from './constants';
 import World from './World';
@@ -48,7 +49,7 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames, components } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames, components, fullscreenButton, fullBleed } = ctx;
   // Chrome slots: a consumer's `components` entry replaces the built-in piece;
   // an explicit `null` hides it. Each piece reads state via useCanvas(), so a
   // replacement needs no props. `key in obj` (not truthiness) so `null` hides.
@@ -978,11 +979,49 @@ export default function Canvas() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return (
+  /* Full-bleed (`fullscreenButton="document"`): the board must cover the whole
+     document viewport, but `position: fixed` resolves against the nearest
+     transformed/filtered/contained ancestor — and a host page often has one
+     (an animated section, a scroll-reveal wrapper…), which would trap the
+     overlay inside that box. So while full-bleed we relocate the board to
+     <body>, escaping every such ancestor.
+
+     To relocate WITHOUT remounting (which would reload live iframes, restart
+     videos and reset the camera), we borrow the reverse-portal trick: the board
+     always renders into ONE stable container node, and we move that container in
+     the DOM between an in-place holder and <body>. React never sees the
+     container change, so it only ever moves the existing DOM — refs and state
+     survive. */
+  // Only opt into the portal indirection when document-mode full-bleed is
+  // enabled — every other board renders in place exactly as before.
+  const documentFs = fullscreenButton === 'document';
+  const holderRef = useRef(null);
+  const [portalNode] = useState(() => {
+    if (typeof document === 'undefined') return null; // SSR guard (component is client-only)
+    const d = document.createElement('div');
+    d.style.display = 'contents'; // generates no box, so the board sizes to whichever parent hosts it
+    return d;
+  });
+  // Move the stable container into the right parent (before paint, so no flash),
+  // and lock the page behind the overlay from scrolling while full-bleed.
+  useLayoutEffect(() => {
+    if (!documentFs || !portalNode) return;
+    const parent = fullBleed ? document.body : holderRef.current;
+    if (parent && portalNode.parentNode !== parent) parent.appendChild(portalNode);
+    if (!fullBleed) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [documentFs, fullBleed, portalNode]);
+  // Detach the container on unmount so it isn't orphaned in <body>.
+  useEffect(() => () => { if (portalNode) portalNode.remove(); }, [portalNode]);
+
+  const root = (
     <div
       className={cx('canvas-root', classNames?.root)}
       ref={rootRef}
       data-fit={fit}
+      data-cv-fullbleed={fullBleed ? '' : undefined}
       data-coop={coopView && !engaged ? '' : undefined}
       data-engaged={CLICK_TO_INTERACT && engaged ? '' : undefined}
       data-cv-accent={accent ? accentId : undefined}
@@ -1045,5 +1084,16 @@ export default function Canvas() {
         </button>
       )}
     </div>
+  );
+
+  // Default: render in place, unchanged. Document-mode: render into the stable
+  // `portalNode` (never changes → no remount) whose DOM position the layout
+  // effect above moves between `holderRef`'s spot and <body> on toggle.
+  if (!documentFs) return root;
+  return (
+    <>
+      <div ref={holderRef} style={{ display: 'contents' }} />
+      {portalNode && createPortal(root, portalNode)}
+    </>
   );
 }

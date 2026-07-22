@@ -55,6 +55,7 @@ All are optional.
 | `storageKey` | `string` | `embed-canvas-v1` | localStorage key for the editable autosave. Unique per instance. |
 | `homeId` | `string` | `home` | Id of the first (permanent) page. |
 | `fit` | `'contain' \| 'fullscreen'` | `'contain'` | `contain` fills the parent box; `fullscreen` covers the browser viewport. |
+| `fullscreenButton` | `boolean \| 'native' \| 'document'` | `false` | Show a button next to the zoom controls that expands the canvas. `true` / `'native'` uses the browser Fullscreen API (covers the whole screen, escapes the page); `'document'` toggles a full-bleed overlay that covers the document's viewport but stays inside the page (Esc exits). |
 | `theme` | `{ mode, toggle }` | `null` | Renders a theme-cycle button in the top bar when provided. Dark mode also activates from a `.dark` ancestor. |
 | `accent` | `string \| { light, dark }` | purple | Accent/theme colour for the UI (selection, active tool, frames, hover, edit caret). A single CSS colour applies to both themes; `{ light, dark }` varies per theme. |
 | `onPublish` | `(snapshot) => Promise` | `null` | Persist the board somewhere durable. Shows the "Save" button when set. |
