@@ -54,6 +54,13 @@
   --teal-500: #12897f;
   --teal-400: #24bdb8;
 
+  /* Primitives — galley dark palette (from design-mockups/11-galley/note.html):
+     a warm graphite ground, bone ink, and a lifted vermilion accent. Used only
+     by the .dark surface, text and accent tokens below. */
+  --galley-ground: #111110;
+  --galley-ink: #ebe7dc;
+  --galley-vermilion: #e0563c;
+
   /* Semantic tokens — Light (cool steel). Each derives from a primitive. */
   --bg: var(--steel-200); /* ground */
   --surface: var(--steel-100); /* panel — hover / raised fill */
@@ -83,16 +90,16 @@
 /* Semantic tokens — Dark (graphite). Only the aliases flip; primitives above
    are inherited unchanged. */
 .dark {
-  --bg: var(--steel-900); /* graphite ground */
+  --bg: var(--galley-ground); /* graphite ground (galley paper) */
   --surface: var(--steel-800); /* panel */
   --hover: var(--steel-700); /* icon-button hover fill (matches --line) */
-  --ink: var(--steel-50);
+  --ink: var(--galley-ink); /* bone ink (galley) */
   --muted: var(--steel-400);
   --faint: var(--steel-550);
   --line: var(--steel-700);
   --line-strong: var(--steel-550);
   --rule: var(--steel-50);
-  --accent: var(--vermilion-400); /* lifted vermilion for the graphite ground */
+  --accent: var(--galley-vermilion); /* lifted vermilion (galley) */
   --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
   --scrim: var(--steel-800); /* darker grey scrim for the graphite ground */
 
