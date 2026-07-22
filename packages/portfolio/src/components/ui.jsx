@@ -1,17 +1,23 @@
 import { Link } from 'react-router-dom';
 import { useReveal } from '../hooks/useReveal';
 
-/* Section with a ruled header — bold sans title on the left, a near-black
-   hairline filling the rest of the line. Mirrors the CV's section headings. */
+/* Section demarcated by a full-bleed hairline above its label. The <section>
+   breaks out of the parent <main>'s width cap (w-screen + a negative margin that
+   matches main's left gutter) so the rule spans the whole viewport, while an inner
+   wrapper re-establishes the same content column so the label and content stay
+   aligned with the rest of the page. Assumes a `pl-8 sm:pl-14 lg:pl-24` parent. */
 export function Section({ label, children, id }) {
   const ref = useReveal();
   return (
-    <section id={id} ref={ref} className="reveal scroll-mt-20 mt-16">
-      <div className="mb-5 flex items-center gap-5">
-        <h2 className="section-label whitespace-nowrap">{label}</h2>
-        <span className="section-rule flex-1" aria-hidden="true" />
+    <section
+      id={id}
+      ref={ref}
+      className="reveal scroll-mt-20 mt-24 w-screen -ml-8 border-t border-line sm:-ml-14 lg:-ml-24"
+    >
+      <div className="mr-auto w-full max-w-5xl pl-8 pr-5 pt-16 sm:pl-14 sm:pr-6 lg:pl-24">
+        <h2 className="section-label mb-4">{label}</h2>
+        {children}
       </div>
-      {children}
     </section>
   );
 }
