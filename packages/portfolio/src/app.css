@@ -31,6 +31,13 @@
   --rule: #16191c; /* the drawn line — section header rule */
   --accent: #c8341a; /* vermilion */
   --accent-soft: rgba(200, 52, 26, 0.14);
+
+  /* The four enamels — used as flat swatches / tags (e.g. the Work table's
+     Kind column). Paired with the graphite/steel ground. */
+  --tone-vermilion: #c8341a;
+  --tone-blue: #1e4fd8;
+  --tone-lime: #a8cc1f;
+  --tone-teal: #12897f;
 }
 
 .dark {
@@ -44,11 +51,26 @@
   --rule: #e7eaed;
   --accent: #ff6a4d; /* lifted vermilion for the graphite ground */
   --accent-soft: rgba(255, 106, 77, 0.16);
+
+  --tone-vermilion: #ff6a4d;
+  --tone-blue: #3b6dff;
+  --tone-lime: #c9f23a;
+  --tone-teal: #24bdb8;
 }
 
 html {
   scroll-behavior: smooth;
   background: var(--bg);
+  /* The route panel sits off-screen to the right (translate-x-full) while it
+     slides in/out — clip that so it never adds a horizontal scrollbar. */
+  overflow-x: hidden;
+}
+
+/* The sliding project overlay just appears/disappears for reduced-motion users. */
+@media (prefers-reduced-motion: reduce) {
+  .route-panel {
+    transition: none;
+  }
 }
 
 body {

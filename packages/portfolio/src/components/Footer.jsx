@@ -31,7 +31,7 @@ const demoBase = {
 
 const Footer = () => (
   <footer className="mt-24 border-t border-line">
-    <div className="mx-auto w-full max-w-2xl px-5 sm:px-6 pt-16">
+    <div className="mr-auto w-full max-w-2xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pt-16">
       <div className="section-label">Playground</div>
       <p className="mt-4 max-w-[52ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">
         This site also comes as an infinite canvas — packaged as an embeddable
@@ -40,7 +40,7 @@ const Footer = () => (
       </p>
     </div>
 
-    <div className="mx-auto w-full max-w-5xl px-5 sm:px-6 pt-8 pb-14">
+    <div className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pt-8 pb-14">
       <div
         className="overflow-hidden rounded-2xl border border-line"
         style={{ height: "min(70vh, 520px)" }}
@@ -68,7 +68,7 @@ const Footer = () => (
       </p>
     </div>
 
-    <section className="mx-auto w-full max-w-2xl px-5 sm:px-6 pt-4 pb-14">
+    <section className="mr-auto w-full max-w-2xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pt-4 pb-14">
       <div className="section-label">Responsive collisions</div>
       <p className="mt-4 max-w-[52ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">
         The canvas adapts to its container: as space runs out, objects reflow to
@@ -84,7 +84,7 @@ const Footer = () => (
       </Link>
     </section>
 
-    <div className="mx-auto w-full max-w-2xl px-5 sm:px-6 pb-16">
+    <div className="mr-auto w-full max-w-2xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pb-16">
       <p className="text-[0.8125rem] text-faint">© 2026 Gavin McFarland</p>
     </div>
   </footer>

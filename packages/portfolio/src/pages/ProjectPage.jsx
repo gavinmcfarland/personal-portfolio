@@ -26,7 +26,7 @@ export default function ProjectPage({ project }) {
     );
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-base lg:flex-row">
+    <div className="absolute inset-0 flex flex-col bg-base lg:flex-row">
       {/* ── Header (top bar below lg, left sidebar from lg up) ───────── */}
       <header className="shrink-0 border-b border-line bg-base lg:w-80 lg:overflow-y-auto lg:border-b-0 lg:border-r xl:w-96">
         <div className="flex flex-col px-5 pb-6 pt-4 sm:px-8 sm:pt-6 lg:min-h-full lg:py-8">

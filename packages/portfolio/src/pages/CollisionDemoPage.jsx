@@ -26,7 +26,7 @@ const demoBase = {
 
 export default function CollisionDemoPage() {
   return (
-    <div className="fixed inset-0 flex flex-col bg-base">
+    <div className="absolute inset-0 flex flex-col bg-base">
       <header className="flex shrink-0 items-center gap-4 border-b border-line px-4 py-3 sm:px-6">
         <Link
           to="/"

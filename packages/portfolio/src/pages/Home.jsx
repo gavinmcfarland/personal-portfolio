@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 
 const Home = () => (
   <>
-    <main className="mx-auto w-full max-w-2xl px-5 sm:px-6">
+    <main className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24">
       <Intro />
       <Projects />
       <Awards />

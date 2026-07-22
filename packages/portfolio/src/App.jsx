@@ -1,5 +1,11 @@
-import { useEffect } from "react";
-import { Routes, Route, useParams, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  Routes,
+  Route,
+  useParams,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import ThemeToggle from "./components/ThemeToggle";
 import Home from "./pages/Home";
@@ -15,19 +21,47 @@ function ProjectRoute() {
   return project ? <ProjectPage project={project} /> : <NotFound />;
 }
 
-function App() {
-  const { pathname } = useLocation();
-  const isHome = pathname === "/";
+/* How far the sliding overlay stops from the left edge — the strip of Home left
+   peeking behind it. Declared as literal class names (not computed) so Tailwind
+   picks them up, and kept together so the panel inset and the peek's back-target
+   width stay in sync. */
+const PEEK_INSET = "left-[20%]"; // panel starts 20% in
+const PEEK_WIDTH = "w-[20%]"; // the exposed Home strip / back target
 
-  /* Take over scroll restoration so the browser never fights us, and freeze
-     the page behind a full-screen overlay (a project or 404) so the home
-     page underneath keeps its exact scroll position for when we return. */
+function App() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isHome = location.pathname === "/";
+
+  /* The non-home routes render in a panel that slides in from the right and,
+     on close, slides back out before unmounting — so keep rendering the last
+     non-home route (`overlayLoc`) until the exit transition finishes. `open`
+     drives the transform. */
+  const [overlayLoc, setOverlayLoc] = useState(isHome ? null : location);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isHome) {
+      setOverlayLoc(location);
+      // Mount off-screen (translate-x-full), then slide in on the next frame.
+      const r = requestAnimationFrame(() => setOpen(true));
+      return () => cancelAnimationFrame(r);
+    }
+    // Back to Home: slide out, then drop the overlay once the transition ends.
+    setOpen(false);
+    const t = setTimeout(() => setOverlayLoc(null), 340);
+    return () => clearTimeout(t);
+  }, [location, isHome]);
+
+  /* Take over scroll restoration so the browser never fights us. */
   useEffect(() => {
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
     }
   }, []);
 
+  /* Freeze the page behind the overlay so Home keeps its exact scroll position
+     for when we return. */
   useEffect(() => {
     document.body.style.overflow = isHome ? "" : "hidden";
     return () => {
@@ -50,15 +84,30 @@ function App() {
           <Home />
         </div>
 
-        {/* Non-home routes render as a full-screen overlay above Home. */}
-        {!isHome && (
-          <div className="fixed inset-0 z-10 overflow-y-auto bg-base">
-            <Routes>
-              <Route path="/projects/:id" element={<ProjectRoute />} />
-              <Route path="/responsive" element={<CollisionDemoPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
+        {/* Non-home routes: a panel that slides in from the right and leaves a
+            strip of Home peeking on the left. */}
+        {overlayLoc && (
+          <>
+            {/* The exposed strip doubles as a back affordance — tap the peek of
+                Home to dismiss the overlay. */}
+            <button
+              type="button"
+              aria-label="Back to home"
+              onClick={() => navigate("/")}
+              className={`fixed inset-y-0 left-0 z-10 ${PEEK_WIDTH} cursor-pointer`}
+            />
+            <div
+              className={`route-panel fixed inset-y-0 right-0 ${PEEK_INSET} z-20 overflow-y-auto border-l border-line bg-base transition-transform duration-340 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                open ? "translate-x-0" : "translate-x-full"
+              }`}
+            >
+              <Routes location={overlayLoc}>
+                <Route path="/projects/:id" element={<ProjectRoute />} />
+                <Route path="/responsive" element={<CollisionDemoPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+          </>
         )}
       </div>
     </ThemeProvider>

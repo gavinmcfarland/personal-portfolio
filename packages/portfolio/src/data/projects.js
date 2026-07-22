@@ -7,6 +7,7 @@ export const projects = [
 	{
 		id: 'plugma',
 		title: 'Plugma',
+		kind: 'tool',
 		summary: 'A zero-config CLI for building Figma plugins with true hot-module reloading. Works with React, Svelte and Vue.',
 		tagline: 'A zero-config CLI for building Figma plugins — with hot-module reloading that actually works.',
 		tech: ['Node.js', 'TypeScript', 'Vite'],
@@ -29,6 +30,7 @@ export const projects = [
 	{
 		id: 'askeroo',
 		title: 'Askeroo',
+		kind: 'library',
 		summary: 'A modern CLI prompt library with stateful back-navigation, conditional fields and task runners. Built on React and Ink.',
 		tagline: 'A modern CLI prompt library that treats a terminal flow like a real, navigable form.',
 		tech: ['TypeScript', 'React', 'Ink'],
@@ -50,6 +52,7 @@ export const projects = [
 	{
 		id: 'figlet',
 		title: 'Figlet',
+		kind: 'tool',
 		summary: 'A browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup. Like CodePen for Figma.',
 		tagline: 'A browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup.',
 		tech: ['JavaScript', 'Figma API', 'Svelte'],
@@ -71,6 +74,7 @@ export const projects = [
 	{
 		id: 'table-creator',
 		title: 'Table Creator',
+		kind: 'plug-in',
 		summary: 'A Figma plugin for creating and maintaining complex data tables on the canvas, with dynamic content and bulk edits.',
 		tagline: 'A Figma plugin for building and maintaining complex data tables directly on the canvas.',
 		tech: ['TypeScript', 'Figma API', 'Svelte'],
@@ -92,10 +96,12 @@ export const projects = [
 	{
 		id: 'icon-preview',
 		title: 'Icon Preview',
+		kind: 'plug-in',
 		summary: 'A Figma plugin that live-previews the icon you are editing at preset sizes for web, iOS and Android.',
 		tagline: 'See the icon you are editing rendered live at every size that matters — web, iOS and Android.',
 		tech: ['JavaScript', 'Figma API'],
 		role: 'Creator',
+		year: '2021',
 		link: 'https://www.figma.com/community/plugin/888907972695800109/icon-preview',
 		linkLabel: 'Figma Community',
 		description: [
