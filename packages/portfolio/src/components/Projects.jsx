@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { projects } from '../data/projects';
@@ -11,7 +11,7 @@ import { Section } from './ui';
 const KINDS = {
   tool: { label: 'Tool', tone: 'blue' },
   library: { label: 'Library', tone: 'lime' },
-  'plug-in': { label: 'Plug-in', tone: 'teal' },
+  plugin: { label: 'Plugin', tone: 'teal' },
 };
 
 /* The four enamels, as CSS vars that flip with the theme (see app.css). */
@@ -73,6 +73,16 @@ const Projects = () => {
     setTip({ summary: p.summary, left, top });
   };
 
+  // The popover is position: fixed, so it would freeze in place while the page
+  // scrolls out from under it. Clear it on any scroll so it doesn't detach from
+  // the row it describes.
+  useEffect(() => {
+    if (!tip) return;
+    const clear = () => setTip(null);
+    window.addEventListener('scroll', clear, { passive: true, capture: true });
+    return () => window.removeEventListener('scroll', clear, { capture: true });
+  }, [tip]);
+
   return (
     <Section id="projects" label="Projects">
       <div className="overflow-x-auto" onMouseLeave={() => setTip(null)}>
@@ -114,7 +124,7 @@ const Projects = () => {
       </div>
 
       <p className="mt-3 px-3 font-mono text-[0.75rem] text-faint">
-        {pad2(projects.length)} items · tools, plug-ins and libraries
+        {pad2(projects.length)} items · tools, plugins and libraries
       </p>
 
       {/* Portaled to <body>: the Projects section carries a `transform` (the

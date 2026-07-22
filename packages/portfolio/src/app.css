@@ -266,6 +266,13 @@ a.row:hover {
   right: 72px;
 }
 
+/* Same collision when the playground canvas maximises: its full-bleed overlay
+   puts the zoom cluster in the viewport corner, under the floated theme toggle
+   (see CanvasMaximizeToggle). Nudge it left to sit beside the toggle. */
+.canvas-root[data-cv-fullbleed] [data-cv-part="zoom"] {
+  right: 72px;
+}
+
 /* ── Canvas hover preview (Projects list) ────────────────────── */
 /* The popover shares the entrance curve of the rest of the page; the mini
    canvas hides its own chrome via the <Canvas ui={false}> prop. */

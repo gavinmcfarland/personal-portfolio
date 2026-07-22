@@ -74,7 +74,7 @@ export const projects = [
 	{
 		id: 'table-creator',
 		title: 'Table Creator',
-		kind: 'plug-in',
+		kind: 'plugin',
 		summary: 'A Figma plugin for creating and maintaining complex data tables on the canvas, with dynamic content and bulk edits.',
 		tagline: 'A Figma plugin for building and maintaining complex data tables directly on the canvas.',
 		tech: ['TypeScript', 'Figma API', 'Svelte'],
@@ -96,7 +96,7 @@ export const projects = [
 	{
 		id: 'icon-preview',
 		title: 'Icon Preview',
-		kind: 'plug-in',
+		kind: 'plugin',
 		summary: 'A Figma plugin that live-previews the icon you are editing at preset sizes for web, iOS and Android.',
 		tagline: 'See the icon you are editing rendered live at every size that matters — web, iOS and Android.',
 		tech: ['JavaScript', 'Figma API'],

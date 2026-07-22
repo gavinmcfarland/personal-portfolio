@@ -1,7 +1,13 @@
 import { useTheme } from '../contexts/ThemeContext';
 
+/* The button's look, kept constant across placements. Positioning (which corner,
+   which stacking context) is passed in via `className` so the same toggle can be
+   scoped to a page or to the sliding overlay panel — see App.jsx. */
+const BASE =
+  'flex h-9 w-9 items-center justify-center rounded-full border border-line bg-base text-muted transition-colors duration-200 hover:text-ink';
+
 /* Minimal single-button theme cycle — system → light → dark. */
-const ThemeToggle = () => {
+const ThemeToggle = ({ className = 'fixed right-4 top-4 z-50 sm:right-6 sm:top-6' }) => {
   const { mode, toggleTheme } = useTheme();
 
   const icon = {
@@ -22,7 +28,7 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="fade fixed right-4 top-4 z-50 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-base text-muted transition-colors duration-200 hover:text-ink sm:right-6 sm:top-6"
+      className={`${BASE} ${className}`}
       aria-label={`Theme: ${mode}. Click to change.`}
       title={`Theme: ${mode}`}
     >

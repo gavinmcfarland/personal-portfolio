@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import ThemeToggle from "./components/ThemeToggle";
+import CanvasMaximizeToggle from "./components/CanvasMaximizeToggle";
 import Home from "./pages/Home";
 import ProjectPage from "./pages/ProjectPage";
 import CollisionDemoPage from "./pages/CollisionDemoPage";
@@ -73,17 +74,22 @@ function App() {
   return (
     <ThemeProvider>
       <div className="bg-base min-h-screen">
-        <ThemeToggle />
-
         {/* Home stays mounted for the life of the app: navigating into a
             project overlays it rather than unmounting it, so its scroll
             position and one-time reveal animations are preserved on return.
             `isolate` traps its content's stacking context (the footer canvas
             chrome is z-100) below the route overlay, so nothing bleeds through
-            when an overlay is open over a footer-scrolled page. */}
+            when an overlay is open over a footer-scrolled page. The theme
+            toggle lives inside the isolate too, so an opening overlay slides
+            over it rather than sitting under a corner button that never moves. */}
         <div className="isolate">
+          <ThemeToggle />
           <Home />
         </div>
+
+        {/* A toggle that appears only while the playground canvas is maximised,
+            floated above its full-viewport overlay. */}
+        <CanvasMaximizeToggle />
 
         {/* Non-home routes: a panel that slides in from the right and leaves a
             strip of Home peeking on the left. */}
@@ -102,6 +108,11 @@ function App() {
                 open ? "translate-x-0" : "translate-x-full"
               }`}
             >
+              {/* The panel's own toggle. The panel's transform makes this
+                  `fixed` child position relative to the panel (not the
+                  viewport), so it slides in and out with the page — and it
+                  stays pinned to the corner while the panel's content scrolls. */}
+              <ThemeToggle className="fixed right-4 top-4 z-50 sm:right-6 sm:top-6" />
               <Routes location={overlayLoc}>
                 <Route path="/projects/:id" element={<ProjectRoute />} />
                 <Route path="/responsive" element={<CollisionDemoPage />} />
