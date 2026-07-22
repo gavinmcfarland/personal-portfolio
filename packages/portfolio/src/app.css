@@ -54,12 +54,18 @@
   --teal-500: #12897f;
   --teal-400: #24bdb8;
 
-  /* Primitives — galley dark palette (from design-mockups/11-galley/note.html):
-     a warm graphite ground, bone ink, and a lifted vermilion accent. Used only
-     by the .dark surface, text and accent tokens below. */
-  --galley-ground: #111110;
-  --galley-ink: #ebe7dc;
-  --galley-vermilion: #e0563c;
+  /* Primitives — galley warm-graphite ramp (from design-mockups/11-galley),
+     lightest → darkest. Warmer and deeper than the cool --steel ramp so the
+     dark theme's greys sit on the #111110 ground instead of reading blue.
+     Used only by the .dark semantic tokens below. */
+  --galley-ink: #ebe7dc; /* primary text */
+  --galley-mid: #97948b; /* secondary prose */
+  --galley-faint: #63615a; /* meta / captions */
+  --galley-edge: #45433d; /* stronger hairline */
+  --galley-hair: #2c2b27; /* hairline edge */
+  --galley-panel: #1c1b18; /* raised panel / hover fill */
+  --galley-ground: #111110; /* ground */
+  --galley-vermilion: #e0563c; /* lifted vermilion accent */
 
   /* Semantic tokens — Light (cool steel). Each derives from a primitive. */
   --bg: var(--steel-200); /* ground */
@@ -91,17 +97,17 @@
    are inherited unchanged. */
 .dark {
   --bg: var(--galley-ground); /* graphite ground (galley paper) */
-  --surface: var(--steel-800); /* panel */
-  --hover: var(--steel-700); /* icon-button hover fill (matches --line) */
-  --ink: var(--galley-ink); /* bone ink (galley) */
-  --muted: var(--steel-400);
-  --faint: var(--steel-550);
-  --line: var(--steel-700);
-  --line-strong: var(--steel-550);
-  --rule: var(--steel-50);
-  --accent: var(--galley-vermilion); /* lifted vermilion (galley) */
+  --surface: var(--galley-panel); /* panel */
+  --hover: var(--galley-hair); /* icon-button hover fill (matches --line) */
+  --ink: var(--galley-ink); /* bone ink */
+  --muted: var(--galley-mid);
+  --faint: var(--galley-faint);
+  --line: var(--galley-hair);
+  --line-strong: var(--galley-edge);
+  --rule: var(--galley-ink);
+  --accent: var(--galley-vermilion); /* lifted vermilion */
   --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
-  --scrim: var(--steel-800); /* darker grey scrim for the graphite ground */
+  --scrim: var(--galley-hair); /* darker grey scrim for the graphite ground */
 
   --tone-vermilion: var(--vermilion-400);
   --tone-blue: var(--blue-400);

@@ -67,23 +67,25 @@
   --cv-code-punctuation: #4a4f55;
 }
 
-/* Dark surface — graphite (system dark, via the .dark ancestor). */
+/* Dark surface — warm graphite (system dark, via the .dark ancestor). Matches the
+   host portfolio's galley dark theme (design-mockups/11-galley): a warm graphite
+   ground and greys, bone ink, lifted vermilion — not the cool steel it used to be. */
 .dark .canvas-root.enamel {
-  --cv-bg-base: #1b1e22;   /* sunk board ground */
-  --cv-grid: #3a4048;
-  --cv-grid-strong: #3a4048;
-  --cv-surface: #2c3138;   /* panel */
-  --en-ground: #24282d;
-  --cv-ink: #e7eaed;
-  --cv-muted: #9aa1a9;
-  --cv-faint: #6b727a;
-  --cv-line: #3a4048;      /* --edge hairline */
-  --cv-line-strong: #e7eaed;
-  --cv-scrollbar: #6b727a;        /* flat steel thumb on the graphite ground */
-  --cv-scrollbar-hover: #9aa1a9;
-  --cv-accent: #ff6a4d;    /* vermilion (dark) */
-  --cv-ui-bg: #2c3138;
-  --cv-ui-border: #3a4048;
+  --cv-bg-base: #0c0c0b;   /* sunk board ground, a hair below the #111110 page */
+  --cv-grid: #2c2b27;
+  --cv-grid-strong: #2c2b27;
+  --cv-surface: #1c1b18;   /* panel */
+  --en-ground: #111110;
+  --cv-ink: #ebe7dc;
+  --cv-muted: #97948b;
+  --cv-faint: #63615a;
+  --cv-line: #2c2b27;      /* --hair hairline */
+  --cv-line-strong: #ebe7dc;
+  --cv-scrollbar: #63615a;        /* flat warm thumb on the graphite ground */
+  --cv-scrollbar-hover: #97948b;
+  --cv-accent: #e0563c;    /* vermilion (dark) */
+  --cv-ui-bg: #1c1b18;
+  --cv-ui-border: #2c2b27;
   --cv-note-green: #c9f23a;  --cv-note-green-ink: #1a2200;   /* lime      */
   --cv-note-yellow: #c9f23a; --cv-note-yellow-ink: #1a2200;  /* lime (no yellow enamel) */
   --cv-note-blue: #3b6dff;   --cv-note-blue-ink: #f0f4ff;    /* blue      */
