@@ -1740,20 +1740,23 @@
   box-sizing: border-box;
   pointer-events: auto;
 }
-/* Corner squares: the visible grab targets, each poking out past its corner. */
+/* Corner squares: the visible grab targets. Each 12px square straddles its
+   corner of the selection rect (offset by half its size, --cv-rz-corner-half),
+   so it stays centred on the outline whatever padding placeSel gives the box. */
 .canvas-root .cv-rz .cv-rz-nw,
 .canvas-root .cv-rz .cv-rz-ne,
 .canvas-root .cv-rz .cv-rz-sw,
 .canvas-root .cv-rz .cv-rz-se {
+  --cv-rz-corner-half: 6px; /* half of the 12px width/height below */
   width: 12px;
   height: 12px;
   background: var(--cv-surface);
   border: 2px solid var(--cv-accent);
 }
-.canvas-root .cv-rz .cv-rz-nw { left: 1px; top: 1px; cursor: nwse-resize; }
-.canvas-root .cv-rz .cv-rz-ne { left: calc(100% - 13px); top: 1px; cursor: nesw-resize; }
-.canvas-root .cv-rz .cv-rz-sw { left: 1px; top: calc(100% - 13px); cursor: nesw-resize; }
-.canvas-root .cv-rz .cv-rz-se { left: calc(100% - 13px); top: calc(100% - 13px); cursor: nwse-resize; }
+.canvas-root .cv-rz .cv-rz-nw { left: calc(-1 * var(--cv-rz-corner-half)); top: calc(-1 * var(--cv-rz-corner-half)); cursor: nwse-resize; }
+.canvas-root .cv-rz .cv-rz-ne { left: calc(100% - var(--cv-rz-corner-half)); top: calc(-1 * var(--cv-rz-corner-half)); cursor: nesw-resize; }
+.canvas-root .cv-rz .cv-rz-sw { left: calc(-1 * var(--cv-rz-corner-half)); top: calc(100% - var(--cv-rz-corner-half)); cursor: nesw-resize; }
+.canvas-root .cv-rz .cv-rz-se { left: calc(100% - var(--cv-rz-corner-half)); top: calc(100% - var(--cv-rz-corner-half)); cursor: nwse-resize; }
 /* Side strips: invisible ~11px grab bands straddling each edge, inset from the
    corners so the corner squares stay reachable. */
 .canvas-root .cv-rz .cv-rz-n,

@@ -38,7 +38,7 @@ const THEME_EXACT = new Set([
 ]);
 const THEME_PREFIX = ['background-', 'border', 'outline', 'font-', 'text-', 'margin', 'padding', 'transition', 'animation', 'stroke-', 'fill-', 'list-style-', '-webkit-text-', 'mask', '-webkit-mask'];
 // layout-affecting custom properties live with the geometry that consumes them
-const CORE_TOKENS = new Set(['--cv-df-bar', '--cv-df-u', '--cv-gx', '--cv-gy']);
+const CORE_TOKENS = new Set(['--cv-df-bar', '--cv-df-u', '--cv-gx', '--cv-gy', '--cv-rz-corner-half']);
 const unknown = new Set();
 
 function bucket(prop) {

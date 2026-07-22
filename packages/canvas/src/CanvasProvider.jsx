@@ -36,6 +36,12 @@ export const useCanvas = () => {
 
 const defaultView = () => ({ x: 0, y: 0, scale: 1 });
 
+// Screen-space padding (px) between a node's rect and its selection outline.
+// The outline, its resize handles, and the grid-edit dividers all derive their
+// rect from this one value, so they stay concentric — change it here to move the
+// outline in/out and the handles follow automatically.
+const SEL_PAD = 4;
+
 /* Resolve a `resizeAnchor` spec into {ax, ay} fractions (0..1) of the viewport —
    the point that stays put when the container resizes (e.g. the browser window).
    'top-left' keeps the top-left corner fixed (the historical behaviour), 'center'
@@ -903,11 +909,15 @@ export function CanvasProvider({
     }
     function placeSel(x, y, w, h) {
       const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s, sw = w * s, sh = h * s;
+      // The outlined rect: node rect grown by SEL_PAD on every side. Both the
+      // outline and the resize container below use ox/oy/ow/oh so the handles
+      // always centre on the outline regardless of the pad.
+      const ox = sx - SEL_PAD, oy = sy - SEL_PAD, ow = sw + SEL_PAD * 2, oh = sh + SEL_PAD * 2;
       chrome.sel.style.display = 'block';
-      // Offset -10px from the base 4px pad: the selected outline draws inset,
-      // its 2px border spanning 6-8px inside the object's edge.
-      chrome.sel.style.left = (sx + 6) + 'px'; chrome.sel.style.top = (sy + 6) + 'px';
-      chrome.sel.style.width = (sw - 12) + 'px'; chrome.sel.style.height = (sh - 12) + 'px';
+      // Sit SEL_PAD px outside the node rect so the 2px border hugs the object's
+      // edge, matching the hover outline (see placeHover).
+      chrome.sel.style.left = ox + 'px'; chrome.sel.style.top = oy + 'px';
+      chrome.sel.style.width = ow + 'px'; chrome.sel.style.height = oh + 'px';
       /* The edit / resize affordances only make sense for a single selected node. */
       const single = S.selected.length === 1 ? S.selected[0] : null;
       const nodeEl = single && single.kind === 'node' ? nodeEls.get(single.id) : null;
@@ -924,8 +934,8 @@ export function CanvasProvider({
         // The rz container spans the node's screen rect; CSS pins a handle to
         // each corner (see .cv-rz-h). data-mode drives which handles show + cursors.
         chrome.rz.style.display = 'block';
-        chrome.rz.style.left = sx + 'px'; chrome.rz.style.top = sy + 'px';
-        chrome.rz.style.width = sw + 'px'; chrome.rz.style.height = sh + 'px';
+        chrome.rz.style.left = ox + 'px'; chrome.rz.style.top = oy + 'px';
+        chrome.rz.style.width = ow + 'px'; chrome.rz.style.height = oh + 'px';
         chrome.rz.dataset.mode = scaling ? 'scale' : (type === 'md' || type === 'code' || type === 'tblock' || type === 'link' ? 'ew' : 'xy');
       } else chrome.rz.style.display = 'none';
     }
@@ -983,7 +993,6 @@ export function CanvasProvider({
       // (see placeSel) — so each divider spans the full outlined box, edge to edge.
       // Everything is sized/centred explicitly here (no CSS transform) so the two
       // axes stay symmetric and a divider can't be shifted by a stray transform.
-      const SEL_PAD = -6;
       const HIT = 15; // grab-strip thickness
       for (const child of wrap.children) {
         const axis = child.dataset.axis, k = +child.dataset.k;

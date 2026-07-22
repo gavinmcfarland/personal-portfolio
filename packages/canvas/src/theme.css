@@ -1114,7 +1114,9 @@
    placeSel) and stays click-through. Inside sit four visible corner squares plus
    four transparent side strips — the strips make an object resizable from
    anywhere along an edge (Figma-style), driving a single-axis resize. */
-/* Corner squares: the visible grab targets, each poking out past its corner. */
+/* Corner squares: the visible grab targets. Each 12px square straddles its
+   corner of the selection rect (offset by half its size, --cv-rz-corner-half),
+   so it stays centred on the outline whatever padding placeSel gives the box. */
 .canvas-root .cv-rz .cv-rz-nw,
 .canvas-root .cv-rz .cv-rz-ne,
 .canvas-root .cv-rz .cv-rz-sw,
