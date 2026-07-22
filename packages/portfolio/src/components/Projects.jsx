@@ -26,7 +26,7 @@ const pad2 = (n) => String(n).padStart(2, '0');
 
 /* Shared column track so the header row and every body row line up. */
 const GRID =
-  'grid grid-cols-[2.75rem_10rem_minmax(0,1fr)_7.5rem_3.5rem] items-baseline gap-x-3 px-3';
+  'grid grid-cols-[2.75rem_10rem_minmax(0,1fr)_7.5rem] items-baseline gap-x-3 px-3';
 
 function KindTag({ kind }) {
   const k = KINDS[kind] || { label: kind, tone: 'teal' };
@@ -86,7 +86,6 @@ const Projects = () => {
             <span>Item</span>
             <span>Description</span>
             <span>Kind</span>
-            <span className="text-right">Year</span>
           </div>
 
           {projects.map((p, i) => (
@@ -108,9 +107,6 @@ const Projects = () => {
               </span>
               <span>
                 <KindTag kind={p.kind} />
-              </span>
-              <span className="text-right font-mono text-[0.75rem] tabular-nums text-faint">
-                {p.year}
               </span>
             </Link>
           ))}
