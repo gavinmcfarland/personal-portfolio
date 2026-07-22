@@ -20,7 +20,6 @@ export const PAN = { wheelSpeed: 1.4 }; // multiplier for scroll-wheel / trackpa
    `--cv-df-bar` CSS tokens in canvas.css. */
 export const FRAME_BARS = { browser: 36, plugin: 36, terminal: 36 };
 export const frameBarH = (style) => FRAME_BARS[style] || FRAME_BARS.browser;
-export const RASTER = { blur: 1.1 }; // re-rasterize once the composited layer drifts past this
 export const GRID = 28;
 
 export const clampScale = (s) => Math.min(ZOOM.max, Math.max(ZOOM.min, s));

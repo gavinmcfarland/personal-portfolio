@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, useRef, useState, useEffect, useLayoutEffect } from 'react';
-import { ZOOM, PAN, RASTER, GRID, frameBarH, clampScale } from './constants';
+import { ZOOM, PAN, GRID, frameBarH, clampScale } from './constants';
 import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
 
 /* Default localStorage key for the dev autosave. Override with the `storageKey`
@@ -603,9 +603,7 @@ export function CanvasProvider({
   const zoomRAF = useRef(0);
   const waTimer = useRef(0);
   const saveT = useRef(0);
-  const lastRasterScale = useRef(active0.view.scale || 1);
   const lastHoverScale = useRef(active0.view.scale || 1); // scale at the last applyView, to tell pan from zoom
-  const repromotePending = useRef(false);
   const panKey = useRef(false);
 
   const allNodes = Object.values(init.pagesData).flatMap((p) => p.nodes);
@@ -824,7 +822,6 @@ export function CanvasProvider({
     }
     function stopZoomLoop() {
       if (zoomRAF.current) { cancelAnimationFrame(zoomRAF.current); zoomRAF.current = 0; }
-      repromotePending.current = false;
       if (worldRef.current) worldRef.current.style.willChange = 'auto';
     }
     function snapView() { viewRef.x = targetRef.x; viewRef.y = targetRef.y; viewRef.scale = targetRef.scale; applyView(); }
@@ -837,17 +834,17 @@ export function CanvasProvider({
       const done = Math.abs(targetRef.scale - viewRef.scale) < ZOOM.doneScale &&
         Math.abs(targetRef.x - viewRef.x) < ZOOM.donePan && Math.abs(targetRef.y - viewRef.y) < ZOOM.donePan;
       if (done) { snapView(); stopZoomLoop(); return; }
-      if (repromotePending.current) { w.style.willChange = 'transform'; repromotePending.current = false; }
+      // Keep the world un-promoted (will-change: auto) through the glide so the
+      // browser re-rasterizes it crisply at the current scale on every frame,
+      // rather than GPU-stretching one cached bitmap (which blurs) until the
+      // scale drifts past a threshold. Constant re-raster = sharp all the way.
       applyView();
-      const blur = Math.max(viewRef.scale / lastRasterScale.current, lastRasterScale.current / viewRef.scale);
-      if (blur >= RASTER.blur) { w.style.willChange = 'auto'; lastRasterScale.current = viewRef.scale; repromotePending.current = true; }
-      else if (!repromotePending.current) { w.style.willChange = 'transform'; }
       zoomRAF.current = requestAnimationFrame(zoomLoop);
     }
     function startZoomLoop() {
       clearTimeout(waTimer.current);
-      if (worldRef.current) worldRef.current.style.willChange = 'transform';
-      lastRasterScale.current = viewRef.scale; repromotePending.current = false;
+      // Un-promoted layer → every zoomLoop frame paints fresh at the live scale.
+      if (worldRef.current) worldRef.current.style.willChange = 'auto';
       if (!zoomRAF.current) zoomRAF.current = requestAnimationFrame(zoomLoop);
     }
     function freezeView() { stopZoomLoop(); targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = viewRef.scale; }
