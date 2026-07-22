@@ -107,6 +107,45 @@
     transform: translateY(0);
   }
 }
+/* ── Synthetic scrollbars ──────────────────────────────────────────
+   Screen-space overlays for the `scrollbars` prop. The board is a transform
+   pan/zoom surface, so these don't scroll anything natively — JS sizes the
+   thumb (syncScrollbars) and drags it to pan. Thin, square, transparent track;
+   only the thumb is interactive so the track never blocks board gestures.
+   Hidden until JS sets data-visible (the axis has content off-canvas). */
+.canvas-root .cv-scrollbar {
+  position: absolute;
+  z-index: 42;
+  pointer-events: none;
+}
+.canvas-root .cv-scrollbar-x {
+  left: 2px;
+  right: 12px;
+  /* leave the corner clear for the y bar */
+  bottom: 2px;
+  height: 8px;
+}
+.canvas-root .cv-scrollbar-y {
+  top: 2px;
+  bottom: 12px;
+  right: 2px;
+  width: 8px;
+}
+.canvas-root .cv-scrollbar-thumb {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+}
+.canvas-root .cv-scrollbar-x .cv-scrollbar-thumb {
+  top: 0;
+  bottom: 0;
+  cursor: ew-resize;
+}
+.canvas-root .cv-scrollbar-y .cv-scrollbar-thumb {
+  left: 0;
+  right: 0;
+  cursor: ns-resize;
+}
 /* Fullscreen mode: cover the browser viewport regardless of the host layout. */
 .canvas-root[data-fit="fullscreen"] {
   position: fixed;

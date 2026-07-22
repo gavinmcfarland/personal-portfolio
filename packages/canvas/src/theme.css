@@ -31,6 +31,10 @@
   --cv-faint: #8b8b91;
   --cv-line: rgba(0, 0, 0, 0.11);
   --cv-line-strong: rgba(0, 0, 0, 0.3);
+  /* Scrollbar thumb (rest + hover). Its own token — not --cv-line-strong — so a
+     skin can retint the bars without dragging every hairline with it. */
+  --cv-scrollbar: rgba(20, 20, 23, 0.28);
+  --cv-scrollbar-hover: rgba(20, 20, 23, 0.5);
   --cv-accent: #7c2d91;
   /* Derived from --accent so overriding the accent alone (e.g. the `accent`
      prop) re-tints every accent-soft surface with no extra tokens to set. */
@@ -95,6 +99,8 @@
   --cv-faint: #6c6c72;
   --cv-line: rgba(242, 242, 239, 0.12);
   --cv-line-strong: rgba(242, 242, 239, 0.32);
+  --cv-scrollbar: rgba(242, 242, 239, 0.28);
+  --cv-scrollbar-hover: rgba(242, 242, 239, 0.5);
   --cv-accent: #c88be8;
   --cv-accent-soft: color-mix(in srgb, var(--cv-accent) 16%, transparent);
   --cv-snap-guide: #ff6ba3;
@@ -233,6 +239,32 @@
   }
   .canvas-root .cv-interact-lock:hover > span {
     opacity: 1;
+  }
+}
+/* ── Synthetic scrollbars ──────────────────────────────────────────
+   Screen-space overlays for the `scrollbars` prop. The board is a transform
+   pan/zoom surface, so these don't scroll anything natively — JS sizes the
+   thumb (syncScrollbars) and drags it to pan. Thin, square, transparent track;
+   only the thumb is interactive so the track never blocks board gestures.
+   Hidden until JS sets data-visible (the axis has content off-canvas). */
+.canvas-root .cv-scrollbar {
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.canvas-root .cv-scrollbar[data-visible] {
+  opacity: 1;
+}
+.canvas-root .cv-scrollbar-thumb {
+  border-radius: 0;
+  /* square/rectangular */
+  background: var(--cv-scrollbar);
+  transition: background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (hover: hover) {
+  .canvas-root .cv-scrollbar-thumb:hover {
+    background: var(--cv-scrollbar-hover);
   }
 }
 /* Fullscreen mode: cover the browser viewport regardless of the host layout. */

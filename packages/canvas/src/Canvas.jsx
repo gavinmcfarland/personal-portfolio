@@ -49,7 +49,7 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames, components, fullscreenButton, fullBleed, maximized, maximizedRef } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames, components, fullscreenButton, fullBleed, maximized, maximizedRef, SCROLLBARS, scrollEls } = ctx;
   // Chrome slots: a consumer's `components` entry replaces the built-in piece;
   // an explicit `null` hides it. Each piece reads state via useCanvas(), so a
   // replacement needs no props. `key in obj` (not truthiness) so `null` hides.
@@ -362,6 +362,31 @@ export default function Canvas() {
     if (type === 'html') { eng.setHtmlActive(id); return; } // go live: the iframe takes the pointer
     if (type !== 'sticky' && type !== 'tblock' && type !== 'md' && type !== 'code' && type !== 'sound') return;
     eng.setTool('select'); eng.selectNode(id); eng.startEditing(id);
+  };
+
+  /* Scrollbar thumb drag → pan that axis. The engine (scrollDrag) maps the
+     thumb's screen-px travel to a world pan against the live content/view span;
+     pointer capture keeps the move/up tracking even off the thin thumb. */
+  const sbDrag = useRef(null);
+  const onSbDown = (axis) => (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    eng.freezeView();
+    const track = axis === 'x' ? scrollEls.trackX : scrollEls.trackY;
+    sbDrag.current = { axis, last: axis === 'x' ? e.clientX : e.clientY, len: axis === 'x' ? track.clientWidth : track.clientHeight };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onSbMove = (e) => {
+    const d = sbDrag.current;
+    if (!d) return;
+    const pos = d.axis === 'x' ? e.clientX : e.clientY;
+    eng.scrollDrag(d.axis, pos - d.last, d.len);
+    d.last = pos;
+  };
+  const onSbUp = (e) => {
+    if (!sbDrag.current) return;
+    sbDrag.current = null;
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch { /* already released */ }
   };
 
   const onContextMenu = (e) => {
@@ -1086,6 +1111,33 @@ export default function Canvas() {
         >
           <span>{interactLabel}</span>
         </button>
+      )}
+      {/* Synthetic scrollbars: shown (via data-visible, toggled in syncScrollbars)
+          only while the axis overflows; the thumb drags to pan. Only the thumb is
+          interactive, so the track never blocks board gestures. */}
+      {SCROLLBARS?.x && (
+        <div className="cv-scrollbar cv-scrollbar-x" ref={(el) => { scrollEls.trackX = el; }}>
+          <div
+            className="cv-scrollbar-thumb"
+            ref={(el) => { scrollEls.thumbX = el; }}
+            onPointerDown={onSbDown('x')}
+            onPointerMove={onSbMove}
+            onPointerUp={onSbUp}
+            onPointerCancel={onSbUp}
+          />
+        </div>
+      )}
+      {SCROLLBARS?.y && (
+        <div className="cv-scrollbar cv-scrollbar-y" ref={(el) => { scrollEls.trackY = el; }}>
+          <div
+            className="cv-scrollbar-thumb"
+            ref={(el) => { scrollEls.thumbY = el; }}
+            onPointerDown={onSbDown('y')}
+            onPointerMove={onSbMove}
+            onPointerUp={onSbUp}
+            onPointerCancel={onSbUp}
+          />
+        </div>
       )}
     </div>
   );

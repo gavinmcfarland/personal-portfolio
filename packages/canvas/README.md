@@ -69,6 +69,7 @@ All are optional.
 | `collideGap` | `number` | `16` | Minimum gap (world px) kept between repositioned objects. |
 | `layoutWidth` | `'viewport' \| number` | `'viewport'` | (`push-down` only) the band's width. `viewport` = the container's width in world units; a number fixes it in world px. |
 | `collideOrigin` | `'content' \| number` | `'content'` | (`push-down` only) the band's left edge: `content` = the left-most object, or an explicit world x. |
+| `scrollbars` | `false \| 'auto' \| 'x' \| 'y'` | `false` | Show a scrollbar on an axis only while content extends past the viewport on that axis (it auto-hides when everything fits). `'auto'` = both axes; `'x'` / `'y'` = that axis only. The board is a transform pan/zoom surface, not a native scroller, so each bar is a thin screen-space overlay whose thumb is draggable to pan that axis. |
 
 ### Responsive collision resolution
 

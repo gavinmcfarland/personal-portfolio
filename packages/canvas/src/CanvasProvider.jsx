@@ -465,6 +465,7 @@ export function CanvasProvider({
   collideGap = 16, // minimum gap (world px) kept between repositioned objects.
   collideOrigin = 'content', // the band's left edge: 'content' (the left-most object) or an explicit world x.
   collideSeparate = false, // ('organic' strategy) also prise apart INTENTIONAL overlaps when reflowing. Default false: reflow still routes objects around collisions it would create, but overlaps present in the authored layout are kept. Set true to separate every overlap.
+  scrollbars = false, // show a scrollbar on an axis only while content extends past the viewport on that axis (auto-hides when everything fits). false = never; 'auto' = both axes; 'x' or 'y' = that axis only. The board is a transform pan/zoom surface (not a native scroller), so each bar is a screen-space overlay whose thumb is draggable to pan that axis.
 }) {
   const EDITABLE = editable;
   const COOP = cooperativeGestures;
@@ -587,6 +588,12 @@ export function CanvasProvider({
   const COLLIDE_GAP = useRef(Number(collideGap) || 0).current;
   const COLLIDE_ORIGIN = useRef(collideOrigin).current;
   const COLLIDE_SEPARATE = useRef(!!collideSeparate).current;
+  // Which axes get a synthetic scrollbar (captured once, like the view config).
+  const SCROLLBARS = useRef({ x: scrollbars === 'auto' || scrollbars === 'x', y: scrollbars === 'auto' || scrollbars === 'y' }).current;
+  // Live handles to the scrollbar overlay DOM (Canvas.jsx attaches them via ref
+  // callbacks); syncScrollbars writes geometry straight to these, off React's
+  // render path like the rest of the chrome.
+  const scrollEls = useRef({ trackX: null, thumbX: null, trackY: null, thumbY: null }).current;
   const reflowRAF = useRef(0); // debounces reflowObjects to one run per frame
   const lastVpSize = useRef(null); // latest measured container size {w,h}
   const reframing = useRef(false); // true while reframeOnResize applies, so applyView doesn't re-capture the reference
@@ -682,6 +689,7 @@ export function CanvasProvider({
       if (viewRef.scale === lastHoverScale.current) S.hoverId = null;
       lastHoverScale.current = viewRef.scale;
       syncChrome();
+      syncScrollbars();
       // View-mode pan/zoom is transient (snapshotActive keeps the saved view),
       // so only edit-mode view changes need to hit the autosave. Also commit the
       // new framing to the published snapshot in the background — but not on the
@@ -1031,6 +1039,58 @@ export function CanvasProvider({
       }
       if (!any) { hideSelChrome(); return; }
       placeSel(x0, y0, x1 - x0, y1 - y0);
+    }
+
+    /* ── Synthetic scrollbars ─────────────────────────────────────
+       Opt-in via `scrollbars`. The board pans/zooms by transforming the world,
+       so there's no native scroller — each bar is a screen-space overlay whose
+       thumb reflects the currently visible world span against the union of the
+       content bounds and that visible span. A bar is shown only while its axis
+       overflows the viewport (content off-canvas), and hidden the moment
+       everything fits. Written imperatively (like syncChrome) so a pan/zoom
+       storm never hits React. */
+    function syncScrollbars() {
+      if (!SCROLLBARS.x && !SCROLLBARS.y) return;
+      const s = viewRef.scale || 1;
+      const b = bounds();
+      const place = (axis) => {
+        const on = axis === 'x' ? SCROLLBARS.x : SCROLLBARS.y;
+        const track = axis === 'x' ? scrollEls.trackX : scrollEls.trackY;
+        const thumb = axis === 'x' ? scrollEls.thumbX : scrollEls.thumbY;
+        if (!on || !track || !thumb) return;
+        // Visible world span on this axis (the viewport mapped back into world).
+        const visStart = axis === 'x' ? -viewRef.x / s : -viewRef.y / s;
+        const visLen = (axis === 'x' ? vpW() : vpH()) / s;
+        const cMin = b ? (axis === 'x' ? b.minX : b.minY) : visStart;
+        const cMax = b ? (axis === 'x' ? b.maxX : b.maxY) : visStart + visLen;
+        // Off-canvas on this axis? (half-px slack absorbs rounding.)
+        const overflow = !!b && (cMin < visStart - 0.5 || cMax > visStart + visLen + 0.5);
+        if (!overflow) { track.removeAttribute('data-visible'); return; }
+        // Thumb = the visible span as a fraction of the whole scrollable universe
+        // (content ∪ view), so it stays grabbable even when panned past content.
+        const uMin = Math.min(cMin, visStart), uMax = Math.max(cMax, visStart + visLen);
+        const span = uMax - uMin || 1;
+        const startFrac = (visStart - uMin) / span;
+        const sizeFrac = Math.min(1, visLen / span);
+        track.setAttribute('data-visible', '');
+        if (axis === 'x') { thumb.style.left = startFrac * 100 + '%'; thumb.style.width = sizeFrac * 100 + '%'; }
+        else { thumb.style.top = startFrac * 100 + '%'; thumb.style.height = sizeFrac * 100 + '%'; }
+      };
+      place('x'); place('y');
+    }
+    /* Drag a scrollbar thumb: map a thumb move of `deltaPx` screen px along a
+       `trackPx`-long track into a pan of that axis (against the live span). */
+    function scrollDrag(axis, deltaPx, trackPx) {
+      if (!trackPx) return;
+      const s = viewRef.scale || 1;
+      const b = bounds(); if (!b) return;
+      const visStart = axis === 'x' ? -viewRef.x / s : -viewRef.y / s;
+      const visLen = (axis === 'x' ? vpW() : vpH()) / s;
+      const cMin = axis === 'x' ? b.minX : b.minY, cMax = axis === 'x' ? b.maxX : b.maxY;
+      const uMin = Math.min(cMin, visStart), uMax = Math.max(cMax, visStart + visLen);
+      const span = uMax - uMin || 1;
+      const world = (deltaPx / trackPx) * span; // world units to shift the window
+      if (axis === 'x') panBy(-world * s, 0); else panBy(0, -world * s);
     }
 
     /* ── Marquee (rubber-band) selection ──────────────────────── */
@@ -2646,7 +2706,7 @@ export function CanvasProvider({
 
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
-      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, reframeOnResize, reflowObjects, scheduleReflow, hideSelChrome, placeSel, setHover, setGridEditGeom,
+      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, syncScrollbars, scrollDrag, reframeOnResize, reflowObjects, scheduleReflow, hideSelChrome, placeSel, setHover, setGridEditGeom,
       selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, snapResize, setSnapGuides,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
@@ -2802,6 +2862,15 @@ export function CanvasProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, readOnly, editingId]);
 
+  /* Re-measure the scrollbars when the content model or its reflow changes —
+     pan/zoom/resize already re-sync via applyView, but adding/moving/deleting
+     an object shifts the content bounds without touching the view. Layout
+     effect so the DOM (node sizes) is committed before we read it. */
+  useLayoutEffect(() => {
+    eng.syncScrollbars();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodes, shapes, reflow]);
+
   /* Reframe (per `resizeAnchor`) and re-sync chrome whenever the container
      resizes (section reflow, window resize, sidebar toggles, …) — measured on
      the viewport, not the window. */
@@ -2846,7 +2915,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
-    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus,
+    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
     // refs

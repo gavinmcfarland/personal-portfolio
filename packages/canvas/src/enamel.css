@@ -47,6 +47,8 @@
   --cv-faint: #767c83;
   --cv-line: #a6acb2;
   --cv-line-strong: #16191c;
+  --cv-scrollbar: #767c83;        /* flat steel thumb on the sunk board */
+  --cv-scrollbar-hover: #4a4f55;
   --cv-accent: #c8341a;    /* vermilion (light) */
   --cv-ui-bg: #d0d4d8;
   --cv-ui-border: #a6acb2;
@@ -77,6 +79,8 @@
   --cv-faint: #6b727a;
   --cv-line: #3a4048;      /* --edge hairline */
   --cv-line-strong: #e7eaed;
+  --cv-scrollbar: #6b727a;        /* flat steel thumb on the graphite ground */
+  --cv-scrollbar-hover: #9aa1a9;
   --cv-accent: #ff6a4d;    /* vermilion (dark) */
   --cv-ui-bg: #2c3138;
   --cv-ui-border: #3a4048;
