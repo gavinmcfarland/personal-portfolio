@@ -9,7 +9,7 @@ export const ZOOM = {
 	max: 8,
 	sensitivity: 0.015,
 	deltaClamp: 24,
-	lerp: 0.3,
+	lerp: 0.6,
 	doneScale: 0.0012,
 	donePan: 0.12,
 };
