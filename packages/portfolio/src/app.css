@@ -14,6 +14,7 @@
   /* Registered so `bg-surface` (and its `hover:` variant) are real Tailwind
      utilities. Points at the token var, so it still flips in dark mode. */
   --color-surface: var(--surface);
+  --color-hover: var(--hover);
 }
 
 /* ── Design tokens ─────────────────────────────────────────────
@@ -56,6 +57,7 @@
   /* Semantic tokens — Light (cool steel). Each derives from a primitive. */
   --bg: var(--steel-200); /* ground */
   --surface: var(--steel-100); /* panel — hover / raised fill */
+  --hover: var(--steel-200); /* icon-button hover fill (zoom-control grey) */
   --ink: var(--steel-950); /* primary text */
   --muted: var(--steel-600); /* secondary prose (--mid) */
   --faint: var(--steel-500); /* meta / captions */
@@ -83,6 +85,7 @@
 .dark {
   --bg: var(--steel-900); /* graphite ground */
   --surface: var(--steel-800); /* panel */
+  --hover: var(--steel-700); /* icon-button hover fill (matches --line) */
   --ink: var(--steel-50);
   --muted: var(--steel-400);
   --faint: var(--steel-550);
