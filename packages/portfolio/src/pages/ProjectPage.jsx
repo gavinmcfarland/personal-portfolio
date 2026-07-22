@@ -64,7 +64,7 @@ export default function ProjectPage({ project }) {
         </div>
       </header>
       {/* ── Full-screen canvas ───────────────────────────────────────── */}
-      <div className="relative min-h-0 flex-1 lg:min-w-0">
+      <div className="project-canvas relative min-h-0 flex-1 lg:min-w-0">
         <ProjectCanvas project={project} />
       </div>
     </div>

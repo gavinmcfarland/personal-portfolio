@@ -258,6 +258,14 @@ a.row:hover {
     transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* On the project page the theme toggle (fixed, top-right) sits exactly where the
+   canvas zoom cluster defaults to — nudge the cluster left so the two sit side by
+   side instead of overlapping. Extra specificity (.canvas-root) beats the
+   package's own `.canvas-root [data-cv-part="zoom"]` regardless of load order. */
+.project-canvas .canvas-root [data-cv-part="zoom"] {
+  right: 72px;
+}
+
 /* ── Canvas hover preview (Projects list) ────────────────────── */
 /* The popover shares the entrance curve of the rest of the page; the mini
    canvas hides its own chrome via the <Canvas ui={false}> prop. */

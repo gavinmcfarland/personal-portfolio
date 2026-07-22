@@ -24,9 +24,10 @@ function ProjectRoute() {
 /* How far the sliding overlay stops from the left edge — the strip of Home left
    peeking behind it. Declared as literal class names (not computed) so Tailwind
    picks them up, and kept together so the panel inset and the peek's back-target
-   width stay in sync. */
-const PEEK_INSET = "left-[20%]"; // panel starts 20% in
-const PEEK_WIDTH = "w-[20%]"; // the exposed Home strip / back target
+   width stay in sync. The peek is lg-and-up only; md and below get a full-width
+   overlay (the in-page Back link dismisses it). */
+const PEEK_INSET = "left-0 lg:left-[20%]"; // full width below lg, 20% peek at lg+
+const PEEK_WIDTH = "hidden lg:block w-[20%]"; // back target only where the peek shows
 
 function App() {
   const location = useLocation();
