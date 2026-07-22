@@ -63,10 +63,18 @@ function App() {
   }, []);
 
   /* Freeze the page behind the overlay so Home keeps its exact scroll position
-     for when we return. */
+     for when we return — and, crucially, so scrolling inside an open project's
+     canvas (e.g. over its zoom/top-bar chrome, which lets the wheel through)
+     can't scroll Home behind it. The page's scroll container is <html>, not
+     <body>: `html { overflow-x: hidden }` makes its overflow-y compute to
+     `auto`, so a body-only lock never takes — set overflow on the scroller
+     itself (and clear it on return, restoring normal Home scrolling). */
   useEffect(() => {
+    const scroller = document.scrollingElement || document.documentElement;
+    scroller.style.overflow = isHome ? "" : "hidden";
     document.body.style.overflow = isHome ? "" : "hidden";
     return () => {
+      scroller.style.overflow = "";
       document.body.style.overflow = "";
     };
   }, [isHome]);
