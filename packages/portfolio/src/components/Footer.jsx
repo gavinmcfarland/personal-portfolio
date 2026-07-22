@@ -30,64 +30,69 @@ const demoBase = {
 };
 
 const Footer = () => (
-  <footer className="mt-24 border-t border-line">
-    <div className="mr-auto w-full max-w-2xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pt-16">
-      <div className="section-label">Playground</div>
-      <p className="mt-4 max-w-[52ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">
-        This site also comes as an infinite canvas — packaged as an embeddable
-        React component. Here it is dropped straight into the footer. Have a play:
-        pan, zoom, drop a note, or pick a tool from the bar.
-      </p>
-    </div>
-
-    <div className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pt-8 pb-14">
-      <div
-        className="overflow-hidden rounded-2xl border border-line"
-        style={{ height: "min(70vh, 520px)" }}
-      >
-        <Canvas
-          fit="contain"
-          initialView="fit"
-          classNames={{ root: "enamel" }}
-          accent={ACCENT}
-          editable={import.meta.env.DEV}
-          cooperativeGestures
-          base={demoBase}
-          storageKey="footer-canvas-demo"
-          initialState={publishedBoard("footer-canvas-demo")}
-          onPublish={boardSaver("footer-canvas-demo")}
-          onUploadImage={uploadMedia}
-          onUploadVideo={uploadMedia}
-          onUploadHtml={uploadMedia}
-          onUnfurl={unfurlLink}
-        />
+  <>
+    {/* The canvas playground, as its own page section. It keeps the footer style
+        — a full-width rule above the label — rather than the ruled headings that
+        sit inside the other sections. */}
+    <section id="playground" className="mt-24 border-t border-line">
+      <div className="mr-auto w-full max-w-2xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pt-16">
+        <div className="section-label">Playground</div>
+        <p className="mt-4 max-w-[52ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">
+          This site also comes as an infinite canvas — packaged as an embeddable
+          React component. Here it is dropped straight into the footer. Have a play:
+          pan, zoom, drop a note, or pick a tool from the bar.
+        </p>
       </div>
-      <p className="mt-3 text-[0.8125rem] text-faint">
-        Embedded with a single{" "}
-        <code className="font-sans">{'<Canvas fit="contain" />'}</code> component.
-      </p>
-    </div>
 
-    <section className="mr-auto w-full max-w-2xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pt-4 pb-14">
-      <div className="section-label">Responsive collisions</div>
-      <p className="mt-4 max-w-[52ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">
-        The canvas adapts to its container: as space runs out, objects reflow to
-        stay in view — routing around each other and keeping the overlaps you make
-        on purpose. See it fill the screen:
-      </p>
-      <Link
-        to="/responsive"
-        className="group mt-6 inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 font-sans text-[0.875rem] font-medium text-ink transition-colors duration-200 hover:bg-surface"
-      >
-        Open the full-screen demo
-        <ArrowRight className="h-4 w-4 text-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-accent" />
-      </Link>
+      <div className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pt-8 pb-14">
+        <div
+          className="overflow-hidden rounded-2xl border border-line"
+          style={{ height: "min(70vh, 520px)" }}
+        >
+          <Canvas
+            fit="contain"
+            initialView="fit"
+            classNames={{ root: "enamel" }}
+            accent={ACCENT}
+            editable={import.meta.env.DEV}
+            cooperativeGestures
+            base={demoBase}
+            storageKey="footer-canvas-demo"
+            initialState={publishedBoard("footer-canvas-demo")}
+            onPublish={boardSaver("footer-canvas-demo")}
+            onUploadImage={uploadMedia}
+            onUploadVideo={uploadMedia}
+            onUploadHtml={uploadMedia}
+            onUnfurl={unfurlLink}
+          />
+        </div>
+        <p className="mt-3 text-[0.8125rem] text-faint">
+          Embedded with a single{" "}
+          <code className="font-sans">{'<Canvas fit="contain" />'}</code> component.
+        </p>
+      </div>
+
+      <div className="mr-auto w-full max-w-2xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pt-4 pb-14">
+        <div className="section-label">Responsive collisions</div>
+        <p className="mt-4 max-w-[52ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">
+          The canvas adapts to its container: as space runs out, objects reflow to
+          stay in view — routing around each other and keeping the overlaps you make
+          on purpose. See it fill the screen:
+        </p>
+        <Link
+          to="/responsive"
+          className="group mt-6 inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 font-sans text-[0.875rem] font-medium text-ink transition-colors duration-200 hover:bg-surface"
+        >
+          Open the full-screen demo
+          <ArrowRight className="h-4 w-4 text-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-accent" />
+        </Link>
+      </div>
     </section>
 
-    <div className="mr-auto w-full max-w-2xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pb-16">
+    <footer className="mr-auto w-full max-w-2xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pb-16">
       <p className="text-[0.8125rem] text-faint">© 2026 Gavin McFarland</p>
-    </div>
-  </footer>
+    </footer>
+  </>
 );
 
 export default Footer;

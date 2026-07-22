@@ -1,13 +1,10 @@
 import { Link } from 'react-router-dom';
 import { projects } from '../data/projects';
 import { Section } from './ui';
-import ProjectCanvasPreview from './ProjectCanvasPreview';
 
 /* Work, as the Enamel table (design-mockups/12-enamel/index.html): tracked mono
    structure, a Chivo description column, and a flat enamel swatch + tag for the
-   Kind. Each row keeps the site's own behaviour — it links to the project's page
-   and floats the live canvas thumbnail on hover — rather than the mockup's plain
-   anchors. */
+   Kind. Each row links to the project's page. */
 
 const KINDS = {
   tool: { label: 'Tool', tone: 'blue' },
@@ -56,31 +53,30 @@ const Projects = () => (
         </div>
 
         {projects.map((p, i) => (
-          <ProjectCanvasPreview key={p.id} project={p}>
-            <Link
-              to={`/projects/${p.id}`}
-              className={`group ${GRID} border-b border-line py-[0.6rem] transition-colors duration-150 hover:bg-surface`}
+          <Link
+            key={p.id}
+            to={`/projects/${p.id}`}
+            className={`group ${GRID} border-b border-line py-[0.6rem] transition-colors duration-150 hover:bg-surface`}
+          >
+            <span className="font-mono text-[0.75rem] font-bold tabular-nums text-accent">
+              {pad2(i + 1)}
+            </span>
+            <span className="font-mono text-[0.75rem] font-semibold text-ink transition-colors duration-150 group-hover:text-accent">
+              {p.title}
+            </span>
+            <span
+              className="block min-w-0 truncate font-sans text-[0.9375rem] text-muted"
+              title={p.summary}
             >
-              <span className="font-mono text-[0.75rem] font-bold tabular-nums text-accent">
-                {pad2(i + 1)}
-              </span>
-              <span className="font-mono text-[0.75rem] font-semibold text-ink transition-colors duration-150 group-hover:text-accent">
-                {p.title}
-              </span>
-              <span
-                className="block min-w-0 truncate font-sans text-[0.9375rem] text-muted"
-                title={p.summary}
-              >
-                {p.summary}
-              </span>
-              <span>
-                <KindTag kind={p.kind} />
-              </span>
-              <span className="text-right font-mono text-[0.75rem] tabular-nums text-faint">
-                {p.year}
-              </span>
-            </Link>
-          </ProjectCanvasPreview>
+              {p.summary}
+            </span>
+            <span>
+              <KindTag kind={p.kind} />
+            </span>
+            <span className="text-right font-mono text-[0.75rem] tabular-nums text-faint">
+              {p.year}
+            </span>
+          </Link>
         ))}
       </div>
     </div>
