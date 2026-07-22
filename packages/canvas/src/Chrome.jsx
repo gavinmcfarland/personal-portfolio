@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pencil } from 'lucide-react';
 import { useCanvas } from './CanvasProvider';
 import { resolveGrid } from './nodes/common';
 import { frameBarH } from './constants';
@@ -208,7 +207,6 @@ export default function Chrome() {
 
   const selRef = useCallback((el) => eng.setChrome('sel', el), [eng]);
   const hovRef = useCallback((el) => eng.setChrome('hov', el), [eng]);
-  const editRef = useCallback((el) => eng.setChrome('edit', el), [eng]);
   const rzRef = useCallback((el) => eng.setChrome('rz', el), [eng]);
   const marqRef = useCallback((el) => eng.setChrome('marq', el), [eng]);
   const guidesRef = useCallback((el) => eng.setChrome('guides', el), [eng]);
@@ -284,15 +282,6 @@ export default function Chrome() {
       <div className="cv-hov" ref={hovRef} />
       <div className="cv-sel" ref={selRef} />
       <div className="cv-marquee" ref={marqRef} />
-      <div
-        className="cv-cbtn"
-        title="Edit markdown"
-        ref={editRef}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => { e.stopPropagation(); if (single) eng.startEditing(single.id); }}
-      >
-        <Pencil />
-      </div>
       <div className="cv-rz" ref={rzRef}>
         {/* Side strips (grabbable anywhere along an edge) first, corner squares
             last so the corners win the hit test where the two overlap. */}

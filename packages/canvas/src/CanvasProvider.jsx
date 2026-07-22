@@ -905,7 +905,7 @@ export function CanvasProvider({
       return [bb.x + (moving ? a.dx || 0 : 0) + rdx, bb.y + (moving ? a.dy || 0 : 0) + rdy, bb.width, bb.height];
     }
     function hideSelChrome() {
-      for (const k of ['sel', 'edit', 'rz']) if (chrome[k]) chrome[k].style.display = 'none';
+      for (const k of ['sel', 'rz']) if (chrome[k]) chrome[k].style.display = 'none';
     }
     function placeSel(x, y, w, h) {
       const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s, sw = w * s, sh = h * s;
@@ -918,14 +918,11 @@ export function CanvasProvider({
       // edge, matching the hover outline (see placeHover).
       chrome.sel.style.left = ox + 'px'; chrome.sel.style.top = oy + 'px';
       chrome.sel.style.width = ow + 'px'; chrome.sel.style.height = oh + 'px';
-      /* The edit / resize affordances only make sense for a single selected node. */
+      /* The resize affordances only make sense for a single selected node. */
       const single = S.selected.length === 1 ? S.selected[0] : null;
       const nodeEl = single && single.kind === 'node' ? nodeEls.get(single.id) : null;
       const type = nodeEl ? nodeEl.dataset.type : null;
       const editing = type && S.editingId === single.id;
-      if ((type === 'md' || type === 'code') && !editing) {
-        chrome.edit.style.display = 'flex'; chrome.edit.style.left = (sx + sw - 11) + 'px'; chrome.edit.style.top = (sy - 11) + 'px';
-      } else chrome.edit.style.display = 'none';
       // Scale mode shows corner handles on ANY node (even stickies / sound,
       // which have no resize handles otherwise) — dragging a corner scales it.
       const scaling = type && S.tool === 'scale';

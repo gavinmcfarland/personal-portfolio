@@ -943,19 +943,6 @@
   position: absolute;
 }
 /* Centre-line alignments read as dashed; edge alignments stay solid. */
-.canvas-root .cv-cbtn {
-  width: 22px;
-  height: 22px;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  pointer-events: auto;
-}
-.canvas-root .cv-cbtn svg {
-  width: 12px;
-  height: 12px;
-}
 /* Resize handles: the .cv-rz container tracks the selection rect (placed by
    placeSel) and stays click-through. Inside sit four visible corner squares plus
    four transparent side strips — the strips make an object resizable from
@@ -1355,7 +1342,6 @@
 .canvas-root[data-readonly] [data-cv-part="properties"] {
   display: none;
 }
-.canvas-root[data-readonly] .cv-chrome .cv-cbtn,
 .canvas-root[data-readonly] .cv-rz,
 .canvas-root[data-readonly] .cv-sel {
   display: none !important;

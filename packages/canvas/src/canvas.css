@@ -1699,34 +1699,6 @@
 .canvas-root .cv-guide-center-h {
   background: repeating-linear-gradient(to right, var(--cv-snap-guide) 0 4px, transparent 4px 8px);
 }
-.canvas-root .cv-cbtn {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--cv-surface);
-  border: 1px solid var(--cv-line-strong);
-  color: var(--cv-faint);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 13px;
-  box-shadow: var(--cv-shadow);
-  pointer-events: auto;
-}
-.canvas-root .cv-cbtn:hover {
-  color: var(--cv-accent);
-  border-color: var(--cv-accent);
-}
-.canvas-root .cv-cbtn svg {
-  width: 12px;
-  height: 12px;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
 /* Resize handles: the .cv-rz container tracks the selection rect (placed by
    placeSel) and stays click-through. Inside sit four visible corner squares plus
    four transparent side strips — the strips make an object resizable from
@@ -2370,7 +2342,6 @@
 .canvas-root[data-readonly] [data-cv-part="properties"] {
   display: none;
 }
-.canvas-root[data-readonly] .cv-chrome .cv-cbtn,
 .canvas-root[data-readonly] .cv-rz,
 .canvas-root[data-readonly] .cv-sel {
   display: none !important;
