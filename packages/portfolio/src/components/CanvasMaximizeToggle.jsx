@@ -29,7 +29,7 @@ export default function CanvasMaximizeToggle() {
   if (!maximized) return null;
   // z above the overlay's 2147483000 so it sits on top of the maximised canvas.
   return createPortal(
-    <ThemeToggle className="fixed right-4 top-4 z-[2147483001] sm:right-6 sm:top-6" />,
+    <ThemeToggle className="fixed right-[22px] top-[22px] z-[2147483001]" />,
     document.body,
   );
 }
