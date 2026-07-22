@@ -219,5 +219,9 @@
 }
 .enamel [data-cv-part="zoom"] button:hover,
 .enamel .cv-tool:hover {
+  background: #c2c7cc;
+}
+.dark .enamel [data-cv-part="zoom"] button:hover,
+.dark .enamel .cv-tool:hover {
   background: var(--cv-line);
 }
