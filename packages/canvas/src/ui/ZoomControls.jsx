@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Expand, Maximize, Minus, Plus, Shrink } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { cx } from '../constants';
@@ -8,30 +8,16 @@ import { cx } from '../constants';
 const fullscreenEl = () => document.fullscreenElement || document.webkitFullscreenElement || null;
 
 export default function ZoomControls() {
-  const { eng, zoomLabelRef, rootRef, classNames, fullscreenButton, fullBleed, setFullBleed } = useCanvas();
+  const { eng, zoomLabelRef, rootRef, classNames, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen } = useCanvas();
   // The button can drive two expand behaviours: 'native' uses the browser
   // Fullscreen API (covers the whole screen, escapes the page), 'document'
   // toggles a full-bleed overlay that covers the document's viewport but stays
   // inside the page. `true` keeps the original native behaviour.
   const mode = fullscreenButton === 'document' ? 'document' : 'native';
 
-  /* In native mode the browser owns the expanded state (tracked via
-     fullscreenchange); in document mode it lives in the provider (`fullBleed`),
-     which portals the board to <body> and applies the CSS. */
-  const [nativeFull, setNativeFull] = useState(false);
-  const isFull = mode === 'document' ? fullBleed : nativeFull;
-
-  useEffect(() => {
-    if (!fullscreenButton || mode !== 'native') return;
-    const sync = () => setNativeFull(fullscreenEl() === rootRef.current);
-    document.addEventListener('fullscreenchange', sync);
-    document.addEventListener('webkitfullscreenchange', sync);
-    sync();
-    return () => {
-      document.removeEventListener('fullscreenchange', sync);
-      document.removeEventListener('webkitfullscreenchange', sync);
-    };
-  }, [fullscreenButton, mode, rootRef]);
+  /* Expanded state: native mode reads the provider's browser-fullscreen tracker,
+     document mode reads its `fullBleed` overlay flag. */
+  const isFull = mode === 'document' ? fullBleed : nativeFullscreen;
 
   /* Document mode: Esc exits the full-bleed overlay. */
   useEffect(() => {

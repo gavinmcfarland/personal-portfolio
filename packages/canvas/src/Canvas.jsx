@@ -49,7 +49,7 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames, components, fullscreenButton, fullBleed } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames, components, fullscreenButton, fullBleed, maximized, maximizedRef } = ctx;
   // Chrome slots: a consumer's `components` entry replaces the built-in piece;
   // an explicit `null` hides it. Each piece reads state via useCanvas(), so a
   // replacement needs no props. `key in obj` (not truthiness) so `null` hides.
@@ -64,8 +64,10 @@ export default function Canvas() {
   const Lightbox = slot('Lightbox', DefaultLightbox);
   // Cooperative gestures only apply in view mode; while editing the board keeps
   // full gesture control. `readOnly` (reactive) drives the CSS attribute/render;
-  // the imperative handlers read the live `S.readOnly` instead.
-  const coopView = COOP && readOnly;
+  // the imperative handlers read the live `S.readOnly` instead. Suspended while
+  // maximised — the board owns the screen, so there's no page to scroll past and
+  // scroll-to-pan should just work (matching the imperative handlers below).
+  const coopView = COOP && readOnly && !maximized;
 
   // Touch-primary devices phrase things differently ("tap" vs "click", etc.).
   const coarsePointer = typeof matchMedia !== 'undefined' && matchMedia('(hover: none)').matches;
@@ -172,7 +174,7 @@ export default function Canvas() {
       // finger pans the board too. (The "use two fingers" hint is flashed from the
       // touch tracker below, which knows the finger count, so a real two-finger
       // pan doesn't trigger it.)
-      if (COOP && !CLICK_TO_INTERACT && !engagedRef.current && e.pointerType === 'touch') return;
+      if (COOP && !CLICK_TO_INTERACT && !engagedRef.current && !maximizedRef.current && e.pointerType === 'touch') return;
       eng.freezeView();
       // Remember media / links under the pointer so a stationary tap opens them.
       // For a grid, the specific cell (data-media-idx) decides which asset opens.
@@ -765,8 +767,8 @@ export default function Canvas() {
       // unlocked the board behaves greedily (normal pan + ⌘/Ctrl zoom). The
       // overlay is the affordance, so no wheel hint here.
       if (CLICK_TO_INTERACT) {
-        if (!engagedRef.current) return; // locked → page scrolls past
-      } else if (COOP && S.readOnly && !engagedRef.current && !zoomKey) {
+        if (!engagedRef.current && !maximizedRef.current) return; // locked → page scrolls past (but maximised owns the screen)
+      } else if (COOP && S.readOnly && !engagedRef.current && !maximizedRef.current && !zoomKey) {
         // Cooperative gestures (view mode, locked): a plain wheel scrolls the host
         // page (don't preventDefault). Surface the "scroll to pan is disabled"
         // message since the user just tried to scroll the board. Unlocking via the
@@ -876,7 +878,7 @@ export default function Canvas() {
       touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
       // Cooperative locked: a lone finger is a page-scroll attempt → hint to use
       // two fingers, unless we're in the quiet window.
-      if (touches.size === 1 && COOP && S.readOnly && !engagedRef.current && !CLICK_TO_INTERACT) {
+      if (touches.size === 1 && COOP && S.readOnly && !engagedRef.current && !maximizedRef.current && !CLICK_TO_INTERACT) {
         if (performance.now() >= hintQuietUntil) { flashMsg(); hintQuietUntil = performance.now() + HINT_COOLDOWN; }
       }
       if (touches.size === 2) {
@@ -1067,11 +1069,13 @@ export default function Canvas() {
           {!engaged && <span ref={msgRef}>{lockMsg}</span>}
         </div>
       )}
-      {CLICK_TO_INTERACT && !engaged && (
+      {CLICK_TO_INTERACT && !engaged && !maximized && (
         /* Locked overlay: swallows board gestures and lets one finger scroll the
            page (touch-action set in CSS). A tap unlocks (tracked via the pointer
            handlers so a scroll-past never engages it); the board relocks on
-           page-scroll / off-board click / Esc (handled by the window listeners). */
+           page-scroll / off-board click / Esc (handled by the window listeners).
+           Hidden while maximised — the board owns the screen, so there's nothing
+           to scroll past and it should be interactive immediately. */
         <button
           type="button"
           className="cv-interact-lock"

@@ -523,6 +523,7 @@ export function CanvasProvider({
   const [gridEditId, setGridEditId] = useState(null); // media node whose grid proportions are being edited
   const [htmlActiveId, setHtmlActiveId] = useState(null); // html node whose iframe is live (receives pointer events)
   const [fullBleed, setFullBleed] = useState(false); // `fullscreenButton="document"` overlay: covers the document's viewport (portaled to body so an ancestor transform can't trap it)
+  const [nativeFullscreen, setNativeFullscreen] = useState(false); // this canvas owns the browser Fullscreen API (via `fullscreenButton` native mode)
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
   const [gridHidden, setGridHidden] = useState(init.gridHidden || false); // board-wide dot-grid toggle (false = grid shown)
   const [reflow, setReflow] = useState(null); // Map<id,{x,y}> of derived positions from the collision resolver (null = objects at authored positions). Not persisted.
@@ -544,6 +545,10 @@ export function CanvasProvider({
   // Single setter keeps the ref and state in lockstep (ref for the imperative
   // handlers, state to re-render the overlay).
   const setEngaged = (v) => { engagedRef.current = v; setEngagedState(v); };
+  // Live mirror of `maximized` (see below) for the window gesture handlers, so
+  // they can suspend the cooperative/click-to-interact scroll lock while the
+  // board covers the whole screen/document (there's no page behind it to scroll).
+  const maximizedRef = useRef(false);
   const viewportRef = useRef(null);
   const worldRef = useRef(null);
   const zoomLabelRef = useRef(null);
@@ -2812,11 +2817,36 @@ export function CanvasProvider({
     return () => ro.disconnect();
   }, [eng]);
 
+  /* Track whether THIS canvas holds the browser fullscreen (native
+     `fullscreenButton` mode, or a user F11 on the root). Feeds `maximized`,
+     which suspends the cooperative-gesture scroll lock. */
+  useEffect(() => {
+    const sync = () => {
+      const fs = document.fullscreenElement || document.webkitFullscreenElement || null;
+      setNativeFullscreen(!!fs && fs === rootRef.current);
+    };
+    document.addEventListener('fullscreenchange', sync);
+    document.addEventListener('webkitfullscreenchange', sync);
+    sync();
+    return () => {
+      document.removeEventListener('fullscreenchange', sync);
+      document.removeEventListener('webkitfullscreenchange', sync);
+    };
+  }, []);
+
+  /* The board covers the whole screen or document — via either fullscreen
+     button mode, or a mount-time `fit="fullscreen"`. In every case nothing of
+     the host page shows behind it, so the cooperative-gesture / click-to-interact
+     scroll lock (which exists to let the page scroll past an embedded board)
+     should be suspended. Mirrored to a ref for the imperative gesture handlers. */
+  const maximized = fullBleed || nativeFullscreen || fit === 'fullscreen';
+  maximizedRef.current = maximized;
+
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
-    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, saveStatus,
+    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
     // refs
