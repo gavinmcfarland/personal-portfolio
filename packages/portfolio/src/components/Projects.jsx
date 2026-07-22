@@ -90,7 +90,7 @@ const Projects = () => {
           {/* Column header — 11px tracked mono marks over a drawn rule. */}
           <div
             className={`${GRID} pb-[0.5rem] font-mono text-[0.6875rem] font-medium uppercase tracking-[0.1em] text-faint`}
-            style={{ borderBottom: '2px solid var(--rule)' }}
+            style={{ borderBottom: '2px solid var(--line-strong)' }}
           >
             <span>No.</span>
             <span>Item</span>
