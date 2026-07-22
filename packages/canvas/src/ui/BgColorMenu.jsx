@@ -32,7 +32,8 @@ export default function BgColorMenu() {
   return (
     <div className="cv-bg-menu-wrap" ref={wrapRef}>
       <button
-        className={`cv-chip${open ? ' cv-on' : ''}`}
+        className="cv-chip"
+        data-on={open ? '' : undefined}
         title="Canvas background colour"
         onClick={() => setOpen((o) => !o)}
       >
@@ -42,14 +43,16 @@ export default function BgColorMenu() {
       {open && (
         <div className="cv-ui cv-panel cv-bg-menu">
           <button
-            className={`cv-swatch cv-default${!bgColor ? ' cv-active' : ''}`}
+            className="cv-swatch cv-default"
+            data-active={!bgColor ? '' : undefined}
             title="Theme default"
             onClick={() => eng.setCanvasBg(null)}
           />
           {BG_COLORS.map((hex) => (
             <button
               key={hex}
-              className={`cv-swatch${bgColor === hex ? ' cv-active' : ''}`}
+              className="cv-swatch"
+              data-active={bgColor === hex ? '' : undefined}
               title={hex}
               style={{ background: tint(hex) }}
               onClick={() => eng.setCanvasBg(hex)}

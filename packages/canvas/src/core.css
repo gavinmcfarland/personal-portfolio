@@ -125,39 +125,40 @@
 }
 /* Dot grid toggled off (board setting) — keep the background colour, drop dots. */
 /* Edit mode (select tool, not read-only) shows a custom accent pointer. */
-.canvas-root.cv-tool-select:not(.cv-read-only):not(.cv-panning) .cv-viewport {
+.canvas-root[data-tool="select"]:not([data-readonly]):not([data-panning]) .cv-viewport {
   cursor: var(--cv-cur-edit), default;
 }
 /* During a node drag the viewport captures the pointer, so its cursor (not the
    node's) is shown — keep it on the hover variant. */
-.canvas-root.cv-tool-select:not(.cv-read-only):has(.cv-node.cv-dragging) .cv-viewport {
+.canvas-root[data-tool="select"]:not([data-readonly]):has(.cv-node[data-dragging]) .cv-viewport {
   cursor: var(--cv-cur-edit-hover), grabbing;
 }
-.canvas-root.cv-tool-hand .cv-viewport,
-.canvas-root.cv-panning .cv-viewport {
+.canvas-root[data-tool="hand"] .cv-viewport,
+.canvas-root[data-space] .cv-viewport,
+.canvas-root[data-panning] .cv-viewport {
   cursor: grab;
 }
-.canvas-root.cv-panning .cv-viewport {
+.canvas-root[data-panning] .cv-viewport {
   cursor: grabbing;
 }
-.canvas-root.cv-tool-note .cv-viewport,
-.canvas-root.cv-tool-text .cv-viewport,
-.canvas-root.cv-tool-md .cv-viewport,
-.canvas-root.cv-tool-code .cv-viewport {
+.canvas-root[data-tool="note"] .cv-viewport,
+.canvas-root[data-tool="text"] .cv-viewport,
+.canvas-root[data-tool="md"] .cv-viewport,
+.canvas-root[data-tool="code"] .cv-viewport {
   cursor: crosshair;
 }
 /* Scale mode (K): a resize cursor everywhere signals scaling; dragging an
    object's body still moves it, dragging a corner handle scales it. */
-.canvas-root.cv-tool-scale:not(.cv-read-only) .cv-viewport,
-.canvas-root.cv-tool-scale:not(.cv-read-only) .cv-node {
+.canvas-root[data-tool="scale"]:not([data-readonly]) .cv-viewport,
+.canvas-root[data-tool="scale"]:not([data-readonly]) .cv-node {
   cursor: nwse-resize;
 }
-.canvas-root.cv-tool-pen .cv-viewport,
-.canvas-root.cv-tool-line .cv-viewport,
-.canvas-root.cv-tool-arrow .cv-viewport,
-.canvas-root.cv-tool-rect .cv-viewport,
-.canvas-root.cv-tool-ellipse .cv-viewport,
-.canvas-root.cv-tool-frame .cv-viewport {
+.canvas-root[data-tool="pen"] .cv-viewport,
+.canvas-root[data-tool="line"] .cv-viewport,
+.canvas-root[data-tool="arrow"] .cv-viewport,
+.canvas-root[data-tool="rect"] .cv-viewport,
+.canvas-root[data-tool="ellipse"] .cv-viewport,
+.canvas-root[data-tool="frame"] .cv-viewport {
   cursor: crosshair;
 }
 .canvas-root .cv-world {
@@ -194,10 +195,10 @@
 .canvas-root .cv-shape.cv-fillable {
   pointer-events: all;
 }
-.canvas-root.cv-tool-select .cv-shape {
+.canvas-root[data-tool="select"] .cv-shape {
   cursor: move;
 }
-.canvas-root.cv-tool-select:not(.cv-read-only) .cv-shape {
+.canvas-root[data-tool="select"]:not([data-readonly]) .cv-shape {
   cursor: var(--cv-cur-edit-hover), move;
 }
 /* ── Nodes ────────────────────────────────────────────────────── */
@@ -207,10 +208,10 @@
   left: 0;
   transform-origin: 0 0;
 }
-.canvas-root.cv-tool-select:not(.cv-read-only) .cv-node {
+.canvas-root[data-tool="select"]:not([data-readonly]) .cv-node {
   cursor: var(--cv-cur-edit-hover), grab;
 }
-.canvas-root .cv-node.cv-dragging {
+.canvas-root .cv-node[data-dragging] {
   cursor: var(--cv-cur-edit-hover), grabbing;
 }
 /* Sticky note */
@@ -534,7 +535,7 @@
 .canvas-root .cv-node.cv-media .cv-media-cell.cv-svg img {
   object-fit: contain;
 }
-.canvas-root.cv-read-only .cv-node.cv-media .cv-media-cell {
+.canvas-root[data-readonly] .cv-node.cv-media .cv-media-cell {
   cursor: zoom-in;
 }
 /* Sound object — a fixed-size audio player card (play / name / scrub bar) */
@@ -680,16 +681,16 @@
   display: none;
   position: relative;
 }
-.canvas-root .cv-md.cv-md-editing .cv-md-edit {
+.canvas-root .cv-md[data-editing] .cv-md-edit {
   display: block;
 }
-.canvas-root .cv-md.cv-md-editing .cv-md-render {
+.canvas-root .cv-md[data-editing] .cv-md-render {
   display: none;
 }
 /* In edit mode, treat the rendered markdown as a single hit-testing surface so a
    native double-click (to enter edit mode) fires reliably. Read-only keeps links
    individually clickable. */
-.canvas-root:not(.cv-read-only) .cv-md-render * {
+.canvas-root:not([data-readonly]) .cv-md-render * {
   pointer-events: none;
 }
 .canvas-root .cv-md-hl,
@@ -774,7 +775,7 @@
   pointer-events: none;
 }
 .canvas-root .cv-code:hover .cv-code-toggle,
-.canvas-root .cv-code.cv-code-editing .cv-code-toggle {
+.canvas-root .cv-code[data-editing] .cv-code-toggle {
   pointer-events: auto;
 }
 .canvas-root .cv-code-toggle svg {
@@ -793,10 +794,10 @@
 .canvas-root .cv-code-lang {
   white-space: nowrap;
 }
-.canvas-root .cv-code.cv-code-editing .cv-code-langbox {
+.canvas-root .cv-code[data-editing] .cv-code-langbox {
   cursor: pointer;
 }
-.canvas-root .cv-code.cv-code-editing .cv-code-langbox::after {
+.canvas-root .cv-code[data-editing] .cv-code-langbox::after {
   position: absolute;
   right: 6px;
   top: 50%;
@@ -827,7 +828,7 @@
 }
 /* While editing, keep the copy button visible and usable (its click is handled
    without exiting edit mode). */
-.canvas-root .cv-code.cv-code-editing .cv-code-copy {
+.canvas-root .cv-code[data-editing] .cv-code-copy {
   pointer-events: auto;
 }
 .canvas-root .cv-code-copy svg {
@@ -838,10 +839,10 @@
   display: none;
   position: relative;
 }
-.canvas-root .cv-code.cv-code-editing .cv-code-edit {
+.canvas-root .cv-code[data-editing] .cv-code-edit {
   display: block;
 }
-.canvas-root .cv-code.cv-code-editing .cv-code-render {
+.canvas-root .cv-code[data-editing] .cv-code-render {
   display: none;
 }
 .canvas-root .cv-code-render,
@@ -901,7 +902,9 @@
 .canvas-root .cv-code.cv-code-nowrap .cv-code-render {
   overflow-x: auto;
 }
-/* Syntax tokens — stable hues (One Light / One Dark) independent of the accent. */
+/* Syntax tokens — stable hues (One Light / One Dark) independent of the accent.
+   Colours come from the --cv-code-* tokens (light defaults + dark overrides in
+   the token blocks), so a consumer reskins highlighting by setting those. */
 /* ── Chrome layer (screen-space, never scales with zoom) ──────── */
 .canvas-root .cv-chrome {
   position: absolute;
@@ -1085,7 +1088,7 @@
   pointer-events: auto;
   max-width: 280px;
 }
-.canvas-root .cv-chrome .cv-frame-label.cv-editing {
+.canvas-root .cv-chrome .cv-frame-label[data-editing] {
   cursor: text;
 }
 .canvas-root .cv-chrome .cv-frame-label .cv-txt {
@@ -1202,7 +1205,7 @@
   flex-direction: column;
   gap: 6px;
 }
-.canvas-root [data-cv-part="properties"].cv-show {
+.canvas-root [data-cv-part="properties"][data-open] {
   display: flex;
 }
 .canvas-root .cv-props-handle {
@@ -1344,30 +1347,30 @@
   cursor: pointer;
 }
 /* Read-only mode: hide authoring chrome; drag-to-pan everywhere */
-.canvas-root.cv-read-only [data-cv-part="toolbar"],
-.canvas-root.cv-read-only [data-cv-part="properties"] {
+.canvas-root[data-readonly] [data-cv-part="toolbar"],
+.canvas-root[data-readonly] [data-cv-part="properties"] {
   display: none;
 }
-.canvas-root.cv-read-only .cv-chrome .cv-cbtn,
-.canvas-root.cv-read-only .cv-rz,
-.canvas-root.cv-read-only .cv-sel {
+.canvas-root[data-readonly] .cv-chrome .cv-cbtn,
+.canvas-root[data-readonly] .cv-rz,
+.canvas-root[data-readonly] .cv-sel {
   display: none !important;
 }
-.canvas-root.cv-read-only .cv-viewport {
+.canvas-root[data-readonly] .cv-viewport {
   cursor: grab;
 }
-.canvas-root.cv-read-only.cv-panning .cv-viewport {
+.canvas-root[data-readonly][data-panning] .cv-viewport {
   cursor: grabbing;
 }
-.canvas-root.cv-read-only .cv-frame-label {
+.canvas-root[data-readonly] .cv-frame-label {
   cursor: default;
 }
-.canvas-root.cv-read-only .cv-node.cv-image,
-.canvas-root.cv-read-only .cv-node.cv-video {
+.canvas-root[data-readonly] .cv-node.cv-image,
+.canvas-root[data-readonly] .cv-node.cv-video {
   cursor: zoom-in;
 }
 /* SVGs don't open full-screen, so don't imply they're clickable. */
-.canvas-root.cv-read-only .cv-node.cv-image.cv-svg {
+.canvas-root[data-readonly] .cv-node.cv-image.cv-svg {
   cursor: inherit;
 }
 /* Objects marked as navigation anchors (author view only) */
@@ -1406,7 +1409,7 @@
   min-width: 176px;
   display: none;
 }
-.canvas-root [data-cv-part="context-menu"].cv-show {
+.canvas-root [data-cv-part="context-menu"][data-open] {
   display: block;
 }
 .canvas-root [data-cv-part="context-menu"] button {

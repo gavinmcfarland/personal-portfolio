@@ -70,7 +70,8 @@ function Markdown({ node }) {
   return (
     <div
       ref={setRef}
-      className={`cv-node cv-md${editing ? ' cv-md-editing' : ''}`}
+      className="cv-node cv-md"
+      data-editing={editing ? '' : undefined}
       {...dataProps}
       style={style}
       onDoubleClick={onDoubleClick}

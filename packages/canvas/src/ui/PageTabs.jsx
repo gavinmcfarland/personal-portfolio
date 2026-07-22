@@ -114,7 +114,8 @@ export default function PageTabs() {
   return (
     <div className={cx('cv-page-nav', classNames?.pages)} data-cv-part="pages" ref={wrapRef}>
       <button
-        className={`cv-chip cv-page-nav-trigger${open ? ' cv-on' : ''}`}
+        className="cv-chip cv-page-nav-trigger"
+        data-on={open ? '' : undefined}
         title="Pages & sections"
         onClick={() => setOpen((o) => !o)}
       >
@@ -128,7 +129,7 @@ export default function PageTabs() {
             const secs = sectionsFor(p.id);
             return (
               <div key={p.id} className="cv-page-group">
-                <div className={`cv-page-menu-item${p.id === activePageId ? ' cv-active' : ''}`}>
+                <div className="cv-page-menu-item" data-active={p.id === activePageId ? '' : undefined}>
                   {renaming && renaming.scope === 'page' && renaming.id === p.id ? (
                     renameInput(p.name, 'page-rename')
                   ) : (

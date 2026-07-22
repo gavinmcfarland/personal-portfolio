@@ -151,7 +151,7 @@ function FrameLabel({ node }) {
     const items = eng.moveItemsFor({ kind: 'node', id: node.id });
     if (!eng.isSelected('node', node.id)) eng.selectNode(node.id);
     const el = nodeEls.get(node.id);
-    if (el) { el.dataset.moved = ''; el.classList.add('cv-dragging'); }
+    if (el) { el.dataset.moved = ''; el.dataset.dragging = ''; }
     actionRef.current = { type: 'move', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, items, clickItem: { kind: 'node', id: node.id } };
     // NB: no setPointerCapture here — capturing the pointer retargets click/dblclick
     // away from the label and breaks double-click-to-rename. The drag is driven by
@@ -160,7 +160,7 @@ function FrameLabel({ node }) {
 
   if (renaming) {
     return (
-      <div ref={setRef} className="cv-frame-label cv-editing" onPointerDown={(e) => e.stopPropagation()}>
+      <div ref={setRef} className="cv-frame-label" data-editing="" onPointerDown={(e) => e.stopPropagation()}>
         <input
           ref={inputRef}
           className="cv-frame-rename"

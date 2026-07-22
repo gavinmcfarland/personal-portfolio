@@ -164,11 +164,13 @@ every accent-derived surface (selection, active tool, frames, hover, edit caret,
 | `--cv-ui-bg` / `--cv-ui-border` | chrome panels | `--cv-shadow` | elevation |
 | `--cv-radius` / `--cv-ui-radius` | object / panel corners | `--cv-ui-blur` | panel frost |
 | `--cv-sans` / `--cv-serif` / `--cv-mono` / `--cv-hand` | font families | `--cv-snap-guide` | snap guides |
+| `--cv-note-<hue>` / `--cv-note-<hue>-ink` | sticky-note paper + ink (`yellow` `pink` `blue` `green` `purple` `orange`) | `--cv-code-<tok>` | code syntax highlight (`comment` `keyword` `string` `number` `function` `tag` `punctuation`) |
 
 Dark mode overrides the colour tokens automatically under a `.dark` ancestor (or
 `.canvas-root.dark`); shape tokens (`--cv-radius`, `--cv-ui-radius`, `--cv-ui-blur`)
-are theme-independent. The `accent` prop is just a scoped, per-instance writer for
-`--cv-accent`.
+and the note palette are theme-independent, while `--cv-code-*` has its own dark
+values. The `accent` prop is just a scoped, per-instance writer for `--cv-accent`.
+Overriding a `--cv-note-<hue>` reskins both the notes and the picker swatches.
 
 ### 2. Part hooks — restyle specific regions and objects
 
@@ -180,13 +182,17 @@ rather than internal class names (which are implementation detail):
 `save-status` · `node` · `shape`
 
 Objects also expose `data-type` (`sticky`, `tblock`, `md`, `code`, `frame`,
-`image`, `video`, `sound`, `link`, `html`) and state via `cv-`-prefixed classes
-(`cv-active`, `cv-editing`, `cv-on`, `cv-show`, `cv-dragging`, …):
+`image`, `video`, `sound`, `link`, `html`). **State is expressed as `data-*`
+attributes**, not classes — the root carries `data-tool="<tool>"` and
+`data-readonly`; elements carry `data-active`, `data-on`, `data-open`,
+`data-editing`, `data-dragging`, `data-recording`:
 
 ```css
 .canvas-root [data-cv-part="toolbar"] { border-radius: 0; }
 .canvas-root [data-cv-part="node"][data-type="sticky"] { border-radius: 0; }
 .canvas-root [data-cv-part="node"][data-type="code"] { --cv-mono: "Fira Code"; }
+.canvas-root [data-cv-part="toolbar"] .cv-tool[data-active] { outline: 2px solid var(--cv-accent); }
+.canvas-root[data-tool="pen"] { /* style the whole board while the pen tool is active */ }
 ```
 
 ### 3. `classNames` prop — inject your own classes

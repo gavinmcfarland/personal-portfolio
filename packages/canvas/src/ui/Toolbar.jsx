@@ -72,7 +72,8 @@ function ShapeMenu() {
           {SHAPE_TOOLS.map((s) => (
             <button
               key={s.t}
-              className={`cv-tool${tool === s.t ? ' cv-active' : ''}`}
+              className="cv-tool"
+              data-active={tool === s.t ? '' : undefined}
               title={`${s.label} (${s.key})`}
               onClick={() => pick(s.t)}
             >
@@ -82,7 +83,8 @@ function ShapeMenu() {
         </div>
       )}
       <button
-        className={`cv-tool${activeShape ? ' cv-active' : ''}`}
+        className="cv-tool"
+        data-active={activeShape ? '' : undefined}
         onClick={() => setOpen((o) => !o)}
       >
         <span className="cv-tip">Shapes</span>
@@ -101,7 +103,9 @@ function RecordButton() {
   if (!eng.recordingSupported()) return null;
   return (
     <button
-      className={`cv-tool${recording ? ' cv-active cv-recording' : ''}`}
+      className="cv-tool"
+      data-active={recording ? '' : undefined}
+      data-recording={recording ? '' : undefined}
       data-tool="record"
       onClick={() => { if (!recording) eng.startRecording(); }}
     >
@@ -211,7 +215,8 @@ function Swatches() {
 
   return (
     <div
-      className={cx('cv-ui cv-panel cv-show', classNames?.properties)}
+      className={cx('cv-ui cv-panel', classNames?.properties)}
+      data-open=""
       data-cv-part="properties"
       ref={panelRef}
       style={pos ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined}
@@ -231,8 +236,11 @@ function Swatches() {
           {COLORS.note.map(([hex, name]) => (
             <button
               key={name}
-              className={`cv-swatch${curNote === name ? ' cv-active' : ''}`}
-              style={{ background: hex }}
+              className="cv-swatch"
+              data-active={curNote === name ? '' : undefined}
+              // Follow the --cv-note-<hue> token so a reskinned palette shows in
+              // the picker too; the constant's hex is the token's default value.
+              style={{ background: `var(--cv-note-${name}, ${hex})` }}
               title={name}
               onClick={() => pickNote(name)}
             />
@@ -244,7 +252,8 @@ function Swatches() {
           {FONTS.map(([name, label]) => (
             <button
               key={name}
-              className={`cv-font-btn${curFont === name ? ' cv-active' : ''}`}
+              className="cv-font-btn"
+              data-active={curFont === name ? '' : undefined}
               data-font={name}
               title={label}
               onClick={() => pickFont(name)}
@@ -259,7 +268,8 @@ function Swatches() {
           {ALIGNS.map(([dir, label, icon]) => (
             <button
               key={dir}
-              className={`cv-align-btn${curAlign === dir ? ' cv-active' : ''}`}
+              className="cv-align-btn"
+              data-active={curAlign === dir ? '' : undefined}
               title={label}
               onClick={() => pickAlign(dir)}
             >
@@ -274,7 +284,8 @@ function Swatches() {
           {COLORS.stroke.map(([hex]) => (
             <button
               key={hex}
-              className={`cv-swatch${curStroke === hex ? ' cv-active' : ''}`}
+              className="cv-swatch"
+              data-active={curStroke === hex ? '' : undefined}
               // Black flips to white in dark mode so the chip matches the stroke it draws.
               style={{ background: themeInk(hex) }}
               onClick={() => pickStroke(hex)}
@@ -290,7 +301,8 @@ function Swatches() {
             return (
               <button
                 key={hex}
-                className={`cv-swatch${none ? ' cv-swatch-none' : ''}${curFill === hex ? ' cv-active' : ''}`}
+                className={`cv-swatch${none ? ' cv-swatch-none' : ''}`}
+                data-active={curFill === hex ? '' : undefined}
                 // Composite the translucent fill over white so the chip reads the
                 // same over any board bg. Black flips to white in dark mode (themeInk)
                 // to match the fill it draws.
@@ -322,7 +334,8 @@ export default function Toolbar() {
           ) : (
             <button
               key={item.t}
-              className={`cv-tool${tool === item.t ? ' cv-active' : ''}`}
+              className="cv-tool"
+              data-active={tool === item.t ? '' : undefined}
               data-tool={item.t}
               onClick={() => eng.setTool(item.t)}
             >

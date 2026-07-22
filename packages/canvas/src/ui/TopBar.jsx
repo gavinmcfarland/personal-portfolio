@@ -47,7 +47,8 @@ export default function TopBar() {
       )}
       {EDITABLE && (
         <button
-          className={`cv-chip${!readOnly ? " cv-on" : ""}`}
+          className="cv-chip"
+          data-on={!readOnly ? '' : undefined}
           title={readOnly ? "Edit this board" : "Editing — click to stop"}
           onClick={() => eng.setMode(!readOnly)}
         >

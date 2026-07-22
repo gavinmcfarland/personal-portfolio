@@ -242,7 +242,8 @@ function Code({ node }) {
   return (
     <div
       ref={setRef}
-      className={`cv-node cv-code${editing ? ' cv-code-editing' : ''}${wrap ? '' : ' cv-code-nowrap'}`}
+      className={`cv-node cv-code${wrap ? '' : ' cv-code-nowrap'}`}
+      data-editing={editing ? '' : undefined}
       {...dataProps}
       style={style}
       onDoubleClick={onDoubleClick}
@@ -279,7 +280,8 @@ function Code({ node }) {
           {!readOnly && (
             <>
               <button
-                className={`cv-code-toggle${fmtOn ? ' cv-on' : ''}`}
+                className="cv-code-toggle"
+                data-on={fmtOn ? '' : undefined}
                 title={fmtOn ? 'Format on type: on' : 'Format on type: off'}
                 aria-pressed={fmtOn}
                 onClick={toggleFormat}
@@ -287,7 +289,8 @@ function Code({ node }) {
                 <Wand2 />
               </button>
               <button
-                className={`cv-code-toggle${wrap ? ' cv-on' : ''}`}
+                className="cv-code-toggle"
+                data-on={wrap ? '' : undefined}
                 title={wrap ? 'Wrap text: on' : 'Wrap text: off'}
                 aria-pressed={wrap}
                 onClick={toggleWrap}

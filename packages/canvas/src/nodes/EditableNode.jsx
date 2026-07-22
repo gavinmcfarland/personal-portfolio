@@ -81,7 +81,9 @@ function EditableNode({ node }) {
   };
 
   const isSticky = node.type === 'sticky';
-  const cls = `cv-node ${isSticky ? 'cv-sticky' : 'cv-tblock'}${editing ? ' cv-editing' : ''}`;
+  // The editing state rides the existing data-editing="1" attribute (below), so
+  // no separate class is needed on the wrapper.
+  const cls = `cv-node ${isSticky ? 'cv-sticky' : 'cv-tblock'}`;
   // A text block starts width-less (single line, grows as you type); once the
   // user resizes it, the stored width fixes the box and the text wraps inside.
   let sizedStyle = node.w != null ? { ...style, width: node.w + 'px' } : style;

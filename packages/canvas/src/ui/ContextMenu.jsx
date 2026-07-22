@@ -27,13 +27,13 @@ export default function ContextMenu() {
     const cx = Math.min(ctxMenu.x, innerWidth - 190);
     const cy = Math.min(ctxMenu.y, innerHeight - 120);
     return (
-      <div className="cv-panel cv-show" data-cv-part="context-menu" style={{ left: cx, top: cy }}>
+      <div className="cv-panel" data-open="" data-cv-part="context-menu" style={{ left: cx, top: cy }}>
         <button onClick={run(() => eng.pasteFromMenu(target.wx, target.wy))}>
           <ClipboardPaste />
           Paste here
         </button>
         <div className="cv-ctxsep" />
-        <button className={!gridHidden ? 'cv-active' : ''} onClick={run(() => eng.toggleGrid())}>
+        <button data-active={!gridHidden ? '' : undefined} onClick={run(() => eng.toggleGrid())}>
           <Grid2x2 />
           {gridHidden ? 'Show dot grid' : 'Hide dot grid'}
         </button>
@@ -62,20 +62,20 @@ export default function ContextMenu() {
   // Device-frame toggles, shared by single-asset photos/videos and html nodes.
   const frameButtons = node && (
     <>
-      <button className={node.frame === 'browser' ? 'cv-active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'browser'))}>
+      <button data-active={node.frame === 'browser' ? '' : undefined} onClick={run(() => eng.toggleFrame(node.id, 'browser'))}>
         <AppWindow />
         Browser frame
       </button>
-      <button className={node.frame === 'plugin' ? 'cv-active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'plugin'))}>
+      <button data-active={node.frame === 'plugin' ? '' : undefined} onClick={run(() => eng.toggleFrame(node.id, 'plugin'))}>
         <Puzzle />
         Plugin frame
       </button>
-      <button className={node.frame === 'terminal' ? 'cv-active' : ''} onClick={run(() => eng.toggleFrame(node.id, 'terminal'))}>
+      <button data-active={node.frame === 'terminal' ? '' : undefined} onClick={run(() => eng.toggleFrame(node.id, 'terminal'))}>
         <Terminal />
         Terminal frame
       </button>
       {node.frame && (
-        <button className={node.frameScale ? 'cv-active' : ''} onClick={run(() => eng.toggleFrameScale(node.id))}>
+        <button data-active={node.frameScale ? '' : undefined} onClick={run(() => eng.toggleFrameScale(node.id))}>
           <Expand />
           Scale with object
         </button>
@@ -90,7 +90,7 @@ export default function ContextMenu() {
   );
 
   return (
-    <div className="cv-panel cv-show" data-cv-part="context-menu" style={{ left: x, top: y }}>
+    <div className="cv-panel" data-open="" data-cv-part="context-menu" style={{ left: x, top: y }}>
       {isMedia && (!loneSvg || singleAsset) && (
         <>
           {!loneSvg && (

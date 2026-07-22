@@ -28,7 +28,7 @@ export default function Recorder() {
   if (!recording) return null;
 
   return (
-    <div className="cv-ui cv-panel cv-show" data-cv-part="recorder">
+    <div className="cv-ui cv-panel" data-open="" data-cv-part="recorder">
       <span className="cv-rec-dot" />
       <span className="cv-rec-time">{fmt(elapsed)}</span>
       <button className="cv-rec-btn cv-stop" title="Stop &amp; add" onClick={() => eng.stopRecording()}>

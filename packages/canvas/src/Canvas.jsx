@@ -82,13 +82,13 @@ export default function Canvas() {
   const flashMsg = () => {
     const el = msgRef.current;
     if (!el) return;
-    el.classList.add('cv-show');
+    el.setAttribute('data-open', '');
     clearTimeout(msgTimer.current);
-    msgTimer.current = setTimeout(() => el.classList.remove('cv-show'), 1400);
+    msgTimer.current = setTimeout(() => el.removeAttribute('data-open'), 1400);
   };
   const hideMsg = () => {
     const el = msgRef.current;
-    if (el) el.classList.remove('cv-show');
+    if (el) el.removeAttribute('data-open');
     clearTimeout(msgTimer.current);
   };
 
@@ -135,7 +135,9 @@ export default function Canvas() {
 
   /* Toggle a state class on the scoped root (not document.body) so multiple
      canvases stay independent and nothing leaks onto the host page. */
-  const rootClass = (name, on) => { const el = rootRef.current; if (el) el.classList.toggle(name, on); };
+  // Root state as data-* attributes (data-panning during a drag-pan, data-space
+   // while the space bar is held for a temporary pan) — see the cursor rules.
+  const rootState = (name, on) => { const el = rootRef.current; if (!el) return; if (on) el.setAttribute('data-' + name, ''); else el.removeAttribute('data-' + name); };
 
   /* Pointerdown is a React handler (correct simulated bubbling so chrome / node
      handlers can stopPropagation). Move/up are native window listeners so
@@ -179,7 +181,7 @@ export default function Canvas() {
       const linkEl = e.target.closest && e.target.closest('.cv-node.cv-link');
       const htmlEl = e.target.closest && e.target.closest('.cv-node.cv-html');
       actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: isMedia ? nodeUnder.dataset.id : null, imgIdx: cellEl ? +cellEl.dataset.mediaIdx : 0, linkId: linkEl ? linkEl.dataset.id : null, htmlId: htmlEl ? htmlEl.dataset.id : null };
-      rootClass('panning', true);
+      rootState('panning', true);
       vp.setPointerCapture(e.pointerId);
       return;
     }
@@ -203,7 +205,7 @@ export default function Canvas() {
 
     if (spacePan || tool === 'hand') {
       actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y };
-      rootClass('panning', true);
+      rootState('panning', true);
       vp.setPointerCapture(e.pointerId);
       return;
     }
@@ -219,7 +221,7 @@ export default function Canvas() {
       // anything else collapses the selection to the grabbed object.
       const items = eng.moveItemsFor({ kind, id });
       if (!eng.isSelected(kind, id)) (kind === 'node' ? eng.selectNode : eng.selectShape)(id);
-      if (nodeEl) { nodeEl.dataset.moved = ''; nodeEl.classList.add('cv-dragging'); }
+      if (nodeEl) { nodeEl.dataset.moved = ''; nodeEl.dataset.dragging = ''; }
       // A stationary click on a link card opens it (a drag still just moves it);
       // remembered here, acted on in onUp when the gesture turns out not to move.
       const linkId = nodeEl && nodeEl.dataset.type === 'link' ? id : null;
@@ -661,7 +663,7 @@ export default function Canvas() {
       const a = actionRef.current;
       if (!a) return;
       if (a.type === 'pan') {
-        rootClass('panning', false);
+        rootState('panning', false);
         if (a.imgId && !a.moved) eng.openFullscreen(a.imgId, a.imgIdx || 0); // tap an image/video → full-screen
         if (a.linkId && !a.moved) eng.openLink(a.linkId);      // tap a link card → open it
         if (a.htmlId && !a.moved) eng.setHtmlActive(a.htmlId); // tap an html demo → make it interactive
@@ -671,7 +673,7 @@ export default function Canvas() {
         const nodePatches = {}, shapePatches = {};
         for (const it of a.items) {
           if (it.kind === 'node') {
-            it.el.classList.remove('cv-dragging');
+            delete it.el.dataset.dragging;
             if (a.moved) nodePatches[it.id] = { x: it.ox + a.dx, y: it.oy + a.dy };
           } else {
             it.el.removeAttribute('transform');
@@ -791,7 +793,7 @@ export default function Canvas() {
       // Don't hijack keys while typing in a field (e.g. renaming a page/frame).
       const ae = document.activeElement;
       if (ae && (ae.isContentEditable || ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
-      if (e.code === 'Space') { panKey.current = true; rootClass('tool-hand', true); return; }
+      if (e.code === 'Space') { panKey.current = true; rootState('space', true); return; }
       if (e.key === 'Backspace' || e.key === 'Delete') {
         if (S.selected.length) { e.preventDefault(); eng.deleteSelected(); }
         return;
@@ -829,7 +831,7 @@ export default function Canvas() {
       }
     };
     const onKeyUp = (e) => {
-      if (e.code === 'Space') { panKey.current = false; if (S.tool !== 'hand') rootClass('tool-hand', false); }
+      if (e.code === 'Space') { panKey.current = false; if (S.tool !== 'hand') rootState('space', false); }
     };
     // Cmd/Ctrl+V. Gated like keydown so an embedded board never steals a paste
     // meant for the host page or a focused field. Media off the system clipboard
@@ -888,7 +890,7 @@ export default function Canvas() {
         actionRef.current = null;
         if (prev && prev.type === 'marquee') eng.hideMarquee();
         if (prev && prev.type === 'draw') setDraft(null);
-        rootClass('panning', false);
+        rootState('panning', false);
         eng.freezeView();
         const m = pinchMetrics();
         pinch = { dist: m.dist, cx: m.cx, cy: m.cy };

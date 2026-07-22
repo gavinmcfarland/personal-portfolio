@@ -2696,9 +2696,10 @@ export function CanvasProvider({
   useEffect(() => {
     const b = rootRef.current;
     if (!b) return;
-    [...b.classList].forEach((c) => { if (c.startsWith('cv-tool-')) b.classList.remove(c); });
-    b.classList.add('cv-tool-' + tool);
-    b.classList.toggle('cv-read-only', readOnly);
+    // Tool / mode are exposed as data-* state attributes (data-tool, data-readonly)
+    // so consumers can target them without depending on internal class names.
+    b.dataset.tool = tool;
+    if (readOnly) b.setAttribute('data-readonly', ''); else b.removeAttribute('data-readonly');
     // Entering/leaving scale mode changes which handles show on the selection,
     // so re-place the chrome (it otherwise only re-syncs on data changes).
     eng.syncChrome();
