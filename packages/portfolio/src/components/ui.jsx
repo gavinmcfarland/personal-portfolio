@@ -12,9 +12,9 @@ export function Section({ label, children, id }) {
     <section
       id={id}
       ref={ref}
-      className="reveal scroll-mt-20 mt-24 w-screen -ml-8 border-t border-line sm:-ml-14 lg:-ml-24"
+      className="reveal scroll-mt-20 mt-16 w-screen -ml-8 border-t border-line sm:mt-24 sm:-ml-14 lg:-ml-24"
     >
-      <div className="mr-auto w-full max-w-5xl pl-8 pr-5 pt-16 sm:pl-14 sm:pr-6 lg:pl-24">
+      <div className="mr-auto w-full max-w-5xl pl-8 pr-5 pt-10 sm:pl-14 sm:pr-6 sm:pt-16 lg:pl-24">
         <h2 className="section-label mb-4">{label}</h2>
         {children}
       </div>
