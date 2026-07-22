@@ -181,7 +181,7 @@
   /* Faint light border so the dark pill stays visible against a dark board. */
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
-  cursor: pointer;
+  cursor: default;
   color: #fff;
   background: rgba(12, 12, 14, 0.72);
   backdrop-filter: blur(6px);
@@ -244,7 +244,7 @@
   margin: 0;
   padding: 0;
   border: 0;
-  cursor: pointer;
+  cursor: default;
   background: rgba(12, 12, 14, 0.04);
   touch-action: pan-x pan-y;
   /* No grey tap flash / callout / press outline while a finger scrolls past the
@@ -711,7 +711,7 @@
   border-radius: 6px;
   background: transparent;
   color: #fff;
-  cursor: pointer;
+  cursor: default;
   padding: 0;
 }
 .canvas-root .cv-node.cv-video .cv-vplay:hover {
@@ -728,7 +728,7 @@
   display: flex;
   align-items: center;
   height: 16px;
-  cursor: pointer;
+  cursor: default;
   touch-action: none;
 }
 .canvas-root .cv-node.cv-video .cv-vtrack {
@@ -988,7 +988,7 @@
   border-radius: 50%;
   background: var(--cv-accent);
   color: #fff;
-  cursor: pointer;
+  cursor: default;
   padding: 0;
 }
 .canvas-root .cv-node.cv-sound .cv-splay svg {
@@ -1045,7 +1045,7 @@
   display: flex;
   align-items: center;
   height: 12px;
-  cursor: pointer;
+  cursor: default;
   touch-action: none;
 }
 .canvas-root .cv-node.cv-sound .cv-strack {
@@ -1480,7 +1480,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   opacity: 0;
   pointer-events: none; /* while hidden, let clicks fall through so the header stays draggable */
   transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
@@ -1530,7 +1530,7 @@
 .canvas-root .cv-code[data-editing] .cv-code-langbox {
   border-color: var(--cv-line);
   background: var(--cv-surface);
-  cursor: pointer;
+  cursor: default;
   padding-right: 22px;
 }
 .canvas-root .cv-code[data-editing] .cv-code-lang {
@@ -1557,7 +1557,7 @@
   padding: 0;
   border: 0;
   opacity: 0;
-  cursor: pointer;
+  cursor: default;
   font: inherit;
 }
 .canvas-root .cv-code-copy {
@@ -1571,7 +1571,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   opacity: 0;
   pointer-events: none; /* while hidden, let clicks fall through so the header stays draggable */
   transition:
@@ -1921,7 +1921,7 @@
   flex: none;
   border: 0;
   border-radius: 6px;
-  cursor: pointer;
+  cursor: default;
   background: rgba(255, 255, 255, 0.22);
   color: #fff;
   font-size: 12px;
@@ -1967,7 +1967,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   position: relative;
   transition:
     background-color 0.15s ease,
@@ -2103,7 +2103,7 @@
   border-radius: 8px;
   background: transparent;
   color: var(--cv-muted);
-  cursor: pointer;
+  cursor: default;
   padding: 0;
 }
 .canvas-root [data-cv-part="recorder"] .cv-rec-btn:hover {
@@ -2182,7 +2182,7 @@
   height: 24px;
   border-radius: 50%;
   border: 2px solid rgba(0, 0, 0, 0.12);
-  cursor: pointer;
+  cursor: default;
   padding: 0;
   flex: none;
 }
@@ -2202,7 +2202,7 @@
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: transparent;
   color: inherit;
-  cursor: pointer;
+  cursor: default;
   font-size: 15px;
   line-height: 1;
 }
@@ -2229,7 +2229,7 @@
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: transparent;
   color: inherit;
-  cursor: pointer;
+  cursor: default;
 }
 .dark .canvas-root .cv-align-btn,
 .canvas-root.dark .cv-align-btn {
@@ -2292,7 +2292,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  cursor: pointer;
+  cursor: default;
   transition: 0.15s;
 }
 .canvas-root .cv-chip:hover {
@@ -2403,7 +2403,7 @@
   position: absolute;
   inset: -4px;
   opacity: 0;
-  cursor: pointer;
+  cursor: default;
   padding: 0;
   border: 0;
 }
@@ -2461,7 +2461,7 @@
   background: transparent;
   border-radius: 8px;
   color: var(--cv-muted);
-  cursor: pointer;
+  cursor: default;
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -2494,7 +2494,7 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--cv-muted);
-  cursor: pointer;
+  cursor: default;
 }
 
 /* Context menu (screen-space overlay, positioned at the cursor) */
@@ -2524,7 +2524,7 @@
   text-align: left;
   padding: 0 0.55rem;
   border-radius: 8px;
-  cursor: pointer;
+  cursor: default;
 }
 .canvas-root [data-cv-part="context-menu"] button:hover {
   background: var(--cv-accent-soft);
@@ -2642,7 +2642,7 @@
   border: 1px solid transparent;
   background: transparent;
   color: var(--cv-ink);
-  cursor: pointer;
+  cursor: default;
   font-family: var(--cv-sans);
   font-size: 0.8rem;
   font-weight: 500;
@@ -2687,7 +2687,7 @@
   font-size: 0.8rem;
   font-weight: 500;
   text-align: left;
-  cursor: pointer;
+  cursor: default;
   padding: 0 0.6rem 0 24px;
   border-radius: 8px;
   transition:
@@ -2738,7 +2738,7 @@
   font-size: 0.8rem;
   font-weight: 500;
   text-align: left;
-  cursor: pointer;
+  cursor: default;
   padding: 0 0.6rem;
   border-radius: 8px;
   margin-top: 4px;
@@ -2777,7 +2777,7 @@
   text-align: left;
   padding: 0 0.6rem;
   border-radius: 8px;
-  cursor: pointer;
+  cursor: default;
 }
 .cv-page-ctx button:hover {
   background: var(--cv-accent-soft);
@@ -2863,7 +2863,7 @@
   background: rgba(255, 255, 255, 0.14);
   color: #fff;
   font-size: 18px;
-  cursor: pointer;
+  cursor: default;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2883,7 +2883,7 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.14);
   color: #fff;
-  cursor: pointer;
+  cursor: default;
   display: flex;
   align-items: center;
   justify-content: center;

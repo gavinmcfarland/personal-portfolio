@@ -65,7 +65,7 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  cursor: pointer;
+  cursor: default;
 }
 .canvas-root .cv-lock > span {
   /* Out of flow, centred on the button and to its right, so the button never
@@ -91,7 +91,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   touch-action: pan-x pan-y;
   -webkit-touch-callout: none;
   user-select: none;
@@ -402,7 +402,7 @@
   width: 22px;
   height: 22px;
   flex: none;
-  cursor: pointer;
+  cursor: default;
 }
 .canvas-root .cv-node.cv-video .cv-vplay svg {
   width: 12px;
@@ -413,7 +413,7 @@
   display: flex;
   align-items: center;
   height: 16px;
-  cursor: pointer;
+  cursor: default;
   touch-action: none;
 }
 .canvas-root .cv-node.cv-video .cv-vtrack {
@@ -606,7 +606,7 @@
   width: 34px;
   height: 34px;
   flex: none;
-  cursor: pointer;
+  cursor: default;
 }
 .canvas-root .cv-node.cv-sound .cv-splay svg {
   width: 15px;
@@ -641,7 +641,7 @@
   display: flex;
   align-items: center;
   height: 12px;
-  cursor: pointer;
+  cursor: default;
   touch-action: none;
 }
 .canvas-root .cv-node.cv-sound .cv-strack {
@@ -821,7 +821,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   pointer-events: none;
 }
 .canvas-root .cv-code:hover .cv-code-toggle,
@@ -845,7 +845,7 @@
   white-space: nowrap;
 }
 .canvas-root .cv-code[data-editing] .cv-code-langbox {
-  cursor: pointer;
+  cursor: default;
 }
 .canvas-root .cv-code[data-editing] .cv-code-langbox::after {
   position: absolute;
@@ -861,7 +861,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  cursor: pointer;
+  cursor: default;
 }
 .canvas-root .cv-code-copy {
   width: 24px;
@@ -870,7 +870,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   pointer-events: none;
 }
 .canvas-root .cv-code:hover .cv-code-copy {
@@ -1146,7 +1146,7 @@
   width: 19px;
   height: 19px;
   flex: none;
-  cursor: pointer;
+  cursor: default;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1171,7 +1171,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   position: relative;
 }
 .canvas-root .cv-tool svg {
@@ -1232,7 +1232,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
 }
 .canvas-root [data-cv-part="recorder"] .cv-rec-btn svg {
   width: 16px;
@@ -1278,13 +1278,13 @@
 .canvas-root .cv-swatch {
   width: 24px;
   height: 24px;
-  cursor: pointer;
+  cursor: default;
   flex: none;
 }
 /* Font-family chooser for text blocks — each button previews its own font. */
 .canvas-root .cv-font-btn {
   height: 26px;
-  cursor: pointer;
+  cursor: default;
 }
 /* Horizontal-alignment buttons for text blocks. */
 .canvas-root .cv-align-btn {
@@ -1293,7 +1293,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
 }
 .canvas-root .cv-align-btn svg {
   width: 15px;
@@ -1325,7 +1325,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  cursor: pointer;
+  cursor: default;
 }
 .canvas-root .cv-chip svg {
   width: 14px;
@@ -1385,7 +1385,7 @@
 .canvas-root .cv-bg-menu .cv-swatch.cv-custom input {
   position: absolute;
   inset: -4px;
-  cursor: pointer;
+  cursor: default;
 }
 /* Read-only mode: hide authoring chrome; drag-to-pan everywhere */
 .canvas-root[data-readonly] [data-cv-part="toolbar"],
@@ -1425,7 +1425,7 @@
 .canvas-root [data-cv-part="zoom"] button {
   width: 28px;
   height: 28px;
-  cursor: pointer;
+  cursor: default;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1440,7 +1440,7 @@
 }
 .canvas-root .cv-zoomval {
   min-width: 52px;
-  cursor: pointer;
+  cursor: default;
 }
 /* Context menu (screen-space overlay, positioned at the cursor) */
 .canvas-root [data-cv-part="context-menu"] {
@@ -1458,7 +1458,7 @@
   gap: 0.55rem;
   width: 100%;
   height: 28px;
-  cursor: pointer;
+  cursor: default;
 }
 .canvas-root [data-cv-part="context-menu"] button svg {
   width: 15px;
@@ -1522,7 +1522,7 @@
 .canvas-root .cv-page-menu-btn {
   flex: 1;
   min-width: 0;
-  cursor: pointer;
+  cursor: default;
   height: 28px;
   white-space: nowrap;
   overflow: hidden;
@@ -1539,7 +1539,7 @@
   gap: 0.5rem;
   width: 100%;
   height: 28px;
-  cursor: pointer;
+  cursor: default;
 }
 .canvas-root .cv-section-num {
   width: 14px;
@@ -1560,7 +1560,7 @@
   gap: 0.5rem;
   width: 100%;
   height: 28px;
-  cursor: pointer;
+  cursor: default;
 }
 /* Right-click menu for pages (rename / delete) and sections (rename) — portaled to body */
 .cv-page-ctx {
@@ -1574,7 +1574,7 @@
   gap: 0.55rem;
   width: 100%;
   height: 28px;
-  cursor: pointer;
+  cursor: default;
 }
 .cv-page-ctx button svg {
   width: 15px;
@@ -1622,7 +1622,7 @@
   right: 20px;
   width: 40px;
   height: 40px;
-  cursor: pointer;
+  cursor: default;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1634,7 +1634,7 @@
   transform: translateY(-50%);
   width: 44px;
   height: 44px;
-  cursor: pointer;
+  cursor: default;
   display: flex;
   align-items: center;
   justify-content: center;
