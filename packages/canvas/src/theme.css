@@ -410,6 +410,7 @@
   border: 0;
   /* host resets (see .node.image img) must not squash it */
   background: transparent;
+  -webkit-tap-highlight-color: transparent;
 }
 /* The permanent cv-df skeleton (see Html.jsx): frameless, its screen must not
    paint the device-frame backdrop either. Framed keeps --bg-base so a browser
@@ -419,6 +420,9 @@
 }
 .canvas-root .cv-node.cv-html.cv-framed {
   box-shadow: var(--cv-shadow);
+}
+.canvas-root .cv-node.cv-html .cv-html-shield {
+  -webkit-tap-highlight-color: transparent;
 }
 /* Live: the iframe takes the pointer; an accent outline says "interactive". */
 .canvas-root .cv-node.cv-html.cv-live {

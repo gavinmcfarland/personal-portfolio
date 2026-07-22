@@ -370,6 +370,12 @@
   max-width: none;
   pointer-events: none;
   user-select: none;
+  -webkit-user-select: none;
+  /* Mobile Safari long-press otherwise selects the iframe ELEMENT itself
+     (blue selection box + callout) even in view mode, where the shield owns
+     the pointer. These don't cross the iframe boundary, so a live demo's own
+     document stays interactive/selectable. */
+  -webkit-touch-callout: none;
 }
 /* The permanent cv-df skeleton (see Html.jsx): frameless, its screen must not
    paint the device-frame backdrop either. Framed keeps --bg-base so a browser
@@ -377,6 +383,12 @@
 .canvas-root .cv-node.cv-html .cv-html-shield {
   position: absolute;
   inset: 0;
+  /* The shield is the hit surface while the demo is inert. On mobile a tap /
+     long-press here must never start a text or element selection (which draws
+     its own outline) — only pan the board or, on a stationary tap, go live. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 /* Live: the iframe takes the pointer; an accent outline says "interactive". */
 .canvas-root .cv-node.cv-html.cv-live .cv-html-frame {
