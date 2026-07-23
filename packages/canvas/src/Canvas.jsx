@@ -925,6 +925,14 @@ export default function Canvas() {
     };
     const onTouchDown = (e) => {
       if (e.pointerType !== 'touch') return;
+      // Only track touches that START inside THIS canvas. These handlers live on
+      // `window` (so a pinch keeps tracking if a finger drifts off the board), but
+      // when several canvases are mounted at once (e.g. a project board overlaying
+      // the still-mounted home playground) every instance's listener sees the same
+      // touch pointers — without this gate a two-finger pan/pinch on one board also
+      // drives `pinchBy` on all the others. onTouchMove/onTouchUp key off
+      // `touches.has(pointerId)`, so a pointer we skip here is ignored there too.
+      if (!(rootRef.current && rootRef.current.contains(e.target))) return;
       touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
       // Cooperative locked: a lone finger is a page-scroll attempt → hint to use
       // two fingers, unless we're in the quiet window.
