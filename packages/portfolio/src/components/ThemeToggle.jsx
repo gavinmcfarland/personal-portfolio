@@ -10,7 +10,7 @@ const BUTTON =
   'flex h-7 w-7 items-center justify-center rounded-[8px] bg-transparent text-muted transition-colors duration-150 hover:bg-hover hover:text-ink';
 
 /* Minimal single-button theme cycle — system → light → dark. */
-const ThemeToggle = ({ className = 'fixed right-4 top-4 z-50 sm:right-6 sm:top-6' }) => {
+const ThemeToggle = ({ className = 'fixed right-[22px] top-[22px] z-50' }) => {
   const { mode, toggleTheme } = useTheme();
 
   const icon = {
