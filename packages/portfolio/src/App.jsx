@@ -12,6 +12,7 @@ import CanvasMaximizeToggle from "./components/CanvasMaximizeToggle";
 import Home from "./pages/Home";
 import ProjectPage from "./pages/ProjectPage";
 import CollisionDemoPage from "./pages/CollisionDemoPage";
+import PrivatePage from "./pages/PrivatePage";
 import NotFound from "./pages/NotFound";
 import { visibleProjects } from "./data/projects";
 
@@ -79,6 +80,20 @@ function App() {
       document.body.style.overflow = "";
     };
   }, [isHome]);
+
+  /* Private pages are a standalone, full-document experience — no Home behind
+     them and no sliding route panel. Rendered through <Routes> so the page can
+     read its :id via useParams. Placed after every hook above so hook order
+     stays stable across routes. */
+  if (location.pathname.startsWith("/private/")) {
+    return (
+      <ThemeProvider>
+        <Routes>
+          <Route path="/private/:id" element={<PrivatePage />} />
+        </Routes>
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider>

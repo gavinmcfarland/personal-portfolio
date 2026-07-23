@@ -9,6 +9,11 @@ import crypto from 'node:crypto';
 
 const BOARD_DIR = path.resolve(process.cwd(), 'src/data/canvas');
 const ASSET_DIR = path.resolve(process.cwd(), 'public/canvas-assets');
+const PRIVATE_DIR = path.resolve(process.cwd(), 'public/private');
+
+/* Private-page slugs name a file under PRIVATE_DIR — same filename-safe alphabet
+   as board keys so a slug can never escape the directory. */
+const SLUG_RE = /^[a-zA-Z0-9_-]+$/;
 
 /* Board keys mirror the <Canvas storageKey> they came from — keep them to a
    filename-safe alphabet so the key can never escape BOARD_DIR. */
@@ -232,7 +237,11 @@ export function canvasSave() {
        (Dropped images under public/canvas-assets are intentionally NOT ignored:
        Vite won't serve files whose path is in the watch-ignore list.) */
     config() {
-      return { server: { watch: { ignored: ['**/src/data/canvas/**'] } } };
+      /* Also ignore public/private so re-saving an encrypted private board
+         doesn't trigger an HMR reload (which would re-lock the page mid-edit).
+         Like canvas-assets, we serve these files from disk in a middleware
+         below, since Vite won't serve a watch-ignored path. */
+      return { server: { watch: { ignored: ['**/src/data/canvas/**', '**/public/private/**'] } } };
     },
     configureServer(server) {
       /* Serve committed assets straight from disk. Vite's public-dir serving
@@ -316,6 +325,54 @@ export function canvasSave() {
             const data = await unfurl(url);
             res.statusCode = 200;
             res.end(JSON.stringify({ ok: true, data }));
+          } catch (err) {
+            res.statusCode = 400;
+            res.end(JSON.stringify({ ok: false, error: String(err && err.message || err) }));
+          }
+        });
+      });
+
+      /* Serve encrypted private-page records straight from disk, for the same
+         watcher-race reason as /canvas-assets: the file is written and fetched
+         in quick succession, and the dir is watch-ignored so Vite won't serve
+         it. Only `.json` under a safe slug is handled; the extensionless route
+         (/private/<slug>) falls through to the SPA. */
+      server.middlewares.use('/private', (req, res, next) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+        let name;
+        try { name = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, ''); }
+        catch { return next(); }
+        const m = /^([a-zA-Z0-9_-]+)\.json$/.exec(name);
+        if (!m) return next();
+        const file = path.join(PRIVATE_DIR, `${m[1]}.json`);
+        let data;
+        try { data = fs.readFileSync(file); } catch { return next(); }
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Cache-Control', 'no-cache');
+        if (req.method === 'HEAD') return res.end();
+        return res.end(data);
+      });
+
+      /* Persist an already-encrypted private board back to its static file. The
+         client encrypts with the owner's in-memory password (see PrivatePage),
+         so only ciphertext reaches here — no password is ever written. */
+      server.middlewares.use('/__private/save', (req, res, next) => {
+        if (req.method !== 'POST') return next();
+        readBody(req).then((body) => {
+          res.setHeader('content-type', 'application/json');
+          try {
+            const { slug, record } = JSON.parse(body);
+            if (!SLUG_RE.test(slug || '')) throw new Error('missing or unsafe slug');
+            if (!record || typeof record.salt !== 'string' || typeof record.iv !== 'string' || typeof record.ct !== 'string') {
+              throw new Error('expected an encrypted record with { salt, iv, ct }');
+            }
+            fs.mkdirSync(PRIVATE_DIR, { recursive: true });
+            const target = path.join(PRIVATE_DIR, `${slug}.json`);
+            fs.writeFileSync(target, JSON.stringify(record) + '\n');
+            server.config.logger.info(`  private board saved → ${path.relative(process.cwd(), target)}`);
+            res.statusCode = 200;
+            res.end(JSON.stringify({ ok: true }));
           } catch (err) {
             res.statusCode = 400;
             res.end(JSON.stringify({ ok: false, error: String(err && err.message || err) }));
