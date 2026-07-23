@@ -20,6 +20,23 @@ const PAUSE_ICON = <Pause />;
 // which just toggles play/pause).
 const HOLD_MS = 550;
 
+// After a hold closes the player, the bar unmounts and its listeners go with it —
+// but the user is still holding Space, whose auto-repeat would now scroll the
+// page. Keep swallowing Space (outside React, so it survives the unmount) until
+// they release it; a window blur is a safety net so this can never get stuck on.
+function swallowSpaceUntilRelease() {
+  const onKey = (e) => { if (e.code === "Space") e.preventDefault(); };
+  const done = () => {
+    window.removeEventListener("keydown", onKey, true);
+    window.removeEventListener("keyup", onUp, true);
+    window.removeEventListener("blur", done);
+  };
+  const onUp = (e) => { if (e.code === "Space") done(); };
+  window.addEventListener("keydown", onKey, true);
+  window.addEventListener("keyup", onUp, true);
+  window.addEventListener("blur", done);
+}
+
 /* The single, page-wide "now playing" bar. Every canvas renders one, but only the
    elected host paints (see the host election in playback-store) — so there's one
    bar however many boards are mounted, and it isn't gated on `editable` since
@@ -90,6 +107,7 @@ export default function NowPlayingBar() {
         // release and reopen the player.
         const ae = document.activeElement;
         if (ae && ae.blur) ae.blur();
+        swallowSpaceUntilRelease(); // keep the still-held Space from scrolling the page after we close
         stop();
       }, HOLD_MS);
     };
