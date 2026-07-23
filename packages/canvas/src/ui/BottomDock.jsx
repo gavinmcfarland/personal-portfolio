@@ -44,7 +44,7 @@ export default function BottomDock({ accentId }) {
         <button
           type="button"
           data-on={!readOnly ? "" : undefined}
-          title={readOnly ? "Edit boards" : "Editing — click to stop"}
+          title={readOnly ? "Edit boards (E)" : "Editing — click to stop (E)"}
           aria-pressed={!readOnly}
           onClick={() => eng.setMode(!readOnly)}
         >

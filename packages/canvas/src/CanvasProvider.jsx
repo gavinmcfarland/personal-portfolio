@@ -2952,6 +2952,25 @@ export function CanvasProvider({
     () => false,
   );
 
+  /* Global `E` shortcut: toggle edit / view mode from anywhere on the page (not
+     gated on the pointer being over a board, unlike the in-canvas tool keys).
+     Bound only on the primary canvas so it fires once, and setMode's broadcast
+     flips every board and the shared dock together. Ignored while typing in a
+     field or editing a node's text. */
+  useEffect(() => {
+    if (!EDITABLE || !isPrimaryCanvas) return undefined;
+    const onKey = (e) => {
+      if (e.key.toLowerCase() !== 'e' || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (S.editingId) return;
+      const ae = document.activeElement;
+      if (ae && (ae.isContentEditable || ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
+      e.preventDefault();
+      eng.setMode(!S.readOnly);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [EDITABLE, isPrimaryCanvas, eng, S]);
+
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
