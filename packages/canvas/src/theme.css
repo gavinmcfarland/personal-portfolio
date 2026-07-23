@@ -182,7 +182,7 @@
   }
 }
 .canvas-root .cv-lock > span {
-  padding: 8px 14px;
+  padding: 0 14px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   font-size: 13px;

@@ -216,7 +216,13 @@
   left: calc(100% + 8px);
   top: 50%;
   transform: translateY(-50%);
-  padding: 8px 14px;
+  /* Match the 28px lock button height exactly: fixed height + flex centring, so
+     the pill is the same height as the button rather than taller. */
+  box-sizing: border-box;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   font-size: 13px;

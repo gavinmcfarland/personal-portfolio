@@ -74,6 +74,12 @@
   left: calc(100% + 8px);
   top: 50%;
   transform: translateY(-50%);
+  /* Match the 28px lock button height exactly: fixed height + flex centring, so
+     the pill is the same height as the button rather than taller. */
+  box-sizing: border-box;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
   white-space: nowrap;
 }
 /* Click-to-interact: once unlocked the board owns touch again (single-finger
