@@ -113,7 +113,7 @@
 /* ── Sticky note → enamel fill ─────────────────────────────────────────
    A saturated flat panel with its paired ink; mono, small, tight, no shadow. */
 .enamel [data-cv-part="node"][data-type="sticky"] {
-  min-height: 0;
+  min-height: 210px; /* match the 210px width so a near-empty note reads as a square */
   padding: 0.75rem;
   font-family: var(--cv-mono);
   font-size: 13px;
