@@ -2828,7 +2828,7 @@
 }
 
 /* Media lightbox (covers the canvas surface) */
-.canvas-root #lightbox {
+.canvas-root [data-cv-part="lightbox"] {
   position: absolute;
   inset: 0;
   z-index: 400;
@@ -2842,8 +2842,8 @@
   cursor: zoom-out;
   animation: cv-lb-in 0.16s ease;
 }
-.canvas-root #lightbox img,
-.canvas-root #lightbox video {
+.canvas-root [data-cv-part="lightbox"] img,
+.canvas-root [data-cv-part="lightbox"] video {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -2857,16 +2857,16 @@
    live theme toggle swaps instantly with no re-render (both variants stay
    loaded). `:is()` keeps the three rules at equal specificity — above every
    plain `img { display: block }` rule — so order alone resolves them. */
-.canvas-root :is(.cv-node, #lightbox) img.cv-dark {
+.canvas-root :is(.cv-node, [data-cv-part="lightbox"]) img.cv-dark {
   display: none;
 }
-:is(.dark .canvas-root, .canvas-root.dark) :is(.cv-node, #lightbox) img.cv-light {
+:is(.dark .canvas-root, .canvas-root.dark) :is(.cv-node, [data-cv-part="lightbox"]) img.cv-light {
   display: none;
 }
-:is(.dark .canvas-root, .canvas-root.dark) :is(.cv-node, #lightbox) img.cv-dark {
+:is(.dark .canvas-root, .canvas-root.dark) :is(.cv-node, [data-cv-part="lightbox"]) img.cv-dark {
   display: block;
 }
-.canvas-root #lightbox .cv-lb-close {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-close {
   position: absolute;
   top: 18px;
   right: 20px;
@@ -2883,11 +2883,11 @@
   justify-content: center;
   transition: background-color 0.15s ease;
 }
-.canvas-root #lightbox .cv-lb-close:hover {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-close:hover {
   background: rgba(255, 255, 255, 0.28);
 }
 /* Gallery prev/next arrows and position counter for multi-asset nodes. */
-.canvas-root #lightbox .cv-lb-nav {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -2903,20 +2903,20 @@
   justify-content: center;
   transition: background-color 0.15s ease;
 }
-.canvas-root #lightbox .cv-lb-nav:hover {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-nav:hover {
   background: rgba(255, 255, 255, 0.28);
 }
-.canvas-root #lightbox .cv-lb-nav svg {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-nav svg {
   width: 24px;
   height: 24px;
 }
-.canvas-root #lightbox .cv-lb-prev {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-prev {
   left: 20px;
 }
-.canvas-root #lightbox .cv-lb-next {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-next {
   right: 20px;
 }
-.canvas-root #lightbox .cv-lb-count {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-count {
   position: absolute;
   bottom: 20px;
   left: 50%;

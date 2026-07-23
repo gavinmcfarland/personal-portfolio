@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 3033.238413611151,
-        "y": -404.7959207191252,
-        "scale": 1.020176518426752
+        "x": 3555.6480982656567,
+        "y": -379.3673842611233,
+        "scale": 1.1497464633206151
       },
       "nodes": [
         {
@@ -36,24 +36,22 @@
           "frame": "plugin"
         },
         {
-          "id": "n60-tblock",
-          "type": "tblock",
-          "x": -2691.2314779568237,
-          "y": 586.0754076417894,
-          "z": 9,
-          "text": "Single",
-          "font": "sans",
-          "align": "center"
+          "id": "n62-md",
+          "type": "md",
+          "x": -2349.357616385114,
+          "y": 938.3856771695386,
+          "z": 11,
+          "w": 217.00000000000006,
+          "text": "Reszing the plugin window changes the number of variations shown based on the width and height of the plugin window."
         },
         {
-          "id": "n61-tblock",
-          "type": "tblock",
-          "x": -2058.357616385114,
-          "y": 586.0754076417894,
-          "z": 10,
-          "text": "Multiple",
-          "font": "sans",
-          "align": "center"
+          "id": "n64-md",
+          "type": "md",
+          "x": -2756.7314779568237,
+          "y": 938.3856771695386,
+          "z": 13,
+          "w": 217.26654539691964,
+          "text": "One of my earlier Figma plugins. While it looks fairly simple there is a lot under the hood that makes it able show you the icon you're editing."
         }
       ],
       "shapes": []
@@ -372,8 +370,8 @@
     }
   ],
   "viewport": {
-    "w": 702,
-    "h": 727
+    "w": 1200,
+    "h": 1183
   },
-  "savedAt": 1784761890431
+  "savedAt": 1784813952941
 }

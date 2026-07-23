@@ -749,7 +749,14 @@ export function CanvasProvider({
       lastVpSize.current = { w: W, h: H };
       const base = framedRef.current;
       if (!base) { framedRef.current = { w: W, h: H, x: viewRef.x, y: viewRef.y, scale: viewRef.scale }; return; }
-      const { ax, ay } = RESIZE_ANCHOR;
+      // While maximised (native fullscreen, or the full-bleed overlay) the board
+      // owns the whole screen, so the configured resize anchor no longer applies:
+      // pivot about the centre instead, so whatever was framed in the embedded
+      // viewport stays centred in the maximised one. Because the reframe derives
+      // from the canonical reference (not the displayed frame), un-maximising —
+      // which reframes at the embedded size with the configured anchor again —
+      // still restores the original embedded framing exactly.
+      const { ax, ay } = maximizedRef.current ? { ax: 0.5, ay: 0.5 } : RESIZE_ANCHOR;
       const f = SCALE_MODE ? resizeScaleFactor(SCALE_MODE, base.w, base.h, W, H) : 1;
       const s1 = SCALE_MODE ? clampScale(base.scale * f) : base.scale;
       const k = s1 / base.scale; // effective factor after zoom clamping (1 when scaling off)
@@ -2910,6 +2917,18 @@ export function CanvasProvider({
      should be suspended. Mirrored to a ref for the imperative gesture handlers. */
   const maximized = fullBleed || nativeFullscreen || fit === 'fullscreen';
   maximizedRef.current = maximized;
+
+  /* Re-anchor the view whenever the maximise state flips. Entering/leaving
+     maximise resizes the viewport, which the ResizeObserver already reframes —
+     but reframeOnResize now anchors on the *centre* while maximised, so re-run
+     it here too: it makes the re-centre fire together with the toggle and covers
+     the native Fullscreen API path, where the `fullscreenchange` event (which
+     sets `maximized`) and the element resize can arrive in either order. */
+  const didMountMax = useRef(false);
+  useEffect(() => {
+    if (!didMountMax.current) { didMountMax.current = true; return; }
+    eng.reframeOnResize();
+  }, [maximized, eng]);
 
   const value = {
     // state

@@ -1789,15 +1789,15 @@
   outline: none;
 }
 /* Media lightbox (covers the canvas surface) */
-.canvas-root #lightbox {
+.canvas-root [data-cv-part="lightbox"] {
   padding: 4vmin;
   background: rgba(12, 12, 14, 0.86);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   animation: cv-lb-in 0.16s ease;
 }
-.canvas-root #lightbox img,
-.canvas-root #lightbox video {
+.canvas-root [data-cv-part="lightbox"] img,
+.canvas-root [data-cv-part="lightbox"] video {
   border-radius: 8px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
 }
@@ -1806,7 +1806,7 @@
    live theme toggle swaps instantly with no re-render (both variants stay
    loaded). `:is()` keeps the three rules at equal specificity — above every
    plain `img { display: block }` rule — so order alone resolves them. */
-.canvas-root #lightbox .cv-lb-close {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-close {
   border: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.14);
@@ -1814,21 +1814,21 @@
   font-size: 18px;
   transition: background-color 0.15s ease;
 }
-.canvas-root #lightbox .cv-lb-close:hover {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-close:hover {
   background: rgba(255, 255, 255, 0.28);
 }
 /* Gallery prev/next arrows and position counter for multi-asset nodes. */
-.canvas-root #lightbox .cv-lb-nav {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-nav {
   border: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.14);
   color: #fff;
   transition: background-color 0.15s ease;
 }
-.canvas-root #lightbox .cv-lb-nav:hover {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-nav:hover {
   background: rgba(255, 255, 255, 0.28);
 }
-.canvas-root #lightbox .cv-lb-count {
+.canvas-root [data-cv-part="lightbox"] .cv-lb-count {
   padding: 4px 12px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.14);
