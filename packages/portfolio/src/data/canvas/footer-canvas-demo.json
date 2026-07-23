@@ -6,57 +6,44 @@
       "id": "home",
       "name": "Home",
       "view": {
-        "x": 363.37866341398893,
-        "y": 186.03305070919555,
-        "scale": 0.8172031131306705
+        "x": 354.70053139657983,
+        "y": 74.74108129286381,
+        "scale": 0.4043530312571229
       },
       "nodes": [
         {
-          "id": "d-md",
+          "id": "n1-video",
+          "type": "video",
+          "x": 186.52591624001107,
+          "y": 58.254813995050306,
+          "z": 7,
+          "w": 600,
+          "h": 636,
+          "assets": [
+            {
+              "kind": "video",
+              "src": "/canvas-assets/b1bc7b95b257dae1.mp4",
+              "alt": "Kapture 2026-07-23 at 13.03.mp4"
+            }
+          ],
+          "frame": "browser"
+        },
+        {
+          "id": "n2-md",
           "type": "md",
-          "x": -247.743576734812,
-          "y": -97.02353881139975,
-          "z": 1,
-          "w": 330,
-          "text": "# This is a canvas 👋\nAn **embeddable** React component — the same engine behind the canvas edition of this site.\n\n- Pan & zoom the board\n- Add notes, text & `markdown`\n- Draw, frame and organise"
-        },
-        {
-          "id": "d-note-1",
-          "type": "sticky",
-          "x": 252.1855806335427,
-          "y": -137.64603771088298,
-          "z": 2,
-          "color": "yellow",
-          "text": "Drag me\naround!"
-        },
-        {
-          "id": "d-note-2",
-          "type": "sticky",
-          "x": 217.42289303812743,
-          "y": 106.22330477799228,
-          "z": 3,
-          "color": "blue",
-          "text": "Double-click\nto edit me"
+          "x": 544.2222128623944,
+          "y": 658.7548139950503,
+          "z": 8,
+          "w": 340,
+          "text": "A tool for creating 2D and 3D pixelated artwork."
         }
       ],
-      "shapes": [
-        {
-          "id": "s1",
-          "type": "arrow",
-          "stroke": "#7C2D91",
-          "width": 3,
-          "z": 6,
-          "x1": 103.69504104472175,
-          "y1": 10.516887992791231,
-          "x2": 244.200524806463,
-          "y2": -30.348722238370065
-        }
-      ]
+      "shapes": []
     }
   ],
   "viewport": {
     "w": 902,
     "h": 518
   },
-  "savedAt": 1784804611505
+  "savedAt": 1784808418097
 }

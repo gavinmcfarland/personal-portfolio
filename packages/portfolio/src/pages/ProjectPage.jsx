@@ -28,7 +28,7 @@ export default function ProjectPage({ project }) {
   return (
     <div className="absolute inset-0 flex flex-col bg-base lg:flex-row">
       {/* ── Header (top bar below lg, left sidebar from lg up) ───────── */}
-      <header className="shrink-0 border-b border-line bg-base lg:w-80 lg:overflow-y-auto lg:border-b-0 lg:border-r xl:w-96">
+      <header className="order-last shrink-0 border-t border-line bg-base lg:order-0 lg:w-80 lg:overflow-y-auto lg:border-t-0 lg:border-r xl:w-96">
         <div className="flex flex-col px-5 pb-6 pt-4 sm:px-8 sm:pt-6 lg:min-h-full lg:py-8">
           <div className="flex items-center justify-between gap-4">
             <Link
@@ -38,7 +38,7 @@ export default function ProjectPage({ project }) {
               <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
               Back
             </Link>
-            {visitPill("inline-flex lg:hidden mr-12", "Visit")}
+            {visitPill("inline-flex lg:hidden", "Visit")}
           </div>
 
           <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 lg:mt-8 lg:flex-col lg:items-start lg:gap-y-2">
