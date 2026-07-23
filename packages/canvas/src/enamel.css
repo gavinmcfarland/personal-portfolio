@@ -34,30 +34,63 @@
   --cv-hand: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+/* ── Cursor ────────────────────────────────────────────────────────────
+   TEMPORARY: the package ships a custom purple edit-pointer (--cv-cur-edit*).
+   Until a bespoke portfolio cursor is designed, use the browser's standard
+   cursors instead. These mirror the package's own `cursor:` rules but drop the
+   custom image and keep only the keyword — the same fallbacks the package
+   already declares (default idle, grab/grabbing over nodes, move over shapes).
+   Each selector adds `.enamel` so it out-specifies the base rule. */
+.canvas-root.enamel[data-tool="select"]:not([data-readonly]):not([data-panning])
+  .cv-viewport {
+  cursor: default;
+}
+.canvas-root.enamel[data-tool="select"]:not([data-readonly]):has(
+    .cv-node[data-dragging]
+  )
+  .cv-viewport {
+  cursor: default;
+}
+.canvas-root.enamel[data-tool="select"]:not([data-readonly]) .cv-shape {
+  cursor: move;
+}
+.canvas-root.enamel[data-tool="select"]:not([data-readonly]) .cv-node {
+  cursor: default;
+}
+.canvas-root.enamel .cv-node[data-dragging] {
+  cursor: default;
+}
+
 /* Light surface — cool steel (system light; the default). `--en-ground` is a
    private var for the code note's ground fill (the engine ignores non --cv-*). */
 .canvas-root.enamel {
-  --cv-bg-base: #b0b6bc;   /* sunk board */
+  --cv-bg-base: #b0b6bc; /* sunk board */
   --cv-grid: #a6acb2;
   --cv-grid-strong: #a6acb2;
-  --cv-surface: #d0d4d8;   /* panel */
+  --cv-surface: #d0d4d8; /* panel */
   --en-ground: #c3c8cd;
   --cv-ink: #16191c;
   --cv-muted: #4a4f55;
   --cv-faint: #767c83;
   --cv-line: #a6acb2;
   --cv-line-strong: #16191c;
-  --cv-scrollbar: #767c83;        /* flat steel thumb on the sunk board */
+  --cv-scrollbar: #767c83; /* flat steel thumb on the sunk board */
   --cv-scrollbar-hover: #4a4f55;
-  --cv-accent: #c8341a;    /* vermilion (light) */
+  --cv-accent: #c8341a; /* vermilion (light) */
   --cv-ui-bg: #d0d4d8;
   --cv-ui-border: #a6acb2;
-  --cv-note-green: #a8cc1f;  --cv-note-green-ink: #161c00;   /* lime      */
-  --cv-note-yellow: #a8cc1f; --cv-note-yellow-ink: #161c00;  /* lime (no yellow enamel) */
-  --cv-note-blue: #1e4fd8;   --cv-note-blue-ink: #eff3ff;    /* blue      */
-  --cv-note-purple: #12897f; --cv-note-purple-ink: #ecfffd;  /* teal      */
-  --cv-note-orange: #c8341a; --cv-note-orange-ink: #fff1ee;  /* vermilion */
-  --cv-note-pink: #16191c;   --cv-note-pink-ink: #c3c8cd;    /* ink       */
+  --cv-note-green: #a8cc1f;
+  --cv-note-green-ink: #161c00; /* lime      */
+  --cv-note-yellow: #a8cc1f;
+  --cv-note-yellow-ink: #161c00; /* lime (no yellow enamel) */
+  --cv-note-blue: #1e4fd8;
+  --cv-note-blue-ink: #eff3ff; /* blue      */
+  --cv-note-purple: #12897f;
+  --cv-note-purple-ink: #ecfffd; /* teal      */
+  --cv-note-orange: #c8341a;
+  --cv-note-orange-ink: #fff1ee; /* vermilion */
+  --cv-note-pink: #16191c;
+  --cv-note-pink-ink: #c3c8cd; /* ink       */
   --cv-code-comment: #767c83;
   --cv-code-keyword: #c8341a;
   --cv-code-string: #12897f;
@@ -71,27 +104,33 @@
    host portfolio's galley dark theme (design-mockups/11-galley): a warm graphite
    ground and greys, bone ink, lifted vermilion — not the cool steel it used to be. */
 .dark .canvas-root.enamel {
-  --cv-bg-base: #0c0c0b;   /* sunk board ground, a hair below the #111110 page */
+  --cv-bg-base: #0c0c0b; /* sunk board ground, a hair below the #111110 page */
   --cv-grid: #2c2b27;
   --cv-grid-strong: #2c2b27;
-  --cv-surface: #1c1b18;   /* panel */
+  --cv-surface: #1c1b18; /* panel */
   --en-ground: #111110;
   --cv-ink: #ebe7dc;
   --cv-muted: #97948b;
   --cv-faint: #63615a;
-  --cv-line: #2c2b27;      /* --hair hairline */
+  --cv-line: #2c2b27; /* --hair hairline */
   --cv-line-strong: #ebe7dc;
-  --cv-scrollbar: #63615a;        /* flat warm thumb on the graphite ground */
+  --cv-scrollbar: #63615a; /* flat warm thumb on the graphite ground */
   --cv-scrollbar-hover: #97948b;
-  --cv-accent: #e0563c;    /* vermilion (dark) */
+  --cv-accent: #e0563c; /* vermilion (dark) */
   --cv-ui-bg: #1c1b18;
   --cv-ui-border: #2c2b27;
-  --cv-note-green: #c9f23a;  --cv-note-green-ink: #1a2200;   /* lime      */
-  --cv-note-yellow: #c9f23a; --cv-note-yellow-ink: #1a2200;  /* lime (no yellow enamel) */
-  --cv-note-blue: #3b6dff;   --cv-note-blue-ink: #f0f4ff;    /* blue      */
-  --cv-note-purple: #24bdb8; --cv-note-purple-ink: #02231f;  /* teal      */
-  --cv-note-orange: #ff6a4d; --cv-note-orange-ink: #2b0700;  /* vermilion */
-  --cv-note-pink: #e7eaed;   --cv-note-pink-ink: #24282d;    /* ink       */
+  --cv-note-green: #c9f23a;
+  --cv-note-green-ink: #1a2200; /* lime      */
+  --cv-note-yellow: #c9f23a;
+  --cv-note-yellow-ink: #1a2200; /* lime (no yellow enamel) */
+  --cv-note-blue: #3b6dff;
+  --cv-note-blue-ink: #f0f4ff; /* blue      */
+  --cv-note-purple: #24bdb8;
+  --cv-note-purple-ink: #02231f; /* teal      */
+  --cv-note-orange: #ff6a4d;
+  --cv-note-orange-ink: #2b0700; /* vermilion */
+  --cv-note-pink: #e7eaed;
+  --cv-note-pink-ink: #24282d; /* ink       */
   --cv-code-comment: #6b727a;
   --cv-code-keyword: #ff6a4d;
   --cv-code-string: #c9f23a;
@@ -108,7 +147,9 @@
    mockup's global `* { border-radius: 0 }` does. !important beats the specific
    base rules regardless of their specificity. */
 .enamel,
-.enamel * { border-radius: 0 !important; }
+.enamel * {
+  border-radius: 0 !important;
+}
 
 /* ── Sticky note → enamel fill ─────────────────────────────────────────
    A saturated flat panel with its paired ink; mono, small, tight, no shadow. */
