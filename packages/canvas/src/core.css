@@ -1608,7 +1608,11 @@
 }
 /* Context menu (screen-space overlay, positioned at the cursor) */
 .canvas-root [data-cv-part="context-menu"] {
-  position: fixed;
+  /* Positioned relative to `.canvas-root` (which is `position: relative`), not the
+     viewport. `position: fixed` would resolve against the wrong containing block
+     whenever a host-page ancestor is transformed/filtered — pushing the menu away
+     from the cursor on non-maximised boards. Local coords sidestep that entirely. */
+  position: absolute;
   z-index: 200;
   min-width: 176px;
   display: none;

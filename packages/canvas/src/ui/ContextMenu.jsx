@@ -3,7 +3,7 @@ import { Maximize, Scaling, AppWindow, Puzzle, Terminal, SquareX, Expand, Extern
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
-  const { ctxMenu, setCtxMenu, nodes, selected, gridHidden, eng } = useCanvas();
+  const { ctxMenu, setCtxMenu, nodes, selected, gridHidden, eng, rootRef } = useCanvas();
 
   useEffect(() => {
     if (!ctxMenu) return undefined;
@@ -21,13 +21,23 @@ export default function ContextMenu() {
   const { target } = ctxMenu; // {kind:'node'|'shape', id}, {kind:'multi'} → whole selection, or {kind:'canvas'} → empty space
   const run = (fn) => () => { fn(); setCtxMenu(null); };
 
+  // ctxMenu.x/y are the viewport click point (clientX/clientY). The menu is
+  // positioned relative to `.canvas-root` (position: absolute), so map the point
+  // into root-local space and clamp within the board. This keeps the menu glued to
+  // the cursor even when the board isn't maximised — a transformed host-page
+  // ancestor would otherwise offset a viewport-`fixed` menu away from the click.
+  const rect = rootRef?.current?.getBoundingClientRect();
+  const localX = ctxMenu.x - (rect ? rect.left : 0);
+  const localY = ctxMenu.y - (rect ? rect.top : 0);
+  const bw = rect ? rect.width : innerWidth;
+  const bh = rect ? rect.height : innerHeight;
+  const place = (w, h) => ({ left: Math.max(0, Math.min(localX, bw - w)), top: Math.max(0, Math.min(localY, bh - h)) });
+
   // Right-click on empty canvas: the only action is Paste, dropped at the click
   // point captured when the menu opened.
   if (target.kind === 'canvas') {
-    const cx = Math.min(ctxMenu.x, innerWidth - 190);
-    const cy = Math.min(ctxMenu.y, innerHeight - 120);
     return (
-      <div className="cv-panel" data-open="" data-cv-part="context-menu" style={{ left: cx, top: cy }}>
+      <div className="cv-panel" data-open="" data-cv-part="context-menu" style={place(190, 120)}>
         <button onClick={run(() => eng.pasteFromMenu(target.wx, target.wy))}>
           <ClipboardPaste />
           Paste here
@@ -56,8 +66,6 @@ export default function ContextMenu() {
     ? node.assets[mediaIdx]
     : null;
   const isHtml = node && node.type === 'html';
-  const x = Math.min(ctxMenu.x, innerWidth - 190);
-  const y = Math.min(ctxMenu.y, innerHeight - 190);
 
   // Device-frame toggles, shared by single-asset photos/videos and html nodes.
   const frameButtons = node && (
@@ -90,7 +98,7 @@ export default function ContextMenu() {
   );
 
   return (
-    <div className="cv-panel" data-open="" data-cv-part="context-menu" style={{ left: x, top: y }}>
+    <div className="cv-panel" data-open="" data-cv-part="context-menu" style={place(190, 190)}>
       {isMedia && (!loneSvg || singleAsset) && (
         <>
           {!loneSvg && (
