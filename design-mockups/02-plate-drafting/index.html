@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Designer and engineer</title>
+<meta name="description" content="Gavin McFarland builds small tools for people who make software. London." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          paper:'var(--paper)', plate:'var(--plate)', ink:'var(--ink)',
+          muted:'var(--muted)', faint:'var(--faint)', accent:'var(--accent)', rule:'var(--rule)',
+        },
+        fontFamily: {
+          sans:['IBM Plex Sans','ui-sans-serif','system-ui','sans-serif'],
+          mono:['IBM Plex Mono','ui-monospace','SFMono-Regular','monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   PLATE — shared layer
+   ------------------------------------------------------------------
+   A drafting sheet rather than a document. §1 tokens and §2
+   primitives are identical on every page; §3 board is carried by the
+   pages that draw one.
+
+   Three rules the whole variation obeys:
+
+   1. NO CURVES. `border-radius: 0` is set globally and never
+      overridden — not on plates, buttons, swatches or board nodes.
+   2. NO SHADOWS. Depth comes from hairline rules and flat fills.
+      A plate sits on the sheet because it is ruled, not because it
+      floats above it.
+   3. EVERYTHING SNAPS. A 12-column grid across the sheet and a 24px
+      baseline down it. Line heights are stated in whole baselines,
+      spacing in multiples of 8px. Press G to see the grid.
+
+   §1 tokens · §2 primitives · §3 board
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+:root {
+  /* cool sheet stock, flat plates, vermilion for annotation */
+  --paper:#F1F1EE;
+  --plate:#FFFFFF;
+  --sunk:#E7E7E3;
+  --ink:#0E1013;
+  --muted:#4A4E55;
+  --faint:#8A8E95;
+  --accent:#BF3B18;
+  --accent-soft:rgba(191,59,24,.08);
+  --rule:#C9C9C3;
+  --rule-hair:#DEDED9;
+  --grid-minor:#DFDFDA;
+  --grid-major:#CFCFC9;
+
+  /* board swatches — flat fills, hairline bordered, no drop shadow */
+  --sw-a:#E8D9A8; --sw-a-ink:#3E3208;
+  --sw-b:#BFD2E0; --sw-b-ink:#0E2E44;
+  --sw-c:#C3D6BC; --sw-c-ink:#1B3516;
+  --sw-d:#E6C7AB; --sw-d-ink:#432708;
+
+  /* grid */
+  --page:75rem;          /* 1200px sheet */
+  --cols:12;
+  --gutter:1.5rem;       /* 24px = 1 baseline */
+  --pad:clamp(1rem,3vw,2rem);
+  --bl:1.5rem;           /* 24px baseline */
+
+  /* type — five steps, tightly spaced. Modest by construction. */
+  --t-micro:.6875rem;    /* 11 */
+  --t-label:.75rem;      /* 12 */
+  --t-mono:.8125rem;     /* 13 */
+  --t-body:.9375rem;     /* 15 */
+  --t-display:clamp(1.375rem,2.8vw,1.75rem);
+
+  --dur:.15s; --ease:cubic-bezier(.2,.7,.3,1);
+  --f-sans:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace;
+}
+
+.dark {
+  --paper:#0B0C0D;
+  --plate:#141618;
+  --sunk:#08090A;
+  --ink:#E6E7E4;
+  --muted:#9CA0A6;
+  --faint:#6B6F75;
+  --accent:#FF7A52;
+  --accent-soft:rgba(255,122,82,.10);
+  --rule:#2C2F33;
+  --rule-hair:#212427;
+  --grid-minor:#141719;
+  --grid-major:#1F2327;
+
+  --sw-a:#6E5F28; --sw-a-ink:#F5EDD3;
+  --sw-b:#2F4A5C; --sw-b-ink:#DDEAF3;
+  --sw-c:#37502F; --sw-c-ink:#DFEEDA;
+  --sw-d:#6B4526; --sw-d-ink:#F6E4D2;
+}
+
+/* ── §2 · PRIMITIVES ───────────────────────────────────────────── */
+
+/* Rule 1, stated once and never undone. */
+*, *::before, *::after { box-sizing:border-box; border-radius:0; }
+
+body {
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--f-sans); font-size:var(--t-body); line-height:var(--bl);
+  -webkit-font-smoothing:antialiased;
+}
+::selection { background:var(--accent); color:var(--paper); }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+/* strip — the ruled band. Sheet header and any full-width divider. */
+.strip {
+  border-bottom:1px solid var(--rule);
+  background:var(--paper);
+}
+.strip__in {
+  margin-inline:auto; max-width:var(--page);
+  padding:0 var(--pad);
+  height:calc(var(--bl) * 2);            /* 48px — two baselines */
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  font-family:var(--f-mono); font-size:var(--t-label);
+  letter-spacing:.06em; text-transform:uppercase; color:var(--muted);
+}
+.strip strong { font-weight:600; color:var(--ink); }
+.strip__sep { color:var(--faint); }
+
+/* sheet — the drawing area, framed left and right */
+.sheet {
+  margin-inline:auto; max-width:var(--page);
+  padding:0 var(--pad);
+  border-left:1px solid var(--rule-hair);
+  border-right:1px solid var(--rule-hair);
+}
+
+/* grid12 — the master grid. Everything on the sheet is a span of it. */
+.grid12 {
+  display:grid;
+  grid-template-columns:repeat(var(--cols), minmax(0,1fr));
+  column-gap:var(--gutter);
+}
+
+/* spread — rail (cols 1–2) + main (cols 3–12) */
+.spread { padding-block:calc(var(--bl) * 2); }
+.rail { display:none; }
+.main { grid-column:1 / -1; }
+@media (min-width:1024px) {
+  .rail {
+    display:block; grid-column:1 / 3;
+    position:sticky; top:var(--bl); height:max-content;
+    font-family:var(--f-mono); font-size:var(--t-label);
+    letter-spacing:.04em; color:var(--faint);
+  }
+  .main { grid-column:3 / -1; }
+}
+.rail a {
+  display:flex; gap:.5rem; height:var(--bl); align-items:center;
+  color:inherit; text-decoration:none;
+  border-left:2px solid transparent; padding-left:.5rem;
+  transition:color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.rail a:hover { color:var(--muted); }
+.rail a[aria-current='true'] { border-left-color:var(--accent); color:var(--ink); }
+.rail .n { color:var(--faint); }
+.rail a[aria-current='true'] .n { color:var(--accent); }
+
+/* module — a numbered plate of the sheet.
+   Its inner grid is 10 equal columns with the same gutter, inside a
+   container exactly as wide as master columns 3–12 — so its tracks
+   land on the master tracks exactly. Strict alignment without
+   subgrid, and it degrades to one column on a phone. */
+.module { margin-bottom:calc(var(--bl) * 3); }
+.module:last-child { margin-bottom:0; }
+.module__grid {
+  display:grid; grid-template-columns:repeat(10,minmax(0,1fr));
+  column-gap:var(--gutter);
+}
+@media (max-width:1023px) {
+  .module__grid { grid-template-columns:repeat(var(--cols),minmax(0,1fr)); }
+}
+
+/* module head — the ruled caption strip. Number, name, and an
+   optional right-hand note, sitting on a heavy rule. */
+.module__head {
+  grid-column:1 / -1;
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  height:calc(var(--bl) * 1.5);          /* 36px */
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--rule-hair);
+  margin-bottom:var(--bl);
+  font-family:var(--f-mono); font-size:var(--t-label);
+  letter-spacing:.08em; text-transform:uppercase;
+}
+.module__num { color:var(--accent); font-weight:500; }
+.module__name { color:var(--ink); font-weight:500; }
+.module__note { color:var(--faint); font-weight:400; letter-spacing:.04em; }
+.module__head > span:first-child { display:flex; gap:.75rem; }
+
+/* prose — always a column span, never a max-width guess */
+.prose { color:var(--muted); }
+.prose p { margin:0; }
+.prose p + p { margin-top:var(--bl); }
+.prose strong { color:var(--ink); font-weight:500; }
+
+.display {
+  margin:0; font-size:var(--t-display); font-weight:400;
+  line-height:calc(var(--bl) * 1.333);   /* 32px */
+  letter-spacing:-.015em; color:var(--ink);
+}
+
+/* tbl — the ruled schedule. Work index, specifications, environment
+   and paging are all this one primitive, so the sheet reads as a set
+   of related tables rather than a set of unrelated blocks. */
+.tbl { grid-column:1 / -1; }
+.tbl__head, .tbl__row {
+  display:grid; grid-template-columns:subgrid; grid-column:1 / -1;
+  align-items:baseline;
+  column-gap:var(--gutter);
+}
+@supports not (grid-template-columns:subgrid) {
+  .tbl__head, .tbl__row { grid-template-columns:repeat(10,minmax(0,1fr)); }
+  @media (max-width:1023px) {
+    .tbl__head, .tbl__row { grid-template-columns:repeat(var(--cols),minmax(0,1fr)); }
+  }
+}
+.tbl__head {
+  height:var(--bl); border-bottom:1px solid var(--rule);
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.1em; text-transform:uppercase; color:var(--faint);
+}
+.tbl__row {
+  padding-block:.5rem;                    /* 8px — row height 40px */
+  border-bottom:1px solid var(--rule-hair);
+  color:inherit; text-decoration:none;
+  transition:background-color var(--dur) var(--ease);
+}
+a.tbl__row:hover { background:var(--accent-soft); }
+.c-num  { grid-column:span 1; font-family:var(--f-mono); font-size:var(--t-mono); color:var(--faint); }
+.c-key  { grid-column:span 2; font-family:var(--f-mono); font-size:var(--t-mono); color:var(--ink); }
+.c-desc { grid-column:span 6; font-size:var(--t-mono); color:var(--muted); }
+.c-year { grid-column:span 1; font-family:var(--f-mono); font-size:var(--t-mono); color:var(--faint); text-align:right; }
+/* the wide pairing used by capabilities */
+.c-term { grid-column:span 3; font-family:var(--f-mono); font-size:var(--t-mono); color:var(--ink); }
+.c-body { grid-column:span 7; color:var(--muted); }
+
+.tbl__mk {
+  color:var(--accent); font-family:var(--f-mono);
+  opacity:0; transition:opacity var(--dur) var(--ease);
+}
+a.tbl__row:hover .tbl__mk, a.tbl__row:focus-visible .tbl__mk { opacity:1; }
+
+/* Below lg a ten-column schedule stops being a schedule. Cells stack;
+   the key and the year share the first line so the year column
+   survives as a right-hand edge. */
+@media (max-width:767px) {
+  .tbl__head { display:none; }
+  .tbl__row { grid-template-columns:1fr auto; padding-block:.75rem; }
+  .c-num { display:none; }
+  /* Rows are stated explicitly, not left to auto-placement: .c-desc
+     precedes .c-year in the DOM, so auto-placement would take the
+     full-width description as row 2 and strand the year on a row 3
+     of its own. Key and year share row 1; the year column survives
+     as a right-hand edge. */
+  .c-key  { grid-column:1; grid-row:1; }
+  .c-year { grid-column:2; grid-row:1; }
+  .c-desc { grid-column:1 / -1; grid-row:2; }
+  .c-term { grid-column:1 / -1; }
+  .c-body { grid-column:1 / -1; margin-top:.25rem; }
+}
+
+/* plate — flat surface, hairline border, square corners, no shadow.
+   Used for figures on the page and for nodes on the board. */
+.plate { background:var(--plate); border:1px solid var(--rule); }
+.plate__bar {
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  height:calc(var(--bl) * 1.25);          /* 30px */
+  padding:0 .75rem;
+  border-bottom:1px solid var(--rule-hair);
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.08em; text-transform:uppercase; color:var(--faint);
+}
+.plate__body { padding:.75rem; }
+
+/* tag — square, ruled */
+.tags { display:flex; flex-wrap:wrap; gap:.25rem; margin-top:.75rem; }
+.tag {
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.08em; text-transform:uppercase; color:var(--faint);
+  border:1px solid var(--rule); padding:0 .375rem; line-height:1.25rem;
+}
+
+.lnk {
+  color:var(--accent); text-decoration:none;
+  border-bottom:1px solid currentColor;
+  transition:opacity var(--dur) var(--ease);
+}
+.lnk:hover { opacity:.7; }
+
+.btn {
+  display:grid; place-items:center; width:var(--bl); height:var(--bl);
+  border:1px solid transparent; background:transparent;
+  color:var(--faint); cursor:pointer;
+  transition:color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.btn:hover { color:var(--ink); border-color:var(--rule); }
+.btn[aria-pressed='true'] { color:var(--accent); border-color:var(--accent); }
+
+/* titleblock — the drawing's title block, bottom of every page.
+   Cells are hairline-divided, labels tiny and uppercase. */
+.titleblock { border-top:1px solid var(--ink); }
+.titleblock__in {
+  margin-inline:auto; max-width:var(--page); padding:0 var(--pad);
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+}
+@media (min-width:640px) { .titleblock__in { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+@media (min-width:1024px) { .titleblock__in { grid-template-columns:repeat(6,minmax(0,1fr)); } }
+.tb-cell {
+  padding:.5rem .75rem; min-height:calc(var(--bl) * 2);
+  border-right:1px solid var(--rule-hair);
+  border-bottom:1px solid var(--rule-hair);
+}
+.tb-cell:last-child { border-right:0; }
+.tb-k {
+  display:block; font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.1em; text-transform:uppercase; color:var(--faint);
+}
+.tb-v { display:block; font-family:var(--f-mono); font-size:var(--t-mono); color:var(--ink); }
+
+/* gridlines — the construction grid, on demand (button or G).
+   Proof that the alignment claim is real. */
+.gridlines { position:fixed; inset:0; z-index:90; pointer-events:none; display:none; }
+.gridlines[data-on='true'] { display:block; }
+/* Mirrors .sheet's box exactly — same max-width, same padding, and
+   the same 1px side borders. An overlay that models the grid even
+   slightly differently from the thing it measures is worse than no
+   overlay, because it reports drift that is not there (and hides
+   drift that is). */
+.gridlines__in {
+  margin-inline:auto; max-width:var(--page); height:100%;
+  padding:0 var(--pad);
+  border-left:1px solid transparent; border-right:1px solid transparent;
+  display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr));
+  column-gap:var(--gutter);
+}
+.gridlines__in > i { background:var(--accent); opacity:.07; }
+.gridlines__bl {
+  position:absolute; inset:0;
+  background-image:repeating-linear-gradient(to bottom, var(--accent) 0 1px, transparent 1px var(--bl));
+  opacity:.08;
+}
+</style>
+</head>
+
+<body>
+
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[200] focus:bg-accent focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__bl"></div>
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<!-- ── sheet header ────────────────────────────────────────────── -->
+<header class="strip">
+  <div class="strip__in">
+    <span><strong>gavin mcfarland</strong> <span class="strip__sep">/</span> designer &amp; engineer</span>
+    <span class="flex items-center gap-3">
+      <span class="hidden sm:inline">london</span>
+      <button id="grid-toggle" type="button" class="btn" aria-pressed="false" aria-label="Show layout grid" title="Show layout grid (G)">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25">
+          <path d="M2 2h12v12H2z"/><path d="M6 2v12M10 2v12M2 6h12M2 10h12"/>
+        </svg>
+      </button>
+      <button id="theme-toggle" type="button" class="btn" aria-label="Toggle dark mode">
+        <svg class="h-3.5 w-3.5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <svg class="hidden h-3.5 w-3.5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+    </span>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <!-- ── rail ─────────────────────────────────────────────────── -->
+  <nav class="rail" aria-label="Sheet index">
+    <a href="#summary"><span class="n">01</span> summary</a>
+    <a href="#work"><span class="n">02</span> work</a>
+    <a href="#capabilities"><span class="n">03</span> capabilities</a>
+    <a href="#environment"><span class="n">04</span> environment</a>
+    <a href="#previously"><span class="n">05</span> previously</a>
+    <a href="#contact"><span class="n">06</span> contact</a>
+  </nav>
+
+  <main id="main" class="main">
+
+    <!-- 01 summary ──────────────────────────────────────────── -->
+    <section id="summary" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span><span class="module__num">01</span> <span class="module__name">summary</span></span>
+          <span class="module__note hidden sm:inline">designer &amp; engineer</span>
+        </div>
+
+        <div style="grid-column:span 7">
+          <p class="display">I build the small tools teams are missing.</p>
+        </div>
+        <div class="prose" style="grid-column:span 7; margin-top:var(--bl)">
+          <p>
+            Fifteen years in the gap between design and engineering — finance, government and
+            retail. The pattern repeats: a team is slowed by something nobody owns, so I build
+            the missing piece and document it before I go.
+          </p>
+          <p>
+            Right now that is <a class="lnk" href="project.html">Plugma</a>, a toolchain for
+            building Figma plugins. Before it, a browser IDE, a prompt library, and a handful
+            of plugins designers use every week. Most of it is
+            <a class="lnk" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">on GitHub</a>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 work ─────────────────────────────────────────────── -->
+    <section id="work" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span><span class="module__num">02</span> <span class="module__name">work</span></span>
+          <span class="module__note">6 items</span>
+        </div>
+
+        <div class="tbl module__grid" id="work-list">
+          <div class="tbl__head">
+            <span class="c-num">no.</span>
+            <span class="c-key">item</span>
+            <span class="c-desc">description</span>
+            <span class="c-year">year</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 capabilities ─────────────────────────────────────── -->
+    <section id="capabilities" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span><span class="module__num">03</span> <span class="module__name">capabilities</span></span>
+          <span class="module__note hidden sm:inline">3 items</span>
+        </div>
+
+        <div class="tbl module__grid">
+          <div class="tbl__row">
+            <span class="c-term">design systems</span>
+            <span class="c-body">
+              Tokens, components, and the governance that keeps them honest — so the design
+              file and the codebase describe the same thing, and stay that way after I leave.
+            </span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">product &amp; front-end</span>
+            <span class="c-body">
+              Interface design carried through to production code. I still start every project
+              in a design file, because a problem you cannot draw is one you do not understand yet.
+            </span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">developer tooling</span>
+            <span class="c-body">
+              CLIs, plugins and build steps — the small piece of infrastructure nobody owns.
+              Usually the difference between a day of setup and a single command.
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 environment ──────────────────────────────────────── -->
+    <section id="environment" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span><span class="module__num">04</span> <span class="module__name">environment</span></span>
+        </div>
+
+        <div class="tbl module__grid">
+          <div class="tbl__row">
+            <span class="c-term">stack</span>
+            <span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">typescript, svelte, node, react, vite, figma-api</span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">based</span>
+            <span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">london, uk</span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">domains</span>
+            <span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">finance, government, retail</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 previously ───────────────────────────────────────── -->
+    <section id="previously" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span><span class="module__num">05</span> <span class="module__name">previously</span></span>
+        </div>
+
+        <div class="tbl module__grid">
+          <div class="tbl__row">
+            <span class="c-term">clients</span>
+            <span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">
+              american&nbsp;express &nbsp;·&nbsp; natwest &nbsp;·&nbsp; home&nbsp;office &nbsp;·&nbsp;
+              john&nbsp;lewis &nbsp;·&nbsp; lseg &nbsp;·&nbsp; ecologi &nbsp;·&nbsp; amazon
+            </span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">note</span>
+            <span class="c-body">
+              Design systems and front-end work, plus client work I cannot show. Happy to walk
+              through it directly.
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 contact ──────────────────────────────────────────── -->
+    <section id="contact" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span><span class="module__num">06</span> <span class="module__name">contact</span></span>
+          <span class="module__note hidden sm:inline">open to work</span>
+        </div>
+
+        <div class="tbl module__grid">
+          <a class="tbl__row" href="mailto:gavin@limitlessloop.com">
+            <span class="c-term">email</span>
+            <span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">gavin@limitlessloop.com <span class="tbl__mk">→</span></span>
+          </a>
+          <a class="tbl__row" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">
+            <span class="c-term">github</span>
+            <span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">gavinmcfarland <span class="tbl__mk">↗</span></span>
+          </a>
+          <a class="tbl__row" href="https://www.figma.com/@gavinmcfarland" target="_blank" rel="noopener noreferrer">
+            <span class="c-term">figma</span>
+            <span class="c-body" style="font-family:var(--f-mono);font-size:var(--t-mono)">@gavinmcfarland <span class="tbl__mk">↗</span></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── title block ─────────────────────────────────────────────── -->
+<footer class="titleblock">
+  <div class="titleblock__in">
+    <div class="tb-cell"><span class="tb-k">drawn by</span><span class="tb-v">g. mcfarland</span></div>
+    <div class="tb-cell"><span class="tb-k">location</span><span class="tb-v">london, uk</span></div>
+    <div class="tb-cell"><span class="tb-k">date</span><span class="tb-v">2026-07</span></div>
+    <div class="tb-cell"><span class="tb-k">sheet</span><span class="tb-v">01 / 03</span></div>
+    <div class="tb-cell"><span class="tb-k">title</span><span class="tb-v">index</span></div>
+    <div class="tb-cell"><span class="tb-k">rev</span><span class="tb-v">A</span></div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const dark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+  });
+
+  /* Construction grid — button or G. */
+  const lines = document.getElementById('gridlines');
+  const gbtn = document.getElementById('grid-toggle');
+  const setGrid = (on) => {
+    lines.dataset.on = String(on);
+    gbtn.setAttribute('aria-pressed', String(on));
+  };
+  gbtn.addEventListener('click', () => setGrid(lines.dataset.on !== 'true'));
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'g' && e.key !== 'G') return;
+    if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName) || e.metaKey || e.ctrlKey) return;
+    setGrid(lines.dataset.on !== 'true');
+  });
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+  const work = [
+    { year:'2024', name:'plugma',              desc:'Zero-config toolchain for Figma plugins', href:'project.html', local:true },
+    { year:'2024', name:'askeroo',             desc:'CLI prompts with back-navigation',        href:'https://github.com/gavinmcfarland/askeroo' },
+    { year:'2024', name:'screenshot-2-layout', desc:'Screenshot to auto-layout frame',         href:'#' },
+    { year:'2023', name:'figlet',              desc:'Plugin IDE in the browser',               href:'https://www.figma.com/community/plugin/1215620774867583125/figlet' },
+    { year:'2022', name:'table-creator',       desc:'Data tables on the canvas',               href:'https://www.figma.com/community/plugin/885838970710285271/table-creator' },
+    { year:'2021', name:'icon-preview',        desc:'Icons at their shipping sizes',           href:'https://www.figma.com/community/plugin/888907972695800109/icon-preview' },
+  ];
+
+  document.getElementById('work-list').insertAdjacentHTML('beforeend', work.map((w, i) => {
+    const external = w.href.startsWith('http');
+    return `
+      <a class="tbl__row" href="${esc(w.href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+        <span class="c-num">${String(i + 1).padStart(2,'0')}</span>
+        <span class="c-key">${esc(w.name)} <span class="tbl__mk">${w.local ? '→' : '↗'}</span></span>
+        <span class="c-desc">${esc(w.desc)}</span>
+        <span class="c-year">${esc(w.year)}</span>
+      </a>`;
+  }).join(''));
+
+  /* Rail tracking */
+  const links = new Map();
+  document.querySelectorAll('.rail a').forEach((a) => links.set(a.getAttribute('href').slice(1), a));
+
+  if ('IntersectionObserver' in window) {
+    const visible = new Set();
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => e.isIntersecting ? visible.add(e.target.id) : visible.delete(e.target.id));
+      const current = [...links.keys()].find((id) => visible.has(id));
+      links.forEach((a, id) => id === current ? a.setAttribute('aria-current','true') : a.removeAttribute('aria-current'));
+    }, { rootMargin:'-8% 0px -70% 0px' });
+    document.querySelectorAll('.module').forEach((s) => io.observe(s));
+  }
+})();
+</script>
+
+</body>
+</html>

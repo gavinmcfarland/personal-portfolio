@@ -1,0 +1,1708 @@
+/* @gavinmcfarland/canvas — structural styles (headless core). GENERATED from canvas.css by
+   scripts/split-css.mjs — do not edit by hand; edit canvas.css and re-run.
+   Everything the engine needs to function: geometry, layout, camera transforms,
+   interaction (pointer-events / touch-action / cursors), overlay geometry. No skin.
+   Import this alone to build a completely bespoke look from scratch. */
+
+/* ─────────────────────────────────────────────────────────────
+   @gavinmcfarland/canvas — scoped canvas styles.
+   Everything is scoped under `.canvas-root` so the component styles
+   itself and can be embedded without leaking into (or clashing with)
+   the host page. Dark mode activates when a `.dark` ancestor is present
+   (or `.canvas-root.dark`). Design tokens are namespaced `--cv-*` and declared
+   on the root so descendant node content (including host-registered node types)
+   inherits them without ever colliding with the host page; override any
+   `--cv-*` token on your own `.canvas-root` to re-theme. Regions and objects
+   expose `data-cv-part` hooks. See the Styling section of the README.
+   ───────────────────────────────────────────────────────────── */
+/* ── Design tokens ────────────────────────────────────────────── */
+/* ── Custom board background ───────────────────────────────────────
+   A picked board colour (`--bg-pick`, set inline by Canvas.jsx) is blended a
+   short way into the theme's base board colour — exactly how a shape fill
+   composites over the board. One value therefore reads as a soft paper tint in
+   light mode and a dark, hue-tinted board in dark mode (never a washed-out
+   light hue), with no per-theme rules. The blend stays base-dominant, so its
+   luminance tracks the base and the theme's grid ink still reads correctly.
+   The blend amount (`--bg-tint`) is a per-theme token: lighter in light mode,
+   stronger in dark mode. */
+/* ── Root container ───────────────────────────────────────────── */
+.canvas-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* Cooperative gestures (embedded/read-only boards): let the host page own a
+   plain one-finger scroll so the board never traps the page. Two fingers still
+   pan/zoom the canvas (the pinch handler runs off pointer events, not the
+   browser's native gesture), and desktop wheel is gated in JS. */
+.canvas-root[data-coop] {
+  touch-action: pan-x pan-y;
+}
+/* Bottom-left cooperative-gesture lock control: a lock button plus a message
+   ("Scroll to pan is disabled" / "Use two fingers to move"). The container is
+   click-through except the button, so the label never blocks the board. */
+.canvas-root .cv-lock {
+  position: absolute;
+  left: 22px;
+  bottom: 22px;
+  z-index: 40;
+  /* Sized to the button only; the message is positioned out of flow (below) so
+     showing/hiding it never resizes this box and shifts the button. */
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+}
+.canvas-root .cv-lock-btn {
+  pointer-events: auto;
+  flex: none;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  cursor: default;
+}
+.canvas-root .cv-lock > span {
+  /* Out of flow, centred on the button and to its right, so the button never
+     moves whether the message is present or not. */
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+/* Click-to-interact: once unlocked the board owns touch again (single-finger
+   pan) rather than passing it to the page. */
+.canvas-root[data-coop][data-engaged] {
+  touch-action: none;
+}
+/* Locked overlay + "Click to interact" button. Covers the board, dims it a
+   touch, and — crucially — sets touch-action so one finger still scrolls the
+   host page while locked. Clicking it unlocks (JS). */
+.canvas-root .cv-interact-lock {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  touch-action: pan-x pan-y;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.canvas-root .cv-interact-lock > span {
+  transform: translateY(2px);
+}
+/* Hover lift only on devices that truly hover — a touch press (which happens
+   incidentally while scrolling past) must not animate the pill. */
+@media (hover: hover) {
+  .canvas-root .cv-interact-lock:hover > span {
+    transform: translateY(0);
+  }
+}
+/* ── Synthetic scrollbars ──────────────────────────────────────────
+   Screen-space overlays for the `scrollbars` prop. The board is a transform
+   pan/zoom surface, so these don't scroll anything natively — JS sizes the
+   thumb (syncScrollbars) and drags it to pan. Thin, square, transparent track;
+   only the thumb is interactive so the track never blocks board gestures.
+   Hidden until JS sets data-visible (the axis has content off-canvas). */
+.canvas-root .cv-scrollbar {
+  position: absolute;
+  z-index: 42;
+  pointer-events: none;
+}
+.canvas-root .cv-scrollbar-x {
+  left: 4px;
+  right: 12px;
+  /* leave the corner clear for the y bar */
+  bottom: 4px;
+  height: 5px;
+}
+.canvas-root .cv-scrollbar-y {
+  top: 4px;
+  bottom: 12px;
+  right: 4px;
+  width: 5px;
+}
+.canvas-root .cv-scrollbar-thumb {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+}
+.canvas-root .cv-scrollbar-x .cv-scrollbar-thumb {
+  top: 0;
+  bottom: 0;
+  cursor: ew-resize;
+}
+.canvas-root .cv-scrollbar-y .cv-scrollbar-thumb {
+  left: 0;
+  right: 0;
+  cursor: ns-resize;
+}
+/* Fullscreen mode: cover the browser viewport regardless of the host layout. */
+.canvas-root[data-fit="fullscreen"] {
+  position: fixed;
+  inset: 0;
+  width: auto;
+  height: auto;
+}
+/* Full-bleed toggle: cover the document's viewport at runtime (position:fixed),
+   like data-fit="fullscreen" but driven by the zoom-panel button — it stays
+   inside the page (no native browser fullscreen), so it needs a high z-index to
+   sit above the host content. */
+.canvas-root[data-cv-fullbleed] {
+  position: fixed;
+  inset: 0;
+  width: auto;
+  height: auto;
+  z-index: 2147483000;
+}
+.canvas-root * {
+  box-sizing: border-box;
+}
+/* ── Viewport / canvas ────────────────────────────────────────── */
+.canvas-root .cv-viewport {
+  position: absolute;
+  inset: 0;
+  cursor: default;
+}
+/* Dot grid toggled off (board setting) — keep the background colour, drop dots. */
+/* Viewport centre crosshair (the `g` toggle): two screen-space hairlines through
+   the middle of the viewport. Fixed to the container centre — unlike the world,
+   they never pan or zoom — so this is pure CSS, no per-frame placement. Purely a
+   visual alignment aid: click-through, and never captured in the board. */
+.canvas-root .cv-center-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 41;
+}
+.canvas-root .cv-center-lines::before,
+.canvas-root .cv-center-lines::after {
+  position: absolute;
+}
+/* Vertical line at the horizontal centre. */
+.canvas-root .cv-center-lines::before {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-0.5px);
+}
+/* Horizontal line at the vertical centre. */
+.canvas-root .cv-center-lines::after {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-0.5px);
+}
+/* Edit mode (select tool, not read-only) shows a custom accent pointer. */
+.canvas-root[data-tool="select"]:not([data-readonly]):not([data-panning]) .cv-viewport {
+  cursor: var(--cv-cur-edit), default;
+}
+/* During a node drag the viewport captures the pointer, so its cursor (not the
+   node's) is shown — keep it on the hover variant. */
+.canvas-root[data-tool="select"]:not([data-readonly]):has(.cv-node[data-dragging]) .cv-viewport {
+  cursor: var(--cv-cur-edit-hover), grabbing;
+}
+.canvas-root[data-tool="hand"] .cv-viewport,
+.canvas-root[data-space] .cv-viewport,
+.canvas-root[data-panning] .cv-viewport {
+  cursor: grab;
+}
+.canvas-root[data-panning] .cv-viewport {
+  cursor: grabbing;
+}
+.canvas-root[data-tool="note"] .cv-viewport,
+.canvas-root[data-tool="text"] .cv-viewport,
+.canvas-root[data-tool="md"] .cv-viewport,
+.canvas-root[data-tool="code"] .cv-viewport {
+  cursor: crosshair;
+}
+/* Scale mode (K): a resize cursor everywhere signals scaling; dragging an
+   object's body still moves it, dragging a corner handle scales it. */
+.canvas-root[data-tool="scale"]:not([data-readonly]) .cv-viewport,
+.canvas-root[data-tool="scale"]:not([data-readonly]) .cv-node {
+  cursor: nwse-resize;
+}
+.canvas-root[data-tool="pen"] .cv-viewport,
+.canvas-root[data-tool="line"] .cv-viewport,
+.canvas-root[data-tool="arrow"] .cv-viewport,
+.canvas-root[data-tool="rect"] .cv-viewport,
+.canvas-root[data-tool="ellipse"] .cv-viewport,
+.canvas-root[data-tool="frame"] .cv-viewport {
+  cursor: crosshair;
+}
+.canvas-root .cv-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+}
+/* The wrapper is a zero-size box at the world origin that carries the shape's
+   z-index and its collision-reflow transform (so shapes move on the same <div>
+   path as nodes). The SVG inside overflows it to draw at the shape's coords. */
+.canvas-root .cv-shapeWrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.canvas-root .cv-shapeSvg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+}
+.canvas-root .cv-shape {
+  pointer-events: stroke;
+}
+.canvas-root .cv-shape.cv-fillable {
+  pointer-events: all;
+}
+.canvas-root[data-tool="select"] .cv-shape {
+  cursor: move;
+}
+.canvas-root[data-tool="select"]:not([data-readonly]) .cv-shape {
+  cursor: var(--cv-cur-edit-hover), move;
+}
+/* ── Nodes ────────────────────────────────────────────────────── */
+.canvas-root .cv-node {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+.canvas-root[data-tool="select"]:not([data-readonly]) .cv-node {
+  cursor: var(--cv-cur-edit-hover), grab;
+}
+.canvas-root .cv-node[data-dragging] {
+  cursor: var(--cv-cur-edit-hover), grabbing;
+}
+/* Sticky note */
+.canvas-root .cv-sticky {
+  width: 210px;
+  min-height: 180px;
+}
+.canvas-root .cv-sticky .cv-txt {
+  min-height: 130px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.canvas-root .cv-sticky[data-editing="1"] .cv-txt {
+  cursor: text;
+}
+/* Text block — width-less blocks stay on one line, hug their text and grow as
+   you type; a user-resized block (data-w set) has a fixed width and wraps
+   inside it (resize clamps that width to ≥120px). */
+.canvas-root .cv-tblock .cv-txt {
+  white-space: pre;
+}
+.canvas-root .cv-tblock[data-editing="1"] .cv-txt {
+  cursor: text;
+}
+.canvas-root .cv-tblock[data-w] .cv-txt {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.canvas-root .cv-node[data-editing="1"] {
+  cursor: text;
+}
+/* Frame / anchor region — the box scales with zoom; its label lives in the chrome layer */
+.canvas-root .cv-node.cv-frame {
+  width: 200px;
+  height: 140px;
+}
+.canvas-root .cv-frame .cv-frame-body {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* Dropped image object */
+.canvas-root .cv-node.cv-image,
+.canvas-root .cv-node.cv-video {
+  overflow: hidden;
+}
+/* SVGs are vector art, not photos: drop the card chrome (shadow/surface/radius)
+   so they sit transparently on the board, and contain (never crop) the graphic. */
+.canvas-root .cv-node.cv-image.cv-svg {
+  overflow: visible;
+}
+.canvas-root .cv-node.cv-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Host pages commonly reset img/video to max-width:100% (e.g. Tailwind
+     preflight). A crop sizes the media PAST its box on purpose — the clamp
+     would squash it back and leave background showing. */
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  /* Anchor top-left so any box/media aspect mismatch clips the right/bottom —
+     the sides the corner handle pulls. A cmd-drag crop sizes the media past the
+     box with an inline style (see Media.jsx); the node's overflow:hidden trims it. */
+  object-position: left top;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.canvas-root .cv-node.cv-image.cv-svg img {
+  object-fit: contain;
+}
+.canvas-root .cv-node.cv-video video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  /* see .node.image img — host resets would squash the crop */
+  max-height: none;
+  object-fit: cover;
+  object-position: left top;
+  /* crop trims right/bottom — see .node.image img */
+  user-select: none;
+  pointer-events: none;
+}
+/* HTML document node — a dropped/pasted .html file rendered live in a sandboxed
+   iframe. The iframe is inert (pointer-events:none) until the node goes live
+   (double-click in edit mode / tap in view mode — see Canvas.jsx), so drags and
+   pans over it behave like any other node; the shield is the explicit hit
+   surface on top while inert.
+
+   Like a lone SVG, a frameless html node carries no card chrome (no surface,
+   no shadow): the iframe stays transparent, so a document that paints no
+   background of its own sits directly on the board — one that does looks like
+   a card anyway. (The iframe element's color-scheme is kept in sync with the
+   document's by Html.jsx: a mismatch makes the browser force an opaque
+   canvas.) A device frame restores the card look — see .framed below. */
+.canvas-root .cv-node.cv-html {
+  overflow: hidden;
+}
+.canvas-root .cv-node.cv-html .cv-html-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Mobile Safari long-press otherwise selects the iframe ELEMENT itself
+     (blue selection box + callout) even in view mode, where the shield owns
+     the pointer. These don't cross the iframe boundary, so a live demo's own
+     document stays interactive/selectable. */
+  -webkit-touch-callout: none;
+}
+/* The permanent cv-df skeleton (see Html.jsx): frameless, its screen must not
+   paint the device-frame backdrop either. Framed keeps --bg-base so a browser
+   window never looks hollow. */
+.canvas-root .cv-node.cv-html .cv-html-shield {
+  position: absolute;
+  inset: 0;
+  /* The shield is the hit surface while the demo is inert. On mobile a tap /
+     long-press here must never start a text or element selection (which draws
+     its own outline) — only pan the board or, on a stationary tap, go live. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+/* Live: the iframe takes the pointer; an accent outline says "interactive". */
+.canvas-root .cv-node.cv-html.cv-live .cv-html-frame {
+  pointer-events: auto;
+}
+/* Video playback controls — revealed on hover. Pointer events are stopped
+   inside, so the bar never starts a node drag / pan / lightbox tap. */
+.canvas-root .cv-node.cv-video .cv-vctrl {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  user-select: none;
+  cursor: default;
+}
+.canvas-root .cv-node.cv-video .cv-vplay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  cursor: default;
+}
+.canvas-root .cv-node.cv-video .cv-vplay svg {
+  width: 12px;
+  height: 12px;
+}
+.canvas-root .cv-node.cv-video .cv-vbar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 16px;
+  cursor: default;
+  touch-action: none;
+}
+.canvas-root .cv-node.cv-video .cv-vtrack {
+  flex: 1;
+  height: 3px;
+  overflow: hidden;
+}
+.canvas-root .cv-node.cv-video .cv-vfill {
+  width: 0;
+  height: 100%;
+}
+/* Device frame — a CSS chrome wrapped around a single image / video (see
+   DeviceFrame.jsx). The frame fills the node box as a flex column: a fixed
+   world-px chrome bar on top, the media filling the rest, so the frame grows to
+   whatever size the media is. The per-style --cv-df-bar mirrors FRAME_BARS in
+   constants.js. */
+/* --cv-df-bar (the chrome-bar height, px) is set on the framed node by MediaNode
+   — a constant world-px value in "fixed" mode, or a fraction of the node height
+   in "scale with object" mode so it tracks the media size. It lives on the node
+   (not the inner .cv-df) so the node's own corner radius can scale off it too;
+   .cv-df inherits it. Every chrome metric derives from --cv-df-u (= bar / 36, i.e.
+   1px at the 36px baseline) so the whole frame — bar, text, icons, radius —
+   scales as one unit. */
+.canvas-root .cv-df {
+  --cv-df-u: calc(var(--cv-df-bar, 36px) / 36);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.canvas-root .cv-df-screen {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+/* Chrome bar — shared by every frame style (same height, colours, padding); only
+   the controls inside differ. Inert to pointers so grabbing it still drags the
+   node; an editable field re-enables its own so it can be edited (it stops the
+   drag itself). */
+.canvas-root .cv-df-bar {
+  flex: none;
+  height: var(--cv-df-bar, 36px);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--cv-df-u) * 10);
+  pointer-events: none;
+  user-select: none;
+}
+/* SVGs default to display:inline, which sits them on the text baseline — as the
+   bar scales that inline whitespace throws the icons off-centre. Block removes
+   them from inline flow so the flex `align-items:center` keeps them centred.
+   Stroke width is set via each icon's strokeWidth prop (user units) so it scales
+   with the icon box, rather than a fixed CSS px value that wouldn't. */
+.canvas-root .cv-df svg {
+  display: block;
+}
+/* Editable frame label (browser URL / plugin title), committed on blur. */
+.canvas-root .cv-df-field-text,
+.canvas-root .cv-df-field-input {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.canvas-root .cv-df-field-input {
+  pointer-events: auto;
+  cursor: text;
+}
+/* Browser chrome */
+.canvas-root .cv-df-dots {
+  display: flex;
+  gap: calc(var(--cv-df-u) * 6);
+  flex: none;
+}
+.canvas-root .cv-df-dots i {
+  width: calc(var(--cv-df-u) * 10);
+  height: calc(var(--cv-df-u) * 10);
+}
+.canvas-root .cv-df-nav {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--cv-df-u) * 2);
+  flex: none;
+}
+.canvas-root .cv-df-nav svg {
+  width: calc(var(--cv-df-u) * 16);
+  height: calc(var(--cv-df-u) * 16);
+}
+.canvas-root .cv-df-nav svg:last-child {
+  width: calc(var(--cv-df-u) * 13);
+  height: calc(var(--cv-df-u) * 13);
+}
+.canvas-root .cv-df-url {
+  flex: 1;
+  min-width: 0;
+  height: calc(var(--cv-df-u) * 22);
+  display: flex;
+  align-items: center;
+}
+.canvas-root .cv-df-url .cv-df-field-text {
+  width: 100%;
+}
+.canvas-root .cv-df-url .cv-df-field-input {
+  width: 100%;
+}
+/* Plugin window — app icon + name on the left, close button on the right. Same
+   bar height / colours / text size as the browser chrome; only the controls
+   differ. */
+.canvas-root .cv-df-icon {
+  flex: none;
+  width: calc(var(--cv-df-u) * 16);
+  height: calc(var(--cv-df-u) * 16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.canvas-root .cv-df-icon svg {
+  width: calc(var(--cv-df-u) * 10);
+  height: calc(var(--cv-df-u) * 10);
+}
+.canvas-root .cv-df-title {
+  flex: 1;
+}
+.canvas-root .cv-df-close {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.canvas-root .cv-df-close svg {
+  width: calc(var(--cv-df-u) * 16);
+  height: calc(var(--cv-df-u) * 16);
+}
+/* Terminal window — traffic-light dots on the left, a centred monospace title.
+   Same bar as the others; the spacer balances the dots so the title centres. */
+.canvas-root .cv-df-termtitle {
+  flex: 1;
+}
+.canvas-root .cv-df-termspacer {
+  flex: none;
+  /* Match the dots block: 3 dots (u·10) + 2 gaps (u·6) = u·42. */
+  width: calc(var(--cv-df-u) * 42);
+}
+/* Multi-asset media grid — a node holding several images / gifs / videos laid
+   out in ~√n columns, each cell cover-cropped to fill its square. Each asset is
+   its own rounded, shadowed tile (the chrome lives on the cells, not the node),
+   with a gap between them so the rounding reads. */
+.canvas-root .cv-node.cv-media {
+  display: grid;
+  /* grid-template-columns / -rows come from the node's fractional tracks (inline) */
+  gap: 6px;
+}
+.canvas-root .cv-node.cv-media .cv-media-cell {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+.canvas-root .cv-node.cv-media .cv-media-cell img,
+.canvas-root .cv-node.cv-media .cv-media-cell video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.canvas-root .cv-node.cv-media .cv-media-cell.cv-svg img {
+  object-fit: contain;
+}
+.canvas-root[data-readonly] .cv-node.cv-media .cv-media-cell {
+  cursor: zoom-in;
+}
+/* Sound object — a fixed-size audio player card (play / name / scrub bar) */
+.canvas-root .cv-node.cv-sound {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  user-select: none;
+}
+.canvas-root .cv-node.cv-sound audio {
+  display: none;
+}
+.canvas-root .cv-node.cv-sound .cv-splay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  cursor: default;
+}
+.canvas-root .cv-node.cv-sound .cv-splay svg {
+  width: 15px;
+  height: 15px;
+}
+.canvas-root .cv-node.cv-sound .cv-sbody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.canvas-root .cv-node.cv-sound .cv-srow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.canvas-root .cv-node.cv-sound .cv-sname {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.canvas-root .cv-node.cv-sound .cv-sname-input {
+  min-width: 0;
+  flex: 1;
+}
+.canvas-root .cv-node.cv-sound .cv-stime {
+  flex: none;
+}
+.canvas-root .cv-node.cv-sound .cv-sbar {
+  display: flex;
+  align-items: center;
+  height: 12px;
+  cursor: default;
+  touch-action: none;
+}
+.canvas-root .cv-node.cv-sound .cv-strack {
+  flex: 1;
+  height: 4px;
+  overflow: hidden;
+}
+.canvas-root .cv-node.cv-sound .cv-sfill {
+  width: 0;
+  height: 100%;
+}
+/* Link / bookmark card — an unfurled URL: OG image, title, description, host.
+   The whole card is an <a> (read-only clicks open it natively); in edit mode
+   the click is suppressed so dragging/selecting never navigates. */
+.canvas-root .cv-node.cv-link {
+  display: block;
+  width: 280px;
+  overflow: hidden;
+  user-select: none;
+}
+.canvas-root .cv-node.cv-link .cv-link-thumb {
+  width: 100%;
+  aspect-ratio: 1.91 / 1;
+  overflow: hidden;
+}
+.canvas-root .cv-node.cv-link .cv-link-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.canvas-root .cv-node.cv-link .cv-link-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.canvas-root .cv-node.cv-link .cv-link-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.canvas-root .cv-node.cv-link .cv-link-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.canvas-root .cv-node.cv-link .cv-link-host {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.canvas-root .cv-node.cv-link .cv-link-host span {
+  white-space: nowrap;
+  overflow: hidden;
+}
+.canvas-root .cv-node.cv-link .cv-link-favicon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  object-fit: contain;
+}
+.canvas-root .cv-node.cv-link .cv-link-favicon-fallback {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+.canvas-root .cv-node.cv-link .cv-link-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.canvas-root .cv-node.cv-link .cv-link-loading .cv-spin {
+  width: 15px;
+  height: 15px;
+}
+/* Markdown object — live-highlighted source while editing, rendered on blur */
+.canvas-root .cv-md {
+  width: 340px;
+  overflow: hidden;
+}
+.canvas-root .cv-md-edit {
+  display: none;
+  position: relative;
+}
+.canvas-root .cv-md[data-editing] .cv-md-edit {
+  display: block;
+}
+.canvas-root .cv-md[data-editing] .cv-md-render {
+  display: none;
+}
+/* In edit mode, treat the rendered markdown as a single hit-testing surface so a
+   native double-click (to enter edit mode) fires reliably. Read-only keeps links
+   individually clickable. */
+.canvas-root:not([data-readonly]) .cv-md-render * {
+  pointer-events: none;
+}
+.canvas-root .cv-md-hl,
+.canvas-root .cv-md-src {
+  tab-size: 2;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.canvas-root .cv-md-hl {
+  pointer-events: none;
+  min-height: 66px;
+}
+.canvas-root .cv-md-hl code {
+  white-space: inherit;
+}
+.canvas-root .cv-md-src {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  overflow: hidden;
+}
+/* highlight tokens */
+/* rendered markdown */
+.canvas-root .cv-md-render pre.cv-cb {
+  overflow: auto;
+}
+.canvas-root .cv-md-render img {
+  max-width: 100%;
+}
+.canvas-root .cv-md-render .cv-md-kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.canvas-root .cv-md-render .cv-md-kicker::before {
+  width: 16px;
+  height: 2px;
+  flex: none;
+}
+.canvas-root .cv-md-render .cv-md-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.5rem;
+}
+/* Code object — highlighted source, editable via the same mirrored-<pre> +
+   transparent-<textarea> overlay as the markdown node. */
+.canvas-root .cv-code {
+  width: 420px;
+  overflow: hidden;
+}
+.canvas-root .cv-code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  /* Sized to the 24px action buttons so the header stays a constant height
+     whether or not those buttons render — in view mode (readOnly) the actions
+     are omitted, and a smaller min-height lets the header collapse shorter than
+     in edit mode. With box-sizing:border-box the min-height must cover the
+     buttons *plus* padding and the border-bottom: 24 + (6+6) + 1 = 37px. */
+  min-height: 37px;
+}
+.canvas-root .cv-code-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+/* Editor toggle buttons (format-on-type, wrap) — revealed on hover / while
+   editing, like the copy button; accent when on. */
+.canvas-root .cv-code-toggle {
+  width: 26px;
+  height: 24px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  pointer-events: none;
+}
+.canvas-root .cv-code:hover .cv-code-toggle,
+.canvas-root .cv-code[data-editing] .cv-code-toggle {
+  pointer-events: auto;
+}
+.canvas-root .cv-code-toggle svg {
+  width: 14px;
+  height: 14px;
+}
+/* The visible language text is always `.code-lang`, wrapped in `.code-langbox`
+   whose padding + (transparent) border stay constant. Editing only reveals the
+   border/background/chevron and lays a transparent native <select> over the box,
+   so the text itself never shifts position. */
+.canvas-root .cv-code-langbox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.canvas-root .cv-code-lang {
+  white-space: nowrap;
+}
+.canvas-root .cv-code[data-editing] .cv-code-langbox {
+  cursor: default;
+}
+.canvas-root .cv-code[data-editing] .cv-code-langbox::after {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+}
+.canvas-root select.cv-code-lang-sel {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+}
+.canvas-root .cv-code-copy {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  pointer-events: none;
+}
+.canvas-root .cv-code:hover .cv-code-copy {
+  pointer-events: auto;
+}
+/* While editing, keep the copy button visible and usable (its click is handled
+   without exiting edit mode). */
+.canvas-root .cv-code[data-editing] .cv-code-copy {
+  pointer-events: auto;
+}
+.canvas-root .cv-code-copy svg {
+  width: 14px;
+  height: 14px;
+}
+.canvas-root .cv-code-edit {
+  display: none;
+  position: relative;
+}
+.canvas-root .cv-code[data-editing] .cv-code-edit {
+  display: block;
+}
+.canvas-root .cv-code[data-editing] .cv-code-render {
+  display: none;
+}
+.canvas-root .cv-code-render,
+.canvas-root .cv-code-hl,
+.canvas-root .cv-code-src {
+  tab-size: 2;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.canvas-root .cv-code-render {
+  overflow: auto;
+  /* A scroll container (overflow:auto, plus overflow-x in nowrap mode) otherwise
+     claims a touch drag for native scrolling and fires pointercancel mid-gesture
+     — the board pan starts, jerks a few px, then dies. Opt it out so the canvas
+     pan owns the gesture (the root's touch-action:none doesn't reach a nested
+     scroller). Wheel/trackpad scrolling on desktop is unaffected. */
+  touch-action: none;
+}
+.canvas-root .cv-code-render code,
+.canvas-root .cv-code-hl code {
+  white-space: inherit;
+}
+.canvas-root .cv-code-hl {
+  pointer-events: none;
+  min-height: 44px;
+}
+.canvas-root .cv-code-src {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  overflow: hidden;
+}
+/* Wrap off: long lines scroll horizontally instead of wrapping. The textarea
+   scrolls to keep the caret in view and mirrors its offset onto the highlight
+   <pre> (see onScroll); the read view scrolls on its own. */
+.canvas-root .cv-code.cv-code-nowrap .cv-code-render,
+.canvas-root .cv-code.cv-code-nowrap .cv-code-hl,
+.canvas-root .cv-code.cv-code-nowrap .cv-code-src {
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.canvas-root .cv-code.cv-code-nowrap .cv-code-hl {
+  overflow: hidden;
+}
+.canvas-root .cv-code.cv-code-nowrap .cv-code-src {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.canvas-root .cv-code.cv-code-nowrap .cv-code-src::-webkit-scrollbar {
+  display: none;
+}
+.canvas-root .cv-code.cv-code-nowrap .cv-code-render {
+  overflow-x: auto;
+}
+/* Syntax tokens — stable hues (One Light / One Dark) independent of the accent.
+   Colours come from the --cv-code-* tokens (light defaults + dark overrides in
+   the token blocks), so a consumer reskins highlighting by setting those. */
+/* ── Chrome layer (screen-space, never scales with zoom) ──────── */
+.canvas-root .cv-chrome {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 90;
+}
+.canvas-root .cv-chrome > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.canvas-root .cv-sel {
+  display: none;
+  box-sizing: border-box;
+}
+/* Faint hover hint — screen-space so its thickness never scales with zoom. */
+.canvas-root .cv-hov {
+  display: none;
+  box-sizing: border-box;
+}
+/* Rubber-band (marquee) selection rectangle */
+.canvas-root .cv-marquee {
+  display: none;
+  box-sizing: border-box;
+}
+/* Snap-alignment guides — 1px lines shown while a drag lines up with another
+   object's edge or centre. The wrapper spans the viewport; the engine's
+   placeSnapGuides() positions the child lines in screen space. */
+.canvas-root .cv-guides {
+  display: none;
+  inset: 0;
+}
+.canvas-root .cv-guide {
+  position: absolute;
+}
+/* Centre-line alignments read as dashed; edge alignments stay solid. */
+/* Resize handles: the .cv-rz container tracks the selection rect (placed by
+   placeSel) and stays click-through. Inside sit four visible corner squares plus
+   four transparent side strips — the strips make an object resizable from
+   anywhere along an edge (Figma-style), driving a single-axis resize. */
+.canvas-root .cv-rz {
+  display: none;
+  pointer-events: none;
+}
+.canvas-root .cv-rz .cv-rz-h {
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+/* Corner squares: the visible grab targets. Each 12px square straddles its
+   corner of the selection rect (offset by half its size, --cv-rz-corner-half),
+   so it stays centred on the outline whatever padding placeSel gives the box. */
+.canvas-root .cv-rz .cv-rz-nw,
+.canvas-root .cv-rz .cv-rz-ne,
+.canvas-root .cv-rz .cv-rz-sw,
+.canvas-root .cv-rz .cv-rz-se {
+  --cv-rz-corner-half: 6px;
+  /* half of the 12px width/height below */
+  width: 12px;
+  height: 12px;
+}
+.canvas-root .cv-rz .cv-rz-nw {
+  left: calc(-1 * var(--cv-rz-corner-half));
+  top: calc(-1 * var(--cv-rz-corner-half));
+  cursor: nwse-resize;
+}
+.canvas-root .cv-rz .cv-rz-ne {
+  left: calc(100% - var(--cv-rz-corner-half));
+  top: calc(-1 * var(--cv-rz-corner-half));
+  cursor: nesw-resize;
+}
+.canvas-root .cv-rz .cv-rz-sw {
+  left: calc(-1 * var(--cv-rz-corner-half));
+  top: calc(100% - var(--cv-rz-corner-half));
+  cursor: nesw-resize;
+}
+.canvas-root .cv-rz .cv-rz-se {
+  left: calc(100% - var(--cv-rz-corner-half));
+  top: calc(100% - var(--cv-rz-corner-half));
+  cursor: nwse-resize;
+}
+/* Side strips: invisible ~11px grab bands straddling each edge, inset from the
+   corners so the corner squares stay reachable. */
+.canvas-root .cv-rz .cv-rz-n,
+.canvas-root .cv-rz .cv-rz-s {
+  left: 8px;
+  right: 8px;
+  height: 11px;
+  cursor: ns-resize;
+}
+.canvas-root .cv-rz .cv-rz-e,
+.canvas-root .cv-rz .cv-rz-w {
+  top: 8px;
+  bottom: 8px;
+  width: 11px;
+  cursor: ew-resize;
+}
+.canvas-root .cv-rz .cv-rz-n {
+  top: -5px;
+}
+.canvas-root .cv-rz .cv-rz-s {
+  bottom: -5px;
+}
+.canvas-root .cv-rz .cv-rz-e {
+  right: -5px;
+}
+.canvas-root .cv-rz .cv-rz-w {
+  left: -5px;
+}
+/* Width-only nodes (markdown, code, text, link) resize horizontally only: keep
+   the left/right affordances (bottom corners + side strips), hide every
+   vertical one — including the ne corner, which would clash with the edit-pencil
+   button floating there. */
+.canvas-root .cv-rz[data-mode='ew'] .cv-rz-nw,
+.canvas-root .cv-rz[data-mode='ew'] .cv-rz-ne,
+.canvas-root .cv-rz[data-mode='ew'] .cv-rz-n,
+.canvas-root .cv-rz[data-mode='ew'] .cv-rz-s {
+  display: none;
+}
+/* Scale mode (K tool): only the four corners (dragging one scales the object
+   uniformly); the single-axis side strips don't apply. */
+.canvas-root .cv-rz[data-mode='scale'] .cv-rz-n,
+.canvas-root .cv-rz[data-mode='scale'] .cv-rz-s,
+.canvas-root .cv-rz[data-mode='scale'] .cv-rz-e,
+.canvas-root .cv-rz[data-mode='scale'] .cv-rz-w {
+  display: none;
+}
+/* Media grid proportion-editing dividers — screen-space, so the accent stroke
+   stays a constant 2px at any zoom. The wide strip is the grab target; the
+   ::after line is what's drawn. Positioned by placeGridEdit(). */
+.canvas-root .cv-grid-edit {
+  display: none;
+}
+.canvas-root .cv-grid-line {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+}
+/* Size + centring are set by placeGridEdit() in JS (no transform), so the two
+   axes stay symmetric and can't be shifted by a stray transform. */
+.canvas-root .cv-grid-line--col {
+  cursor: col-resize;
+}
+.canvas-root .cv-grid-line--row {
+  cursor: row-resize;
+}
+.canvas-root .cv-grid-line::after {
+  position: absolute;
+}
+.canvas-root .cv-grid-line--col::after {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+}
+.canvas-root .cv-grid-line--row::after {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+}
+.canvas-root .cv-chrome .cv-frame-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: grab;
+  white-space: nowrap;
+  pointer-events: auto;
+  max-width: 280px;
+}
+.canvas-root .cv-chrome .cv-frame-label[data-editing] {
+  cursor: text;
+}
+.canvas-root .cv-chrome .cv-frame-label .cv-txt {
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 210px;
+}
+.canvas-root .cv-chrome .cv-frame-rename {
+  height: 20px;
+  width: 150px;
+  max-width: 210px;
+}
+.canvas-root .cv-chrome .cv-frame-go {
+  width: 19px;
+  height: 19px;
+  flex: none;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* ── UI chrome ────────────────────────────────────────────────── */
+.canvas-root .cv-ui {
+  position: absolute;
+  z-index: 100;
+}
+/* Toolbar */
+.canvas-root [data-cv-part="toolbar"] {
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.canvas-root .cv-tool {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  position: relative;
+}
+.canvas-root .cv-tool svg {
+  width: 20px;
+  height: 20px;
+}
+.canvas-root .cv-tool .cv-tip {
+  position: absolute;
+  bottom: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.canvas-root .cv-sep {
+  width: 1px;
+  height: 26px;
+}
+/* Shapes dropdown */
+.canvas-root .cv-shape-menu-wrap {
+  position: relative;
+  display: flex;
+}
+.canvas-root .cv-shape-menu {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 3px;
+}
+.canvas-root .cv-tool .cv-shape-caret {
+  position: absolute;
+  right: 4px;
+  bottom: 5px;
+  width: 0;
+  height: 0;
+}
+/* Record button — pulses red while a capture is running */
+/* Floating recorder panel (mic capture in progress) */
+.canvas-root [data-cv-part="recorder"] {
+  left: 50%;
+  top: 22px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.canvas-root [data-cv-part="recorder"] .cv-rec-dot {
+  width: 10px;
+  height: 10px;
+  flex: none;
+}
+.canvas-root [data-cv-part="recorder"] .cv-rec-btn {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+.canvas-root [data-cv-part="recorder"] .cv-rec-btn svg {
+  width: 16px;
+  height: 16px;
+}
+/* Properties panel — docked bottom-right; drag its header to move it */
+.canvas-root [data-cv-part="properties"] {
+  right: 22px;
+  bottom: 22px;
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+}
+.canvas-root [data-cv-part="properties"][data-open] {
+  display: flex;
+}
+.canvas-root .cv-props-handle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.canvas-root .cv-props-handle:active {
+  cursor: grabbing;
+}
+.canvas-root .cv-props-handle svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+.canvas-root .cv-swatch-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.canvas-root .cv-swatch-label {
+  width: 42px;
+  user-select: none;
+}
+.canvas-root .cv-swatch {
+  width: 24px;
+  height: 24px;
+  cursor: default;
+  flex: none;
+}
+/* Font-family chooser for text blocks — each button previews its own font. */
+.canvas-root .cv-font-btn {
+  height: 26px;
+  cursor: default;
+}
+/* Horizontal-alignment buttons for text blocks. */
+.canvas-root .cv-align-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+.canvas-root .cv-align-btn svg {
+  width: 15px;
+  height: 15px;
+}
+/* "No fill" swatch: white with a red diagonal slash. */
+.canvas-root .cv-swatch.cv-swatch-none {
+  position: relative;
+  overflow: hidden;
+}
+.canvas-root .cv-swatch.cv-swatch-none::after {
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  top: 50%;
+  height: 1.6px;
+  transform: rotate(-45deg);
+}
+/* Top bar */
+.canvas-root [data-cv-part="topbar"] {
+  left: 22px;
+  top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.canvas-root .cv-chip {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: default;
+}
+.canvas-root .cv-chip svg {
+  width: 14px;
+  height: 14px;
+}
+/* Passive background-save status, pinned to the bottom-right of the canvas.
+   Auto-saves as the user edits, so this is an indicator, not a button. */
+.canvas-root .cv-save-status {
+  right: 22px;
+  bottom: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  cursor: default;
+  pointer-events: none;
+}
+.canvas-root .cv-save-status svg {
+  width: 14px;
+  height: 14px;
+}
+/* Board background picker (top bar, edit mode) */
+.canvas-root .cv-bg-menu-wrap {
+  position: relative;
+  display: flex;
+}
+.canvas-root .cv-bg-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.canvas-root .cv-chip .cv-chip-swatch {
+  width: 13px;
+  height: 13px;
+}
+.canvas-root .cv-bg-menu .cv-swatch.cv-default {
+  position: relative;
+  overflow: hidden;
+}
+.canvas-root .cv-bg-menu .cv-swatch.cv-default::after {
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  top: 50%;
+  height: 1.6px;
+  transform: rotate(-45deg);
+}
+.canvas-root .cv-bg-menu .cv-swatch.cv-custom {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+.canvas-root .cv-bg-menu .cv-swatch.cv-custom input {
+  position: absolute;
+  inset: -4px;
+  cursor: default;
+}
+/* Read-only mode: hide authoring chrome; drag-to-pan everywhere */
+.canvas-root[data-readonly] [data-cv-part="toolbar"],
+.canvas-root[data-readonly] [data-cv-part="properties"] {
+  display: none;
+}
+.canvas-root[data-readonly] .cv-rz,
+.canvas-root[data-readonly] .cv-sel {
+  display: none !important;
+}
+.canvas-root[data-readonly] .cv-viewport {
+  cursor: grab;
+}
+.canvas-root[data-readonly][data-panning] .cv-viewport {
+  cursor: grabbing;
+}
+.canvas-root[data-readonly] .cv-frame-label {
+  cursor: default;
+}
+.canvas-root[data-readonly] .cv-node.cv-image,
+.canvas-root[data-readonly] .cv-node.cv-video {
+  cursor: zoom-in;
+}
+/* SVGs don't open full-screen, so don't imply they're clickable. */
+.canvas-root[data-readonly] .cv-node.cv-image.cv-svg {
+  cursor: inherit;
+}
+/* Objects marked as navigation anchors (author view only) */
+/* Zoom cluster */
+.canvas-root [data-cv-part="zoom"] {
+  right: 22px;
+  top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.canvas-root [data-cv-part="zoom"] button {
+  width: 28px;
+  height: 28px;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.canvas-root [data-cv-part="zoom"] button svg {
+  width: 16px;
+  height: 16px;
+}
+.canvas-root [data-cv-part="zoom"] .cv-zoom-sep {
+  width: 1px;
+  align-self: stretch;
+}
+.canvas-root .cv-zoomval {
+  min-width: 52px;
+  cursor: default;
+}
+/* Context menu (screen-space overlay, positioned at the cursor) */
+.canvas-root [data-cv-part="context-menu"] {
+  position: fixed;
+  z-index: 200;
+  min-width: 176px;
+  display: none;
+}
+.canvas-root [data-cv-part="context-menu"][data-open] {
+  display: block;
+}
+.canvas-root [data-cv-part="context-menu"] button {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  height: 28px;
+  cursor: default;
+}
+.canvas-root [data-cv-part="context-menu"] button svg {
+  width: 15px;
+  height: 15px;
+}
+.canvas-root [data-cv-part="context-menu"] .cv-ctxsep {
+  height: 1px;
+}
+/* Scale row: label + inline numeric field, laid out like a menu item. */
+.canvas-root [data-cv-part="context-menu"] .cv-ctxscale {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  height: 28px;
+}
+.canvas-root [data-cv-part="context-menu"] .cv-ctxscale svg {
+  width: 15px;
+  height: 15px;
+}
+.canvas-root [data-cv-part="context-menu"] .cv-ctxscale span {
+  flex: 1;
+}
+.canvas-root [data-cv-part="context-menu"] .cv-ctxscale-input {
+  width: 58px;
+  height: 22px;
+}
+/* Page switcher (dropdown inside the top bar) */
+.canvas-root .cv-page-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.canvas-root .cv-page-nav-trigger {
+  max-width: 200px;
+}
+.canvas-root .cv-page-nav-current {
+  white-space: nowrap;
+  overflow: hidden;
+}
+.canvas-root .cv-page-nav-chev {
+  width: 12px !important;
+  height: 12px !important;
+}
+.canvas-root .cv-page-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: -5px;
+  z-index: 200;
+  min-width: 210px;
+  max-height: 60vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.canvas-root .cv-page-menu-item {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.canvas-root .cv-page-menu-btn {
+  flex: 1;
+  min-width: 0;
+  cursor: default;
+  height: 28px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.canvas-root .cv-page-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+/* Section anchors nested under their page */
+.canvas-root .cv-section-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 28px;
+  cursor: default;
+}
+.canvas-root .cv-section-num {
+  width: 14px;
+  flex: none;
+}
+.canvas-root .cv-section-name {
+  white-space: nowrap;
+  overflow: hidden;
+}
+.canvas-root .cv-section-rename {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+}
+.canvas-root .cv-page-menu-add {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 28px;
+  cursor: default;
+}
+/* Right-click menu for pages (rename / delete) and sections (rename) — portaled to body */
+.cv-page-ctx {
+  position: fixed;
+  z-index: 300;
+  min-width: 150px;
+}
+.cv-page-ctx button {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  height: 28px;
+  cursor: default;
+}
+.cv-page-ctx button svg {
+  width: 15px;
+  height: 15px;
+}
+.cv-page-rename {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+}
+/* Media lightbox (covers the canvas surface) */
+.canvas-root [data-cv-part="lightbox"] {
+  position: absolute;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+.canvas-root [data-cv-part="lightbox"] img,
+.canvas-root [data-cv-part="lightbox"] video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  cursor: default;
+}
+/* Theme-variant images: an asset with a dark-mode src (see MediaContent)
+   renders both <img>s and the `.dark` ancestor decides which is visible, so a
+   live theme toggle swaps instantly with no re-render (both variants stay
+   loaded). `:is()` keeps the three rules at equal specificity — above every
+   plain `img { display: block }` rule — so order alone resolves them. */
+.canvas-root :is(.cv-node, [data-cv-part="lightbox"]) img.cv-dark {
+  display: none;
+}
+:is(.dark .canvas-root, .canvas-root.dark) :is(.cv-node, [data-cv-part="lightbox"]) img.cv-light {
+  display: none;
+}
+:is(.dark .canvas-root, .canvas-root.dark) :is(.cv-node, [data-cv-part="lightbox"]) img.cv-dark {
+  display: block;
+}
+.canvas-root [data-cv-part="lightbox"] .cv-lb-close {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Gallery prev/next arrows and position counter for multi-asset nodes. */
+.canvas-root [data-cv-part="lightbox"] .cv-lb-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.canvas-root [data-cv-part="lightbox"] .cv-lb-nav svg {
+  width: 24px;
+  height: 24px;
+}
+.canvas-root [data-cv-part="lightbox"] .cv-lb-prev {
+  left: 20px;
+}
+.canvas-root [data-cv-part="lightbox"] .cv-lb-next {
+  right: 20px;
+}
+.canvas-root [data-cv-part="lightbox"] .cv-lb-count {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+@media (max-width: 640px) {
+  .canvas-root [data-cv-part="topbar"] .cv-brand small {
+    display: none;
+  }
+  .canvas-root .cv-tool {
+    width: 38px;
+    height: 38px;
+  }
+}

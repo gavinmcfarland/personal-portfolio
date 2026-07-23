@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact — Enamel</title>
+<meta name="description" content="Get in touch about design systems, tooling, or front-end work.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2324282D'/%3E%3Crect x='4' y='4' width='11' height='11' fill='%23FF6A4D'/%3E%3Crect x='17' y='4' width='11' height='11' fill='%233B6DFF'/%3E%3Crect x='4' y='17' width='11' height='11' fill='%23C9F23A'/%3E%3Crect x='17' y='17' width='11' height='11' fill='%2324BDB8'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-surface');document.documentElement.classList.toggle('light',s?s==='steel':matchMedia('(prefers-color-scheme: light)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="contact">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="bar__name" href="index.html">G.McF</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="bar__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Surface</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="band band--tight">
+    <div class="sheet">
+      <div class="g12">
+        <div class="c7">
+          <div class="fill" data-tone="vermilion" style="height:100%;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <p class="mark" style="opacity:.75">Contact</p>
+              <p class="strong" style="margin-top:.5rem">The fastest route is email.</p>
+              <p style="opacity:.85;margin-top:.3rem;max-width:46ch">
+                Two working days, usually sooner. Everything on this sheet is context
+                for what happens after you send one.
+              </p>
+            </div>
+            <p class="mono" style="margin-top:1.25rem"><a class="ln" data-email href="#">—</a></p>
+          </div>
+        </div>
+        <div class="c5">
+          <div class="g12" style="--gap:.5rem">
+            <div class="c12"><div class="panel" style="justify-content:space-between;min-height:5.5rem">
+              <span class="mark faint">Status</span>
+              <span class="strong">Taking conversations for autumn 2026</span>
+            </div></div>
+            <div class="c6"><div class="panel panel--sunk" style="justify-content:space-between;min-height:5.5rem">
+              <span class="mark faint">Where</span>
+              <span class="strong">London · GMT</span>
+            </div></div>
+            <div class="c6"><div class="panel panel--sunk" style="justify-content:space-between;min-height:5.5rem">
+              <span class="mark faint">Mode</span>
+              <span class="strong">Remote by default</span>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── The form, and what to expect beside it ───────────────────── -->
+  <section class="band" aria-labelledby="wr-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">01</span>
+        <h2 id="wr-h">Write</h2>
+      </div>
+      <div class="g12">
+
+        <div class="c5">
+          <form id="contact-form" novalidate>
+            <div class="field">
+              <label for="f-name">Name</label>
+              <input class="input" id="f-name" name="name" type="text" autocomplete="name">
+              <span class="err" aria-live="polite"></span>
+            </div>
+            <div class="field">
+              <label for="f-email">Email</label>
+              <input class="input" id="f-email" name="email" type="email" autocomplete="email">
+              <span class="err" aria-live="polite"></span>
+            </div>
+            <div class="field">
+              <label for="f-msg">Message</label>
+              <textarea class="input" id="f-msg" name="message"></textarea>
+              <span class="err" aria-live="polite"></span>
+            </div>
+            <button class="btn" type="submit">Send it</button>
+            <p class="mono dim" id="form-done" hidden tabindex="-1" style="margin-top:.75rem">
+              This sheet is a mockup — nothing was sent. The address above works, though.
+            </p>
+          </form>
+        </div>
+
+        <div class="c6" style="grid-column:7 / span 6">
+          <div class="rows">
+            <div class="row">
+              <span class="row__k"><span class="ph ph--12" aria-hidden="true"></span> Engagements</span>
+              <p class="row__v">Design systems, plugin tooling, front-end builds. Most settle into a few days a month once the heavy build is done.</p>
+            </div>
+            <div class="row">
+              <span class="row__k"><span class="ph ph--12" aria-hidden="true"></span> First step</span>
+              <p class="row__v">Usually an audit: two weeks, a written report, and a board of what to fix in what order.</p>
+            </div>
+            <div class="row">
+              <span class="row__k"><span class="ph ph--12" aria-hidden="true"></span> Overlap</span>
+              <p class="row__v">GMT / BST. Mornings work well with the US east coast; on-site in London for kick-offs.</p>
+            </div>
+          </div>
+
+          <p class="mark faint" style="margin:1.75rem 0 .5rem">Likely questions</p>
+          <details class="fold">
+            <summary>Do you take retained work?</summary>
+            <p class="fold__body">Yes — most design-system engagements settle into a cadence of a few days a month once the heavy build is done.</p>
+          </details>
+          <details class="fold">
+            <summary>Remote or on-site?</summary>
+            <p class="fold__body">Remote by default, on-site in London for kick-offs and the weeks where a whiteboard beats a call.</p>
+          </details>
+          <details class="fold">
+            <summary>Can you audit an existing system?</summary>
+            <p class="fold__body">Usually the best first engagement — two weeks, a written report, and a board of what to fix in what order.</p>
+          </details>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Sheet</dt><dd>Contact</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Set</dt><dd>12 · Enamel</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>

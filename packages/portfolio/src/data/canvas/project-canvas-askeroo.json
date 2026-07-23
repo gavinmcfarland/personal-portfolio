@@ -1,0 +1,355 @@
+{
+  "version": 2,
+  "activePage": "home",
+  "pages": [
+    {
+      "id": "home",
+      "name": "Page 1",
+      "view": {
+        "x": 168.698460974847,
+        "y": 464.0285122736878,
+        "scale": 0.791681868386987
+      },
+      "nodes": [
+        {
+          "id": "stack",
+          "type": "md",
+          "x": -413.1241433208264,
+          "y": -401.6244951555295,
+          "z": 2,
+          "w": 300,
+          "text": "# Askeroo\n\nThe first stateful CLI that allows back navigation. I created Askeroo after wishing more from the available prompt wizards that were avaiable. I wanted something modular and configurable for different needs."
+        },
+        {
+          "id": "note-0",
+          "type": "sticky",
+          "x": 1286.730577879636,
+          "y": -335.59325053687246,
+          "z": 3,
+          "color": "pink",
+          "text": "Highly configurable default prompts"
+        },
+        {
+          "id": "note-1",
+          "type": "sticky",
+          "x": 1286.730577879636,
+          "y": 200.3966296388496,
+          "z": 4,
+          "color": "orange",
+          "text": "Create your own prompts using the Ink library"
+        },
+        {
+          "id": "note-2",
+          "type": "sticky",
+          "x": 1286.730577879636,
+          "y": -72.74697178486929,
+          "z": 5,
+          "color": "purple",
+          "text": "Built-in task runners for long-running steps"
+        },
+        {
+          "id": "n4-code",
+          "type": "code",
+          "x": 317.360598924952,
+          "y": 481.7783246062023,
+          "z": 8,
+          "w": 420,
+          "text": "// Your flow function runs multiple times\nconst flow = async () => {\n  const role = await radio({\n      label: \"Select your role\",\n      options: [\"Developer\", \"Designer\"],\n  });\n\n  if (role === \"Developer\") {\n    const language = await radio({\n        label: \"Preferred language\",\n        options: [\"TypeScript\", \"JavaScript\"],\n    });\n    return { role, language };\n  }\n\n  const tool = await radio({\n      label: \"Design tool\",\n      options: [\"Figma\", \"Sketch\"],\n  });\n  return { role, tool };\n};",
+          "lang": "js"
+        },
+        {
+          "id": "n7-code",
+          "type": "code",
+          "x": -540.211987725601,
+          "y": 267.8004779926555,
+          "z": 11,
+          "w": 420,
+          "text": "const flow = async () => {\n  const name = await text({\n      message: \"Name\",\n  });\n  return { name };\n}\n\nconst result = await ask(flow);",
+          "lang": "js"
+        },
+        {
+          "id": "n8-md",
+          "type": "md",
+          "x": -263.1241433208264,
+          "y": 442.18323750415766,
+          "z": 12,
+          "w": 340,
+          "text": "A flow is simply an object made up of prompts. Run these prompts by calling the object with `ask()`."
+        },
+        {
+          "id": "n11-video",
+          "type": "video",
+          "x": -45.83709382155307,
+          "y": -236.19433692980996,
+          "z": 17,
+          "w": 925.2572303409027,
+          "h": 527,
+          "assets": [
+            {
+              "kind": "video",
+              "src": "/canvas-assets/d681f505976da31c.mp4",
+              "alt": "Kapture 2025-11-12 at 17.12.52.mp4"
+            }
+          ],
+          "frame": "terminal"
+        },
+        {
+          "id": "n12-tblock",
+          "type": "tblock",
+          "x": 933.6921186270777,
+          "y": -428.9796849527205,
+          "z": 18,
+          "text": "Features",
+          "font": "sans"
+        },
+        {
+          "id": "n14-md",
+          "type": "md",
+          "x": 622.9855973453882,
+          "y": 909.66499265174,
+          "z": 21,
+          "w": 340,
+          "text": "You can make prompts conditional by guarding them with conditions. In this example, the \"Preferred language\" prompt will only get shown if the \"Developer\" role is chosen."
+        },
+        {
+          "id": "n15-tblock",
+          "type": "tblock",
+          "x": -566.6931086734168,
+          "y": 196.88949142538902,
+          "z": 22,
+          "text": "Creating a flow",
+          "font": "sans"
+        },
+        {
+          "id": "n16-sticky",
+          "type": "sticky",
+          "x": 1022.4343707440391,
+          "y": -335.8707249583546,
+          "z": 23,
+          "color": "orange",
+          "text": "Stateful back-navigation, revise earlier answers at any time"
+        },
+        {
+          "id": "n17-tblock",
+          "type": "tblock",
+          "x": 290.70263458799445,
+          "y": 410.3966296388496,
+          "z": 24,
+          "text": "Conditional prompts",
+          "font": "sans"
+        },
+        {
+          "id": "n18-sticky",
+          "type": "sticky",
+          "x": 1022.7118451655215,
+          "y": -72.63147914935085,
+          "z": 25,
+          "color": "blue",
+          "text": "Conditional fields that respond to prior input"
+        },
+        {
+          "id": "n19-sticky",
+          "type": "sticky",
+          "x": 1022.7118451655215,
+          "y": 200.39662963884962,
+          "z": 26,
+          "color": "green",
+          "text": "Customise flow by creating groups and nested groups"
+        },
+        {
+          "id": "n21-sound",
+          "type": "sound",
+          "x": 691.6071731106917,
+          "y": 262.80566307019,
+          "z": 28,
+          "w": 260,
+          "h": 56,
+          "src": "/canvas-assets/95921a8459c96024.weba",
+          "name": "Voice over",
+          "dur": 264.06
+        }
+      ],
+      "shapes": [
+        {
+          "id": "s1",
+          "type": "pen",
+          "stroke": "#7C2D91",
+          "width": 3,
+          "z": 15,
+          "points": [
+            [
+              -90.26368727994841,
+              406.0258683440768
+            ],
+            [
+              -90.46749466710381,
+              406.0258683440768
+            ],
+            [
+              -91.68604830820132,
+              406.0258683440768
+            ],
+            [
+              -98.47176163001691,
+              406.0258683440768
+            ],
+            [
+              -117.00107113381742,
+              406.0258683440768
+            ],
+            [
+              -148.97308682620374,
+              406.0258683440768
+            ],
+            [
+              -193.16496438424352,
+              406.0258683440768
+            ],
+            [
+              -267.57182342329827,
+              414.7938766735931
+            ],
+            [
+              -285.4618213337061,
+              424.28057421044696
+            ],
+            [
+              -298.28452399715604,
+              436.2859019843579
+            ],
+            [
+              -307.1018751677733,
+              449.19441828450476
+            ],
+            [
+              -312.3279256426207,
+              461.99566753878025
+            ],
+            [
+              -314.03347167197364,
+              475.73657611488807
+            ],
+            [
+              -313.0423241681232,
+              489.92157026090285
+            ],
+            [
+              -309.3158669945559,
+              502.5876630373807
+            ],
+            [
+              -301.3845416228354,
+              515.4897433147753
+            ],
+            [
+              -285.3974611061834,
+              531.7943342872061
+            ],
+            [
+              -256.87086292718175,
+              549.0578926497258
+            ],
+            [
+              -214.33733389831187,
+              565.722900896284
+            ],
+            [
+              -162.07253846800145,
+              580.2211148162428
+            ],
+            [
+              -113.72084487107455,
+              587.1720193887002
+            ],
+            [
+              -75.90277517870473,
+              586.8459275692514
+            ],
+            [
+              -45.77575267530406,
+              582.7311636896302
+            ],
+            [
+              -23.00510417775413,
+              578.1916223083588
+            ],
+            [
+              -5.741545815234215,
+              572.7917992191997
+            ],
+            [
+              9.138538788026228,
+              564.2383249814259
+            ],
+            [
+              23.8062346404616,
+              553.4837309623738
+            ],
+            [
+              37.81102014941264,
+              542.5896897836892
+            ],
+            [
+              49.584651104241715,
+              531.7986249690409
+            ],
+            [
+              57.899992500181355,
+              520.3467951518257
+            ],
+            [
+              61.411915582006344,
+              503.5659384957264
+            ],
+            [
+              54.37734271376948,
+              480.21819329138907
+            ],
+            [
+              33.23715331346246,
+              454.46337557770084
+            ],
+            [
+              -2.1995879605653066,
+              427.9362351337393
+            ],
+            [
+              -49.96560348703534,
+              404.9017097033461
+            ],
+            [
+              -91.84265819517319,
+              390.2511765782501
+            ],
+            [
+              -119.25582443803128,
+              382.57729211662036
+            ],
+            [
+              -135.87363518440603,
+              378.8915964204841
+            ],
+            [
+              -144.38420260383137,
+              377.9219023258079
+            ],
+            [
+              -149.4879686463859,
+              377.9047395984685
+            ],
+            [
+              -152.3991962713316,
+              378.45823755516426
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "gridHidden": true,
+  "viewport": {
+    "w": 1003,
+    "h": 1056
+  },
+  "savedAt": 1784822604908
+}

@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Editorial Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────────────────────────────────────
+   GAVIN McFARLAND · Editorial studio direction (Direction A)
+   High-contrast Fraunces display · Inter meta · warm paper ground ·
+   one green accent. The canvas becomes a framed hero moment.
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --bg:#FBFAF7;            /* warm paper */
+  --panel:#F3F1EC;         /* raised fill / canvas ground */
+  --ink:#171512;           /* primary */
+  --muted:#4A463F;         /* serif prose */
+  --faint:#9A9488;         /* meta / captions */
+  --line:rgba(23,21,18,.12);
+  --line-strong:rgba(23,21,18,.30);
+  --rule:rgba(23,21,18,.85);
+  --accent:#1E7A4D;
+  --accent-soft:rgba(30,122,77,.10);
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --margin:clamp(20px,5vw,72px);
+  --gutter:clamp(16px,2vw,32px);
+  --maxw:1300px;
+}
+html.dark{
+  --bg:#100F0D;
+  --panel:#1A1815;
+  --ink:#F4F1EA;
+  --muted:#B9B3A7;
+  --faint:#6E685C;
+  --line:rgba(244,241,234,.12);
+  --line-strong:rgba(244,241,234,.28);
+  --rule:rgba(244,241,234,.72);
+  --accent:#5FD39B;
+  --accent-soft:rgba(95,211,155,.14);
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);-webkit-text-size-adjust:100%;}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);line-height:1.5;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  transition:background-color .4s ease,color .4s ease;
+}
+::selection{background:var(--accent);color:#fff;}
+a{color:inherit;text-decoration:none;}
+.page{max-width:var(--maxw);margin:0 auto;padding:0 var(--margin);}
+.g12{display:grid;grid-template-columns:repeat(12,1fr);column-gap:var(--gutter);}
+.tnum{font-variant-numeric:tabular-nums;}
+.serif{font-family:var(--serif);}
+.pretty{text-wrap:pretty;}.balance{text-wrap:balance;}
+
+.kicker{font-size:.6875rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);}
+
+/* ── running header ── */
+.folio{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.5rem 0 1.1rem;}
+.folio .fl{display:flex;gap:clamp(1rem,4vw,3rem);align-items:center;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);display:inline-block;margin-right:.55em;vertical-align:middle;}
+.toggle{font-size:.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);
+  background:none;border:1px solid var(--line);border-radius:100px;padding:.42rem .85rem;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.5em;transition:border-color .2s,color .2s;}
+.toggle:hover{border-color:var(--line-strong);color:var(--ink);}
+.rule-hair{height:1px;background:var(--line);border:0;margin:0;}
+
+/* ── masthead ── */
+.masthead{padding:clamp(2.5rem,6vw,5rem) 0 clamp(2rem,4vw,3rem);}
+.eyebrow{display:block;margin-bottom:clamp(1.4rem,3vw,2.2rem);}
+.name{
+  font-family:var(--serif);font-optical-sizing:auto;
+  font-weight:380;font-size:clamp(3.4rem,13vw,11rem);line-height:.92;
+  letter-spacing:-.028em;margin:0;color:var(--ink);
+}
+.name em{font-style:italic;font-weight:340;}
+.mast-lower{margin-top:clamp(2.2rem,4.5vw,3.6rem);align-items:start;}
+.mast-lead{grid-column:1 / span 8;}
+.mast-lead .lead{
+  font-family:var(--serif);font-optical-sizing:auto;font-weight:340;
+  font-size:clamp(1.5rem,3vw,2.4rem);line-height:1.28;letter-spacing:-.012em;
+  color:var(--ink);margin:0 0 1.3rem;max-width:20ch;
+}
+.mast-lead .sub{font-size:1.0625rem;line-height:1.65;color:var(--muted);max-width:52ch;margin:0;}
+.mast-side{grid-column:10 / span 3;}
+.mast-side dl{margin:0;display:grid;gap:1.05rem;}
+.mast-side dt{font-size:.625rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);margin-bottom:.2rem;}
+.mast-side dd{margin:0;font-size:.9375rem;color:var(--ink);}
+.mast-side dd.on{color:var(--accent);font-weight:500;}
+
+.ulink{color:var(--ink);background-image:linear-gradient(var(--line-strong),var(--line-strong));
+  background-size:100% 1px;background-position:0 100%;background-repeat:no-repeat;
+  transition:background-size .2s,color .2s,background-image .2s;padding-bottom:.03em;}
+.ulink:hover{color:var(--accent);background-image:linear-gradient(var(--accent),var(--accent));}
+
+/* ── section head ── */
+section{margin-top:clamp(4rem,8vw,7rem);}
+.sec-head{display:flex;align-items:baseline;gap:1.25rem;padding-bottom:1.15rem;}
+.sec-num{font-size:.75rem;font-weight:600;color:var(--accent);letter-spacing:.05em;flex:none;}
+.sec-title{font-family:var(--serif);font-weight:400;font-size:clamp(1.35rem,2vw,1.75rem);letter-spacing:-.01em;color:var(--ink);flex:none;margin:0;}
+.sec-line{flex:1;height:1px;background:var(--rule);align-self:center;opacity:.85;}
+.sec-count{font-size:.75rem;color:var(--faint);flex:none;letter-spacing:.03em;text-transform:uppercase;}
+
+/* ── work list ── */
+.work-row{align-items:baseline;padding:clamp(1.5rem,2.4vw,2.2rem) 0;border-top:1px solid var(--line);position:relative;transition:background-color .25s;}
+.work-list .work-row:last-child{border-bottom:1px solid var(--line);}
+.work-row:hover{background:var(--panel);}
+.work-idx{grid-column:1 / span 1;font-size:.9375rem;font-weight:600;color:var(--faint);transition:color .25s;}
+.work-title{grid-column:2 / span 3;font-family:var(--serif);font-weight:380;font-size:clamp(1.6rem,2.6vw,2.15rem);line-height:1.02;color:var(--ink);letter-spacing:-.015em;}
+.work-desc{grid-column:5 / span 4;font-size:1.0625rem;line-height:1.5;color:var(--muted);}
+.work-tech{grid-column:9 / span 3;display:flex;flex-wrap:wrap;gap:.35rem .7rem;padding-top:.4rem;}
+.work-tech span{font-size:.6875rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);}
+.work-arrow{grid-column:12 / span 1;justify-self:end;align-self:start;}
+.work-arrow svg{width:17px;height:17px;stroke:var(--faint);transition:transform .25s,stroke .25s;}
+.work-row:hover .work-arrow svg{stroke:var(--accent);transform:translate(3px,-3px);}
+.work-row:hover .work-idx{color:var(--accent);}
+
+/* ── canvas hero ── */
+.canvas-hero{margin-top:clamp(1.8rem,3vw,2.6rem);}
+.canvas-frame{
+  position:relative;height:clamp(340px,46vw,520px);border-radius:16px;overflow:hidden;
+  background:var(--panel);border:1px solid var(--line);
+  background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:22px 22px;
+}
+.cv-md{position:absolute;left:6%;top:22%;width:min(300px,42%);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.2rem;box-shadow:0 18px 40px -24px rgba(0,0,0,.4);}
+.cv-md h4{font-family:var(--serif);font-weight:420;font-size:1.35rem;margin:0 0 .5rem;letter-spacing:-.01em;}
+.cv-md p{font-size:.9rem;line-height:1.55;color:var(--muted);margin:0 0 .7rem;}
+.cv-md ul{margin:0;padding-left:1.1rem;font-size:.9rem;color:var(--muted);line-height:1.7;}
+.cv-md code{font-family:var(--sans);background:var(--panel);border-radius:5px;padding:.05em .4em;font-size:.85em;}
+.sticky{position:absolute;padding:1rem;border-radius:4px;font-family:'Fraunces',serif;font-style:italic;font-size:1.05rem;line-height:1.35;color:#3a2f0a;box-shadow:0 16px 34px -22px rgba(0,0,0,.5);transform:rotate(-2deg);}
+.sticky.y{background:#FCE18A;right:9%;top:14%;width:150px;}
+.sticky.b{background:#AFD4F5;color:#12324f;right:14%;bottom:12%;width:150px;transform:rotate(2deg);}
+.cv-arrow{position:absolute;right:26%;top:40%;width:120px;height:70px;pointer-events:none;}
+.cv-arrow path{stroke:var(--accent);stroke-width:2.5;fill:none;}
+.cv-cap{margin-top:.85rem;font-size:.8125rem;color:var(--faint);}
+.cv-cap code{font-family:var(--sans);color:var(--muted);}
+
+/* ── recognition rows ── */
+.idx-row{align-items:baseline;padding:1.15rem 0;border-top:1px solid var(--line);}
+.idx-list .idx-row:last-child{border-bottom:1px solid var(--line);}
+.idx-year{grid-column:1 / span 1;font-size:.9375rem;font-weight:600;color:var(--faint);}
+.idx-title{grid-column:3 / span 6;font-family:var(--serif);font-weight:380;font-size:1.3rem;color:var(--ink);letter-spacing:-.01em;}
+.idx-place{grid-column:9 / span 4;font-size:.75rem;color:var(--faint);text-align:right;letter-spacing:.05em;text-transform:uppercase;align-self:baseline;}
+
+/* ── connect ── */
+.connect-body{margin-top:clamp(1.5rem,3vw,2.5rem);align-items:start;}
+.connect-lede{grid-column:1 / span 7;}
+.connect-lede p{margin:0;font-family:var(--serif);font-weight:340;font-size:clamp(1.9rem,4.2vw,3.1rem);line-height:1.14;color:var(--ink);letter-spacing:-.02em;}
+.connect-email{grid-column:9 / span 4;}
+.connect-email .em{font-family:var(--serif);font-size:clamp(1.2rem,2vw,1.5rem);color:var(--ink);word-break:break-word;}
+.connect-social{margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:1.5rem;}
+.connect-social a{font-size:.9375rem;font-weight:500;}
+.colophon{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;padding:1.2rem 0 3rem;margin-top:clamp(3.5rem,6vw,5rem);}
+.colophon span{color:var(--faint);}
+
+/* ── motion ── */
+.rise{opacity:0;transform:translateY(14px);animation:rise .9s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes rise{to{opacity:1;transform:none;}}
+.d1{animation-delay:.04s;}.d2{animation-delay:.12s;}.d3{animation-delay:.22s;}.d4{animation-delay:.32s;}
+.reveal{opacity:0;transform:translateY(20px);}
+.reveal.in{opacity:1;transform:none;transition:opacity .8s ease,transform .8s cubic-bezier(.16,1,.3,1);}
+
+@media(max-width:900px){
+  .mast-lead{grid-column:1 / -1;}
+  .mast-side{grid-column:1 / -1;margin-top:2.2rem;}
+  .mast-side dl{grid-template-columns:repeat(3,1fr);gap:1rem;}
+  .work-idx{grid-column:1 / span 2;}
+  .work-title{grid-column:3 / span 10;margin-bottom:.6rem;}
+  .work-desc{grid-column:3 / span 10;margin-bottom:.6rem;}
+  .work-tech{grid-column:3 / span 10;}
+  .idx-title{grid-column:3 / span 10;}
+  .idx-place{grid-column:1 / -1;text-align:left;margin-top:.3rem;}
+  .connect-lede,.connect-email{grid-column:1 / -1;}
+  .connect-email{margin-top:1.6rem;}
+  .cv-md{width:56%;}
+}
+@media(max-width:560px){
+  .work-title,.work-desc,.work-tech{grid-column:1 / -1;}
+  .idx-year{grid-column:1 / span 2;}
+  .sticky.y{right:5%;}.sticky.b{display:none;}
+}
+@media(prefers-reduced-motion:reduce){.rise,.reveal{animation:none!important;opacity:1!important;transform:none!important;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="folio rise d1">
+    <div class="fl kicker">
+      <span><span class="dot"></span>Available for work</span>
+      <span>London · 2026</span>
+    </div>
+    <button class="toggle" id="themeToggle"><span id="themeLabel">Dark</span></button>
+  </header>
+  <hr class="rule-hair rise d1" />
+
+  <section class="masthead" style="margin-top:0">
+    <span class="eyebrow kicker rise d2">Gavin McFarland — Portfolio</span>
+    <h1 class="name rise d2">Developer<br>&amp; <em>designer</em></h1>
+    <div class="mast-lower g12">
+      <div class="mast-lead rise d3">
+        <p class="lead pretty">I build developer tools that take the friction out of making things.</p>
+        <p class="sub pretty">Figma plugins, CLIs and interactive products — full-stack, with roots in product design and user research. Currently freelancing and building <a class="ulink" href="https://awenate.com" target="_blank" rel="noopener">Awenate</a>. Previously at <a class="ulink" href="https://lovable.dev" target="_blank" rel="noopener">Lovable</a>.</p>
+      </div>
+      <div class="mast-side rise d4">
+        <dl>
+          <div><dt>Discipline</dt><dd>Full-stack · Product</dd></div>
+          <div><dt>Based</dt><dd>London, UK</dd></div>
+          <div><dt>Status</dt><dd class="on">Freelance · Open</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- SELECTED WORK -->
+  <section id="work">
+    <div class="sec-head reveal">
+      <span class="sec-num tnum">01</span>
+      <h2 class="sec-title">Selected Work</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count tnum">Five projects</span>
+    </div>
+    <div class="work-list">
+      <a class="work-row g12 reveal" href="https://www.plugma.dev/" target="_blank" rel="noopener">
+        <span class="work-idx tnum">01</span><span class="work-title">Plugma</span>
+        <span class="work-desc pretty">A zero-config CLI for building Figma plugins with true hot-module reloading. React, Svelte and Vue.</span>
+        <span class="work-tech"><span>Node.js</span><span>TypeScript</span><span>Vite</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+      <a class="work-row g12 reveal" href="https://github.com/gavinmcfarland/askeroo" target="_blank" rel="noopener">
+        <span class="work-idx tnum">02</span><span class="work-title">Askeroo</span>
+        <span class="work-desc pretty">A modern CLI prompt library with stateful back-navigation, conditional fields and task runners.</span>
+        <span class="work-tech"><span>TypeScript</span><span>React</span><span>Ink</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+      <a class="work-row g12 reveal" href="https://www.figma.com/community/plugin/1215620774867583125/figlet" target="_blank" rel="noopener">
+        <span class="work-idx tnum">03</span><span class="work-title">Figlet</span>
+        <span class="work-desc pretty">A browser-based IDE for Figma plugins — write and run plugin code instantly, no local setup.</span>
+        <span class="work-tech"><span>JavaScript</span><span>Figma API</span><span>Svelte</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+      <a class="work-row g12 reveal" href="https://www.figma.com/community/plugin/885838970710285271/table-creator" target="_blank" rel="noopener">
+        <span class="work-idx tnum">04</span><span class="work-title">Table Creator</span>
+        <span class="work-desc pretty">A Figma plugin for building and maintaining complex data tables on the canvas, with bulk edits.</span>
+        <span class="work-tech"><span>TypeScript</span><span>Figma API</span><span>Svelte</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+      <a class="work-row g12 reveal" href="https://www.figma.com/community/plugin/888907972695800109/icon-preview" target="_blank" rel="noopener">
+        <span class="work-idx tnum">05</span><span class="work-title">Icon Preview</span>
+        <span class="work-desc pretty">A Figma plugin that live-previews the icon you're editing at every size — web, iOS and Android.</span>
+        <span class="work-tech"><span>JavaScript</span><span>Figma API</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+    </div>
+  </section>
+
+  <!-- CANVAS -->
+  <section id="canvas">
+    <div class="sec-head reveal">
+      <span class="sec-num tnum">02</span>
+      <h2 class="sec-title">The Canvas</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count">Try it live</span>
+    </div>
+    <div class="canvas-hero reveal">
+      <div class="canvas-frame">
+        <div class="cv-md">
+          <h4>This is a canvas</h4>
+          <p>An <strong>embeddable</strong> React component — the same engine behind the canvas edition of this site.</p>
+          <ul><li>Pan &amp; zoom the board</li><li>Add notes, text &amp; <code>markdown</code></li><li>Draw, frame and organise</li></ul>
+        </div>
+        <div class="sticky y">Drag me around</div>
+        <div class="sticky b">Double-click to edit</div>
+        <svg class="cv-arrow" viewBox="0 0 120 70"><path d="M6 60 C 50 60, 70 30, 108 12" marker-end="url(#a)"/><path d="M96 8 L112 10 L104 24"/></svg>
+      </div>
+      <p class="cv-cap">This whole portfolio also comes as an infinite canvas — dropped in with a single <code>&lt;Canvas /&gt;</code> component.</p>
+    </div>
+  </section>
+
+  <!-- RECOGNITION -->
+  <section id="recognition">
+    <div class="sec-head reveal">
+      <span class="sec-num tnum">03</span>
+      <h2 class="sec-title">Recognition</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count tnum">Selected</span>
+    </div>
+    <div class="idx-list">
+      <div class="idx-row g12 reveal"><span class="idx-year tnum">2023</span><span class="idx-title">Plugin Exhibition booth</span><span class="idx-place">Figma · Moscone Center</span></div>
+      <div class="idx-row g12 reveal"><span class="idx-year tnum">’21—22</span><span class="idx-title">Freelancer Award finalist</span><span class="idx-place">YunoJuno</span></div>
+      <div class="idx-row g12 reveal"><span class="idx-year tnum">2016</span><span class="idx-title">Best Customer Experience</span><span class="idx-place">John Lewis</span></div>
+      <div class="idx-row g12 reveal"><span class="idx-year tnum">2015</span><span class="idx-title">Most Effective Tablet App</span><span class="idx-place">John Lewis</span></div>
+    </div>
+  </section>
+
+  <!-- CONNECT -->
+  <section id="connect">
+    <div class="sec-head reveal">
+      <span class="sec-num tnum">04</span>
+      <h2 class="sec-title">Connect</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count">Say hello</span>
+    </div>
+    <div class="connect-body g12">
+      <div class="connect-lede reveal"><p class="balance">Looking for the next interesting thing to build.</p></div>
+      <div class="connect-email reveal">
+        <span class="kicker" style="display:block;margin-bottom:.6rem">Email — quickest way to reach me</span>
+        <a class="em ulink" href="mailto:gavin@limitlessloop.com">gavin@limitlessloop.com</a>
+        <div class="connect-social">
+          <a class="ulink" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener">GitHub ↗</a>
+          <a class="ulink" href="https://x.com/gavinmcfarland" target="_blank" rel="noopener">X ↗</a>
+          <a class="ulink" href="https://www.linkedin.com/in/gavinmcfarland" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule-hair" style="margin-top:clamp(3.5rem,6vw,5rem)" />
+  <footer class="colophon kicker">
+    <span>© 2026 Gavin McFarland</span>
+    <span>Set in Fraunces &amp; Inter</span>
+    <span>London, UK</span>
+  </footer>
+</div>
+
+<script>
+const root=document.documentElement,tLabel=document.getElementById('themeLabel');
+const saved=localStorage.getItem('theme');
+if(saved==='dark'||(!saved&&matchMedia('(prefers-color-scheme:dark)').matches)){root.classList.add('dark');}
+function syncLabel(){tLabel.textContent=root.classList.contains('dark')?'Light':'Dark';}
+syncLabel();
+document.getElementById('themeToggle').addEventListener('click',()=>{
+  root.classList.toggle('dark');localStorage.setItem('theme',root.classList.contains('dark')?'dark':'light');syncLabel();
+});
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{rootMargin:'0px 0px -8% 0px',threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

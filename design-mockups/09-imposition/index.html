@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gavin McFarland — Design engineer</title>
+<meta name="description" content="Gavin McFarland, design engineer. Design systems and the developer tooling they are built with.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23161511'/%3E%3Crect x='18' y='6' width='8' height='8' fill='%23C23A08'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<!-- Set the theme before first paint so there is no flash of the wrong mode. -->
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="index" class="page">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="rail">
+  <a class="rail__mark" href="index.html"><span class="ph ph--16" aria-hidden="true"></span>g.mcfarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">theme</button>
+    <span>london, uk</span>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── Masthead — the page's one inversion, its one display line ── -->
+  <section class="inv masthead">
+    <span class="tx tx-scan" aria-hidden="true"></span>
+    <div class="sheet">
+      <p class="micro" style="color:var(--faint)">sheet 01 / 08 · index</p>
+      <h1 class="display" style="margin-top:1.25rem;max-width:26ch">
+        I build the tools design systems are made with — and the systems themselves.
+      </h1>
+      <p class="mono" style="margin-top:1.25rem;color:var(--faint);max-width:52ch">
+        Fifteen years on the seam between design and front-end: token pipelines,
+        component APIs, and the editor plugins that keep the two halves honest.
+      </p>
+      <p class="mono" style="margin-top:1.5rem">
+        <a class="ln" href="gallery.html">see the work</a>
+        <span class="faint" style="margin:0 .5rem">·</span>
+        <a class="ln" href="contact.html">start a conversation</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ── 01 · Work — the ruled table treatment ─────────────────────── -->
+  <section class="section" aria-labelledby="work-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="work-h">work</h2>
+        <a class="head__x ln" href="gallery.html">gallery view →</a>
+      </div>
+      <div class="scroll-x">
+        <div data-render="table">
+          <noscript><p class="mono dim">The table is rendered from a shared data file. It needs JavaScript.</p></noscript>
+        </div>
+      </div>
+      <p class="micro scroll-hint">scroll →</p>
+      <p class="micro dim" style="margin-top:.75rem"><span data-count="projects">—</span> items · tools, plug-ins and libraries</p>
+    </div>
+  </section>
+
+  <!-- ── 02 · Capabilities — the editorial-rows treatment ──────────── -->
+  <section class="section" aria-labelledby="cap-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">02</span>
+        <h2 id="cap-h">capabilities</h2>
+      </div>
+      <div class="edrows" id="capabilities"></div>
+    </div>
+  </section>
+
+  <!-- ── The air — density is the default, so emptiness is a move ──── -->
+  <div class="air">
+    <div class="sheet">
+      <p class="mono dim" style="max-width:36ch">
+        A problem you cannot draw is a problem you do not understand yet.
+        <a class="ln" href="post.html" style="display:inline-block;margin-top:.5rem">field notes →</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- ── 03 · Facts — a small bento of plain facts ─────────────────── -->
+  <section class="section" aria-labelledby="fact-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">03</span>
+        <h2 id="fact-h">facts</h2>
+      </div>
+      <div class="bento" id="facts" style="--gutter:.5rem"></div>
+    </div>
+  </section>
+
+  <!-- ── 04 · Previously — chips, nothing more ─────────────────────── -->
+  <section class="section" aria-labelledby="cl-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">04</span>
+        <h2 id="cl-h">previously, for</h2>
+      </div>
+      <ul id="clients" style="display:flex;flex-wrap:wrap;gap:.5rem"></ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>sheet</dt><dd>01 / 08</dd></div>
+      <div><dt>form</dt><dd>09 · imposition</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  /* Page-local: capabilities, the fact bento and the client chips. */
+  (() => {
+    if (!window.DATA) return;
+    const pad2 = (n) => String(n).padStart(2, '0');
+
+    document.getElementById('capabilities').innerHTML = DATA.capabilities.map((c, i) => `
+      <div class="edrow">
+        <span class="edrow__k"><span class="num">${pad2(i + 1)}</span> ${esc(c.k)}</span>
+        <p class="edrow__v">${esc(c.v)}</p>
+      </div>`).join('');
+
+    document.getElementById('facts').innerHTML = DATA.facts.map((f, i) => `
+      <div class="bento__cell c3" style="min-height:6rem">
+        <span class="micro dim">${esc(f.k)}</span>
+        <span class="mono" style="margin-top:auto">${esc(f.v)}</span>
+      </div>`).join('');
+
+    document.getElementById('clients').innerHTML =
+      DATA.clients.map((c) => `<li class="chip">${esc(c)}</li>`).join('');
+  })();
+</script>
+</body>
+</html>

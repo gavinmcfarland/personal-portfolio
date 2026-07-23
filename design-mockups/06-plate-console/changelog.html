@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>plugma — Changelog</title>
+<meta name="description" content="Release notes for plugma, a zero-config toolchain for Figma plugins." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body data-page="changelog">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<header class="strip">
+  <div class="strip__in">
+    <span><a href="index.html">gavin mcfarland</a> <span class="strip__sep">/</span> <a href="project.html">plugma</a> <span class="strip__sep">/</span> <strong>changelog</strong></span>
+    <span id="nav" style="display:flex;gap:.5rem;flex-wrap:wrap"></span>
+    <span class="strip__tools">
+      <button class="btn" id="grid-toggle" type="button" aria-pressed="false" title="Layout grid (G)">Grid</button>
+      <button class="btn" id="theme-toggle" type="button" aria-pressed="false">Invert</button>
+    </span>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <nav class="rail" id="ver-rail" aria-label="Releases"></nav>
+
+  <main class="main">
+
+    <section class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">01</span><span class="module__name">releases</span>
+          <span class="module__note" id="rel-count">—</span>
+        </div>
+
+        <div class="prose" style="grid-column:1 / -1; max-width:64ch; margin-bottom:var(--bl)">
+          <p>
+            Every change that reached a version, newest first. Breaking changes are marked
+            <span class="badge">chg</span> and appear before fixes, because that is the order you
+            need them in when you are deciding whether to upgrade.
+          </p>
+        </div>
+
+        <div style="grid-column:1 / -1; border-top:1px solid var(--rule)" id="releases"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="titleblock">
+  <div class="titleblock__in">
+    <div class="tb-cell"><span class="tb-k">project</span><span class="tb-v">plugma</span></div>
+    <div class="tb-cell"><span class="tb-k">latest</span><span class="tb-v" id="tb-latest">—</span></div>
+    <div class="tb-cell"><span class="tb-k">releases</span><span class="tb-v" id="tb-count">—</span></div>
+    <div class="tb-cell"><span class="tb-k">sheet</span><span class="tb-v">03 / 06</span></div>
+    <div class="tb-cell"><span class="tb-k">title</span><span class="tb-v">changelog</span></div>
+    <div class="tb-cell"><span class="tb-k">rev</span><span class="tb-v">A</span></div>
+  </div>
+</footer>
+
+<script src="icons48.js"></script>
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  const LABEL = { new:'new', chg:'chg', fix:'fix' };
+  const ORDER = { chg:0, new:1, fix:2 };   /* breaking first — see the note above */
+
+  document.getElementById('releases').innerHTML = DATA.releases.map((r) => {
+    const items = [...r.items].sort((a, b) => ORDER[a.t] - ORDER[b.t]);
+    return `
+      <article class="entry" id="v${esc(r.ver)}">
+        <div class="entry__meta">
+          <span class="entry__ver">${esc(r.ver)}</span>
+          <span class="entry__date">${esc(r.date)}</span>
+        </div>
+        <div>
+          <ul>${items.map((i) =>
+            `<li><span class="badge badge--${i.t === 'fix' ? 'fix' : i.t === 'new' ? 'new' : 'chg'}">${LABEL[i.t]}</span>${i.s}</li>`
+          ).join('')}</ul>
+        </div>
+      </article>`;
+  }).join('');
+
+  /* The rail is built from the releases that exist. */
+  document.getElementById('ver-rail').innerHTML = DATA.releases
+    .map((r) => `<a href="#v${esc(r.ver)}"><span class="n">${esc(r.date.slice(0,4))}</span> ${esc(r.ver)}</a>`).join('');
+
+  /* Counts computed, never typed. */
+  const total = DATA.releases.reduce((n, r) => n + r.items.length, 0);
+  document.getElementById('rel-count').textContent =
+    `${DATA.releases.length} releases · ${total} changes`;
+  document.getElementById('tb-latest').textContent = DATA.releases[0].ver;
+  document.getElementById('tb-count').textContent = String(DATA.releases.length);
+
+  /* Rail tracking for the entries, which did not exist when
+     system.js bound its observer. */
+  const links = new Map();
+  document.querySelectorAll('#ver-rail a').forEach((a) => links.set(a.getAttribute('href').slice(1), a));
+  if ('IntersectionObserver' in window) {
+    const visible = new Set();
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => e.isIntersecting ? visible.add(e.target.id) : visible.delete(e.target.id));
+      const current = [...links.keys()].find((id) => visible.has(id));
+      links.forEach((a, id) => id === current ? a.setAttribute('aria-current','true') : a.removeAttribute('aria-current'));
+    }, { rootMargin:'-10% 0px -70% 0px' });
+    document.querySelectorAll('.entry').forEach((s) => io.observe(s));
+  }
+})();
+</script>
+
+</body>
+</html>

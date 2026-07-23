@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Attractor Mockup</title>
+<meta name="description" content="Gavin McFarland — designer and engineer. Tools for people who make software." />
+<meta name="color-scheme" content="dark" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          void:   '#05080B',
+          steel:  '#0C1319',
+          panel:  'rgba(16,26,34,.72)',
+          ink:    '#DCE6EC',
+          muted:  '#8FA3B0',
+          faint:  '#5C7080',
+          ice:    '#79D0E6',
+          rule:   'rgba(121,208,230,.20)',
+        },
+        fontFamily: {
+          sans: ['IBM Plex Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Attractor
+     Direction: 2Advanced "Release Five" (2010) rebuilt with a 2026
+     conscience. The Flash-era grammar is kept — HUD chrome, bracket
+     corners, tick rails, hairline dividers, a master/detail explorer
+     floating over a cinematic matte, a collapsible drawer deck along
+     the bottom. What is thrown out is everything that made those
+     sites hostile: the bevels and inner glows, the 10px body copy,
+     the mystery-meat navigation, the audio that started itself.
+     The matte painting is drawn in SVG rather than fetched — four
+     ridgelines with atmospheric perspective, no external assets.
+     Dark only, deliberately: this direction has no light mode that
+     is worth having.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+
+  ::selection { background: #79D0E6; color: #05080B; }
+  :focus-visible { outline: 2px solid #79D0E6; outline-offset: 2px; }
+
+  /* ── Backdrop ────────────────────────────────────────────────
+     Three stacked layers: the SVG matte, a grain wash, and a
+     vignette. All fixed, all pointer-events-none. */
+
+  .backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+
+  /* The matte drifts a little with the pointer. Transform is driven
+     by a custom property so the JS never touches the style string. */
+  .matte {
+    position: absolute; inset: -3%;
+    transform: translate3d(calc(var(--px, 0) * 14px), calc(var(--py, 0) * 9px), 0) scale(1.04);
+    transition: transform .9s cubic-bezier(.2,.7,.3,1);
+    will-change: transform;
+  }
+
+  /* Static grain. feTurbulence rasterises once, then it is just a
+     tiled bitmap — cheap enough to leave over the whole viewport. */
+  .grain {
+    position: absolute; inset: 0; opacity: .05; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .vignette {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(120% 85% at 50% 42%, transparent 40%, rgba(5,8,11,.55) 78%, rgba(5,8,11,.92) 100%),
+      linear-gradient(to bottom, rgba(5,8,11,.75) 0%, transparent 22%, transparent 62%, rgba(5,8,11,.9) 100%);
+  }
+
+  /* ── HUD chrome ──────────────────────────────────────────────— */
+
+  /* The measurement rail along the top edge. Pure geometry, not a
+     readout — it does not pretend to report anything. */
+  .tick-rail {
+    height: 9px;
+    background-image: repeating-linear-gradient(90deg, rgba(121,208,230,.34) 0 1px, transparent 1px 34px);
+  }
+
+  /* Bracket corners. Four corner pieces via two pseudo-elements and
+     a repeating gradient — no images, no nine-slice. */
+  .brackets { position: relative; }
+  .brackets::before, .brackets::after {
+    content: ''; position: absolute; width: 13px; height: 13px; pointer-events: none;
+    border-color: #79D0E6; opacity: .75;
+  }
+  .brackets::before { top: -1px; left: -1px; border-top: 1px solid; border-left: 1px solid; }
+  .brackets::after  { bottom: -1px; right: -1px; border-bottom: 1px solid; border-right: 1px solid; }
+  .brackets > .bracket-b, .brackets > .bracket-c {
+    position: absolute; width: 13px; height: 13px; pointer-events: none;
+    border-color: #79D0E6; opacity: .75;
+  }
+  .brackets > .bracket-b { top: -1px; right: -1px; border-top: 1px solid; border-right: 1px solid; }
+  .brackets > .bracket-c { bottom: -1px; left: -1px; border-bottom: 1px solid; border-left: 1px solid; }
+
+  .label {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: .68rem; letter-spacing: .18em; text-transform: uppercase;
+  }
+
+  /* Frosted panel. The blur is what 2010 faked with a flattened JPEG. */
+  .glass {
+    background: rgba(11,19,26,.74);
+    backdrop-filter: blur(14px) saturate(115%);
+    -webkit-backdrop-filter: blur(14px) saturate(115%);
+    border: 1px solid rgba(121,208,230,.22);
+  }
+
+  /* ── Explorer list ───────────────────────────────────────────— */
+
+  .tab {
+    position: relative;
+    display: flex; align-items: center; gap: .65rem; width: 100%;
+    padding: .62rem .8rem;
+    text-align: left;
+    border: 1px solid transparent;
+    border-left: 2px solid rgba(121,208,230,.22);
+    background: rgba(121,208,230,.03);
+    color: #8FA3B0;
+    transition: background .22s ease, color .22s ease, border-color .22s ease;
+  }
+  .tab:hover { background: rgba(121,208,230,.09); color: #DCE6EC; }
+  .tab[aria-selected='true'] {
+    background: rgba(121,208,230,.13);
+    border-left-color: #79D0E6;
+    color: #DCE6EC;
+  }
+  /* The marker fills in on selection — the one flourish kept from
+     the original's checkbox list. */
+  .tab .pip {
+    width: 7px; height: 7px; flex: none;
+    border: 1px solid rgba(121,208,230,.5);
+    transition: background .22s ease, border-color .22s ease;
+  }
+  .tab[aria-selected='true'] .pip { background: #79D0E6; border-color: #79D0E6; }
+
+  /* ── Drawer deck ─────────────────────────────────────────────
+     Native <details> so the disclosure is keyboard- and screen-
+     reader-correct for free. Only the caret is custom. */
+
+  .drawer summary { list-style: none; cursor: pointer; }
+  .drawer summary::-webkit-details-marker { display: none; }
+  .drawer summary .caret { transition: transform .25s ease; }
+  .drawer[open] summary .caret { transform: rotate(180deg); }
+  .drawer[open] summary { color: #DCE6EC; }
+
+  /* ── Motion ──────────────────────────────────────────────────
+     One keyframe, used to sequence the first read. The .no-motion
+     class is set by the header toggle and mirrors what the media
+     query does, so the control and the OS setting agree. */
+
+  @keyframes fade-up { from { opacity: 0; transform: translateY(.45rem); } to { opacity: 1; transform: none; } }
+  .fade-up { opacity: 0; animation: fade-up .6s cubic-bezier(.2,.7,.3,1) forwards; animation-delay: calc(var(--i, 0) * 70ms); }
+
+  .no-motion .matte { transition: none; transform: scale(1.04); }
+  .no-motion .fade-up { animation: none; opacity: 1; }
+  .no-motion * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .matte { transition: none; transform: scale(1.04); }
+    .fade-up { animation: none; opacity: 1; }
+  }
+
+  /* Panel hidden — the affordance the original got right. */
+  .stage-hidden .stage { opacity: 0; visibility: hidden; transform: translateY(.5rem); }
+  .stage { transition: opacity .45s ease, transform .45s ease, visibility .45s; }
+</style>
+</head>
+
+<body class="min-h-screen bg-void font-sans text-[.94rem] text-ink antialiased">
+
+<a href="#explorer" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:bg-ice focus:px-4 focus:py-2 focus:text-sm focus:text-void">Skip to content</a>
+
+<!-- ── Backdrop ───────────────────────────────────────────────
+     Four ridgelines with atmospheric perspective: distant ranges
+     sit lighter and hazier, the foreground reads near-black. The
+     mast on the right is the one direct quotation from the 2010
+     original. -->
+<div class="backdrop" aria-hidden="true">
+  <div class="matte" id="matte">
+    <svg class="h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#0A141C"/>
+          <stop offset="52%" stop-color="#1B2E3B"/>
+          <stop offset="80%" stop-color="#2E4757"/>
+          <stop offset="100%" stop-color="#16242E"/>
+        </linearGradient>
+        <radialGradient id="glow" cx="72%" cy="60%" r="46%">
+          <stop offset="0%"   stop-color="#8FC4DC" stop-opacity=".42"/>
+          <stop offset="100%" stop-color="#8FC4DC" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="r1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#4E6C7E"/><stop offset="100%" stop-color="#33505F"/>
+        </linearGradient>
+        <linearGradient id="r2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2C4655"/><stop offset="100%" stop-color="#1B2E3A"/>
+        </linearGradient>
+        <linearGradient id="r3" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#16252F"/><stop offset="100%" stop-color="#0C161D"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1600" height="900" fill="url(#sky)"/>
+      <ellipse cx="1150" cy="540" rx="740" ry="330" fill="url(#glow)"/>
+
+      <!-- Far range -->
+      <path fill="url(#r1)" opacity=".55"
+        d="M0 612 L104 548 L168 578 L262 496 L338 552 L430 470 L520 540 L604 500 L700 566 L790 512 L880 570 L980 508 L1074 566 L1168 520 L1262 574 L1360 522 L1452 578 L1544 536 L1600 566 L1600 900 L0 900 Z"/>
+
+      <!-- Mid range -->
+      <path fill="url(#r2)" opacity=".85"
+        d="M0 700 L88 640 L182 682 L286 596 L372 664 L468 606 L560 676 L664 622 L756 692 L858 630 L952 700 L1054 640 L1150 706 L1252 648 L1348 712 L1452 656 L1544 716 L1600 686 L1600 900 L0 900 Z"/>
+
+      <!-- Near range -->
+      <path fill="url(#r3)"
+        d="M0 796 L120 730 L232 784 L348 712 L462 780 L580 724 L692 796 L812 736 L926 804 L1046 748 L1160 812 L1280 756 L1396 818 L1508 768 L1600 812 L1600 900 L0 900 Z"/>
+
+      <!-- Foreground shelf -->
+      <path fill="#05080B" opacity=".96"
+        d="M0 856 L180 828 L360 862 L540 834 L720 868 L900 838 L1080 870 L1260 840 L1440 872 L1600 846 L1600 900 L0 900 Z"/>
+
+      <!-- Comms mast, right of frame -->
+      <g stroke="#0A121A" stroke-width="3" opacity=".92" fill="none">
+        <path d="M1418 232 L1418 858"/>
+        <path d="M1418 300 L1382 330 M1418 300 L1454 330"/>
+        <path d="M1418 396 L1376 432 M1418 396 L1460 432"/>
+        <path d="M1418 512 L1386 544 M1418 512 L1450 544"/>
+      </g>
+      <ellipse cx="1418" cy="252" rx="34" ry="9" fill="#0A121A" opacity=".92"/>
+      <path d="M1418 176 L1418 232" stroke="#0A121A" stroke-width="2"/>
+    </svg>
+  </div>
+  <div class="grain"></div>
+  <div class="vignette"></div>
+</div>
+
+<!-- ── Shell ──────────────────────────────────────────────────— -->
+<div class="relative z-10 mx-auto flex min-h-screen max-w-[1400px] flex-col px-4 sm:px-7">
+
+  <!-- ── Header ───────────────────────────────────────────────
+       Wordmark centred like the original, nav left, controls right.
+       The "Soundscape" slider is replaced by a Motion control that
+       actually does something — same gesture, honest function. -->
+  <header class="fade-up pt-4" style="--i:0">
+    <div class="tick-rail"></div>
+
+    <div class="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-b border-rule py-4">
+
+      <nav class="order-1 flex items-center gap-6">
+        <a href="#explorer" class="label text-muted transition hover:text-ice">Index</a>
+        <a href="#deck"     class="label text-muted transition hover:text-ice">Detail</a>
+        <a href="#contact"  class="label text-muted transition hover:text-ice">Contact</a>
+      </nav>
+
+      <div class="order-3 w-full text-center sm:order-2 sm:w-auto">
+        <p class="font-mono text-[.82rem] font-medium tracking-[.3em] text-ink">GAVIN McFARLAND</p>
+        <p class="label mt-1 text-[.6rem] text-faint">Designer · Engineer · London</p>
+      </div>
+
+      <div class="order-2 flex items-center gap-3 sm:order-3">
+        <label for="motion" class="label cursor-pointer text-faint">Motion</label>
+        <button id="motion" type="button" role="switch" aria-checked="true"
+          class="relative h-[18px] w-9 border border-rule bg-ice/10 transition hover:border-ice/60">
+          <span id="motion-knob" class="absolute left-[2px] top-[2px] block h-[12px] w-[16px] bg-ice transition-transform duration-200"></span>
+          <span class="sr-only">Toggle background and interface motion</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Expandable section index — the original's "Expand Navigation
+         Array", made honest: it lists real destinations. -->
+    <details class="drawer group border-b border-rule">
+      <summary class="label flex items-center gap-2 py-2 text-faint transition hover:text-ice">
+        <svg class="caret h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+        Expand Navigation Array
+      </summary>
+      <ul class="grid gap-x-8 gap-y-1 pb-3 pl-5 sm:grid-cols-3">
+        <li><a href="#explorer" class="text-[.82rem] text-muted transition hover:text-ice">Project index</a></li>
+        <li><a href="#deck"     class="text-[.82rem] text-muted transition hover:text-ice">Approach &amp; toolkit</a></li>
+        <li><a href="#contact"  class="text-[.82rem] text-muted transition hover:text-ice">Get in touch</a></li>
+      </ul>
+    </details>
+  </header>
+
+  <!-- ── Stage ────────────────────────────────────────────────
+       The floating content area. The hide control collapses it so
+       the matte can be looked at — the single best idea on the 2010
+       site, and the reason this layout exists at all. -->
+  <div id="shell" class="flex-1 py-10 sm:py-16">
+
+    <div class="stage brackets glass fade-up relative" id="explorer" style="--i:2">
+      <span class="bracket-b"></span><span class="bracket-c"></span>
+
+      <div class="flex items-center justify-between border-b border-rule px-4 py-2.5 sm:px-6">
+        <h1 class="label text-ice">Selected Work</h1>
+        <button id="hide-stage" type="button"
+          class="label flex items-center gap-2 border border-rule px-2.5 py-1 text-faint transition hover:border-ice/60 hover:text-ice">
+          Hide Panel
+          <span aria-hidden="true" class="text-[.7rem]">✕</span>
+        </button>
+      </div>
+
+      <div class="grid gap-px bg-rule lg:grid-cols-[15.5rem_1fr]">
+
+        <!-- Master list -->
+        <div class="bg-steel/60 p-4 sm:p-5">
+          <p class="label mb-3 text-faint">Select Item</p>
+          <div id="tablist" role="tablist" aria-orientation="vertical" aria-label="Projects" class="grid gap-1"></div>
+        </div>
+
+        <!-- Detail pane -->
+        <div id="detail" role="tabpanel" tabindex="0" class="bg-steel/40 p-5 sm:p-7"></div>
+      </div>
+    </div>
+
+    <!-- Shown only while the panel is hidden. -->
+    <div id="restore-wrap" class="hidden pt-4 text-center">
+      <button id="restore-stage" type="button"
+        class="label border border-rule bg-steel/70 px-4 py-2 text-muted backdrop-blur transition hover:border-ice/60 hover:text-ice">
+        Restore Panel
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Drawer deck ──────────────────────────────────────────
+       The original's bottom rail of collapsible modules, minus the
+       studio scaffolding. Three drawers, all real. -->
+  <section id="deck" class="fade-up grid gap-px border-t border-rule bg-rule md:grid-cols-3" style="--i:4">
+
+    <details class="drawer glass border-0 px-4 py-3 sm:px-5">
+      <summary class="label flex items-center gap-2 text-faint transition hover:text-ice">
+        <svg class="caret h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+        How I work
+      </summary>
+      <p class="mt-3 text-[.88rem] leading-relaxed text-muted">
+        I sit between design and engineering, which mostly means I build the piece of a
+        workflow nobody owns. Design file first, production code second, documentation
+        before I leave.
+      </p>
+    </details>
+
+    <details class="drawer glass border-0 px-4 py-3 sm:px-5">
+      <summary class="label flex items-center gap-2 text-faint transition hover:text-ice">
+        <svg class="caret h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+        Toolkit
+      </summary>
+      <ul class="mt-3 flex flex-wrap gap-1.5">
+        <li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-muted">TypeScript</li>
+        <li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-muted">Svelte</li>
+        <li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-muted">Node.js</li>
+        <li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-muted">React</li>
+        <li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-muted">Figma API</li>
+        <li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-muted">Vite</li>
+      </ul>
+    </details>
+
+    <details class="drawer glass border-0 px-4 py-3 sm:px-5" id="contact">
+      <summary class="label flex items-center gap-2 text-faint transition hover:text-ice">
+        <svg class="caret h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+        Contact
+      </summary>
+      <ul class="mt-3 space-y-1.5 text-[.88rem]">
+        <li><a class="text-muted underline decoration-ice/30 underline-offset-4 transition hover:text-ice" href="mailto:gavin@limitlessloop.com">gavin@limitlessloop.com</a></li>
+        <li><a class="text-muted underline decoration-ice/30 underline-offset-4 transition hover:text-ice" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        <li><a class="text-muted underline decoration-ice/30 underline-offset-4 transition hover:text-ice" href="https://www.figma.com/@gavinmcfarland" target="_blank" rel="noopener noreferrer">Figma Community</a></li>
+      </ul>
+    </details>
+  </section>
+
+  <footer class="flex flex-wrap items-center justify-between gap-3 border-t border-rule py-5">
+    <p class="label text-[.6rem] text-faint">© 2026 Gavin McFarland</p>
+    <p class="label text-[.6rem] text-faint">Built in London</p>
+  </footer>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ── Data ──────────────────────────────────────────────────
+     Facts only. The HUD register wants terse spec-sheet copy, which
+     happily means nothing here is invented voice — every line is a
+     factual description of a tool that exists. */
+  const projects = [
+    { id: 'plugma', title: 'Plugma', year: '2024', role: 'Creator & maintainer',
+      spec: 'Zero-config CLI · Hot module reloading · React / Svelte / Vue',
+      body: 'A command-line tool for building Figma plugins. Scaffolds the project, runs a dev server with true hot-module reloading, and handles the build — replacing a toolchain that otherwise takes a day to assemble by hand.',
+      stack: ['Node.js', 'TypeScript', 'Vite'],
+      href: 'https://www.plugma.dev/', hrefLabel: 'plugma.dev' },
+
+    { id: 'askeroo', title: 'Askeroo', year: '2024', role: 'Creator & maintainer',
+      spec: 'Prompt library · Stateful back-navigation · Task runners',
+      body: 'A CLI prompt library built on React and Ink. Supports conditional fields, task runners, and stepping backwards through a prompt sequence without losing what was already entered.',
+      stack: ['TypeScript', 'React', 'Ink'],
+      href: 'https://github.com/gavinmcfarland/askeroo', hrefLabel: 'GitHub' },
+
+    { id: 's2l', title: 'Screenshot 2 Layout', year: '2024', role: 'Plugin developer',
+      spec: 'Vision pipeline · Structure recovery · Auto-layout output',
+      body: 'Converts a flat screenshot into an editable Figma frame with auto-layout applied — recovering the underlying structure rather than tracing the image by hand.',
+      stack: ['TypeScript', 'Figma API', 'Vision'],
+      href: '#', hrefLabel: 'Demo' },
+
+    { id: 'figlet', title: 'Figlet', year: '2023', role: 'Creator',
+      spec: 'Browser IDE · Zero install · Live execution',
+      body: 'A browser-based editor for Figma plugin code. Write and run a plugin immediately with nothing installed locally — closer to CodePen than to a local toolchain.',
+      stack: ['JavaScript', 'Figma API', 'Svelte'],
+      href: 'https://www.figma.com/community/plugin/1215620774867583125/figlet', hrefLabel: 'Figma Community' },
+
+    { id: 'tables', title: 'Table Creator', year: '2022', role: 'Creator',
+      spec: 'Canvas tables · Dynamic content · Bulk editing',
+      body: 'A Figma plugin for building and maintaining complex data tables on the canvas, with dynamic content and bulk edits that survive later changes.',
+      stack: ['TypeScript', 'Figma API', 'Svelte'],
+      href: 'https://www.figma.com/community/plugin/885838970710285271/table-creator', hrefLabel: 'Figma Community' },
+
+    { id: 'icons', title: 'Icon Preview', year: '2021', role: 'Creator',
+      spec: 'Live preview · Preset sizes · Web / iOS / Android',
+      body: 'A Figma plugin that previews the icon currently being edited at the preset sizes it will actually ship at, across web, iOS and Android.',
+      stack: ['JavaScript', 'Figma API'],
+      href: 'https://www.figma.com/community/plugin/888907972695800109/icon-preview', hrefLabel: 'Figma Community' },
+  ];
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ── Explorer ──────────────────────────────────────────────
+     Proper vertical tablist: roving tabindex, arrow/Home/End keys,
+     aria-selected driving the styling. */
+  const tablist = document.getElementById('tablist');
+  const detail  = document.getElementById('detail');
+  let active = 0;
+
+  tablist.innerHTML = projects.map((p, i) => `
+    <button class="tab" role="tab" id="tab-${esc(p.id)}"
+            aria-controls="detail" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">
+      <span class="pip" aria-hidden="true"></span>
+      <span class="flex-1 text-[.85rem]">${esc(p.title)}</span>
+      <span class="font-mono text-[.68rem] text-faint">${esc(p.year)}</span>
+    </button>`).join('');
+
+  const tabs = Array.from(tablist.querySelectorAll('[role=tab]'));
+
+  function render(i) {
+    const p = projects[i];
+    const external = p.href.startsWith('http');
+    detail.setAttribute('aria-labelledby', 'tab-' + p.id);
+    detail.innerHTML = `
+      <p class="label text-ice">${esc(p.spec)}</p>
+
+      <h2 class="mt-4 text-2xl font-semibold tracking-tight sm:text-[1.7rem]">${esc(p.title)}</h2>
+
+      <dl class="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-y border-rule py-3">
+        <div class="flex items-baseline gap-2">
+          <dt class="label text-faint">Year</dt>
+          <dd class="font-mono text-[.82rem]">${esc(p.year)}</dd>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <dt class="label text-faint">Role</dt>
+          <dd class="text-[.82rem]">${esc(p.role)}</dd>
+        </div>
+      </dl>
+
+      <p class="mt-5 max-w-prose leading-relaxed text-muted">${esc(p.body)}</p>
+
+      <ul class="mt-6 flex flex-wrap gap-1.5">
+        ${p.stack.map((t) => `<li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-faint">${esc(t)}</li>`).join('')}
+      </ul>
+
+      <a class="label mt-7 inline-flex items-center gap-2 border border-ice/40 px-4 py-2 text-ice transition hover:bg-ice hover:text-void"
+         href="${esc(p.href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+        ${esc(p.hrefLabel)}
+        <svg class="h-3 w-3" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 10 4M4.6 4H10v5.4"/></svg>
+      </a>`;
+  }
+
+  function select(i, focus) {
+    active = i;
+    tabs.forEach((t, n) => {
+      t.setAttribute('aria-selected', String(n === i));
+      t.tabIndex = n === i ? 0 : -1;
+    });
+    render(i);
+    if (focus) tabs[i].focus();
+  }
+
+  tabs.forEach((tab, i) => tab.addEventListener('click', () => select(i, false)));
+
+  tablist.addEventListener('keydown', (e) => {
+    const keys = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+    if (e.key in keys) {
+      e.preventDefault();
+      select((active + keys[e.key] + tabs.length) % tabs.length, true);
+    } else if (e.key === 'Home') {
+      e.preventDefault(); select(0, true);
+    } else if (e.key === 'End') {
+      e.preventDefault(); select(tabs.length - 1, true);
+    }
+  });
+
+  render(0);
+
+  /* ── Hide / restore panel ──────────────────────────────────
+     Focus is moved deliberately in both directions so keyboard users
+     are never stranded on a hidden control. */
+  const shell   = document.getElementById('shell');
+  const hideBtn = document.getElementById('hide-stage');
+  const restore = document.getElementById('restore-stage');
+  const wrap    = document.getElementById('restore-wrap');
+  const stage   = document.querySelector('.stage');
+
+  hideBtn.addEventListener('click', () => {
+    shell.classList.add('stage-hidden');
+    stage.setAttribute('inert', '');
+    wrap.classList.remove('hidden');
+    restore.focus();
+  });
+
+  restore.addEventListener('click', () => {
+    shell.classList.remove('stage-hidden');
+    stage.removeAttribute('inert');
+    wrap.classList.add('hidden');
+    hideBtn.focus();
+  });
+
+  /* ── Motion ────────────────────────────────────────────────
+     Defaults to whatever the OS asks for, then the switch overrides.
+     Pointer drift is only bound while motion is on. */
+  const motionBtn  = document.getElementById('motion');
+  const knob       = document.getElementById('motion-knob');
+  const matte      = document.getElementById('matte');
+  const reduced    = matchMedia('(prefers-reduced-motion: reduce)');
+  let motionOn     = !reduced.matches;
+
+  function onPointer(e) {
+    matte.style.setProperty('--px', ((e.clientX / innerWidth) - .5).toFixed(3));
+    matte.style.setProperty('--py', ((e.clientY / innerHeight) - .5).toFixed(3));
+  }
+
+  function applyMotion() {
+    document.body.classList.toggle('no-motion', !motionOn);
+    motionBtn.setAttribute('aria-checked', String(motionOn));
+    knob.style.transform = motionOn ? 'translateX(16px)' : 'translateX(0)';
+
+    if (motionOn && matchMedia('(hover: hover)').matches) {
+      addEventListener('pointermove', onPointer, { passive: true });
+    } else {
+      removeEventListener('pointermove', onPointer);
+      matte.style.removeProperty('--px');
+      matte.style.removeProperty('--py');
+    }
+  }
+
+  motionBtn.addEventListener('click', () => { motionOn = !motionOn; applyMotion(); });
+  reduced.addEventListener('change', (e) => { motionOn = !e.matches; applyMotion(); });
+  applyMotion();
+})();
+</script>
+
+</body>
+</html>

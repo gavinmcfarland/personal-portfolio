@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two programs, one plugin — Enamel</title>
+<meta name="description" content="A Figma plugin looks like one thing and behaves like two. Almost every difficulty in building one comes from that gap.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2324282D'/%3E%3Crect x='4' y='4' width='11' height='11' fill='%23FF6A4D'/%3E%3Crect x='17' y='4' width='11' height='11' fill='%233B6DFF'/%3E%3Crect x='4' y='17' width='11' height='11' fill='%23C9F23A'/%3E%3Crect x='17' y='17' width='11' height='11' fill='%2324BDB8'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-surface');document.documentElement.classList.toggle('light',s?s==='steel':matchMedia('(prefers-color-scheme: light)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="note">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="bar__name" href="index.html">G.McF</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="bar__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Surface</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── The title block is an enamel fill. In a system with no
+       display size, this is what a headline looks like. ─────────── -->
+  <section class="band band--tight">
+    <div class="sheet">
+      <div class="fill" data-tone="blue">
+        <p class="mark" style="opacity:.75">
+          Field note · 2026-05 · 6 min ·
+          <a class="ln" href="journal.html" style="letter-spacing:0;text-transform:none">Journal</a>
+        </p>
+        <p class="strong" style="margin-top:.5rem">Two programs, one plugin</p>
+        <p style="opacity:.85;margin-top:.3rem;max-width:64ch">
+          A Figma plugin looks like one thing and behaves like two. Almost every
+          difficulty in building one comes from that gap, and almost every tool
+          that helps is a tool that hides it.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── The article. Prose at 15px; sections marked by rule weight
+       and numbering rather than by heading size. ─────────────────── -->
+  <section class="band">
+    <div class="sheet">
+      <div class="g12">
+
+        <article class="c7">
+          <p class="topped topped--hi mark faint" style="margin-bottom:.9rem">
+            <span class="n">§1</span> The split
+          </p>
+          <p style="margin-bottom:.9rem">
+            When a plugin runs, Figma starts two separate programs. The first runs
+            in a sandbox with access to the document — nodes, selection, pages — and
+            no DOM at all. The second runs in an iframe with a full DOM and no
+            access to the document whatsoever.
+          </p>
+          <p style="margin-bottom:1.5rem">
+            They cannot call each other. They cannot share objects. Everything that
+            crosses between them is a message, serialised on the way out and parsed
+            on the way in.
+          </p>
+
+          <p class="topped topped--hi mark faint" style="margin-bottom:.9rem">
+            <span class="n">§2</span> What that costs
+          </p>
+          <p style="margin-bottom:.9rem">
+            The obvious cost is ceremony. Any behaviour that spans both halves needs
+            a message type, a sender, a listener, and a shape agreed in two places
+            at once:
+          </p>
+          <div class="nd-code" style="margin-bottom:.9rem">
+            <div class="nd-code__bar">main.ts</div>
+            <pre>// sandbox half — document access, no DOM
+figma.ui.onmessage = (msg) =&gt; {
+  if (msg.type === 'resize') {
+    figma.ui.resize(msg.w, msg.h)
+  }
+}</pre>
+          </div>
+          <p style="margin-bottom:1.5rem">
+            The less obvious cost is the development loop. Neither half can be
+            served from disk the way an ordinary web app can, so the UI has to be
+            inlined into the built file — and every edit means a rebuild, a re-run,
+            and the loss of whatever state you were testing against.
+          </p>
+
+          <p class="topped topped--hi mark faint" style="margin-bottom:.9rem">
+            <span class="n">§3</span> The fix
+          </p>
+          <p style="margin-bottom:.9rem">
+            Plugma puts all of that underneath a single command. In development the
+            UI is served from a dev server and pointed at by the manifest; at build
+            time the same UI is inlined into the output. The sandbox half never
+            notices the difference, so hot module reloading works the way it does
+            anywhere else — edits appear without a rebuild, and without dropping the
+            plugin state you were testing against.
+          </p>
+          <p>
+            Interface work stops being a stop-start loop. That is the whole return
+            on the tool, and the substrate for every plugin I built after it.
+          </p>
+        </article>
+
+        <aside class="c4" style="grid-column:9 / span 4">
+          <div class="edged" data-tone="blue" style="margin-bottom:1.25rem">
+            <p class="mark faint">This note</p>
+            <dl class="defs" style="margin-top:.5rem">
+              <div><dt>Published</dt><dd>2026-05</dd></div>
+              <div><dt>Reading</dt><dd>6 min</dd></div>
+              <div><dt>About</dt><dd><a class="ln" href="project.html">plugma</a></dd></div>
+            </dl>
+            <p style="margin-top:.6rem;display:flex;gap:.3rem">
+              <span class="tag"><span class="sw" data-tone="blue"></span>Figma</span>
+              <span class="tag"><span class="sw" data-tone="teal"></span>Tooling</span>
+            </p>
+          </div>
+
+          <!-- The one place this sheet raises its voice, and it does
+               it with an inversion rather than a size. -->
+          <div class="invert" style="margin-bottom:1.25rem">
+            <p class="mark" style="opacity:.7">The line worth keeping</p>
+            <p class="strong" style="margin-top:.4rem">
+              The sandbox knows what the user selected. The iframe knows what the
+              user clicked. Neither knows both.
+            </p>
+          </div>
+
+          <div class="edged" style="margin-bottom:1.25rem">
+            <p class="mark faint">Fig. A</p>
+            <span class="ph ph--32 ph--hatch" aria-hidden="true" style="display:block;margin:.4rem 0"></span>
+            <p class="dim">The two halves and the bridge — drawn properly on
+              <a class="ln" href="board.html">the board</a>.</p>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── More notes ───────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="mr-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">01</span>
+        <h2 id="mr-h">More from the journal</h2>
+        <a class="head__x ln" href="journal.html">All entries →</a>
+      </div>
+      <div class="g12" id="more"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Sheet</dt><dd>Note</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Set</dt><dd>12 · Enamel</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+    document.getElementById('more').innerHTML = DATA.posts.slice(1, 5).map((p, i) => `
+      <div class="c3">
+        <a class="ln--bare edged" data-tone="${esc(p.tone)}" href="${esc(p.href)}" style="display:block;padding-block:.4rem">
+          <span class="mono faint" style="display:block">${esc(p.date)} · ${esc(p.mins)} min</span>
+          <span class="strong" style="display:block;margin-top:.2rem">${esc(p.title)}</span>
+          <span class="dim" style="display:block;margin-top:.15rem">${esc(p.lede)}</span>
+        </a>
+      </div>`).join('');
+  })();
+</script>
+</body>
+</html>

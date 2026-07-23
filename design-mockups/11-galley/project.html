@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>plugma — Galley</title>
+<meta name="description" content="plugma: a zero-config toolchain for building Figma plugins, with the hot reloading the platform never shipped.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F4F1E9'/%3E%3Crect x='4' y='4' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='9' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='14' width='9' height='2' fill='%231A1916'/%3E%3Crect x='22' y='4' width='2' height='12' fill='%23A82818'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="project">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="head">
+  <a class="head__name" href="index.html">G. McFarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="head__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Theme</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── Top left, with the spec hung in the margin ───────────────── -->
+  <section class="frame frame--tl">
+    <span class="frame__mark">start / start</span>
+    <div class="hang hold--full">
+      <div>
+        <p class="micro faint"><a class="ln" href="work.html">Work</a> · plugma · 2024</p>
+        <h1 class="display" style="margin:1.25rem 0">plugma</h1>
+        <p class="dim">
+          A zero-config toolchain for building Figma plugins — with the hot
+          reloading the platform never shipped.
+        </p>
+        <p class="mark" style="margin-top:1.5rem">
+          <a class="ln" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">plugma.dev ↗</a>
+          <span class="faint" style="margin:0 .6rem">·</span>
+          <a class="ln" href="https://github.com/gavinmcfarland/plugma" target="_blank" rel="noopener noreferrer">Source ↗</a>
+        </p>
+      </div>
+      <div class="hang__notes">
+        <div>
+          <span class="micro">Specification</span>
+          <span class="mark dim">
+            Year&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2024 — now<br>
+            Role&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creator, maintainer<br>
+            Status&nbsp;&nbsp;&nbsp;Maintained<br>
+            Stack&nbsp;&nbsp;&nbsp;&nbsp;Node, TypeScript, Vite<br>
+            Licence&nbsp;&nbsp;MIT
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Full bleed. Used once on this sheet: the plate touches
+       both edges, and after five held-back margins it reads loud
+       without raising its voice. ────────────────────────────────── -->
+  <section class="frame frame--bleed frame--half">
+    <div>
+      <span class="plate" style="min-height:min(52svh, 22rem);display:block">
+        <span class="tx tx-rule" aria-hidden="true"></span>
+        <span class="folio" aria-hidden="true" style="font-size:8rem;right:1rem;bottom:-1rem">01</span>
+      </span>
+      <p class="micro faint" style="display:flex;justify-content:space-between;margin-top:.6rem">
+        <span>Plate 01 · rule, in ink</span><span>Full bleed</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ── The galley column: the argument, one measure wide ────────── -->
+  <section class="frame frame--tl frame--auto">
+    <span class="frame__mark">34em / start</span>
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">01</span>
+        <h2>The problem</h2>
+      </div>
+      <div class="hold">
+        <p style="margin-bottom:1.1rem">
+          A Figma plugin is two programs that cannot see each other. One runs in a
+          sandbox with access to the document; the other runs in an iframe with
+          access to the DOM. They speak only by passing messages, and neither can
+          be served from disk the way an ordinary web app can.
+        </p>
+        <p class="dim">
+          So every plugin began with the same lost day: a bundler, a manifest, a
+          message bridge, and a build step that inlines the UI. Change a line,
+          rebuild, re-run, lose your state.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Held apart: the build log at the head, the point at the
+       foot, a viewport of nothing between them. ─────────────────── -->
+  <section class="frame frame--split">
+    <span class="frame__mark">space-between</span>
+    <div class="hold--wide">
+      <div class="marker">
+        <span class="corr">02</span>
+        <h2>Build log</h2>
+      </div>
+      <details class="fold">
+        <summary>2024-02 — the manifest is the seam</summary>
+        <p class="fold__body">In development it points at a dev server; at build time at inlined output. It is the only file that differs between the two modes, and everything else followed from that.</p>
+      </details>
+      <details class="fold">
+        <summary>2024-05 — state-preserving reload</summary>
+        <p class="fold__body">The sandbox half keeps running while the iframe half hot-reloads, so selection and in-flight operations survive an edit. This is the feature the platform never shipped.</p>
+      </details>
+      <details class="fold">
+        <summary>2024-09 — framework-agnostic templates</summary>
+        <p class="fold__body">React, Svelte, Vue or none. The toolchain owns the bridge and the build; the framework stays your choice.</p>
+      </details>
+    </div>
+    <div class="hold--wide">
+      <p class="display">Interface work stops being a <em>stop-start loop.</em></p>
+      <p class="mark faint" style="margin-top:1rem">That is the whole return on the tool.</p>
+    </div>
+  </section>
+
+  <!-- ── The board figure — the one colour allowed on a sheet, and
+       only because it is a picture OF the board. ────────────────── -->
+  <section class="frame frame--tl frame--auto">
+    <span class="frame__mark">start / start · fig. 1</span>
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">03</span>
+        <h2>The board</h2>
+        <span class="marker__x">Fig. 1</span>
+      </div>
+      <p class="dim hold" style="margin-bottom:2rem">
+        The working notes live on a board rather than in a document, because the
+        argument is spatial — two halves, a bridge, and what each side can reach.
+        It is also the only place in this set where colour appears.
+      </p>
+      <div class="boardfig tx-stipple" id="boardfig" aria-label="Static preview of the plugma working board"></div>
+      <div class="boardfig__bar">
+        <span>Fig. 1 — working board at 50%</span>
+        <a class="ln" href="board.html">Open the full board →</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <dl class="defs">
+    <div><dt>Sheet</dt><dd>plugma</dd></div>
+    <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+    <div><dt>Set</dt><dd>11 · Galley</dd></div>
+  </dl>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+    const fig = document.getElementById('boardfig');
+    const notes = DATA.board.notes;
+    const minX = Math.min(...notes.map((n) => n.x));
+    const minY = Math.min(...notes.map((n) => n.y));
+
+    const nodeHtml = (n) => {
+      const pos = `position:absolute;left:${n.x - minX}px;top:${n.y - minY}px;width:${n.w}px`;
+      if (n.kind === 'note') {
+        return `<div class="note" data-tone="${esc(n.tone)}" style="${pos}">
+          <span class="note__label">${esc(n.label)}</span>${esc(n.text)}</div>`;
+      }
+      if (n.kind === 'code') {
+        return `<div class="nd-code" style="${pos}">
+          <div class="nd-code__bar">${esc(n.label)}</div><pre>${esc(n.text)}</pre></div>`;
+      }
+      return `<div class="nd-doc" style="${pos}">
+        <span class="micro"><span class="ph ph--12" aria-hidden="true"></span>${esc(n.label)}</span>${esc(n.text)}</div>`;
+    };
+
+    fig.innerHTML = `<div class="boardfig__world">${notes.map(nodeHtml).join('')}</div>`;
+  })();
+</script>
+</body>
+</html>

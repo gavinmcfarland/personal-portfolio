@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two programs, one plugin — Galley</title>
+<meta name="description" content="A Figma plugin looks like one thing and behaves like two. Almost every difficulty in building one comes from that gap.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F4F1E9'/%3E%3Crect x='4' y='4' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='9' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='14' width='9' height='2' fill='%231A1916'/%3E%3Crect x='22' y='4' width='2' height='12' fill='%23A82818'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="note">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="head">
+  <a class="head__name" href="index.html">G. McFarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="head__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Theme</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── The title takes a viewport and uses a fifth of it ────────── -->
+  <section class="frame frame--cl frame--half">
+    <span class="frame__mark">center / start</span>
+    <div class="hold--wide">
+      <p class="micro faint">Field note · 2026-05 · six minutes</p>
+      <h1 class="display" style="margin-top:1.25rem">Two programs,<br><em>one plugin.</em></h1>
+    </div>
+  </section>
+
+  <!-- ── The galley proper: one measure, corrections in the margin ── -->
+  <section class="frame frame--tl frame--auto">
+    <span class="frame__mark">34em / start</span>
+    <div class="hang hold--full">
+
+      <article>
+        <hr class="rule" style="margin-bottom:1.5rem">
+        <p style="margin-bottom:1.1rem">
+          A Figma plugin looks like one thing and behaves like two. Almost every
+          difficulty in building one comes from that gap, and almost every tool
+          that helps is a tool that hides it.
+        </p>
+
+        <p class="micro faint" style="margin:2rem 0 1rem">§1 · The split</p>
+        <p style="margin-bottom:1.1rem">
+          When a plugin runs, Figma starts two separate programs. The first runs in
+          a sandbox with access to the document — nodes, selection, pages — and no
+          DOM at all. The second runs in an iframe with a full DOM and no access to
+          the document whatsoever.
+        </p>
+        <p style="margin-bottom:1.1rem">
+          They cannot call each other. They cannot share objects. Everything that
+          crosses between them is a message, serialised on the way out and parsed
+          on the way in.
+        </p>
+
+        <p class="micro faint" style="margin:2rem 0 1rem">§2 · What that costs</p>
+        <p style="margin-bottom:1.1rem">
+          The obvious cost is ceremony. Any behaviour spanning both halves needs a
+          message type, a sender, a listener, and a shape agreed in two places at
+          once:
+        </p>
+        <div class="nd-code" style="margin-bottom:1.1rem">
+          <div class="nd-code__bar">main.ts</div>
+          <pre>// sandbox half — document access, no DOM
+figma.ui.onmessage = (msg) =&gt; {
+  if (msg.type === 'resize') {
+    figma.ui.resize(msg.w, msg.h)
+  }
+}</pre>
+        </div>
+        <p style="margin-bottom:1.1rem">
+          The less obvious cost is the development loop. Neither half can be served
+          from disk the way an ordinary web app can, so the UI has to be inlined
+          into the built file — and every edit means a rebuild, a re-run, and the
+          loss of whatever state you were testing against.
+        </p>
+
+        <p class="micro faint" style="margin:2rem 0 1rem">§3 · The fix</p>
+        <p style="margin-bottom:1.1rem">
+          Plugma puts all of that underneath a single command. In development the
+          UI is served from a dev server and pointed at by the manifest; at build
+          time the same UI is inlined into the output. The sandbox half never
+          notices the difference, so hot module reloading works the way it does
+          anywhere else — edits appear without a rebuild, and without dropping the
+          plugin state you were testing against.
+        </p>
+        <p>
+          Interface work stops being a stop-start loop. That is the whole return on
+          the tool, and the substrate for every plugin I built after&nbsp;it.
+        </p>
+      </article>
+
+      <!-- The margin: metadata and corrections, in red, where a
+           proofreader would put them. -->
+      <div class="hang__notes">
+        <div>
+          <span class="micro">This note</span>
+          <span class="mark dim">
+            Published&nbsp;&nbsp;2026-05<br>
+            Reading&nbsp;&nbsp;&nbsp;&nbsp;6 min<br>
+            About&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="ln" href="project.html">plugma</a>
+          </span>
+        </div>
+        <div>
+          <span class="micro">Fig. A</span>
+          <span class="ph ph--32 ph--hatch" aria-hidden="true" style="margin:.35rem 0"></span>
+          <span class="mark dim">The two halves and the bridge — drawn properly on
+          <a class="ln" href="board.html">the board</a>.</span>
+        </div>
+        <div>
+          <span class="micro">Query</span>
+          <span class="mark dim">Is “bridge” the right word, or is it doing too much
+          work? Left as it stands.</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Exception (c): the one oversized quotation, bottom-left ──── -->
+  <section class="frame frame--bl">
+    <span class="frame__mark">end / start</span>
+    <div class="hold--wide">
+      <p class="quote">
+        The sandbox knows what the user selected. The iframe knows what the user
+        clicked. Neither knows both.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── More notes, full width ───────────────────────────────────── -->
+  <section class="frame frame--wide frame--half">
+    <span class="frame__mark">100% / start</span>
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">01</span>
+        <h2>More from the journal</h2>
+        <a class="marker__x ln" href="journal.html">All entries →</a>
+      </div>
+      <div id="more"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <dl class="defs">
+    <div><dt>Sheet</dt><dd>Note</dd></div>
+    <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+    <div><dt>Set</dt><dd>11 · Galley</dd></div>
+  </dl>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+    document.getElementById('more').innerHTML = `<div class="index">
+      ${DATA.posts.slice(1, 5).map((p, i) => `
+      <a class="index__row" href="${esc(p.href)}">
+        <span class="index__n">${pad2(i + 1)}</span>
+        <span class="index__name">${esc(p.title)}</span>
+        <span class="index__desc">${esc(p.lede)}</span>
+        <span class="index__kind faint">${esc(p.tag)}</span>
+        <span class="index__year">${esc(p.date)}</span>
+      </a>`).join('')}
+    </div>`;
+  })();
+</script>
+</body>
+</html>

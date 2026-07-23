@@ -1,0 +1,81 @@
+{
+  "version": 2,
+  "activePage": "home",
+  "pages": [
+    {
+      "id": "home",
+      "name": "Page 1",
+      "view": {
+        "x": 808.297199099345,
+        "y": 339.0625,
+        "scale": 1.35625
+      },
+      "nodes": [
+        {
+          "id": "intro",
+          "type": "md",
+          "x": -340,
+          "y": -150,
+          "z": 1,
+          "w": 340,
+          "text": "# Table Creator\n\nA Figma plugin for building and maintaining complex data tables directly on the canvas."
+        },
+        {
+          "id": "stack",
+          "type": "md",
+          "x": -340,
+          "y": 90,
+          "z": 2,
+          "w": 300,
+          "text": "**Built with**\n\nTypeScript  ·  Figma API  ·  Svelte"
+        },
+        {
+          "id": "note-0",
+          "type": "sticky",
+          "x": 170,
+          "y": -160,
+          "z": 3,
+          "color": "yellow",
+          "text": "Create structured, complex tables on the canvas"
+        },
+        {
+          "id": "note-1",
+          "type": "sticky",
+          "x": 320.52947598253274,
+          "y": -38.575327510917035,
+          "z": 4,
+          "color": "blue",
+          "text": "Dynamic content that stays in sync"
+        },
+        {
+          "id": "note-2",
+          "type": "sticky",
+          "x": 170,
+          "y": 120,
+          "z": 5,
+          "color": "green",
+          "text": "Bulk edits across rows and columns"
+        }
+      ],
+      "shapes": [
+        {
+          "id": "link-arrow",
+          "type": "arrow",
+          "stroke": "#7C2D91",
+          "width": 3,
+          "z": 20,
+          "x1": 20,
+          "y1": -100,
+          "x2": 150,
+          "y2": -120
+        }
+      ]
+    }
+  ],
+  "bgColor": "#b400e6",
+  "viewport": {
+    "w": 1182,
+    "h": 1050
+  },
+  "savedAt": 1784731299730
+}

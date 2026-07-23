@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>plugma(1) — Gavin McFarland</title>
+<meta name="description" content="Plugma — build Figma plugins with a single command and the hot reloading the platform never shipped.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='1' y='1' width='7' height='7' fill='%23000080'/%3E%3Crect x='8' y='1' width='7' height='7' fill='%23008080'/%3E%3Crect x='1' y='8' width='7' height='7' fill='%23FFFF00'/%3E%3Crect x='8' y='8' width='7' height='7' fill='%23C0C0C0'/%3E%3C/svg%3E">
+<script>(()=>{document.documentElement.classList.toggle('dark',localStorage.getItem('gm-surface-14')==='dark');})();</script>
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="project">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<aside class="rail">
+  <a class="rail__mark" href="index.html"><span class="sw" data-c="navy"></span>gavin(1)</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="strip rail__strip" data-strip="a" id="rail-strip" aria-hidden="true"></div>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+    <span>14 · colourbar</span>
+  </div>
+</aside>
+
+<div class="page">
+<main id="main">
+  <div class="sheet">
+
+    <section class="sec">
+      <h1 class="man__h"><span class="num">01</span> Name <span class="man__x">plugma(1) · 2024</span></h1>
+      <div class="man__b">
+        <p class="ink"><span class="b">plugma</span> — build Figma plugins with a single command and
+        the hot reloading the platform never shipped.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">02</span> Synopsis</h2>
+      <div class="man__b">
+        <p class="cmd" style="margin-bottom:.4rem"><span class="cmd__$">$</span>
+          <span><span class="b">npm create</span> <span class="dim">plugma@latest</span></span></p>
+        <p class="cmd"><span class="cmd__$">$</span>
+          <span><span class="b">plugma</span> <span class="dim">dev</span> <span class="faint">[--port &lt;n&gt;] [--watch]</span></span></p>
+      </div>
+    </section>
+
+    <!-- ── The one big plate on the sheet. The wedge grows toward
+         the ink the project is actually about. ────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">03</span> Plate <span class="man__x">b · wedge</span></h2>
+      <div class="man__b" style="max-width:none;position:relative">
+        <span class="mark mark--tab" data-c="aqua" style="top:-9px;left:2rem;z-index:3" aria-hidden="true">v1.0</span>
+        <div class="strip" data-strip="b" style="height:15rem" aria-hidden="true">
+          <i data-c="silver"></i><i data-c="navy"></i><i data-c="teal"></i><i data-c="aqua"></i><i data-c="white"></i><i data-c="navy"></i>
+        </div>
+        <span class="strip-cap">Strip 01 — wedge. Patches grow 1:1:2:3:5:8, so the last ink named is the one the picture is about.</span>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">04</span> Description</h2>
+      <div class="man__b">
+        <p>
+          A plugin is two programs that cannot see each other. One half runs in a sandbox with
+          access to the document and no DOM; the other runs in an iframe with a DOM and no
+          document. They talk through a message channel, and every difficulty in building one
+          comes from that arrangement.
+        </p>
+        <p>
+          Plugma puts the bundler, the manifest and the message bridge underneath one command,
+          and — the part that actually changes the work — keeps the plugin's state alive across
+          an edit. The UI is served from a dev server while you work and inlined at build time,
+          so the sandbox half never notices the difference.
+        </p>
+        <p class="ink">
+          Interface work stops being a stop-start loop. That is the whole return on the tool.
+        </p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">05</span> Specification</h2>
+      <div style="padding-left:var(--indent)">
+        <div class="tbl tbl--spec" id="spec"></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">06</span> History</h2>
+      <div style="padding-left:var(--indent)" id="log"></div>
+    </section>
+
+    <!-- ── The board, as a figure. Same nodes, same classes, no
+         interaction — a picture of the canvas rather than a second
+         implementation of it. ─────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">07</span> Files <span class="man__x">figure</span></h2>
+      <div class="man__b" style="max-width:none">
+        <figure>
+          <div class="boardfig" id="boardfig"><div class="boardfig__world"></div></div>
+          <figcaption class="boardfig__bar">
+            <span>the working board, at 50%</span>
+            <span><a class="ln" href="board.html">open board(1)</a></span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">08</span> See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="board.html">board</a><span class="n">(1)</span>,
+          <a href="work.html">work</a><span class="n">(1)</span>,
+          <a href="note.html">note</a><span class="n">(1)</span>,
+          <a href="https://plugma.dev" target="_blank" rel="noopener noreferrer">plugma.dev</a>
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="sheet"><p>plugma(1) &nbsp;·&nbsp; MIT &nbsp;·&nbsp; 14 · Colourbar</p></div>
+</footer>
+</div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script src="board.js"></script>
+<script>
+  (() => {
+    document.getElementById('spec').innerHTML = DATA.spec.map((s) => `
+      <div class="tbl__row"><span class="tbl__num">${esc(s.k)}</span><span class="tbl__val">${esc(s.v)}</span></div>`).join('');
+
+    document.getElementById('log').innerHTML = DATA.log.map((l) => `
+      <details class="fold"><summary><span class="b">${esc(l.k)}</span></summary>
+        <div class="fold__body">${esc(l.v)}</div></details>`).join('');
+
+    Board.figure(document.getElementById('boardfig'), DATA.board.notes);
+  })();
+</script>
+</body>
+</html>

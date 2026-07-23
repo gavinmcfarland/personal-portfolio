@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classifieds — The Working Sheet</title>
+<meta name="description" content="Everything on the sheet, set in small type: pages, projects and journal entries.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23D8D6CD'/%3E%3Crect x='4' y='4' width='24' height='7' fill='%2317171A'/%3E%3Crect x='4' y='14' width='11' height='14' fill='%23C4321B'/%3E%3Crect x='17' y='14' width='11' height='14' fill='%231B3C96'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="archive">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <div class="sheet bar__in">
+    <nav id="nav" aria-label="Primary"></nav>
+    <div class="bar__tools">
+      <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+      <button id="theme-toggle" type="button">Theme</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- L8 at full strength. The front page shows this system at its
+       most spacious; this sheet shows it at its densest. Nothing is
+       featured here — that is the entire premise of a classifieds
+       page, and the reason it is the honest test of a type scale. -->
+  <section class="band band--tight">
+    <div class="sheet">
+      <div class="g12">
+        <div class="c7">
+          <p class="micro dim">Classifieds</p>
+          <h1 class="display" style="margin-top:.6rem;max-width:20ch">Everything, in small type.</h1>
+        </div>
+        <div class="c4" style="grid-column:9 / span 4">
+          <p class="dim">
+            Every page, project and entry on one sheet, set as small ads: three
+            columns, hairline between, nothing promoted. If the type scale is
+            genuinely flat, this page proves it — and if it is not, this page is
+            where it fails.
+          </p>
+          <p class="meta faint" style="margin-top:.6rem" id="ar-count"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="pg-h">
+    <div class="sheet">
+      <div class="head"><span class="num">01</span><h2 id="pg-h">Sheets</h2></div>
+      <div class="l-classified" id="col-sheets"></div>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="pj-h">
+    <div class="sheet">
+      <div class="head"><span class="num">02</span><h2 id="pj-h">Projects</h2></div>
+      <div class="l-classified" id="col-projects"></div>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="nt-h">
+    <div class="sheet">
+      <div class="head"><span class="num">03</span><h2 id="nt-h">Journal</h2></div>
+      <div class="l-classified" id="col-posts"></div>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="lo-h">
+    <div class="sheet">
+      <div class="head"><span class="num">04</span><h2 id="lo-h">Layouts in this system</h2>
+        <a class="head__x ln" href="layouts.html">The atlas →</a></div>
+      <div class="l-classified" id="col-layouts"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Sheet</dt><dd>Classifieds</dd></div>
+      <div><dt>Set</dt><dd>10 · Broadsheet</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+    const ext = (h) => /^https?:/.test(h);
+    const attrs = (h) => ext(h)
+      ? ` href="${esc(h)}" target="_blank" rel="noopener noreferrer"`
+      : ` href="${esc(h)}"`;
+
+    const ad = (n, title, sub, href) => `
+      <div>
+        <a class="ln--bare meta"${attrs(href)}>
+          <span class="num">${pad2(n)}</span> <span class="strong">${esc(title)}</span>${ext(href) ? ' ↗' : ''}
+        </a>
+        <span class="meta dim" style="display:block">${esc(sub)}</span>
+      </div>`;
+
+    document.getElementById('col-sheets').innerHTML =
+      DATA.nav.map((s, i) => ad(i + 1, s.name, 'Page in this set', s.href)).join('');
+
+    document.getElementById('col-projects').innerHTML =
+      DATA.projects.map((p, i) => ad(i + 1, p.name, `${p.desc} · ${p.year}`, p.href)).join('');
+
+    document.getElementById('col-posts').innerHTML =
+      DATA.posts.map((p, i) => ad(i + 1, p.title, `${p.date} · ${p.tag} · ${p.mins} min`, p.href)).join('');
+
+    document.getElementById('col-layouts').innerHTML =
+      DATA.layouts.map((l, i) => ad(i + 1, l.name, l.note, 'layouts.html')).join('');
+
+    const total = DATA.nav.length + DATA.projects.length + DATA.posts.length + DATA.layouts.length;
+    document.getElementById('ar-count').textContent =
+      `${total} entries · ${pad2(DATA.nav.length)} sheets · ${pad2(DATA.projects.length)} projects · ${pad2(DATA.posts.length)} notes · ${pad2(DATA.layouts.length)} layouts`;
+  })();
+</script>
+</body>
+</html>

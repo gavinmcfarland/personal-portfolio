@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>contact(1) — Gavin McFarland</title>
+<meta name="description" content="How to get hold of Gavin McFarland — address, channels, and a form that admits it is a mockup.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='1' y='1' width='7' height='7' fill='%23000080'/%3E%3Crect x='8' y='1' width='7' height='7' fill='%23008080'/%3E%3Crect x='1' y='8' width='7' height='7' fill='%23FFFF00'/%3E%3Crect x='8' y='8' width='7' height='7' fill='%23C0C0C0'/%3E%3C/svg%3E">
+<script>(()=>{document.documentElement.classList.toggle('dark',localStorage.getItem('gm-surface-14')==='dark');})();</script>
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="contact">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<aside class="rail">
+  <a class="rail__mark" href="index.html"><span class="sw" data-c="navy"></span>gavin(1)</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="strip rail__strip" data-strip="a" id="rail-strip" aria-hidden="true"></div>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+    <span>14 · colourbar</span>
+  </div>
+</aside>
+
+<div class="page">
+<main id="main">
+  <div class="sheet">
+
+    <section class="sec">
+      <h1 class="man__h"><span class="num">01</span> Name <span class="man__x">contact(1)</span></h1>
+      <div class="man__b">
+        <p class="ink"><span class="b">contact</span> — three channels, one of which is read every day.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">02</span> Synopsis</h2>
+      <div class="man__b">
+        <p class="cmd"><span class="cmd__$">$</span>
+          <span><span class="b">gavin</span> <span class="dim">--hire</span>
+          <span class="faint">[--remote | --london] [--contract | --permanent]</span></span></p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">03</span> Address</h2>
+      <div class="man__b">
+        <p class="cmd">
+          <span class="cmd__$">$</span>
+          <span><a class="ln cmd__name" data-email href="#">—</a></span>
+        </p>
+        <p style="margin-top:.4rem">
+          <button class="copy" type="button" data-copy aria-label="Copy address">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="M5 5V3h8v8h-2M3 5h8v8H3z"/>
+            </svg>copy <span class="copy__label"></span>
+          </button>
+        </p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">04</span> Channels</h2>
+      <div class="scroll-x"><div class="tbl" id="channels"></div></div>
+      <p class="scroll-hint mono">Table scrolls sideways rather than stacking.</p>
+    </section>
+
+    <div class="bleed" aria-hidden="true">
+      <i data-c="navy"></i><i data-c="teal"></i><i data-c="aqua"></i><i data-c="silver"></i><i data-c="yellow"></i><i data-c="maroon"></i>
+    </div>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">05</span> Environment</h2>
+      <div class="man__dl" id="environment"></div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">06</span> Clients</h2>
+      <div class="man__b" style="max-width:none">
+        <p class="mono ink" id="clients" style="margin-bottom:1rem"></p>
+        <div class="strip" data-strip="a" style="height:3rem" aria-hidden="true" id="clients-strip"></div>
+        <span class="strip-cap">Strip 01 — step, one patch per client. The count is the picture.</span>
+      </div>
+    </section>
+
+    <!-- ── The form. It validates for real, and then admits that
+         there is nothing behind it — a mockup that silently
+         swallowed a message would be worse than one that says so. -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">07</span> Interactive alternative</h2>
+      <div class="man__b" style="max-width:44rem">
+        <p style="margin-bottom:1rem">If a form is easier than an address, this one works —
+        up to a point it will be honest about.</p>
+
+        <form id="contact-form" novalidate>
+          <div class="field">
+            <label for="f-name">name</label>
+            <input class="input" id="f-name" name="name" type="text" autocomplete="name">
+            <p class="err" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="f-email">email</label>
+            <input class="input" id="f-email" name="email" type="email" autocomplete="email">
+            <p class="err" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="f-message">message</label>
+            <textarea class="input" id="f-message" name="message" rows="5"></textarea>
+            <p class="err" aria-live="polite"></p>
+          </div>
+
+          <p class="mono" id="form-problems" hidden style="color:var(--c-maroon);margin-bottom:.75rem" aria-live="polite"></p>
+          <button class="btn" type="submit">send</button>
+
+          <p class="mono" id="form-done" hidden tabindex="-1" style="margin-top:1rem" aria-live="polite">
+            <span class="b ink">Validated — but not sent.</span>
+            <span class="faint">There is no mail server behind a mockup. Use the address above.</span>
+          </p>
+        </form>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">08</span> See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="index.html">gavin</a><span class="n">(1)</span>,
+          <a href="work.html">work</a><span class="n">(1)</span>,
+          <a href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">github</a><span class="n">(7)</span>
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="sheet"><p>contact(1) &nbsp;·&nbsp; London, United Kingdom &nbsp;·&nbsp; 14 · Colourbar</p></div>
+</footer>
+</div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    document.getElementById('channels').innerHTML =
+      `<div class="tbl__row tbl__head" style="grid-template-columns:7rem 16rem 1fr">
+         <span>channel</span><span>address</span><span>note</span></div>` +
+      DATA.channels.map((c) => `
+      <a class="tbl__row" style="grid-template-columns:7rem 16rem 1fr" href="${esc(c.href)}"${
+        /^https?:/.test(c.href) ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+        <span class="tbl__num">${esc(c.k)}</span>
+        <span class="tbl__item">${esc(c.v)}</span>
+        <span class="tbl__desc">${esc(c.note)}</span>
+      </a>`).join('');
+
+    document.getElementById('environment').innerHTML = DATA.environment.map((e) => `
+      <div><dt>${esc(e.k)}</dt><dd>${esc(e.v)}</dd></div>`).join('');
+
+    document.getElementById('clients').textContent = DATA.clients.join(' · ');
+
+    /* One patch per client, cycling the palette. The strip is not
+       decoration here — its cell count is the client count. */
+    const CYCLE = ['navy', 'teal', 'maroon', 'olive', 'purple', 'silver', 'gray'];
+    document.getElementById('clients-strip').innerHTML =
+      cells(DATA.clients.map((_, i) => CYCLE[i % CYCLE.length]));
+  })();
+</script>
+</body>
+</html>

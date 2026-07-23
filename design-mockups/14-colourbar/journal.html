@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>journal(1) — Gavin McFarland</title>
+<meta name="description" content="Notes on design systems, tooling and the seam between them, grouped by year.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='1' y='1' width='7' height='7' fill='%23000080'/%3E%3Crect x='8' y='1' width='7' height='7' fill='%23008080'/%3E%3Crect x='1' y='8' width='7' height='7' fill='%23FFFF00'/%3E%3Crect x='8' y='8' width='7' height='7' fill='%23C0C0C0'/%3E%3C/svg%3E">
+<script>(()=>{document.documentElement.classList.toggle('dark',localStorage.getItem('gm-surface-14')==='dark');})();</script>
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="journal">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<aside class="rail">
+  <a class="rail__mark" href="index.html"><span class="sw" data-c="navy"></span>gavin(1)</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="strip rail__strip" data-strip="a" id="rail-strip" aria-hidden="true"></div>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+    <span>14 · colourbar</span>
+  </div>
+</aside>
+
+<div class="page">
+<main id="main">
+  <div class="sheet">
+
+    <section class="sec">
+      <h1 class="man__h"><span class="num">01</span> Name <span class="man__x">journal(1)</span></h1>
+      <div class="man__b">
+        <p class="ink"><span class="b">journal</span> — <span data-count="posts">—</span> notes, written
+        when a problem turned out to be worth explaining twice.</p>
+      </div>
+    </section>
+
+    <!-- ── The latest note, given the asymmetric spread. ───────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">02</span> Latest</h2>
+      <div class="asym">
+        <div class="asym__main">
+          <p class="micro faint" style="margin-bottom:.6rem"><span class="num">2026-05</span> · figma · 6 min</p>
+          <p class="display" style="max-width:24ch">Two programs, one plugin</p>
+          <p class="dim" style="margin-top:.9rem">
+            A Figma plugin looks like one thing and behaves like two: a sandbox half that can
+            see the document, and a UI half that can see the DOM. Almost every difficulty in
+            building one comes from that gap, and almost every tool that helps is a tool that
+            narrows it.
+          </p>
+          <p class="mono" style="margin-top:.9rem"><a class="ln" href="note.html">read note(1)</a></p>
+        </div>
+        <div class="asym__side">
+          <div class="strip" data-strip="d" style="height:12rem" aria-hidden="true">
+            <i data-c="navy"></i><i data-c="aqua"></i><i data-c="teal"></i><i data-c="silver"></i><i data-c="white"></i>
+          </div>
+          <span class="strip-cap">Strip 01 — rail, in the note's ink.</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="bleed" aria-hidden="true">
+      <i data-c="navy"></i><i data-c="teal"></i><i data-c="maroon"></i><i data-c="olive"></i><i data-c="purple"></i><i data-c="silver"></i>
+    </div>
+
+    <!-- ── Everything, grouped by year. Collapsing a year is the
+         reader's choice to keep. ──────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">03</span> Register <span class="man__x">t2 · ledger</span></h2>
+      <div class="man__b" style="margin-bottom:1rem;max-width:none">
+        <p>All <span data-count="posts">—</span>, newest first. The swatch names the tag; the
+        tags reuse the same sixteen as everything else.</p>
+      </div>
+      <div id="posts"></div>
+    </section>
+
+    <section class="sec">
+      <h2 class="man__h"><span class="num">04</span> See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="note.html">note</a><span class="n">(1)</span>,
+          <a href="article.html">article</a><span class="n">(7)</span>,
+          <a href="work.html">work</a><span class="n">(1)</span>,
+          <a href="index.html">gavin</a><span class="n">(1)</span>
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="sheet"><p>journal(1) &nbsp;·&nbsp; <span data-count="posts">—</span> notes &nbsp;·&nbsp; 14 · Colourbar</p></div>
+</footer>
+</div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>renderPosts(document.getElementById('posts'));</script>
+</body>
+</html>

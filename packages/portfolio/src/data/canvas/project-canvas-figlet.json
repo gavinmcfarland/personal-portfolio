@@ -1,0 +1,163 @@
+{
+  "version": 2,
+  "activePage": "home",
+  "pages": [
+    {
+      "id": "home",
+      "name": "Page 1",
+      "view": {
+        "x": 528.9653488133966,
+        "y": -768.3890080864747,
+        "scale": 1.0903778865446703
+      },
+      "nodes": [
+        {
+          "id": "n13-md",
+          "type": "md",
+          "x": -403.81357405580763,
+          "y": 1323.861842966411,
+          "z": 92,
+          "w": 340,
+          "text": "Space is precious inside Figma so I wanted to be able to expand and collapse the plugin UI when it felt appropriate. Pages such as list views, settings, and logout collapse automatically, while code views expand automatically."
+        },
+        {
+          "id": "n37-tblock",
+          "type": "tblock",
+          "x": 3283.2588503637135,
+          "y": 1564.7691322501664,
+          "z": 79,
+          "text": "Tutorials",
+          "w": 127.265780022443,
+          "font": "serif",
+          "align": "center"
+        },
+        {
+          "id": "n46-html",
+          "type": "html",
+          "x": -309.52428399307064,
+          "y": 893.8618429664109,
+          "z": 88,
+          "w": 600,
+          "h": 486.0000000000001,
+          "src": "/canvas-assets/80fbd07ac95e8bdf.html",
+          "name": "home-20260717-145448-654.html",
+          "frame": "plugin"
+        },
+        {
+          "id": "n49-html",
+          "type": "html",
+          "x": 176.5122383545318,
+          "y": 1270.8702865057232,
+          "z": 91,
+          "scale": 0.75,
+          "w": 285.2151843111482,
+          "h": 486.00000000000006,
+          "src": "/canvas-assets/9f8f144481d1a28e.html",
+          "name": "home-20260717-150255-263.html",
+          "frame": "plugin",
+          "frameScale": 0.0741
+        },
+        {
+          "id": "n52-html",
+          "type": "html",
+          "x": 626.3161366289945,
+          "y": 893.8618429664109,
+          "z": 96,
+          "w": 285,
+          "h": 486,
+          "src": "/canvas-assets/7274716a6f553b23.html",
+          "name": "home-20260717-160355-153.html",
+          "frame": "plugin"
+        },
+        {
+          "id": "n53-html",
+          "type": "html",
+          "x": 863.197790393508,
+          "y": 1046.737219050283,
+          "z": 97,
+          "w": 600,
+          "h": 485.9999999999997,
+          "src": "/canvas-assets/161354df982775e5.html",
+          "name": "home-20260717-160701-918.html",
+          "frame": "plugin"
+        },
+        {
+          "id": "n56-html",
+          "type": "html",
+          "x": 1749.9269301149625,
+          "y": 893.8618429664109,
+          "z": 100,
+          "w": 285,
+          "h": 485.9999999999997,
+          "src": "/canvas-assets/5403a8e616353c21.html",
+          "name": "home-20260717-172753-609.html",
+          "frame": "plugin"
+        },
+        {
+          "id": "n57-html",
+          "type": "html",
+          "x": 1972.3917159749997,
+          "y": 1046.737219050283,
+          "z": 101,
+          "w": 599.9999999999998,
+          "h": 485.99999999999994,
+          "src": "/canvas-assets/c976108b67151434.html",
+          "name": "home-20260717-173120-797.html",
+          "frame": "plugin"
+        },
+        {
+          "id": "n58-tblock",
+          "type": "tblock",
+          "x": 1088.0814310788116,
+          "y": 1564.7691322501664,
+          "z": 102,
+          "text": "New figlet",
+          "w": 190.07498463039872,
+          "font": "serif",
+          "align": "center"
+        },
+        {
+          "id": "n59-html",
+          "type": "html",
+          "x": 2842.8917618155474,
+          "y": 893.8618429664109,
+          "z": 103,
+          "w": 284.9999999999998,
+          "h": 486.00000000000017,
+          "src": "/canvas-assets/39fd9a54fd21eeed.html",
+          "name": "home-20260717-175333-762.html",
+          "frame": "plugin"
+        },
+        {
+          "id": "n60-html",
+          "type": "html",
+          "x": 3046.7588503637135,
+          "y": 1046.737219050283,
+          "z": 104,
+          "w": 600.0000000000002,
+          "h": 485.9999999999999,
+          "src": "/canvas-assets/2a40844638239bc5.html",
+          "name": "home-20260717-175850-126.html",
+          "frame": "plugin"
+        },
+        {
+          "id": "n61-tblock",
+          "type": "tblock",
+          "x": 2177.18782404218,
+          "y": 1564.7691322501664,
+          "z": 105,
+          "text": "Community",
+          "w": 190.07498463039872,
+          "font": "serif",
+          "align": "center"
+        }
+      ],
+      "shapes": []
+    }
+  ],
+  "viewport": {
+    "w": 1003,
+    "h": 1056
+  },
+  "savedAt": 1784815990696
+}

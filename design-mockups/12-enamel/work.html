@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work — Enamel</title>
+<meta name="description" content="Six tools, plug-ins and libraries, each in its own enamel.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2324282D'/%3E%3Crect x='4' y='4' width='11' height='11' fill='%23FF6A4D'/%3E%3Crect x='17' y='4' width='11' height='11' fill='%233B6DFF'/%3E%3Crect x='4' y='17' width='11' height='11' fill='%23C9F23A'/%3E%3Crect x='17' y='17' width='11' height='11' fill='%2324BDB8'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-surface');document.documentElement.classList.toggle('light',s?s==='steel':matchMedia('(prefers-color-scheme: light)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="work">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="bar__name" href="index.html">G.McF</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="bar__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Surface</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="band band--tight">
+    <div class="sheet">
+      <div class="g12">
+        <div class="c7">
+          <p class="mark faint">Work</p>
+          <h1 style="margin-top:.6rem">Six things, each built because a problem kept recurring.</h1>
+          <p class="dim" style="margin-top:.5rem;max-width:58ch">
+            Every one exists because the thing that would have fixed it did not.
+            The enamel a project carries is not decoration — with no headings to
+            rank them, the fill is what says which is which.
+          </p>
+        </div>
+        <div class="c4" style="grid-column:9 / span 4">
+          <div class="panel panel--sunk">
+            <p class="mark faint">Legend</p>
+            <p class="mono" style="margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem">
+              <span><span class="tag"><span class="sw" data-tone="blue"></span>Tool</span></span>
+              <span><span class="tag"><span class="sw" data-tone="teal"></span>Plug-in</span></span>
+              <span><span class="tag"><span class="sw" data-tone="lime"></span>Library</span></span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── The plates ───────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="pl-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">01</span>
+        <h2 id="pl-h">Plates</h2>
+        <span class="head__x">Enamel + texture</span>
+      </div>
+      <div class="g12" data-cards></div>
+    </div>
+  </section>
+
+  <!-- ── The index ────────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="ix-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">02</span>
+        <h2 id="ix-h">The same six, listed</h2>
+        <span class="head__x">For finding, not showing</span>
+      </div>
+      <div data-table></div>
+      <p class="mark scroll-hint">Scroll →</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Sheet</dt><dd>Work</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Set</dt><dd>12 · Enamel</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>

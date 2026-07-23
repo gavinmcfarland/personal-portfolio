@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — CV</title>
+<meta name="description" content="Curriculum vitae — Gavin McFarland, design systems and developer tooling." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body data-page="cv">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<header class="strip">
+  <div class="strip__in">
+    <span><a href="index.html">gavin mcfarland</a> <span class="strip__sep">/</span> <strong>cv</strong></span>
+    <span id="nav" style="display:flex;gap:.5rem;flex-wrap:wrap"></span>
+    <span class="strip__tools">
+      <button class="btn" type="button" onclick="window.print()">Print</button>
+      <button class="btn" id="grid-toggle" type="button" aria-pressed="false" title="Layout grid (G)">Grid</button>
+      <button class="btn" id="theme-toggle" type="button" aria-pressed="false">Invert</button>
+    </span>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <nav class="rail" aria-label="Sheet index">
+    <a href="#profile"><span class="n">01</span> profile</a>
+    <a href="#experience"><span class="n">02</span> experience</a>
+    <a href="#skills"><span class="n">03</span> skills</a>
+    <a href="#selected"><span class="n">04</span> selected work</a>
+    <a href="#details"><span class="n">05</span> details</a>
+  </nav>
+
+  <main class="main">
+
+    <!-- 01 profile ─────────────────────────────────────────────── -->
+    <section id="profile" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">01</span><span class="module__name">profile</span>
+          <span class="module__note">london, uk</span>
+        </div>
+
+        <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+          <p class="display">Gavin McFarland</p>
+          <p class="lead" style="margin-top:.25rem">
+            Design systems &amp; developer tooling — fifteen years between design and engineering
+          </p>
+        </div>
+
+        <div class="prose" style="grid-column:1 / -1; max-width:64ch">
+          <p>
+            I build the piece that falls between two teams: the token pipeline nobody owns, the
+            component API that keeps drifting, the build step everyone re-writes. Then I document
+            it so it survives me leaving.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 experience ──────────────────────────────────────────── -->
+    <section id="experience" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">02</span><span class="module__name">experience</span>
+        </div>
+        <div style="grid-column:1 / -1; border-top:1px solid var(--rule)" id="roles"></div>
+      </div>
+    </section>
+
+    <!-- 03 skills ──────────────────────────────────────────────── -->
+    <section id="skills" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">03</span><span class="module__name">skills</span>
+        </div>
+        <div class="tbl module__grid" id="skills-list"></div>
+      </div>
+    </section>
+
+    <!-- 04 selected work ───────────────────────────────────────── -->
+    <section id="selected" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">04</span><span class="module__name">selected work</span>
+          <span class="module__note" id="sel-count">—</span>
+        </div>
+        <div class="tbl module__grid" id="selected-list">
+          <div class="tbl__head">
+            <span class="c-ico"></span>
+            <span class="c-name">name</span>
+            <span class="c-desc">description</span>
+            <span class="c-meta">type · year</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 details ─────────────────────────────────────────────── -->
+    <section id="details" class="module">
+      <div class="module__grid">
+        <div class="module__head">
+          <span class="module__num">05</span><span class="module__name">details</span>
+        </div>
+        <div class="tbl module__grid">
+          <div class="tbl__row">
+            <span class="c-term">clients</span>
+            <span class="c-body" id="clients">—</span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">availability</span>
+            <span class="c-body">From September. Contract or permanent, London or remote.</span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">email</span>
+            <span class="c-body"><a class="lnk print-url" href="mailto:gavin@limitlessloop.com">gavin@limitlessloop.com</a></span>
+          </div>
+          <div class="tbl__row">
+            <span class="c-term">github</span>
+            <span class="c-body"><a class="lnk print-url" href="https://github.com/gavinmcfarland">gavinmcfarland</a></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="titleblock">
+  <div class="titleblock__in">
+    <div class="tb-cell"><span class="tb-k">name</span><span class="tb-v">g. mcfarland</span></div>
+    <div class="tb-cell"><span class="tb-k">roles</span><span class="tb-v" id="tb-roles">—</span></div>
+    <div class="tb-cell"><span class="tb-k">date</span><span class="tb-v">2026-07</span></div>
+    <div class="tb-cell"><span class="tb-k">sheet</span><span class="tb-v">05 / 06</span></div>
+    <div class="tb-cell"><span class="tb-k">title</span><span class="tb-v">cv</span></div>
+    <div class="tb-cell"><span class="tb-k">rev</span><span class="tb-v">A</span></div>
+  </div>
+</footer>
+
+<script src="icons48.js"></script>
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+(() => {
+  'use strict';
+  const cv = DATA.cv;
+
+  document.getElementById('roles').innerHTML = cv.roles.map((r) => `
+    <div class="cv-row">
+      <span class="cv-when">${esc(r.when)}</span>
+      <span class="cv-what"><strong>${esc(r.what)}</strong><span>${r.where}</span></span>
+    </div>`).join('');
+
+  document.getElementById('skills-list').innerHTML = cv.skills.map((s) => `
+    <div class="tbl__row">
+      <span class="c-term">${esc(s.k)}</span>
+      <span class="c-body">${s.v}</span>
+    </div>`).join('');
+
+  const kindOf = (p) => DATA.kinds[p.kind] || { label:p.kind, colour:'var(--c-gray)' };
+  document.getElementById('selected-list').insertAdjacentHTML('beforeend',
+    DATA.projects.map((p) => {
+      const k = kindOf(p), ext = p.href.startsWith('http');
+      return `
+        <a class="tbl__row ${ext ? 'print-url' : ''}" href="${esc(p.href)}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+          <span class="c-ico">${icon(p.icon, { size:32 })}</span>
+          <span class="c-name">${esc(p.name)}</span>
+          <span class="c-desc">${esc(p.desc)}</span>
+          <span class="c-meta"><span class="swatch" style="background:${k.colour}"></span>${esc(k.label)} · ${esc(p.year)}</span>
+        </a>`;
+    }).join(''));
+
+  document.getElementById('clients').textContent = cv.clients;
+  document.getElementById('sel-count').textContent = `${DATA.projects.length} items`;
+  document.getElementById('tb-roles').textContent = String(cv.roles.length);
+})();
+</script>
+
+</body>
+</html>

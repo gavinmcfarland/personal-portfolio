@@ -7,30 +7,23 @@ const socials = [
 ];
 
 const Connect = () => (
-  <div className="pb-20">
-    <Section id="connect" label="Connect">
-      <div className="pr-3 pl-[0px]">
-        <p className="max-w-[48ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">Looking for the next interesting thing to build.</p>
+  <Section id="connect" label="Connect">
+    <p className="max-w-lg text-pretty text-[1.0625rem] leading-relaxed text-muted">Looking for the next interesting thing to build.</p>
 
-        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[1.0625rem]">
-          {socials.map((s) => (
-            <a
-              key={s.label}
-              href={s.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ulink"
-            >
-              {s.label}
-            </a>
-          ))}
-        </div>
-        <p className="mt-10 text-[0.8125rem] text-faint">
-          © 2026 Gavin McFarland
-        </p>
-      </div>
-    </Section>
-  </div>
+    <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[1.0625rem]">
+      {socials.map((s) => (
+        <a
+          key={s.label}
+          href={s.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ulink"
+        >
+          {s.label}
+        </a>
+      ))}
+    </div>
+  </Section>
 );
 
 export default Connect;

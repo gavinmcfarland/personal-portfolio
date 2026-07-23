@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Layouts — The Working Sheet</title>
+<meta name="description" content="Twelve structures, one content set: a layout atlas for the broadsheet design system.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23D8D6CD'/%3E%3Crect x='4' y='4' width='24' height='7' fill='%2317171A'/%3E%3Crect x='4' y='14' width='11' height='14' fill='%23C4321B'/%3E%3Crect x='17' y='14' width='11' height='14' fill='%231B3C96'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="layouts">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <div class="sheet bar__in">
+    <nav id="nav" aria-label="Primary"></nav>
+    <div class="bar__tools">
+      <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+      <button id="theme-toggle" type="button">Theme</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── The premise ───────────────────────────────────────────────── -->
+  <section class="band band--tight">
+    <div class="sheet">
+      <div class="g12">
+        <div class="c7">
+          <p class="micro dim">The atlas</p>
+          <h1 class="display" style="margin-top:.6rem;max-width:20ch">
+            Twelve structures, holding the same six things.
+          </h1>
+        </div>
+        <div class="c4" style="grid-column:9 / span 4">
+          <p class="dim">
+            Every sheet in this set is built from the same layout library. Here it is
+            with the content held still, so the only thing that changes between one
+            frame and the next is the shape — and the argument each shape makes.
+          </p>
+          <p class="meta faint" style="margin-top:.75rem">
+            <span data-count="layouts">—</span> structures · <span data-count="projects">—</span> items · press <span class="strong">G</span> for the grid
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 01 · The comparator — one at a time, held in a frame ──────── -->
+  <section class="band" aria-labelledby="cmp-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="cmp-h">The comparator</h2>
+        <span class="head__x dim" id="stage-count"></span>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Layout structures" id="layout-tabs"></div>
+
+      <div class="g12" style="margin-bottom:.9rem">
+        <div class="c8">
+          <p class="micro"><span id="stage-name">—</span></p>
+          <p class="dim" style="margin-top:.3rem;max-width:62ch" id="stage-note">—</p>
+        </div>
+        <div class="c4" style="display:flex;align-items:flex-end;justify-content:flex-end">
+          <div class="stepper" id="stage-step">
+            <button type="button" data-step="-1">← Previous</button>
+            <output id="stage-pos">01 / 12</output>
+            <button type="button" data-step="1">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- The frame is deliberately plain: a 1px box and nothing else,
+           so what is being compared is the structure and not its
+           packaging. -->
+      <div class="swap" id="stage" role="tabpanel" aria-live="polite"
+           style="border:1px solid var(--rule);padding:1.25rem;background:var(--stock);min-height:22rem"></div>
+    </div>
+  </section>
+
+  <!-- ── 02 · The whole atlas, printed one after another ───────────── -->
+  <section class="band" aria-labelledby="atl-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">02</span>
+        <h2 id="atl-h">All twelve, in order</h2>
+        <span class="head__x dim">Scroll</span>
+      </div>
+      <p class="dim" style="max-width:60ch;margin-bottom:2rem">
+        The comparator shows one structure at a time, which is how you judge a shape.
+        This is how you judge a <em>system</em> of shapes — all twelve down one page,
+        where the family resemblance either holds or it does not.
+      </p>
+      <div id="atlas"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Sheet</dt><dd>Layouts</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Set</dt><dd>10 · Broadsheet</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+    const defs = DATA.layouts;
+
+    /* ── The comparator ──────────────────────────────────────────── */
+    document.getElementById('layout-tabs').innerHTML = defs.map((l, i) => `
+      <button class="tab" role="tab" data-mode="${esc(l.id)}"
+              aria-selected="${i === 0}" ${i === 0 ? '' : 'tabindex="-1"'}
+              aria-controls="stage">${esc(l.name)}</button>`).join('');
+
+    const stage = document.getElementById('stage');
+    document.getElementById('stage-count').textContent = pad2(defs.length) + ' structures';
+
+    wireTabs(
+      document.getElementById('layout-tabs'),
+      stage,
+      (id, i, total) => {
+        renderLayout(stage, id);
+        const def = defs.find((d) => d.id === id);
+        document.getElementById('stage-name').textContent = `L${i + 1} · ${def.name}`;
+        document.getElementById('stage-note').textContent = def.note;
+        document.getElementById('stage-pos').textContent = `${pad2(i + 1)} / ${pad2(total)}`;
+      },
+      document.getElementById('stage-step'),
+    );
+
+    /* ── The full atlas ──────────────────────────────────────────────
+       Each structure gets its own titled frame. The bands layout is
+       full-bleed by nature, so it loses its side padding here —
+       otherwise it would be the only one lying about its own edges. */
+    document.getElementById('atlas').innerHTML = defs.map((l, i) => `
+      <section style="margin-bottom:3rem">
+        <div class="head" style="border-top-width:1px">
+          <span class="num">L${i + 1}</span>
+          <h3>${esc(l.name)}</h3>
+          <span class="head__x faint">${pad2(i + 1)} / ${pad2(defs.length)}</span>
+        </div>
+        <p class="dim" style="max-width:62ch;margin-bottom:1rem">${esc(l.note)}</p>
+        <div style="border:1px solid var(--hair);${l.id === 'bands' ? '' : 'padding:1.25rem;'}"
+             data-atlas="${esc(l.id)}"></div>
+      </section>`).join('');
+
+    document.querySelectorAll('[data-atlas]').forEach((el) => {
+      renderLayout(el, el.dataset.atlas);
+    });
+  })();
+</script>
+</body>
+</html>

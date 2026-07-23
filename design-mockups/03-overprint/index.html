@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Designer &amp; engineer</title>
+<meta name="description" content="Gavin McFarland builds design systems, front-end, and the small tools in between. London." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body>
+
+<a href="#main" class="lnk" style="position:absolute;left:-9999px" onfocus="this.style.left='.5rem',this.style.top='.5rem',this.style.zIndex=200,this.style.background='var(--b)',this.style.color='var(--knock)',this.style.padding='.25rem .5rem'" onblur="this.style.left='-9999px'">Skip to content</a>
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__bl"></div>
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<!-- ── masthead ────────────────────────────────────────────────── -->
+<header class="masthead">
+  <div class="masthead__in">
+    <span><strong>gavin mcfarland</strong> <span class="masthead__sep">/</span> issue 04</span>
+    <span style="display:flex;align-items:center;gap:.75rem">
+      <span style="display:none" class="sm-show">london</span>
+      <button id="grid-toggle" type="button" class="btn" aria-pressed="false" aria-label="Show layout grid" title="Show layout grid (G)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M2 2h12v12H2z"/><path d="M6 2v12M10 2v12M2 6h12M2 10h12"/>
+        </svg>
+      </button>
+      <button id="theme-toggle" type="button" class="btn" aria-label="Toggle dark mode">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+      </button>
+    </span>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <svg class="regmark regmark--tl" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+    <circle cx="7" cy="7" r="4"/><path d="M7 0v14M0 7h14"/>
+  </svg>
+  <svg class="regmark regmark--tr" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+    <circle cx="7" cy="7" r="4"/><path d="M7 0v14M0 7h14"/>
+  </svg>
+
+  <!-- ── rail ─────────────────────────────────────────────────── -->
+  <nav class="rail" aria-label="Contents">
+    <a href="#now">01 now</a>
+    <a href="#pieces">02 pieces</a>
+    <a href="#method">03 method</a>
+    <a href="#notes">04 notes</a>
+    <a href="#index">05 index</a>
+  </nav>
+
+  <main id="main" class="main">
+
+    <!-- cover statement — printed as a block of ink A -->
+    <div class="grid10" style="margin-bottom:calc(var(--bl) * 3)">
+      <div class="lead" style="grid-column:1 / -1">
+        <p>Most teams are slowed by something nobody owns.<br />I build that thing, then write down how it works.</p>
+        <p class="sub">designer &amp; engineer · fifteen years · london</p>
+      </div>
+    </div>
+
+    <!-- 01 now ──────────────────────────────────────────────── -->
+    <section id="now" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">01</span>
+          <span class="sec__name">now</span>
+          <span class="sec__note">july 2026</span>
+        </h2>
+
+        <div class="list grid10">
+          <div class="list__row">
+            <span class="c-term">building</span>
+            <span class="c-body"><a class="lnk" href="piece.html">Plugma</a> — a toolchain that gives Figma plugins the hot reloading the platform never shipped.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">writing</span>
+            <span class="c-body"><a class="lnk" href="note.html">Two programs, one plugin</a> — why the plugin model is harder than it looks.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">open to</span>
+            <span class="c-body">Design system and tooling work, from September. Contract or permanent.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">before this</span>
+            <span class="c-body">American Express, NatWest, Home Office, John Lewis, LSEG, Ecologi, Amazon.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 pieces ───────────────────────────────────────────── -->
+    <section id="pieces" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">02</span>
+          <span class="sec__name">pieces</span>
+          <span class="sec__note">selected</span>
+        </h2>
+
+        <div class="list grid10" id="cover-pieces"></div>
+
+        <p style="grid-column:1 / -1; margin:var(--bl) 0 0; font-family:var(--f-mono); font-size:var(--t-mono)">
+          <a class="lnk" href="archive.html">everything, by year →</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- 03 method ───────────────────────────────────────────── -->
+    <section id="method" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">03</span>
+          <span class="sec__name">method</span>
+          <span class="sec__note">three rules</span>
+        </h2>
+
+        <div class="list grid10">
+          <div class="list__row">
+            <span class="c-term">draw it first</span>
+            <span class="c-body">If I cannot draw the problem, I do not understand it yet. Every project starts in a design file, including the ones that end as a command-line tool.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">leave it documented</span>
+            <span class="c-body">The work is not finished when it ships. It is finished when the next person can change it without asking me anything.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">own the gap</span>
+            <span class="c-body">The interesting problems sit between design and engineering, where nobody has been given the job. That is usually where I end up.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 notes ────────────────────────────────────────────── -->
+    <section id="notes" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">04</span>
+          <span class="sec__name">notes</span>
+          <span class="sec__note">field notes</span>
+        </h2>
+        <div class="list grid10" id="cover-notes"></div>
+      </div>
+    </section>
+
+    <!-- 05 index ────────────────────────────────────────────── -->
+    <section id="index" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">05</span>
+          <span class="sec__name">index</span>
+        </h2>
+
+        <div class="list grid10">
+          <a class="list__row" href="archive.html">
+            <span class="c-term">archive</span>
+            <span class="c-body">Everything, by year — pieces and notes together →</span>
+          </a>
+          <a class="list__row" href="mailto:gavin@limitlessloop.com">
+            <span class="c-term">email</span>
+            <span class="c-body">gavin@limitlessloop.com →</span>
+          </a>
+          <a class="list__row" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">
+            <span class="c-term">github</span>
+            <span class="c-body">gavinmcfarland ↗</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="colophon">
+  <div class="colophon__in" id="colophon"></div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  render.into('cover-pieces', DATA.pieces.filter((p) => p.cover), render.pieceRow);
+  render.into('cover-notes', DATA.notes.slice(0, 3), render.noteRow);
+</script>
+<style>@media (min-width:640px){ .sm-show{display:inline !important} }</style>
+
+</body>
+</html>

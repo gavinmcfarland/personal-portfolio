@@ -1,0 +1,207 @@
+{
+  "version": 2,
+  "activePage": "home",
+  "pages": [
+    {
+      "id": "home",
+      "name": "Page 1",
+      "view": {
+        "x": -593.6448555971783,
+        "y": 823.8864773604461,
+        "scale": 0.5485075406472992
+      },
+      "nodes": [
+        {
+          "id": "n60-sound",
+          "type": "sound",
+          "x": 2341.3249562737506,
+          "y": -427.2837219238281,
+          "z": 4,
+          "w": 260,
+          "h": 56,
+          "src": "/canvas-assets/95921a8459c96024.weba",
+          "name": "Recording",
+          "dur": 264.06
+        }
+      ],
+      "shapes": [
+        {
+          "id": "s2",
+          "type": "rect",
+          "stroke": "#7C2D91",
+          "width": 3,
+          "z": 2,
+          "x1": 1391.2447993052967,
+          "y1": -861.6856943490872,
+          "x2": 1832.7229302241653,
+          "y2": -399.2837333682097
+        },
+        {
+          "id": "s3",
+          "type": "rect",
+          "stroke": "#7C2D91",
+          "width": 3,
+          "z": 3,
+          "x1": 2077.120606877325,
+          "y1": -861.6856943490872,
+          "x2": 2518.5987377961933,
+          "y2": -399.2837333682097
+        }
+      ]
+    },
+    {
+      "id": "pg1",
+      "name": "Page 2",
+      "view": {
+        "x": -454.45668070351024,
+        "y": 1125.1361688029242,
+        "scale": 0.6850270442428575
+      },
+      "nodes": [
+        {
+          "id": "n47-md",
+          "type": "md",
+          "x": 943.5954468290698,
+          "y": -1253.2099528199608,
+          "z": 1,
+          "w": 340,
+          "text": "# Plugma\n\nA zero-config CLI for building Figma plugins, with hot-module reloading that actually works.\n\n[Plugma.dev](http://plugma.dev)\n\n[Node.js] [TypeScript] [Vite] [React] [Svelte] [Vue]"
+        },
+        {
+          "id": "n48-md",
+          "type": "md",
+          "x": 984.9134108730175,
+          "y": -571.3256980751557,
+          "z": 2,
+          "w": 454.83307303997344,
+          "text": "- `install <pkg-manager?>`: Install dependencies\n- `no-install`: Skip dependency installation\n- `verbose`: Show detailed logs\n- `debug`: Enable debug mode"
+        },
+        {
+          "id": "n49-code",
+          "type": "code",
+          "x": 779.9825118961913,
+          "y": -915.6921352985527,
+          "z": 3,
+          "w": 460.1035974634269,
+          "text": "import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig(({ mode, context }) => (\n  return {\n    plugins: context == \"ui\" ? [react()] : []\n  };\n}))",
+          "lang": "js",
+          "wrap": 0
+        },
+        {
+          "id": "n50-link",
+          "type": "link",
+          "x": 2011.0785860123265,
+          "y": -1088.1631401517864,
+          "z": 4,
+          "w": 280,
+          "url": "https://screen.studio/share/4rh7VCM7",
+          "title": "Plugma | Getting Started — Screen Studio",
+          "desc": "Plugma | Getting Started — Created and shared with Screen Studio",
+          "image": "/canvas-assets/0cd418f06ae4e506.png",
+          "favicon": "https://screen.studio/icon.png"
+        },
+        {
+          "id": "n51-tblock",
+          "type": "tblock",
+          "x": 1406.5680226559916,
+          "y": -1246.1548294642407,
+          "z": 5,
+          "text": "Features",
+          "fontSize": 42,
+          "font": "script"
+        },
+        {
+          "id": "n52-sticky",
+          "type": "sticky",
+          "x": 1402.6809320422137,
+          "y": -1142.6331285091728,
+          "z": 6,
+          "color": "yellow",
+          "text": "Zero config"
+        },
+        {
+          "id": "n53-sticky",
+          "type": "sticky",
+          "x": 1663.4950323454725,
+          "y": -1142.6331285091728,
+          "z": 7,
+          "color": "pink",
+          "text": "HMR that actually works"
+        },
+        {
+          "id": "n54-sticky",
+          "type": "sticky",
+          "x": 1402.6809320422137,
+          "y": -891.0705650400911,
+          "z": 8,
+          "color": "blue",
+          "text": "React · Svelte · Vue"
+        },
+        {
+          "id": "n55-sticky",
+          "type": "sticky",
+          "x": 1663.4950323454725,
+          "y": -891.0705650400911,
+          "z": 9,
+          "color": "green",
+          "text": "Powered by Vite"
+        },
+        {
+          "id": "n56-sticky",
+          "type": "sticky",
+          "x": 1663.4950323454723,
+          "y": -613.1646417099851,
+          "z": 10,
+          "color": "purple",
+          "text": "dev · build · release"
+        },
+        {
+          "id": "n57-tblock",
+          "type": "tblock",
+          "x": 2022.9124986407219,
+          "y": -1194.6356606089314,
+          "z": 11,
+          "text": "Links",
+          "fontSize": 42,
+          "font": "script"
+        },
+        {
+          "id": "n58-link",
+          "type": "link",
+          "x": 2327.9782100194648,
+          "y": -1083.9181096278157,
+          "z": 12,
+          "w": 280,
+          "url": "https://screen.studio/share/neRqmJDi",
+          "title": "Plugma - End-to-end UI testing with Playwright — Screen Studio",
+          "desc": "Plugma - End-to-end UI testing with Playwright — Created and shared with Screen Studio",
+          "image": "/canvas-assets/0494b681d11dc2a9.png",
+          "favicon": "https://screen.studio/icon.png"
+        },
+        {
+          "id": "n59-video",
+          "type": "video",
+          "x": 2098.041721148539,
+          "y": -670.6646417099851,
+          "z": 13,
+          "w": 515.1201928563493,
+          "h": 325,
+          "assets": [
+            {
+              "kind": "video",
+              "src": "/canvas-assets/b27494f75fbfaf31.mp4",
+              "alt": "Kapture 2025-04-07 at 10.36.43.mp4"
+            }
+          ],
+          "frame": "browser"
+        }
+      ],
+      "shapes": []
+    }
+  ],
+  "viewport": {
+    "w": 1200,
+    "h": 1183
+  },
+  "savedAt": 1816379977510
+}

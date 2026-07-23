@@ -1,0 +1,798 @@
+/* ══════════════════════════════════════════════════════════════════
+   14 · COLOURBAR — the design system
+   ------------------------------------------------------------------
+   A cross of 09 and 13, printed in 05's ink.
+
+     FROM 13 · DITHER   the man(7) skeleton — one mono family, bold
+       capital section names, indented bodies, a `$` prompt, and a
+       set that names its pages gavin(1), work(1), colour(7).
+     FROM 09 · IMPOSITION   many page types imposed on one form: the
+       numbered rail, the ruled table, the ledger, the bento and the
+       asymmetric spread, all drawn from one array.
+     FROM 05 · CONSOLE   the colour. The Windows 95 sixteen, near-
+       black ink on white stock, and navy as the single interactive
+       colour.
+
+   WHERE THE INTEREST GOES: §3, the colour bar.
+
+   13 made its illustrations out of dithered fields. This set is not
+   allowed to — there is not a dot, a screen, a hatch or a stipple
+   anywhere below. What replaces them is the press control strip: a
+   picture made of FLAT AREAS OF FLAT COLOUR divided by hard 1px
+   rules, which is what a printer actually puts down the edge of a
+   sheet to prove the ink. Every strip in §3 is a grid of solid
+   cells. Nothing is screened back, nothing is textured, nothing
+   fades.
+
+   THE DOCTRINE, unchanged across 09–14:
+     1. NO CURVES — `border-radius: 0` globally, never overridden.
+     2. NO SHADOWS — not one box-shadow declaration in this file.
+     3. NO GRADIENTS — every stop in this file is hard. §3 goes
+        further and has no patterns at all: it is the first
+        illustration engine in this folder with ZERO
+        background-image declarations, every mark being a solid
+        `background-color`. The only two gradient calls in the file
+        are in §6, drawing the board canvas as a grid of 1px rules —
+        which is a ruling, not a picture.
+     4. FLAT TYPE — five steps, 11/12/13/15/20, all at 400 or 700.
+     5. FEW BUTTONS — one .btn, appearing twice in the whole set.
+
+   §1 tokens · §2 primitives · §3 colour bar · §4 manual · §5 imposed
+   · §6 board
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+
+:root {
+  /* Stock and ink — 05's set. White paper, near-black ink, silver
+     reserved for structure. */
+  --paper:     #FFFFFF;
+  --surface:   #F4F4F4;
+  --sunk:      #E8E8E8;
+  --chrome:    #C0C0C0;
+  --ink:       #0A0A0A;
+  --muted:     #4A4A4A;
+  --faint:     #767676;
+  --rule:      #0A0A0A;   /* the drawn line — full ink, 1px */
+  --rule-hair: #C0C0C0;   /* the secondary line */
+
+  /* Navy is the one interactive colour: links, hover, current page,
+     focus. Win95 used a single colour for selection and it made
+     state unambiguous; that is a good idea independent of 1995. */
+  --accent:    #000080;
+  --on-accent: #FFFFFF;
+
+  /* ── THE SIXTEEN ───────────────────────────────────────────────
+     The Windows 95 palette, unaltered, each with the ink it may
+     carry type in. Every pairing below clears 4.4:1; the eight
+     marked · are the only ones the set actually sets words on.
+     These sixteen do NOT change between surfaces — a control strip
+     that shifted with the theme would not be a control strip. */
+  --c-black:   #000000;  --c-black-ink:   #FFFFFF;   /* · */
+  --c-maroon:  #800000;  --c-maroon-ink:  #FFFFFF;   /* · */
+  --c-green:   #008000;  --c-green-ink:   #FFFFFF;   /* · */
+  --c-olive:   #808000;  --c-olive-ink:   #000000;
+  --c-navy:    #000080;  --c-navy-ink:    #FFFFFF;   /* · */
+  --c-purple:  #800080;  --c-purple-ink:  #FFFFFF;   /* · */
+  --c-teal:    #008080;  --c-teal-ink:    #FFFFFF;   /* · */
+  --c-silver:  #C0C0C0;  --c-silver-ink:  #000000;   /* · */
+  --c-gray:    #808080;  --c-gray-ink:    #000000;
+  --c-red:     #FF0000;  --c-red-ink:     #000000;
+  --c-lime:    #00FF00;  --c-lime-ink:    #000000;
+  --c-yellow:  #FFFF00;  --c-yellow-ink:  #000000;   /* · */
+  --c-blue:    #0000FF;  --c-blue-ink:    #FFFFFF;
+  --c-fuchsia: #FF00FF;  --c-fuchsia-ink: #000000;
+  --c-aqua:    #00FFFF;  --c-aqua-ink:    #000000;
+  --c-white:   #FFFFFF;  --c-white-ink:   #000000;
+
+  /* Type — mono carries structure, the system UI face carries
+     prose. Neither is fetched: this set ships no webfont, which is
+     05's position and the reason it renders before it is styled. */
+  --f-mono: 'Lucida Console', 'Consolas', 'DejaVu Sans Mono', ui-monospace, monospace;
+  --f-ui:   Tahoma, Verdana, Geneva, 'DejaVu Sans', sans-serif;
+
+  /* Five steps, flat. 05's ramp exactly. */
+  --t-micro:   11px;   /* uppercase micro-labels, rail numerals   */
+  --t-ui:      12px;   /* mono structure, captions, meta          */
+  --t-body:    13px;   /* all prose                               */
+  --t-lead:    15px;   /* command lines and ledes — one step up   */
+  --t-display: 20px;   /* one line per sheet, maximum             */
+  --t-folio:   64px;   /* decorative numerals, ornament only      */
+
+  --bl:     20px;      /* the baseline everything sits on */
+  --sheet:  72rem;
+  --gutter: 1rem;
+  --pad:    clamp(1rem, 3vw, 2rem);
+  --rail-w: 13.5rem;
+  --indent: 3ch;
+
+  color-scheme: light;
+}
+
+/* 05's dark surface. Stock and ink invert; the sixteen do not. */
+.dark {
+  --paper:     #0A0A0A;
+  --surface:   #161616;
+  --sunk:      #1F1F1F;
+  --chrome:    #1C1C1C;
+  --ink:       #F0F0F0;
+  --muted:     #B4B4B4;
+  --faint:     #909090;
+  --rule:      #F0F0F0;
+  --rule-hair: #3A3A3A;
+
+  --accent:    #7C8CFF;
+  --on-accent: #0A0A0A;
+
+  color-scheme: dark;
+}
+
+
+/* ── §2 · PRIMITIVES ───────────────────────────────────────────── */
+
+/* Doctrine rule 1, never undone. */
+*, *::before, *::after { box-sizing: border-box; border-radius: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-ui);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: var(--bl);
+}
+
+h1, h2, h3, h4, h5, h6 { font-size: var(--t-body); font-weight: 700; margin: 0; }
+p, figure, dl, dd, ul, ol, blockquote, pre { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+img, svg { display: block; max-width: 100%; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+table { border-collapse: collapse; }
+
+::selection { background: var(--accent); color: var(--on-accent); }
+[hidden] { display: none !important; }
+
+/* Win95's focus rectangle, kept because it is still the clearest
+   focus indicator going — it never blends into a border. */
+:focus-visible { outline: 1px dotted var(--ink); outline-offset: 2px; }
+
+.skip { position: absolute; left: -9999px; z-index: 300; }
+.skip:focus {
+  left: var(--rail-w); top: 0; padding: .5rem 1rem;
+  background: var(--ink); color: var(--paper);
+  font-family: var(--f-mono); font-size: var(--t-ui);
+}
+
+.sheet { max-width: var(--sheet); margin: 0 auto; padding-inline: var(--pad); }
+
+.mono  { font-family: var(--f-mono); font-size: var(--t-ui); }
+.sm    { font-size: var(--t-ui); }
+.dim   { color: var(--muted); }
+.faint { color: var(--faint); }
+.b     { font-weight: 700; }
+.num   { font-family: var(--f-mono); color: var(--faint); }
+.micro {
+  font-family: var(--f-mono); font-size: var(--t-micro);
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.display { font-size: var(--t-display); font-weight: 700; line-height: 1.3; }
+.lead    { font-size: var(--t-lead); }
+
+a { color: var(--accent); }
+.ln { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.ln:hover { background: var(--accent); color: var(--on-accent); text-decoration-color: transparent; }
+.ln--bare { text-decoration: none; color: inherit; }
+.ln--bare:hover { color: var(--accent); }
+
+.hr { border: 0; border-top: 1px solid var(--rule-hair); margin: 0; }
+
+/* One button style. It appears twice in the whole set: the contact
+   submit and the board reset. */
+.btn {
+  display: inline-block; padding: .3rem 1.1rem;
+  border: 1px solid var(--rule); background: var(--paper); color: var(--ink);
+  font-family: var(--f-mono); font-size: var(--t-ui);
+}
+.btn:hover { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+/* The only icon in the set: a copy mark beside the address. Drawn,
+   not fetched, and 12px so it sits on the baseline of the text. */
+.copy { display: inline-flex; align-items: center; gap: .4rem; color: var(--faint); font-size: var(--t-ui); }
+.copy:hover { color: var(--accent); }
+.copy svg { width: 12px; height: 12px; }
+
+/* Construction grid — built from the real .sheet box so it cannot
+   drift off the columns it claims to describe. Press G. */
+#gridlines { position: fixed; inset: 0 0 0 var(--rail-w); z-index: 90; pointer-events: none; display: none; }
+#gridlines[data-on="true"] { display: block; }
+#gridlines .g {
+  height: 100%; max-width: var(--sheet); margin: 0 auto;
+  padding-inline: var(--pad);
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gutter);
+}
+#gridlines i { background: rgba(0, 0, 128, .06); border-inline: 1px solid rgba(0, 0, 128, .22); }
+.dark #gridlines i { background: rgba(124, 140, 255, .07); border-inline-color: rgba(124, 140, 255, .3); }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §3 · COLOUR BAR
+   The illustration engine. One rule governs all of it:
+
+     A PICTURE IS MADE OF FLAT AREAS OF FLAT COLOUR, DIVIDED BY
+     RULES. There is no background-image anywhere in this section —
+     no dots, no hatch, no screen, no stipple, no gradient hard-stop
+     standing in for a pattern. Every cell is one solid
+     `background-color` drawn from the sixteen, and every edge
+     between two cells is either a 1px rule or nothing.
+
+   This is the press control strip: the ladder of solid patches a
+   printer runs down the trim edge to prove the ink is laying at
+   density. It is a picture that is entirely about its colour, which
+   is the right illustration for a set whose only inheritance from
+   05 IS the colour.
+
+   Strips are built in markup as a container of <i> cells, one cell
+   per patch, each carrying data-c="<tone>". The variant on the
+   container decides the geometry; the cells decide the colour. So a
+   strip's palette is legible in the DOM and diffable, rather than
+   buried in a mask.
+   ══════════════════════════════════════════════════════════════════ */
+
+.strip {
+  display: grid;
+  border: 1px solid var(--rule);
+  overflow: hidden;
+  /* The rules between cells are drawn as gaps onto the ink beneath,
+     which is one declaration instead of sixteen border overrides. */
+  gap: 1px;
+  background-color: var(--rule);
+}
+/* No min-height. A strip is sized by whatever prints it — 15rem on
+   a project plate, 10px in the rail — and a floor here would have
+   silently won against every one of those. */
+.strip > i { display: block; position: relative; min-width: 0; min-height: 0; }
+
+/* The sixteen, as fills. `.sw` is the same lookup at 8px for chips
+   and legends, so a tone can never disagree with itself. */
+.strip > i[data-c], .sw[data-c], .fill[data-c] { background-color: var(--c-silver); color: var(--c-silver-ink); }
+[data-c="black"]   { background-color: var(--c-black)   !important; color: var(--c-black-ink); }
+[data-c="maroon"]  { background-color: var(--c-maroon)  !important; color: var(--c-maroon-ink); }
+[data-c="green"]   { background-color: var(--c-green)   !important; color: var(--c-green-ink); }
+[data-c="olive"]   { background-color: var(--c-olive)   !important; color: var(--c-olive-ink); }
+[data-c="navy"]    { background-color: var(--c-navy)    !important; color: var(--c-navy-ink); }
+[data-c="purple"]  { background-color: var(--c-purple)  !important; color: var(--c-purple-ink); }
+[data-c="teal"]    { background-color: var(--c-teal)    !important; color: var(--c-teal-ink); }
+[data-c="silver"]  { background-color: var(--c-silver)  !important; color: var(--c-silver-ink); }
+[data-c="gray"]    { background-color: var(--c-gray)    !important; color: var(--c-gray-ink); }
+[data-c="red"]     { background-color: var(--c-red)     !important; color: var(--c-red-ink); }
+[data-c="lime"]    { background-color: var(--c-lime)    !important; color: var(--c-lime-ink); }
+[data-c="yellow"]  { background-color: var(--c-yellow)  !important; color: var(--c-yellow-ink); }
+[data-c="blue"]    { background-color: var(--c-blue)    !important; color: var(--c-blue-ink); }
+[data-c="fuchsia"] { background-color: var(--c-fuchsia) !important; color: var(--c-fuchsia-ink); }
+[data-c="aqua"]    { background-color: var(--c-aqua)    !important; color: var(--c-aqua-ink); }
+[data-c="white"]   { background-color: var(--c-white)   !important; color: var(--c-white-ink); }
+
+/* ── a · step ─────────────────────────────────────────────────────
+   The control strip proper: equal patches in one row. Reads at any
+   width and at any height, which is why it is the default. */
+.strip[data-strip="a"] { grid-auto-flow: column; grid-auto-columns: 1fr; }
+
+/* ── b · wedge ────────────────────────────────────────────────────
+   The same row with the patches growing 1:1:2:3:5:8. A density
+   wedge measures tone by area; this one measures hue by area, so
+   the last colour named is the one the picture is about. */
+.strip[data-strip="b"] { grid-template-columns: 1fr 1fr 2fr 3fr 5fr 8fr; }
+
+/* ── c · quad ─────────────────────────────────────────────────────
+   Four unequal blocks on a 3:2 / 2:3 split. The quiet one: use it
+   when the words beside the strip are carrying the entry. */
+.strip[data-strip="c"] { grid-template-columns: 3fr 2fr; grid-template-rows: 2fr 3fr; }
+
+/* ── d · rail ─────────────────────────────────────────────────────
+   One field with a column of small patches down its edge — a plate
+   with its own control strip attached, which is how a proof
+   actually arrives. */
+.strip[data-strip="d"] { grid-template-columns: 1fr 2.25rem; }
+.strip[data-strip="d"] > i:first-child { grid-row: 1 / -1; }
+.strip[data-strip="d"] { grid-template-rows: repeat(4, 1fr); }
+
+/* ── e · slug ─────────────────────────────────────────────────────
+   A single flat carrying a knocked-out folio numeral. The numeral
+   is 09's ornament, printed here in the paired ink rather than in a
+   tint, because a tint is a screen and there are none. */
+.strip[data-strip="e"] { grid-template-columns: 1fr; }
+/* The numeral lives INSIDE the patch rather than beside it, so it
+   inherits the ink §1 paired with that colour. Put it on the strip
+   and it would have had to be told its own colour twice. */
+.folio {
+  position: absolute; right: .25rem; bottom: -.5rem;
+  font-family: var(--f-mono); font-size: var(--t-folio); font-weight: 700;
+  line-height: 1; pointer-events: none;
+}
+
+/* ── f · key ──────────────────────────────────────────────────────
+   All sixteen at once, 8×2. The loudest field in the set and the
+   only place the whole palette prints together — one per page. */
+.strip[data-strip="f"] { grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(2, 1fr); }
+@media (max-width: 599px) {
+  .strip[data-strip="f"] { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); }
+}
+
+/* A strip is an illustration, so it ships with a caption and a
+   number. The numbering is the point of the caption. */
+.strip-cap { display: block; margin-top: .4rem; font-family: var(--f-mono); font-size: var(--t-ui); color: var(--faint); }
+
+/* ── The 8px swatch ───────────────────────────────────────────────
+   The same sixteen at the smallest size that still reads as a
+   colour. It is how a category is named in a dense row. */
+.sw { display: inline-block; width: 8px; height: 8px; flex: none; border: 1px solid var(--rule); }
+.chip {
+  display: inline-flex; align-items: center; gap: .4rem;
+  border: 1px solid var(--rule-hair); padding: 0 .4rem;
+  font-family: var(--f-mono); font-size: var(--t-micro);
+  text-transform: uppercase; letter-spacing: .06em;
+  white-space: nowrap;
+}
+
+/* ── Marks ────────────────────────────────────────────────────────
+   Where this set is allowed to enjoy itself. 13 called these decals
+   and dithered four of the five; here they are solid, and each is
+   meant to sit HALF OFF THE EDGE of something. A mark that is not
+   overlapping anything is just a shape. */
+.mark { position: absolute; pointer-events: none; z-index: 2; }
+
+/* crop — register marks. The one mark 13 also left undithered,
+   because a register mark has to be exact. */
+.mark--crop { width: 22px; height: 22px; }
+/* Full ink, not faint: a register mark half-landed on a silver
+   patch has to be legible against both the patch and the stock. */
+.mark--crop::before, .mark--crop::after { content: ''; position: absolute; background: var(--ink); }
+.mark--crop::before { left: 0; top: 50%; width: 100%; height: 1px; }
+.mark--crop::after  { top: 0; left: 50%; height: 100%; width: 1px; }
+
+/* stamp — a square ring in one flat colour. 13's seal was a circle
+   cut with a mask; a set with no curves has to say the same thing
+   with a rectangle, and a double rule says it. */
+.mark--stamp {
+  width: 56px; height: 56px;
+  border: 4px solid var(--stamp-ink, var(--c-maroon));
+  outline: 1px solid var(--stamp-ink, var(--c-maroon));
+  outline-offset: 3px;
+}
+/* Maroon on white is a stamp; maroon on near-black is a smudge. The
+   dark surface stamps in red instead — the same idea in the ink the
+   palette has for it. */
+.dark .mark--stamp { --stamp-ink: var(--c-red); }
+
+/* tab — a small flat flag hanging off an edge, the way a sticker
+   does. Carries two words at most. */
+.mark--tab {
+  height: 18px; padding: 0 .5rem;
+  display: flex; align-items: center;
+  font-family: var(--f-mono); font-size: var(--t-micro);
+  text-transform: uppercase; letter-spacing: .08em;
+  border: 1px solid var(--rule);
+}
+
+/* bleed — a band of solid colour that runs off the trim. In the
+   flow rather than absolute; used as a rule with weight, where a
+   hairline would be too quiet. */
+.bleed { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 1px; background: var(--rule); height: 14px; }
+.bleed > i { display: block; }
+
+
+/* ── §4 · MANUAL ───────────────────────────────────────────────── */
+
+/* ── The rail. 09's fixed numbered navigation, printed in 05's
+   silver rather than in full ink — the chrome does structure, and
+   navy alone marks the page you are on. ─────────────────────────── */
+.rail {
+  position: fixed; top: 0; bottom: 0; left: 0; width: var(--rail-w);
+  background: var(--chrome); color: var(--ink);
+  border-right: 1px solid var(--rule);
+  display: flex; flex-direction: column;
+  padding: 1.25rem 1rem;
+  z-index: 100;
+}
+.rail__mark {
+  display: flex; align-items: center; gap: .5rem;
+  font-family: var(--f-mono); font-size: var(--t-ui); font-weight: 700;
+  color: var(--ink); text-decoration: none;
+  margin-bottom: 1.75rem;
+}
+.rail nav { display: flex; flex-direction: column; gap: 1px; }
+.rail nav a {
+  display: flex; align-items: center; gap: .5rem;
+  padding: 2px 6px;
+  font-family: var(--f-mono); font-size: var(--t-ui);
+  color: var(--ink); text-decoration: none;
+}
+.rail nav a .rail__n { color: var(--faint); width: 2ch; flex: none; }
+/* One navy fill for hover, focus and current page. Win95 had one
+   selection colour and that is why its state was never ambiguous. */
+.rail nav a:hover, .rail nav a[aria-current="page"] { background: var(--accent); color: var(--on-accent); }
+.rail nav a:hover .rail__n, .rail nav a[aria-current="page"] .rail__n { color: var(--on-accent); }
+
+.rail__strip { margin-top: 1.5rem; height: 10px; flex: none; }
+.rail__foot {
+  margin-top: auto; display: flex; flex-direction: column; gap: .25rem;
+  font-family: var(--f-mono); font-size: var(--t-micro); color: var(--muted);
+}
+.rail__foot button {
+  text-align: left; color: var(--muted);
+  font-family: var(--f-mono); font-size: var(--t-micro);
+  text-transform: uppercase; letter-spacing: .08em;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
+}
+.rail__foot button:hover { color: var(--accent); }
+
+.page { padding-left: var(--rail-w); }
+
+/* Below the rail breakpoint it becomes a top strip that scrolls
+   sideways rather than compressing — the trailing items are the
+   ones that would otherwise collapse and push past the edge. */
+@media (max-width: 879px) {
+  .rail {
+    position: sticky; width: auto; bottom: auto;
+    flex-direction: row; align-items: center; gap: .75rem;
+    padding: .5rem var(--pad);
+    border-right: 0; border-bottom: 1px solid var(--rule);
+    overflow-x: auto;
+  }
+  .rail__mark { margin-bottom: 0; flex: none; }
+  .rail nav { flex-direction: row; gap: 2px; }
+  .rail nav a .rail__n, .rail__strip { display: none; }
+  .rail__foot { margin-top: 0; margin-left: auto; flex-direction: row; gap: .75rem; flex: none; }
+  .page { padding-left: 0; }
+  #gridlines { left: 0; }
+  .skip:focus { left: 0; }
+}
+
+/* ── Section, header, indented body — 13's man(7) shape, with 09's
+   two-digit number and hairline set into the header ────────────── */
+.sec { padding-block: 2rem; }
+.man__h {
+  display: flex; align-items: baseline; gap: .75rem;
+  font-family: var(--f-mono); font-size: var(--t-ui); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .12em;
+  border-top: 1px solid var(--rule);
+  padding-top: .35rem; margin-bottom: .9rem;
+}
+.man__h .num { letter-spacing: 0; }
+.man__h .man__x { margin-left: auto; font-weight: 400; color: var(--faint); letter-spacing: .06em; }
+.man__b { padding-left: var(--indent); max-width: 68ch; color: var(--muted); }
+.man__b p + p { margin-top: .8rem; }
+.man__b .ink { color: var(--ink); }
+
+/* The tab-stop list: OPTIONS, ENVIRONMENT, anything shaped like it. */
+.man__dl { padding-left: var(--indent); display: grid; gap: .35rem; }
+.man__dl > div { display: grid; grid-template-columns: minmax(12ch, 20ch) 1fr; gap: 1.5rem; }
+.man__dl dt { font-family: var(--f-mono); font-size: var(--t-ui); font-weight: 700; }
+.man__dl dd { margin: 0; color: var(--muted); }
+@media (max-width: 699px) { .man__dl > div { grid-template-columns: 1fr; gap: 0; } }
+
+/* ── The command line — the set's one step up in size ───────────── */
+.cmd { font-family: var(--f-mono); font-size: var(--t-lead); display: flex; align-items: baseline; gap: .6rem; }
+.cmd__$ { color: var(--accent); font-weight: 700; }
+.cmd__name { font-weight: 700; text-decoration: none; color: var(--ink); }
+.cmd__year { margin-left: auto; font-size: var(--t-ui); color: var(--faint); }
+
+/* ── Cross-reference line: github(7), plugma(1) ─────────────────── */
+.xref a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.xref .n { color: var(--faint); }
+
+/* ── Fold ──────────────────────────────────────────────────────── */
+.fold { border-top: 1px solid var(--rule-hair); }
+.fold:last-of-type { border-bottom: 1px solid var(--rule-hair); }
+.fold summary {
+  list-style: none; cursor: pointer; display: flex; gap: .7rem; padding: .35rem 0;
+  font-family: var(--f-mono); font-size: var(--t-ui);
+}
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary::before { content: '+'; color: var(--accent); font-weight: 700; }
+.fold[open] summary::before { content: '\2212'; }
+.fold summary:hover { color: var(--accent); }
+.fold__body { padding: 0 0 .8rem calc(var(--indent) + .7rem); color: var(--muted); max-width: 68ch; }
+
+/* ── Code block ────────────────────────────────────────────────── */
+.pre {
+  border: 1px solid var(--rule-hair); background: var(--surface);
+  padding: .7rem .9rem; overflow-x: auto;
+  font-family: var(--f-mono); font-size: var(--t-ui); line-height: 1.7;
+}
+.pre .c { color: var(--faint); }
+
+/* ── Form — square fields, hairline borders, the dotted focus ───── */
+.field { margin-bottom: .9rem; }
+.field label { display: block; font-family: var(--f-mono); font-size: var(--t-ui); color: var(--muted); margin-bottom: .2rem; }
+.input {
+  width: 100%; border: 1px solid var(--rule); background: var(--paper); color: var(--ink);
+  padding: .35rem .5rem; font-size: var(--t-body);
+}
+textarea.input { resize: vertical; min-height: 6rem; }
+/* Invalid is marked in maroon — the palette already had a colour
+   for "this went wrong", and navy is spoken for. */
+.field[data-invalid="true"] .input { border-color: var(--c-maroon); border-width: 2px; }
+.err { font-family: var(--f-mono); font-size: var(--t-ui); color: var(--c-maroon); min-height: 1em; }
+.dark .err, .dark .field[data-invalid="true"] .input { color: #FF6B6B; border-color: #FF6B6B; }
+
+.foot {
+  border-top: 1px solid var(--rule); margin-top: 2.5rem; padding: 1rem 0 3rem;
+  font-family: var(--f-mono); font-size: var(--t-ui); color: var(--faint);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §5 · IMPOSED
+   09's treatments, unchanged in structure: the same six projects
+   drawn as a ruled table, a ledger, a bento and an asymmetric
+   spread. If two treatments ever disagree about the content the
+   system has failed, visibly — every one of them renders from the
+   single array in data.js.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── T1 · ruled table ──────────────────────────────────────────── */
+.tbl { border-bottom: 1px solid var(--rule); }
+.tbl__row {
+  display: grid;
+  grid-template-columns: 3rem minmax(9rem, 1fr) 2fr 7rem 3.5rem;
+  align-items: center; gap: var(--gutter);
+  min-height: 2rem; padding: .2rem 0;
+  border-top: 1px solid var(--rule-hair);
+  font-family: var(--f-mono); font-size: var(--t-ui);
+  text-decoration: none; color: var(--ink);
+}
+.tbl__row:first-child { border-top: 1px solid var(--rule); }
+a.tbl__row:hover { background: var(--surface); }
+a.tbl__row:hover .tbl__item { color: var(--accent); }
+.tbl__head { min-height: 1.6rem; color: var(--faint); font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .08em; }
+.tbl__num { color: var(--faint); }
+.tbl__row:not(.tbl__head) .tbl__num { color: var(--accent); }
+.tbl__item { font-weight: 700; }
+.tbl__desc { color: var(--muted); font-family: var(--f-ui); font-size: var(--t-body); }
+.tbl__year { color: var(--faint); text-align: right; }
+.tbl--spec .tbl__row { grid-template-columns: 9rem 1fr; }
+.tbl--spec .tbl__val { font-family: var(--f-ui); font-size: var(--t-body); color: var(--muted); }
+
+/* Wide tables scroll sideways rather than stack — the denser
+   choice, and the caption tells the reader so. */
+.scroll-x { overflow-x: auto; }
+.scroll-x > * { min-width: 40rem; }
+.scroll-hint { display: none; color: var(--faint); margin-top: .35rem; }
+@media (max-width: 879px) { .scroll-hint { display: block; } }
+
+/* ── T2 · ledger ───────────────────────────────────────────────── */
+.ledger { border-top: 1px solid var(--rule); }
+.ledger__row {
+  display: grid; grid-template-columns: 7rem minmax(0, 1fr) auto 4rem;
+  align-items: baseline; gap: var(--gutter);
+  padding: .3rem 0; border-bottom: 1px solid var(--rule-hair);
+  font-family: var(--f-mono); font-size: var(--t-ui);
+  text-decoration: none; color: var(--ink);
+}
+.ledger__row:hover { background: var(--surface); }
+.ledger__row:hover .ledger__t { color: var(--accent); }
+.ledger__date { color: var(--faint); }
+.ledger__t { font-weight: 700; }
+.ledger__lede { font-family: var(--f-ui); font-size: var(--t-body); font-weight: 400; color: var(--muted); }
+.ledger__mins { color: var(--faint); text-align: right; }
+@media (max-width: 699px) {
+  .ledger__row { grid-template-columns: 1fr auto; }
+  .ledger__date { grid-column: 1; }
+  .ledger__mins { grid-column: 2; text-align: right; }
+  .ledger__t { grid-column: 1 / -1; }
+  /* A chip is a label, not a field. Left to stretch it fills the
+     folded column and reads as an empty input. */
+  .ledger__row .chip { grid-column: 1; justify-self: start; }
+}
+
+/* ── T3 · bento ────────────────────────────────────────────────── */
+.bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gutter); }
+.bento > * { min-height: 9rem; }
+.bento__cell {
+  border: 1px solid var(--rule); background: var(--paper);
+  padding: .7rem; display: flex; flex-direction: column;
+  text-decoration: none; color: var(--ink); position: relative;
+}
+a.bento__cell:hover { outline: 2px solid var(--accent); outline-offset: -1px; }
+.bento__cell .strip { flex: 1; min-height: 4rem; margin-block: .5rem; }
+/* An empty cell says so. A silent gap in a grid reads as a bug. */
+.bento__spacer {
+  border: 1px dashed var(--rule-hair); color: var(--faint);
+  display: flex; align-items: flex-end; padding: .5rem;
+}
+.c3 { grid-column: span 3; } .c4 { grid-column: span 4; }
+.c6 { grid-column: span 6; } .c8 { grid-column: span 8; } .c12 { grid-column: span 12; }
+@media (max-width: 879px) {
+  .c3, .c4 { grid-column: span 6; }
+  .c6, .c8 { grid-column: span 12; }
+}
+
+/* ── T4 · asymmetric spread ────────────────────────────────────── */
+.asym { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: clamp(1.5rem, 4vw, 3rem); }
+.asym__main { max-width: 62ch; }
+.aside {
+  border-top: 1px solid var(--rule); padding-top: .4rem;
+  font-family: var(--f-mono); font-size: var(--t-ui); color: var(--muted);
+}
+.aside .micro { display: block; color: var(--faint); margin-bottom: .4rem; }
+@media (max-width: 879px) { .asym { grid-template-columns: 1fr; } }
+
+/* ── T5 · entry — 13's `$ …` line with a strip beside the prose ── */
+.entry { display: block; text-decoration: none; color: var(--ink); padding-block: 1.25rem; border-top: 1px solid var(--rule-hair); }
+.entry:first-child { border-top: 1px solid var(--rule); }
+.entry:hover .cmd__name { color: var(--accent); }
+.entry__grid {
+  display: grid; grid-template-columns: minmax(0, 28rem) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3rem); margin-top: .8rem; padding-left: var(--indent);
+}
+.entry__grid .strip { height: 11rem; }
+.entry__desc { display: block; color: var(--muted); max-width: 56ch; }
+@media (max-width: 899px) {
+  .entry__grid { grid-template-columns: 1fr; }
+  .entry__grid .strip { height: 8rem; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   T7 · ARTICLE
+   The one page type in this set that is not shaped like a man page.
+   note(1) is a manual entry that happens to contain prose; article(7)
+   is a piece of writing, and the difference is worth a template
+   rather than a class.
+
+   What it gets that nothing else does:
+     · a rule-above masthead with a standfirst set one step up;
+     · figures that break the measure — a strip may go full sheet
+       width where the prose may not;
+     · ONE pull-quote, 20px, the set's display step spent on a
+       sentence rather than a heading;
+     · numbered notes in the margin, tied to markers in the text.
+
+   What it does NOT get: a second display size, a serif, a drop cap,
+   or a byline photograph. The measure and the palette are the same
+   as everywhere else — this is the same form, imposed differently.
+   ══════════════════════════════════════════════════════════════════ */
+
+.art { max-width: 46rem; margin-inline: auto; }
+.art__head { border-top: 3px solid var(--rule); padding-top: .75rem; margin-bottom: 1.5rem; }
+.art__kicker { display: flex; gap: .75rem; margin-bottom: .75rem; color: var(--faint); }
+.art__title { font-size: var(--t-display); font-weight: 700; line-height: 1.25; max-width: 22ch; }
+/* The standfirst is the 15px step, which the set otherwise spends
+   only on command lines. An article gets it because the first
+   paragraph is doing the job a command line does elsewhere: telling
+   you whether to read on. */
+.art__stand { font-size: var(--t-lead); color: var(--muted); margin-top: .75rem; max-width: 54ch; }
+.art__byline {
+  display: flex; flex-wrap: wrap; gap: .4rem 1rem; margin-top: 1rem;
+  padding-top: .5rem; border-top: 1px solid var(--rule-hair);
+  font-family: var(--f-mono); font-size: var(--t-ui); color: var(--faint);
+}
+
+.art__body > * + * { margin-top: .9rem; }
+.art__body p { color: var(--muted); }
+.art__body h2 {
+  font-family: var(--f-mono); font-size: var(--t-ui);
+  text-transform: uppercase; letter-spacing: .12em;
+  color: var(--ink); margin-top: 2rem;
+  border-top: 1px solid var(--rule-hair); padding-top: .5rem;
+}
+
+/* A figure may break the measure. Prose may not — that asymmetry is
+   the only reason the article column is narrower than the sheet. */
+.art__fig { margin-block: 1.75rem; }
+/* The break-out is expressed as a negative margin with a ceiling
+   rather than as an absolute width. 11rem is exactly half the
+   difference between the 46rem measure and the 68rem the sheet has
+   inside its padding, so the figure lands ON the sheet edge and
+   cannot overhang it; the viewport term takes over below that. */
+.art__fig--wide {
+  margin-inline: calc(-1 * clamp(0rem, (100vw - var(--rail-w) - var(--pad) * 4 - 46rem) / 2, 11rem));
+}
+@media (max-width: 879px) { .art__fig--wide { margin-inline: 0; } }
+
+/* The one pull-quote. 20px, which is the display step — so an
+   article that also wanted a display heading would have to give one
+   of them up. That is the intended trade, not an oversight. */
+.art__quote {
+  margin-block: 1.75rem; padding-left: 1.25rem;
+  border-left: 6px solid var(--accent);
+  font-size: var(--t-display); font-weight: 700; line-height: 1.35;
+  color: var(--ink); max-width: 26ch;
+}
+.art__quote cite { display: block; margin-top: .5rem; font-family: var(--f-mono); font-size: var(--t-ui); font-weight: 400; font-style: normal; color: var(--faint); }
+
+/* Numbered notes. The marker is a superscript link; the note is a
+   numbered row at the foot. Both are navy, because a reference is a
+   thing you can follow and navy is what this set colours those. */
+.art__ref { font-family: var(--f-mono); font-size: var(--t-micro); vertical-align: super; color: var(--accent); text-decoration: none; padding-inline: .15em; }
+.art__ref:hover, .art__ref:target { background: var(--accent); color: var(--on-accent); }
+.art__notes { margin-top: 2.5rem; border-top: 1px solid var(--rule); padding-top: .5rem; }
+.art__notes li {
+  display: grid; grid-template-columns: 2.5rem 1fr; gap: 1rem;
+  padding: .3rem 0; border-bottom: 1px solid var(--rule-hair);
+  font-family: var(--f-mono); font-size: var(--t-ui); color: var(--muted);
+}
+.art__notes li > span:first-child { color: var(--accent); }
+.art__notes li:target { background: var(--surface); }
+
+/* Previous / next, as two halves of a rule. */
+.art__nav { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); margin-top: 2.5rem; }
+.art__nav a { background: var(--paper); padding: .75rem; text-decoration: none; color: var(--ink); font-family: var(--f-mono); font-size: var(--t-ui); }
+.art__nav a:hover { background: var(--accent); color: var(--on-accent); }
+.art__nav a:hover .faint { color: var(--on-accent); }
+.art__nav a > span { display: block; }
+.art__nav a:last-child { text-align: right; }
+@media (max-width: 599px) { .art__nav { grid-template-columns: 1fr; } .art__nav a:last-child { text-align: left; } }
+
+/* ── T6 · tabs — the one moving part ───────────────────────────── */
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--rule); }
+.tabs button {
+  padding: .25rem .8rem; border: 1px solid var(--rule); border-bottom: 0;
+  background: var(--surface); color: var(--muted);
+  font-family: var(--f-mono); font-size: var(--t-ui);
+}
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.stage { padding-top: 1.25rem; transition: opacity 120ms linear; }
+.stage[data-fading="true"] { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .stage { transition: none; } }
+
+/* ── Masthead — the one inverted block on the landing sheet ────── */
+.mast { background: var(--ink); color: var(--paper); padding: 1.5rem var(--pad); position: relative; }
+.mast .display { max-width: 26ch; }
+.mast a { color: var(--paper); }
+
+
+/* ── §6 · BOARD ────────────────────────────────────────────────── */
+
+.board { position: fixed; inset: 0 0 0 var(--rail-w); background: var(--sunk); overflow: hidden; }
+@media (max-width: 879px) { .board { inset: 0; position: relative; height: calc(100vh - 3rem); } }
+.board__vp { position: absolute; inset: 0; cursor: grab; touch-action: none; }
+.board__vp:active { cursor: grabbing; }
+/* The canvas grid is 1px rules, not dots — the same decision as
+   everywhere else in this set. board.js moves it by setting the
+   three custom properties. */
+.board__vp::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  --g: 24px;
+  background-image:
+    repeating-linear-gradient(90deg, var(--rule-hair) 0 1px, transparent 1px var(--g)),
+    repeating-linear-gradient(180deg, var(--rule-hair) 0 1px, transparent 1px var(--g));
+  background-position: var(--gx, 0) var(--gy, 0);
+  opacity: .55;
+}
+.board__world { position: absolute; left: 0; top: 0; transform-origin: 0 0; z-index: 1; }
+.board__node { position: absolute; }
+
+/* A board note is a flat colour card with type set in its paired
+   ink — the same material the sheets are illustrated with, at the
+   same density. 13's notes had to quieten their field to carry
+   type; a flat colour does not, because the ink was chosen against
+   it in §1. */
+.note { border: 1px solid var(--rule); padding: .7rem; min-height: 6.5rem; white-space: pre-line; font-family: var(--f-mono); font-size: var(--t-ui); }
+.note__label { display: block; font-size: var(--t-micro); letter-spacing: .12em; opacity: .75; margin-bottom: .5rem; }
+.nd-doc { border: 1px solid var(--rule); background: var(--paper); color: var(--muted); padding: .7rem; font-size: var(--t-body); }
+.nd-doc .lbl { display: block; font-family: var(--f-mono); font-size: var(--t-micro); font-weight: 700; letter-spacing: .14em; color: var(--ink); border-bottom: 1px solid var(--rule); padding-bottom: .35rem; margin-bottom: .5rem; }
+.nd-code { border: 1px solid var(--rule); background: var(--paper); }
+.nd-code__bar { border-bottom: 1px solid var(--rule); padding: .3rem .6rem; font-family: var(--f-mono); font-size: var(--t-micro); color: var(--muted); }
+.nd-code pre { margin: 0; padding: .6rem; font-family: var(--f-mono); font-size: var(--t-ui); line-height: 1.65; white-space: pre; }
+
+.board__hint { position: fixed; bottom: .9rem; left: calc(var(--rail-w) + var(--pad)); font-family: var(--f-mono); font-size: var(--t-ui); color: var(--faint); transition: opacity 140ms linear; z-index: 10; }
+@media (max-width: 879px) { .board__hint { left: var(--pad); } }
+@media (prefers-reduced-motion: reduce) { .board__hint { transition: none; } }
+
+/* The static figure of the board, printed inside project(1). */
+.boardfig { position: relative; border: 1px solid var(--rule); background: var(--sunk); overflow: hidden; height: 16rem; }
+/* The top row of nodes sits at y:-40, so the world is offset far
+   enough that halving it still clears the frame. */
+.boardfig__world { position: absolute; left: 1rem; top: 2.25rem; transform: scale(.5); transform-origin: 0 0; width: 200%; }
+.boardfig__bar { display: flex; justify-content: space-between; border: 1px solid var(--rule); border-top: 0; padding: .3rem .6rem; font-family: var(--f-mono); font-size: var(--t-ui); color: var(--faint); }
+
+@media print {
+  .rail, #gridlines, .board__hint { display: none; }
+  .page { padding-left: 0; }
+}

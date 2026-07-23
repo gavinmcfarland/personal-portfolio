@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Specimen — 09 · Imposition</title>
+<meta name="description" content="The design system's specimen sheet: palette, type, texture, and the same content rendered through four treatments.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23161511'/%3E%3Crect x='18' y='6' width='8' height='8' fill='%23C23A08'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="specimen" class="page">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="rail">
+  <a class="rail__mark" href="index.html"><span class="ph ph--16" aria-hidden="true"></span>g.mcfarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">theme</button>
+    <span>london, uk</span>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="section" style="margin-top:2rem">
+    <div class="sheet">
+      <p class="micro dim">sheet 05 / 08 · specimen</p>
+      <p class="mono dim" style="margin-top:.75rem;max-width:56ch">
+        The system, laid flat. Every colour, size, texture and treatment the nine
+        sheets are allowed to use — and nothing else. If it is not on this page,
+        it is not in the system.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── 01 · Palette ──────────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="pal-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="pal-h">palette</h2>
+      </div>
+      <p class="mono dim" style="margin-bottom:1rem;max-width:56ch">
+        Muted stock does the talking. The five bold flats appear only as filled
+        blocks or bordered chips, each with its own paired ink. No gradients —
+        nothing here blends.
+      </p>
+      <div class="bento" id="swatches" style="--gutter:.5rem"></div>
+    </div>
+  </section>
+
+  <!-- ── 02 · Type — the flat ramp and its three exceptions ────────── -->
+  <section class="section" aria-labelledby="type-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">02</span>
+        <h2 id="type-h">type</h2>
+      </div>
+      <div class="edrows">
+        <div class="edrow">
+          <span class="edrow__k">micro · 11</span>
+          <p class="edrow__v"><span class="micro">Uppercase mono labels carry section rank</span></p>
+        </div>
+        <div class="edrow">
+          <span class="edrow__k">mono · 13</span>
+          <p class="edrow__v mono" style="color:var(--ink)">IBM Plex Mono carries structure — tables, ledgers, navigation, metadata.</p>
+        </div>
+        <div class="edrow">
+          <span class="edrow__k">body · 15</span>
+          <p class="edrow__v" style="color:var(--ink)">Archivo carries argument. This is the only prose size in the system; rank comes from numbering, inversion, rules and pattern — not from scale.</p>
+        </div>
+        <div class="edrow">
+          <span class="edrow__k">exception a</span>
+          <div class="edrow__v">
+            <p class="display" style="color:var(--ink)">One display line per page.</p>
+            <p class="mono dim" style="margin-top:.375rem">29px · Archivo 600 · never twice on one sheet</p>
+          </div>
+        </div>
+        <div class="edrow">
+          <span class="edrow__k">exception b</span>
+          <div class="edrow__v" style="display:flex;align-items:baseline;gap:1rem">
+            <span class="folio">09</span>
+            <p class="mono dim">64px folio numerals — ornament on plates and the board, never hierarchy.</p>
+          </div>
+        </div>
+        <div class="edrow">
+          <span class="edrow__k">exception c</span>
+          <div class="edrow__v">
+            <blockquote class="pull" style="color:var(--ink)">One 21px pull-quote, and only the article sheet may set it.</blockquote>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 03 · Texture ──────────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="tx-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">03</span>
+        <h2 id="tx-h">texture</h2>
+      </div>
+      <p class="mono dim" style="margin-bottom:1rem;max-width:56ch">
+        Five hard-stop patterns. One texture per surface, drawn in the surface's
+        own ink. A gradient that does not grade is a pattern.
+      </p>
+      <div class="g12" style="--gutter:.5rem">
+        <div class="c2" style="border:1px solid var(--rule);height:6rem" aria-hidden="true"><div class="tx-dots"  style="height:100%"></div></div>
+        <div class="c2" style="border:1px solid var(--rule);height:6rem" aria-hidden="true"><div class="tx-hatch" style="height:100%"></div></div>
+        <div class="c2" style="border:1px solid var(--rule);height:6rem" aria-hidden="true"><div class="tx-scan"  style="height:100%"></div></div>
+        <div class="c2" style="border:1px solid var(--rule);height:6rem" aria-hidden="true"><div class="tx-check" style="height:100%"></div></div>
+        <div class="c2" style="border:1px solid var(--rule);height:6rem" aria-hidden="true"><div class="tx-ruled" style="height:100%"></div></div>
+      </div>
+      <div class="g12" style="--gutter:.5rem;margin-top:.375rem">
+        <span class="micro dim c2">dots</span><span class="micro dim c2">hatch</span>
+        <span class="micro dim c2">scan</span><span class="micro dim c2">check</span>
+        <span class="micro dim c2">ruled</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 04 · Placeholder ──────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="ph-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">04</span>
+        <h2 id="ph-h">placeholder</h2>
+      </div>
+      <div class="edrow" style="border-top:1px solid var(--rule)">
+        <span class="edrow__k" style="align-items:center;gap:1rem">
+          <span class="ph ph--16" aria-hidden="true"></span>
+          <span class="ph" aria-hidden="true"></span>
+          <span class="ph ph--40" aria-hidden="true"></span>
+          <span class="ph ph--40 ph--hatch" aria-hidden="true"></span>
+        </span>
+        <p class="edrow__v">
+          Where an icon would go, a transparent square with a border goes instead.
+          The system never pretends to have drawn an icon it has not. 16 · 24 · 40,
+          hatched when a slot is reserved. Used sparingly — never inside tables.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 05 · Chips & notes ────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="chip-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">05</span>
+        <h2 id="chip-h">chips &amp; notes</h2>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+        <span class="chip"><span class="sw" data-tone="yellow"></span>tool</span>
+        <span class="chip"><span class="sw" data-tone="cyan"></span>plug-in</span>
+        <span class="chip"><span class="sw" data-tone="navy"></span>library</span>
+        <span class="chip"><span class="sw" data-tone="pink"></span>rare</span>
+        <span class="chip">plain</span>
+      </div>
+      <div class="g12" style="--gutter:.5rem">
+        <div class="note c3" data-tone="yellow"><span class="note__label">01</span>Bold is a block,
+never a word</div>
+        <div class="note c3" data-tone="cyan"><span class="note__label">02</span>Paired ink,
+always</div>
+        <div class="note c3" data-tone="navy"><span class="note__label">03</span>No shadow —
+the border holds it</div>
+        <div class="note c3" data-tone="pink"><span class="note__label">04</span>Pink is
+spent, not used</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 06 · Variants — one content source, four treatments ───────── -->
+  <section class="section" aria-labelledby="var-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">06</span>
+        <h2 id="var-h">variants</h2>
+      </div>
+      <p class="mono dim" style="margin-bottom:1rem;max-width:56ch">
+        The same six projects, from the same data file, through four treatments.
+        If the treatments ever disagree about the content, the system has failed.
+      </p>
+
+      <div class="tabs" role="tablist" aria-label="Section treatments" id="variant-tabs">
+        <button class="tab" role="tab" aria-selected="true"  data-mode="table"  id="tab-table"  aria-controls="variant-stage">table</button>
+        <button class="tab" role="tab" aria-selected="false" data-mode="ledger" id="tab-ledger" aria-controls="variant-stage" tabindex="-1">ledger</button>
+        <button class="tab" role="tab" aria-selected="false" data-mode="bento"  id="tab-bento"  aria-controls="variant-stage" tabindex="-1">bento</button>
+        <button class="tab" role="tab" aria-selected="false" data-mode="asym"   id="tab-asym"   aria-controls="variant-stage" tabindex="-1">asymmetric</button>
+      </div>
+
+      <div class="swap" id="variant-stage" role="tabpanel" aria-live="polite"></div>
+      <p class="micro dim" style="margin-top:.75rem" id="variant-caption"></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>sheet</dt><dd>05 / 08</dd></div>
+      <div><dt>form</dt><dd>09 · imposition</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+
+    /* Swatch bento — read straight off the stylesheet so the sheet
+       cannot drift from the tokens it documents. */
+    const tokens = [
+      ['paper', '--paper'], ['surface', '--surface'], ['sunk', '--sunk'],
+      ['ink', '--ink'], ['muted', '--muted'], ['faint', '--faint'],
+      ['accent', '--accent'], ['yellow', '--b-yellow'], ['cyan', '--b-cyan'],
+      ['navy', '--b-navy'], ['pink', '--b-pink'], ['sage', '--m-sage'],
+    ];
+    const css = getComputedStyle(document.documentElement);
+    document.getElementById('swatches').innerHTML = tokens.map(([name, t]) => `
+      <div class="bento__cell c2" style="min-height:6.5rem">
+        <span style="flex:1;border:1px solid var(--rule-hair);background:var(${t})"></span>
+        <span class="micro dim" style="margin-top:.5rem">${name}</span>
+        <span class="mono faint">${css.getPropertyValue(t).trim()}</span>
+      </div>`).join('');
+
+    /* Variant stage — where each treatment says where else it runs. */
+    const usage = {
+      table:  'T1 · ruled table — as used on index (work) and archive (everything)',
+      ledger: 'T2 · ledger — as used on journal (posts, grouped by year)',
+      bento:  'T3 · bento — as used on gallery (plates) and index (facts)',
+      asym:   'T4 · asymmetric — as used on the article sheet and the project hero',
+    };
+    const stage = document.getElementById('variant-stage');
+    const caption = document.getElementById('variant-caption');
+    const show = (mode) => {
+      renderProjects(stage, mode);
+      caption.textContent = usage[mode];
+    };
+    show('table');
+    wireTabs(document.getElementById('variant-tabs'), stage, (mode) => show(mode));
+  })();
+</script>
+</body>
+</html>

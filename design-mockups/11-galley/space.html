@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Space — Galley</title>
+<meta name="description" content="Nine occupations of the sheet: where content sits, how much it takes, and what the remainder is doing.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F4F1E9'/%3E%3Crect x='4' y='4' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='9' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='14' width='9' height='2' fill='%231A1916'/%3E%3Crect x='22' y='4' width='2' height='12' fill='%23A82818'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="space">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="head">
+  <a class="head__name" href="index.html">G. McFarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="head__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Theme</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── The premise, set as a galley: column left, sheet open ────── -->
+  <section class="frame frame--tl">
+    <span class="frame__mark">Sheet 02 · space</span>
+    <div class="hang hold--full">
+      <div>
+        <p class="micro faint">The occupation of the sheet</p>
+        <h1 class="display" style="margin:1.25rem 0 1.5rem">
+          The type is the artefact.<br><em>The rest is where the hand goes.</em>
+        </h1>
+        <p class="dim" style="max-width:34em">
+          A galley proof is set in one long column on a sheet far wider than the
+          column needs, so the corrector has somewhere to write. Nothing on this
+          page is centred by default and nothing fills the width because it can.
+          Each frame below takes a viewport and spends it differently.
+        </p>
+        <p class="mark faint" style="margin-top:1.5rem">
+          <span data-count="places">—</span> occupations · one viewport each · press G for the grid
+        </p>
+      </div>
+      <div class="hang__notes">
+        <div>
+          <span class="micro">Note</span>
+          <span class="mark dim">Emptiness here is not restraint for its own sake. It is the margin
+          a proof needs, kept because the content is the thing being judged.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── The comparator: one occupation at a time, full viewport ──── -->
+  <section class="frame frame--auto" style="padding-block:var(--pad-y) 0">
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">01</span>
+        <h2>One at a time</h2>
+        <span class="marker__x" id="stage-count"></span>
+      </div>
+      <div class="hang hold--full" style="align-items:end">
+        <div>
+          <p class="micro" id="stage-name">—</p>
+          <p class="dim" style="margin-top:.5rem" id="stage-note">—</p>
+        </div>
+        <div style="display:flex;justify-content:flex-start">
+          <div class="stepper" id="stage-step">
+            <button type="button" data-step="-1">← Back</button>
+            <output id="stage-pos">01 / 09</output>
+            <button type="button" data-step="1">Forward →</button>
+          </div>
+        </div>
+      </div>
+      <div class="tick" id="stage-tick" style="margin-top:1.25rem" role="group" aria-label="Occupations"></div>
+    </div>
+  </section>
+
+  <!-- The stage is a real frame, so what is being demonstrated is
+       demonstrated at full size rather than in a thumbnail. -->
+  <div class="swap" id="stage-wrap" aria-live="polite">
+    <section class="frame frame--tl" id="stage"></section>
+  </div>
+
+  <!-- ── All nine, stacked — nine viewports of sheet ──────────────── -->
+  <section class="frame frame--auto" style="padding-block:var(--pad-y) 0">
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">02</span>
+        <h2>All nine, in sequence</h2>
+        <span class="marker__x">Scroll</span>
+      </div>
+      <p class="dim hold">
+        The comparator shows one occupation at a time, which is how you judge a
+        placement. Scrolling all nine is how you judge the <em class="it">rhythm</em> —
+        whether a set that spends this much sheet still holds together, or just
+        reads as nine unrelated pages.
+      </p>
+    </div>
+  </section>
+
+  <div id="all"></div>
+
+</main>
+
+<footer class="foot">
+  <dl class="defs">
+    <div><dt>Sheet</dt><dd>Space</dd></div>
+    <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+    <div><dt>Set</dt><dd>11 · Galley</dd></div>
+  </dl>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+    const places = DATA.places;
+
+    /* ── The comparator ──────────────────────────────────────────── */
+    document.getElementById('stage-tick').innerHTML = places.map((p, i) =>
+      `<button type="button" aria-selected="${i === 0}">${esc(p.name)}</button>`).join('');
+    document.getElementById('stage-count').textContent = pad2(places.length) + ' occupations';
+
+    const wrap = document.getElementById('stage-wrap');
+    const stage = document.getElementById('stage');
+
+    const draw = (i) => {
+      const p = places[i];
+      renderPlace(stage, p.id);
+      document.getElementById('stage-name').textContent = `P${i + 1} · ${p.name}`;
+      document.getElementById('stage-note').textContent = p.note;
+      document.getElementById('stage-pos').textContent = `${pad2(i + 1)} / ${pad2(places.length)}`;
+    };
+
+    wireSteps(
+      document.getElementById('stage-tick'),
+      document.getElementById('stage-step'),
+      places.length,
+      (i, immediate) => {
+        if (immediate) { draw(i); return; }
+        wrap.dataset.fading = 'true';
+        setTimeout(() => { draw(i); wrap.dataset.fading = 'false'; }, 150);
+      },
+    );
+
+    /* ── All nine, stacked ───────────────────────────────────────── */
+    const all = document.getElementById('all');
+    places.forEach((p, i) => {
+      const label = document.createElement('div');
+      label.className = 'frame frame--auto';
+      label.style.padding = 'var(--pad-y) var(--pad-x) 0';
+      label.innerHTML = `<div class="marker" style="margin-bottom:0">
+        <span class="corr">P${i + 1}</span>
+        <h3>${esc(p.name)}</h3>
+        <span class="marker__x">${pad2(i + 1)} / ${pad2(places.length)}</span>
+      </div>`;
+      all.appendChild(label);
+
+      const frame = document.createElement('section');
+      all.appendChild(frame);
+      renderPlace(frame, p.id);
+    });
+  })();
+</script>
+</body>
+</html>

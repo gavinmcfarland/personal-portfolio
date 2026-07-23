@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Working Sheet — Gavin McFarland</title>
+<meta name="description" content="Gavin McFarland, design engineer. Design systems and the developer tooling they are built with.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23D8D6CD'/%3E%3Crect x='4' y='4' width='24' height='7' fill='%2317171A'/%3E%3Crect x='4' y='14' width='11' height='14' fill='%23C4321B'/%3E%3Crect x='17' y='14' width='11' height='14' fill='%231B3C96'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="index">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<!-- ── The masthead — scrolls away; the bar below it does not ────── -->
+<div class="masthead">
+  <div class="sheet">
+    <div class="masthead__top">
+      <h1 class="masthead__title">The Working Sheet</h1>
+      <p class="meta faint">Vol. 10 · <span id="edition-date">—</span></p>
+    </div>
+    <p class="masthead__strap" style="margin-top:.4rem">
+      Design systems, developer tooling, and the seam between them
+    </p>
+    <hr class="rule--double" style="margin-top:1rem">
+  </div>
+</div>
+
+<header class="bar">
+  <div class="sheet bar__in">
+    <nav id="nav" aria-label="Primary"></nav>
+    <div class="bar__tools">
+      <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+      <button id="theme-toggle" type="button">Theme</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── The lead well — asymmetric: argument left, apparatus right ── -->
+  <section class="band">
+    <div class="sheet">
+      <div class="l-asym">
+
+        <div class="l-asym__main">
+          <p class="micro dim">The lead</p>
+          <p class="display" style="margin:.7rem 0 1rem;max-width:19ch">
+            I build the tools design systems are made with — and the systems themselves.
+          </p>
+          <div class="l-flow l-flow--2">
+            <p class="dim">
+              Fifteen years spent between design and front-end, mostly on the seam:
+              token pipelines, component APIs, and the editor plugins that keep the
+              two halves honest with each other.
+            </p>
+            <p class="dim">
+              The tools on this sheet were all built the same way — because a
+              problem kept recurring, and because the thing that would have fixed
+              it did not exist yet.
+            </p>
+          </div>
+          <p class="meta" style="margin-top:1rem">
+            <a class="ln" href="gallery.html">See the work</a>
+            <span class="faint" style="margin:0 .4rem">·</span>
+            <a class="ln" href="layouts.html">Read the layout atlas</a>
+          </p>
+        </div>
+
+        <aside class="l-asym__side">
+          <div class="panel panel--sunk">
+            <p class="micro" style="border-bottom:1px solid var(--rule);padding-bottom:.5rem;margin-bottom:.6rem">
+              In this edition
+            </p>
+            <div class="l-rungs" style="--rail:1.25rem">
+              <div class="is-mark"><a class="ln--bare meta strong" href="layouts.html">Twelve structures, one voice</a><br><span class="meta faint">The layout atlas</span></div>
+              <div><a class="ln--bare meta strong" href="feature.html">Two programs, one plugin</a><br><span class="meta faint">Feature · 6 min</span></div>
+              <div><a class="ln--bare meta strong" href="gallery.html">Six plates, printed flat</a><br><span class="meta faint">Gallery</span></div>
+              <div style="border-bottom:0"><a class="ln--bare meta strong" href="archive.html">Everything, in small type</a><br><span class="meta faint">Classifieds</span></div>
+            </div>
+          </div>
+          <dl class="defs" style="margin-top:1rem" id="facts"></dl>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Capabilities — three true columns with a rule between ─────── -->
+  <section class="band" aria-labelledby="cap-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="cap-h">What I am useful for</h2>
+      </div>
+      <div class="l-flow l-flow--3" id="capabilities"></div>
+    </div>
+  </section>
+
+  <!-- ── Work — the baseline table, because an index should be one ─── -->
+  <section class="band" aria-labelledby="work-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">02</span>
+        <h2 id="work-h">Work</h2>
+        <a class="head__x ln" href="gallery.html">Gallery view →</a>
+      </div>
+      <div data-layout="table"></div>
+      <p class="micro scroll-hint">Scroll →</p>
+      <p class="micro dim" style="margin-top:.7rem">
+        <span data-count="projects">—</span> items · tools, plug-ins and libraries
+      </p>
+    </div>
+  </section>
+
+  <!-- ── The air. Density is the default, so this is a decision ────── -->
+  <div class="air">
+    <div class="sheet">
+      <p class="l-measure" style="text-align:center">
+        <span class="micro dim" style="display:block;margin-bottom:.75rem">Working principle</span>
+        <em style="font-size:1.25rem">A problem you cannot draw is a problem you do not understand yet.</em>
+        <a class="ln meta" href="journal.html" style="display:inline-block;margin-top:1rem">Field notes →</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Plates — the filmstrip, so the sheet ends sideways ────────── -->
+  <section class="band" aria-labelledby="pl-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">03</span>
+        <h2 id="pl-h">Plates</h2>
+        <span class="head__x faint">Scroll sideways</span>
+      </div>
+      <div data-layout="strip"></div>
+    </div>
+  </section>
+
+  <!-- ── Previously ────────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="cl-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">04</span>
+        <h2 id="cl-h">Previously, for</h2>
+      </div>
+      <ul id="clients" style="display:flex;flex-wrap:wrap;gap:.4rem"></ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Sheet</dt><dd>Front</dd></div>
+      <div><dt>Set</dt><dd>10 · Broadsheet</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+
+    document.getElementById('capabilities').innerHTML = DATA.capabilities.map((c, i) => `
+      <div class="keep">
+        <p class="micro" style="border-bottom:1px solid var(--rule);padding-bottom:.4rem;margin-bottom:.5rem">
+          <span class="num">${pad2(i + 1)}</span> ${esc(c.k)}
+        </p>
+        <p class="dim">${esc(c.v)}</p>
+      </div>`).join('');
+
+    document.getElementById('facts').innerHTML = DATA.facts.map((f) =>
+      `<div><dt>${esc(f.k)}</dt><dd>${esc(f.v)}</dd></div>`).join('');
+
+    document.getElementById('clients').innerHTML =
+      DATA.clients.map((c) => `<li class="flag">${esc(c)}</li>`).join('');
+  })();
+</script>
+</body>
+</html>

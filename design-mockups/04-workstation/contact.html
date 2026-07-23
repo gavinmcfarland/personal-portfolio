@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contact — Gavin McFarland</title>
+<meta name="description" content="Get in touch with Gavin McFarland." />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body data-page="contact">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<div class="win" style="max-width:46rem">
+
+  <div class="win__title">
+    <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10" fill="#FFFFFF" stroke="#0A0A0A"/><path d="M1 3l7 6 7-6" fill="none" stroke="#0A0A0A"/></svg>
+    <span class="name">Contact — New Message</span>
+    <span class="win__ctrls">
+      <button class="win__ctrl" type="button" aria-label="Minimise" title="Decorative">_</button>
+      <button class="win__ctrl" type="button" aria-label="Maximise" title="Decorative">□</button>
+      <button class="win__ctrl" type="button" aria-label="Close" title="Decorative">✕</button>
+    </span>
+  </div>
+
+  <nav class="menubar" aria-label="Main">
+    <a href="index.html"><u>F</u>ile</a>
+    <button type="button" id="viewbtn" aria-haspopup="true" aria-expanded="false" aria-controls="viewmenu"><u>V</u>iew</button>
+    <a href="gallery.html"><u>G</u>o</a>
+    <a href="project.html"><u>H</u>elp</a>
+    <div class="menu" id="viewmenu" role="menu">
+      <ul>
+        <li><button type="button" role="menuitem" onclick="toggleGrid()"><span class="tick" data-tick="grid"></span>Layout grid</button></li>
+        <li><button type="button" role="menuitem" onclick="toggleTheme()"><span class="tick" data-tick="dark"></span>High contrast</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ── The form template ────────────────────────────────────────
+       A Win95 property sheet: group boxes with etched borders,
+       sunken fields, a right-aligned button row. Validation is real
+       and runs on submit, reporting through the same modal dialog
+       the rest of the system uses.
+
+       Nothing is sent. This is a mockup, and a form that silently
+       swallowed a message would be worse than one that says so —
+       the success dialog says exactly what would have happened. -->
+  <div class="client client--flat" style="padding:var(--bl)">
+    <form id="contact-form" novalidate>
+      <div class="grid12">
+        <div style="grid-column:1 / -1">
+
+          <fieldset class="group">
+            <legend>Your details</legend>
+
+            <div class="formrow">
+              <label for="name">Name:</label>
+              <div>
+                <input class="field" id="name" name="name" type="text" autocomplete="name" required />
+                <span class="err" id="err-name" hidden></span>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <label for="email">E-mail:</label>
+              <div>
+                <input class="field" id="email" name="email" type="email" autocomplete="email" required />
+                <span class="hint">I reply to everything that is not a recruiter mailshot.</span>
+                <span class="err" id="err-email" hidden></span>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <label for="org">Company:</label>
+              <div>
+                <input class="field" id="org" name="org" type="text" autocomplete="organization" />
+                <span class="hint">Optional.</span>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="group">
+            <legend>Enquiry</legend>
+
+            <div class="formrow">
+              <label for="topic">Regarding:</label>
+              <div>
+                <select class="field" id="topic" name="topic">
+                  <option>Design system work</option>
+                  <option>Front-end build</option>
+                  <option>Developer tooling</option>
+                  <option>Something about Plugma</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <label for="budget">Timing:</label>
+              <div>
+                <select class="field" id="budget" name="budget">
+                  <option>Available from September</option>
+                  <option>Later in the year</option>
+                  <option>Just making contact</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <label for="message">Message:</label>
+              <div>
+                <textarea class="field" id="message" name="message" rows="6" required></textarea>
+                <span class="hint">What is falling between two teams?</span>
+                <span class="err" id="err-message" hidden></span>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="group">
+            <legend>Options</legend>
+            <label class="check" style="margin-bottom:6px">
+              <input type="checkbox" id="copy" name="copy" checked />
+              <span>Send me a copy of this message</span>
+            </label>
+            <label class="check">
+              <input type="checkbox" id="nda" name="nda" />
+              <span>This enquiry is confidential</span>
+            </label>
+          </fieldset>
+
+          <div style="display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap">
+            <a class="btn" href="index.html">Cancel</a>
+            <button class="btn" type="reset">Reset</button>
+            <button class="btn" type="submit" style="font-weight:700">Send</button>
+          </div>
+
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="statusbar">
+    <div class="status status--grow" id="status">Ready</div>
+    <div class="status">gavin@limitlessloop.com</div>
+  </div>
+</div>
+
+<div class="taskbar">
+  <button class="start" type="button" id="startbtn" aria-haspopup="true" aria-expanded="false" aria-controls="startmenu">
+    <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges">
+      <rect x="1" y="2" width="6" height="6" fill="#FF0000"/><rect x="8" y="2" width="6" height="6" fill="#00FF00"/>
+      <rect x="1" y="9" width="6" height="6" fill="#0000FF"/><rect x="8" y="9" width="6" height="6" fill="#FFFF00"/>
+    </svg>
+    Start
+  </button>
+  <div class="tasks" id="tasks"></div>
+  <div class="tray"><span id="clock">11:40</span></div>
+</div>
+
+<div class="startmenu" id="startmenu">
+  <div class="startmenu__banner"><span>Portfolio 95</span></div>
+  <ul id="startlist"></ul>
+</div>
+
+<div class="modal" id="modal" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  const form = document.getElementById('contact-form');
+  const status = document.getElementById('status');
+
+  const RULES = [
+    { id:'name',    test:(v) => v.trim().length > 0,        msg:'Please enter your name.' },
+    { id:'email',   test:(v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()), msg:'Please enter a valid e-mail address.' },
+    { id:'message', test:(v) => v.trim().length >= 10,      msg:'Please write at least a sentence.' },
+  ];
+
+  function clear(id) {
+    const e = document.getElementById('err-' + id);
+    if (e) { e.hidden = true; e.textContent = ''; }
+  }
+
+  RULES.forEach((r) => {
+    const el = document.getElementById(r.id);
+    el.addEventListener('input', () => clear(r.id));
+  });
+
+  form.addEventListener('reset', () => {
+    RULES.forEach((r) => clear(r.id));
+    status.textContent = 'Ready';
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const bad = [];
+    RULES.forEach((r) => {
+      const el = document.getElementById(r.id);
+      const err = document.getElementById('err-' + r.id);
+      if (r.test(el.value)) { clear(r.id); return; }
+      bad.push(r);
+      err.hidden = false;
+      err.textContent = r.msg;
+      el.setAttribute('aria-invalid', 'true');
+    });
+
+    if (bad.length) {
+      status.textContent = `${bad.length} field(s) need attention`;
+      document.getElementById(bad[0].id).focus();
+      dialog({
+        title: 'Contact',
+        kind: 'warn',
+        message: `<p style="margin:0 0 .5rem"><strong>This message is not complete.</strong></p>
+                  <ul style="margin:0; padding-left:1.1rem">${bad.map((b) => `<li>${esc(b.msg)}</li>`).join('')}</ul>`,
+      });
+      return;
+    }
+
+    RULES.forEach((r) => document.getElementById(r.id).removeAttribute('aria-invalid'));
+    status.textContent = 'Message validated';
+
+    /* Deliberately honest: nothing is transmitted from a mockup. */
+    dialog({
+      title: 'Contact',
+      kind: 'ok',
+      message: `<p style="margin:0 0 .5rem"><strong>Validated — but not sent.</strong></p>
+                <p style="margin:0">This is a design mockup with no mail server behind it. In the
+                real thing this would go to <span class="mono">gavin@limitlessloop.com</span>.</p>`,
+      onOk() { status.textContent = 'Ready'; },
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

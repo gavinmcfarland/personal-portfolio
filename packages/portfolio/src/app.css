@@ -3,52 +3,136 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-serif: 'Tinos', 'Times New Roman', Times, Georgia, serif;
+  /* Enamel — Chivo for prose and structure, JetBrains Mono for tracked marks.
+     No serif; --font-serif is kept as a token so existing `font-serif` usages
+     resolve to Chivo rather than a browser default. */
+  --font-sans: "Chivo", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Chivo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Registered so `bg-surface` (and its `hover:` variant) are real Tailwind
      utilities. Points at the token var, so it still flips in dark mode. */
   --color-surface: var(--surface);
+  --color-hover: var(--hover);
 }
 
 /* ── Design tokens ─────────────────────────────────────────────
-   Matched to the printed CV: white canvas, inky serif prose, bold
-   sans structure, a single purple accent, crisp dark rules.
-   `.dark` on <html> flips it. */
+   The Enamel system (design-mockups/12-enamel): vitreous enamel on steel —
+   flat fills, hairline edges, a graphite ground rather than paper, vermilion
+   as the single working accent. Light is cool steel, `.dark` is graphite.
+
+   Two tiers. Primitives are the ONLY place a raw colour value is written; they
+   are named for the material, not the role, and never change between themes.
+   Semantic tokens below carry the roles (--bg, --ink, --accent…) and are the
+   only tokens the components/utilities reference — each one derives from a
+   primitive via var(). To retune a colour, edit the primitive once. */
 :root {
-  --bg: #FFFFFF;
-  --surface: #F3F2F0;     /* hover / raised fill */
-  --ink: #16161A;         /* primary text */
-  --muted: #3E3E44;       /* secondary prose — kept inky, like the CV */
-  --faint: #8A8A90;       /* meta / captions */
-  --line: rgba(0, 0, 0, 0.10);
-  --line-strong: rgba(0, 0, 0, 0.22);
-  --rule: rgba(0, 0, 0, 0.55);        /* section header hairline */
-  --accent: #7C2D91;      /* CV purple */
-  --accent-soft: rgba(124, 45, 145, 0.10);
+  /* Primitives — steel/graphite neutral ramp, lightest → darkest */
+  --white: #ffffff;
+  --steel-50: #e7eaed;
+  --steel-100: #d0d4d8;
+  --steel-200: #c3c8cd;
+  --steel-300: #a6acb2;
+  --steel-400: #9aa1a9;
+  --steel-500: #767c83;
+  --steel-550: #6b727a;
+  --steel-600: #4a4f55;
+  --steel-700: #3a4048;
+  --steel-800: #2c3138;
+  --steel-900: #24282d;
+  --steel-950: #16191c;
+
+  /* Primitives — the four enamels, each a light-ground / graphite-ground pair.
+     The -400 (lifted) variant is used on the dark ground. */
+  --vermilion-500: #c8341a;
+  --vermilion-400: #ff6a4d;
+  --blue-500: #1e4fd8;
+  --blue-400: #3b6dff;
+  --lime-500: #a8cc1f;
+  --lime-400: #c9f23a;
+  --teal-500: #12897f;
+  --teal-400: #24bdb8;
+
+  /* Primitives — galley warm-graphite ramp (from design-mockups/11-galley),
+     lightest → darkest. Warmer and deeper than the cool --steel ramp so the
+     dark theme's greys sit on the #111110 ground instead of reading blue.
+     Used only by the .dark semantic tokens below. */
+  --galley-ink: #ebe7dc; /* primary text */
+  --galley-mid: #97948b; /* secondary prose */
+  --galley-faint: #63615a; /* meta / captions */
+  --galley-edge: #45433d; /* stronger hairline */
+  --galley-hair: #2c2b27; /* hairline edge */
+  --galley-panel: #1c1b18; /* raised panel / hover fill */
+  --galley-ground: #111110; /* ground */
+  --galley-vermilion: #e0563c; /* lifted vermilion accent */
+
+  /* Semantic tokens — Light (cool steel). Each derives from a primitive. */
+  --bg: var(--steel-200); /* ground */
+  --surface: var(--steel-100); /* panel — hover / raised fill */
+  --hover: var(--steel-200); /* icon-button hover fill (zoom-control grey) */
+  --ink: var(--steel-950); /* primary text */
+  --muted: var(--steel-600); /* secondary prose (--mid) */
+  --faint: var(--steel-500); /* meta / captions */
+  --line: var(--steel-300); /* hairline edge */
+  --line-strong: var(--steel-500); /* stronger hairline (link underline at rest) */
+  --rule: var(--steel-950); /* the drawn line — section header rule */
+  --accent: var(--vermilion-500); /* vermilion */
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --on-accent: var(--white); /* text/fill on an --accent fill (selection, etc.) */
+
+  /* Scrim that dims Home behind the route panel. Light mode dims with a light
+     grey; dark mode (overridden in .dark) dims with a darker grey. */
+  --scrim: var(--steel-300);
+
+  /* The four enamels as flat swatches / tags (e.g. the Work table's Kind
+     column). Paired with the graphite/steel ground. */
+  --tone-vermilion: var(--vermilion-500);
+  --tone-blue: var(--blue-500);
+  --tone-lime: var(--lime-500);
+  --tone-teal: var(--teal-500);
 }
 
+/* Semantic tokens — Dark (graphite). Only the aliases flip; primitives above
+   are inherited unchanged. */
 .dark {
-  --bg: #0C0C0D;
-  --surface: #17171A;
-  --ink: #F3F3F0;
-  --muted: #B2B2B7;
-  --faint: #67676C;
-  --line: rgba(243, 243, 240, 0.10);
-  --line-strong: rgba(243, 243, 240, 0.24);
-  --rule: rgba(243, 243, 240, 0.42);
-  --accent: #C88BE8;      /* lifted purple for dark canvas */
-  --accent-soft: rgba(200, 139, 232, 0.14);
+  --bg: var(--galley-ground); /* graphite ground (galley paper) */
+  --surface: var(--galley-panel); /* panel */
+  --hover: var(--galley-hair); /* icon-button hover fill (matches --line) */
+  --ink: var(--galley-ink); /* bone ink */
+  --muted: var(--galley-mid);
+  --faint: var(--galley-faint);
+  --line: var(--galley-hair);
+  --line-strong: var(--galley-edge);
+  --rule: var(--galley-ink);
+  --accent: var(--galley-vermilion); /* lifted vermilion */
+  --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
+  --scrim: var(--galley-hair); /* darker grey scrim for the graphite ground */
+
+  --tone-vermilion: var(--vermilion-400);
+  --tone-blue: var(--blue-400);
+  --tone-lime: var(--lime-400);
+  --tone-teal: var(--teal-400);
 }
 
 html {
   scroll-behavior: smooth;
   background: var(--bg);
+  /* The route panel sits off-screen to the right (translate-x-full) while it
+     slides in/out — clip that so it never adds a horizontal scrollbar. */
+  overflow-x: hidden;
+}
+
+/* The sliding project overlay just appears/disappears for reduced-motion users. */
+@media (prefers-reduced-motion: reduce) {
+  .route-panel {
+    transition: none;
+  }
 }
 
 body {
   margin: 0;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.6;
   background: var(--bg);
@@ -58,24 +142,66 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-::selection { background: var(--accent); color: #fff; }
+::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* ── Enamel doctrine — no curves, no shadows ──────────────────────
+   Enamel cannot round a corner or cast a shadow, so square everything and
+   drop every shadow site-wide (this overrides the Tailwind rounded-* / shadow-*
+   utilities without touching the markup). The embedded <Canvas> carries its
+   own visual system, so it and its descendants are exempt — as is the sliding
+   .route-panel, which casts a shadow to lift the project page off Home. */
+body :not(.canvas-root, .canvas-root *, .route-panel) {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
 
 /* ── Token helper classes ───────────────────────────────────── */
-.text-ink { color: var(--ink); }
-.text-muted { color: var(--muted); }
-.text-faint { color: var(--faint); }
-.text-accent { color: var(--accent); }
-.bg-base { background: var(--bg); }
-.bg-surface { background: var(--surface); }
-.bg-accent-soft { background: var(--accent-soft); }
-.border-line { border-color: var(--line); }
-.border-line-strong { border-color: var(--line-strong); }
-.font-sans { font-family: var(--font-sans); }
-.font-serif { font-family: var(--font-serif); }
+.text-ink {
+  color: var(--ink);
+}
+.text-muted {
+  color: var(--muted);
+}
+.text-faint {
+  color: var(--faint);
+}
+.text-accent {
+  color: var(--accent);
+}
+.bg-base {
+  background: var(--bg);
+}
+.bg-surface {
+  background: var(--surface);
+}
+.bg-accent-soft {
+  background: var(--accent-soft);
+}
+.border-line {
+  border-color: var(--line);
+}
+.border-line-strong {
+  border-color: var(--line-strong);
+}
+.font-sans {
+  font-family: var(--font-sans);
+}
+.font-serif {
+  font-family: var(--font-serif);
+}
 
-.text-pretty { text-wrap: pretty; }
-.text-balance { text-wrap: balance; }
-.tnum { font-variant-numeric: tabular-nums; }
+.text-pretty {
+  text-wrap: pretty;
+}
+.text-balance {
+  text-wrap: balance;
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
 
 /* Section label — bold sans, mirrors the CV's section headings */
 .section-label {
@@ -92,20 +218,21 @@ body {
   background: var(--rule);
 }
 
-/* Small lettermark tile — initials in place of a photo */
+/* Small lettermark tile — initials in place of a photo. Enamel: a flat panel
+   with a hairline edge and a tracked mono mark. */
 .mark {
   display: grid;
   place-items: center;
   flex: none;
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: 0.5rem;
   background: var(--surface);
   border: 1px solid var(--line);
   color: var(--muted);
-  font-family: var(--font-serif);
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
 }
 
 /* Row — the two-column CV list primitive */
@@ -119,7 +246,9 @@ body {
   border-radius: 0.5rem;
   transition: background-color 0.18s ease;
 }
-a.row:hover { background: var(--surface); }
+a.row:hover {
+  background: var(--surface);
+}
 
 /* Underline link — grows on hover, turns purple */
 .ulink {
@@ -129,7 +258,9 @@ a.row:hover { background: var(--surface); }
   background-size: 100% 1px;
   background-position: 0 100%;
   background-repeat: no-repeat;
-  transition: background-size 0.2s ease, color 0.2s ease;
+  transition:
+    background-size 0.2s ease,
+    color 0.2s ease;
 }
 .ulink:hover {
   color: var(--accent);
@@ -147,24 +278,94 @@ a.row:hover { background: var(--surface); }
 
 /* ── Entrance animation — one calm staggered load ────────────── */
 @keyframes rise {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.rise { animation: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.d1 { animation-delay: 0.05s; }
-.d2 { animation-delay: 0.11s; }
-.d3 { animation-delay: 0.18s; }
-.d4 { animation-delay: 0.26s; }
+.rise {
+  animation: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.d1 {
+  animation-delay: 0.05s;
+}
+.d2 {
+  animation-delay: 0.11s;
+}
+.d3 {
+  animation-delay: 0.18s;
+}
+.d4 {
+  animation-delay: 0.26s;
+}
 
 /* Reveal-on-scroll */
-.reveal { opacity: 0; transform: translateY(16px); }
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+}
 .reveal.in {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* On the project page the theme toggle (fixed, top-right) sits exactly where the
+   canvas zoom cluster defaults to — nudge the cluster left so the two sit side by
+   side instead of overlapping. Extra specificity (.canvas-root) beats the
+   package's own `.canvas-root [data-cv-part="zoom"]` regardless of load order. */
+.project-canvas .canvas-root [data-cv-part="zoom"] {
+  right: 72px;
+}
+
+/* Same collision when the playground canvas maximises: its full-bleed overlay
+   puts the zoom cluster in the viewport corner, under the floated theme toggle
+   (see CanvasMaximizeToggle). Nudge it left to sit beside the toggle. */
+.canvas-root[data-cv-fullbleed] [data-cv-part="zoom"] {
+  right: 72px;
+}
+
+/* ── Canvas hover preview (Projects list) ────────────────────── */
+/* The popover shares the entrance curve of the rest of the page; the mini
+   canvas hides its own chrome via the <Canvas ui={false}> prop. */
+.canvas-preview {
+  animation: rise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Description tooltip (Projects list) ─────────────────────────
+   A single shared popover that follows the hovered row. Only opacity fades in
+   (position is transform-driven for the above/below flip), so it can glide
+   between rows without re-animating. Flat + square per the enamel doctrine. */
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.tip-in {
+  animation: fade 0.14s ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise { animation: none; }
-  .reveal { opacity: 1; transform: none; }
+  .rise {
+    animation: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  .canvas-preview {
+    animation: none;
+  }
+  .tip-in {
+    animation: none;
+  }
 }

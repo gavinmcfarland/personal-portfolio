@@ -26,7 +26,13 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm generate:*)",
       "Bash(node bin/generate-illustration.mjs code --seed 42)",
-      "Bash(chmod +x /Users/gavinmcfarland/Developer/repos/vibe-code-portfolio/packages/abstract-illustrations/bin/preview.mjs)"
+      "Bash(chmod +x /Users/gavinmcfarland/Developer/repos/vibe-code-portfolio/packages/abstract-illustrations/bin/preview.mjs)",
+      "Bash(npx vite *)",
+      "Bash(pnpm --filter @gavinmcfarland/canvas build)",
+      "Bash(npm run *)",
+      "Bash(curl -s -D - -o /dev/null -H 'Range: bytes=0-9' http://localhost:5173/canvas-assets/6d54283b60ce9f4c.png)",
+      "Bash(xargs cat)",
+      "Bash(npx --no-install playwright screenshot --viewport-size=1440,900 --full-page --wait-for-timeout=2000 file://__TRACKED_VAR__/contact.html /private/tmp/claude-501/-Users-gavinmcfarland-Developer-repos-personal-portfolio/e19518f0-849c-407c-8479-27637b861f2f/scratchpad/contact2.png)"
     ],
     "deny": [],
     "ask": []

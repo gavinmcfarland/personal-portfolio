@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>note(1) — Two programs, one plugin</title>
+<meta name="description" content="A Figma plugin looks like one thing and behaves like two.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230E0F0D'/%3E%3Cg fill='%23D9D7CB'%3E%3Crect x='3' y='3' width='1' height='1'/%3E%3Crect x='5' y='4' width='1' height='1'/%3E%3Crect x='7' y='3' width='1' height='1'/%3E%3Crect x='4' y='6' width='1' height='1'/%3E%3Crect x='6' y='7' width='1' height='1'/%3E%3Crect x='9' y='6' width='1' height='1'/%3E%3Crect x='8' y='9' width='1' height='1'/%3E%3Crect x='11' y='8' width='1' height='1'/%3E%3Crect x='10' y='11' width='1' height='1'/%3E%3Crect x='12' y='12' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<script>(()=>{document.documentElement.classList.toggle('light',localStorage.getItem('gm-surface-13')==='bone');})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="note">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="bar__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="sec">
+    <div class="sheet">
+      <h1 class="man__h">Name</h1>
+      <div class="man__b">
+        <p class="ink"><span class="b">two-programs-one-plugin</span> — why a Figma plugin is harder to
+        build than it looks, and what fixes it.</p>
+      </div>
+      <div class="man__b sm faint" style="margin-top:.5rem">
+        <p>2026-05 · six minutes · figma, tooling · about <a class="ln" href="project.html">plugma(1)</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sheet">
+      <div style="padding-left:var(--indent);max-width:44rem">
+        <span class="plate" data-plate="e" style="height:14rem" aria-hidden="true"></span>
+        <p class="plate-cap">Plate 1 — weave · two grids at close pitch, beating against each other</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">The split</h2>
+      <div class="man__b">
+        <p>
+          When a plugin runs, Figma starts two separate programs. The first runs in a sandbox with access
+          to the document — nodes, selection, pages — and no DOM at all. The second runs in an iframe with
+          a full DOM and no access to the document whatsoever.
+        </p>
+        <p>
+          They cannot call each other. They cannot share objects. Everything that crosses between them is
+          a message, serialised on the way out and parsed on the way in.
+        </p>
+        <p class="ink">
+          The sandbox knows what the user selected. The iframe knows what the user clicked. Neither knows
+          both.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">What that costs</h2>
+      <div class="man__b" style="max-width:none">
+        <p style="max-width:74ch">
+          The obvious cost is ceremony. Any behaviour that spans both halves needs a message type, a
+          sender, a listener, and a shape agreed in two places at once:
+        </p>
+        <div class="pre" style="max-width:48rem;margin-top:1rem"><span class="c">// sandbox half — document access, no DOM</span>
+figma.ui.onmessage = (msg) =&gt; {
+  if (msg.type === 'resize') {
+    figma.ui.resize(msg.w, msg.h)
+  }
+}</div>
+        <p style="max-width:74ch;margin-top:1rem">
+          The less obvious cost is the development loop. Neither half can be served from disk the way an
+          ordinary web app can, so the UI has to be inlined into the built file — and every edit means a
+          rebuild, a re-run, and the loss of whatever state you were testing against.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="sheet"><div class="stripe" aria-hidden="true"></div></div>
+
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">The fix</h2>
+      <div class="man__b">
+        <p>
+          Plugma puts all of that underneath a single command. In development the UI is served from a dev
+          server and pointed at by the manifest; at build time the same UI is inlined into the output. The
+          sandbox half never notices the difference, so hot module reloading works the way it does anywhere
+          else — edits appear without a rebuild, and without dropping the plugin state you were testing
+          against.
+        </p>
+        <p class="ink">
+          Interface work stops being a stop-start loop. That is the whole return on the tool, and the
+          substrate for every plugin I built after it.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="journal.html">journal</a><span class="n">(1)</span>,
+          <a href="project.html">plugma</a><span class="n">(1)</span>,
+          <a href="board.html">board</a><span class="n">(1)</span>
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <p>note(1) &nbsp;·&nbsp; 13 · Dither &nbsp;·&nbsp; London, United Kingdom</p>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+
+</body>
+</html>

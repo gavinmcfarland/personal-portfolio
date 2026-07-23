@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Plugma — Board</title>
+<meta name="description" content="The working board for Plugma — a zero-config toolchain for building Figma plugins." />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+<style>
+  /* ── PAGE-LOCAL ───────────────────────────────────────────────
+     The shell owns the viewport; nothing outside the notes column
+     scrolls. Two consequences, and they are the design problem:
+
+       1. The rail goes. A contents index needs a scrolling document
+          to index; the notes column scrolls on its own and is short
+          enough to read whole.
+       2. Gestures stop being cooperative. The page has no scroll to
+          protect, so a plain wheel pans and pinch zooms — what
+          anyone touching an infinite canvas expects.
+
+     Below 1024px the split turns horizontal, because a 22rem column
+     and a usable canvas cannot both fit across a phone. */
+  html, body { height:100%; overflow:hidden; }
+  .doc { background:var(--paper); }
+</style>
+</head>
+
+<body data-page="project">
+
+<div class="shell">
+
+  <aside class="doc">
+    <header class="bar" style="position:static">
+      <div class="bar__in" style="padding:0 var(--pad)">
+        <a class="brand" href="index.html"><span id="brand-ico"></span>Gavin McFarland</a>
+        <button id="theme-toggle" class="btn" type="button" aria-pressed="false" style="margin-left:auto;min-width:0;padding:3px 8px">Theme</button>
+      </div>
+    </header>
+
+    <div class="doc__body">
+
+      <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:calc(var(--bl) * 1.5)">
+        <span id="hero-ico"></span>
+        <span>
+          <span class="display" style="display:block">Plugma</span>
+          <span class="dim" style="display:block; font-size:var(--t-ui)">The working board</span>
+        </span>
+      </div>
+
+      <section class="sec">
+        <h2 class="sec__head"><span class="sec__n">01</span> Brief</h2>
+        <div class="prose">
+          <p>Give Figma plugins the development loop every other web project already has: change a line, see it.</p>
+        </div>
+        <p style="margin-top:var(--bl); display:flex; gap:6px; flex-wrap:wrap">
+          <a class="btn btn--primary" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer" style="min-width:0">plugma.dev ↗</a>
+          <a class="btn" href="project.html" style="min-width:0">Written version</a>
+        </p>
+      </section>
+
+      <section class="sec">
+        <h2 class="sec__head"><span class="sec__n">02</span> Facts</h2>
+        <div class="list">
+          <div class="list__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">Type</span><span class="dim">Toolchain</span>
+          </div>
+          <div class="list__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">Role</span><span class="dim">Creator</span>
+          </div>
+          <div class="list__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">Status</span><span class="dim">Maintained</span>
+          </div>
+          <div class="list__row" style="display:flex; justify-content:space-between; gap:var(--gutter)">
+            <span class="c-term" style="padding:0">Built with</span><span class="dim">Node, TS, Vite</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec">
+        <h2 class="sec__head"><span class="sec__n">03</span> Problem</h2>
+        <div class="prose">
+          <p>
+            A plugin is two programs that cannot see each other — one in a sandbox with the
+            document, one in an iframe with the DOM. They speak only by passing messages.
+          </p>
+          <p>Neither half can be served from disk, so the UI has to be inlined into the built file.</p>
+        </div>
+      </section>
+
+      <section class="sec">
+        <h2 class="sec__head"><span class="sec__n">04</span> Build</h2>
+        <div class="prose">
+          <p>
+            One command scaffolds, one develops, one ships. In development the UI is served; at
+            build time it is inlined. The sandbox half never notices.
+          </p>
+        </div>
+      </section>
+
+      <hr class="rule stipple" style="margin:calc(var(--bl) * 1.5) 0" />
+
+      <div class="foot__in" style="padding:0; max-width:none">
+        <span><span class="k">Board</span> <span id="objcount">—</span></span>
+        <span><span class="k">Keys</span> arrows pan · ± zoom · 0 fits</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <div class="board">
+      <div class="vp" id="vp" tabindex="0" role="group"
+           aria-label="Project board. Drag to pan, scroll to pan, pinch to zoom. Arrow keys pan, plus and minus zoom, zero fits the board.">
+        <div class="world" id="world"></div>
+      </div>
+
+      <div class="board__ui" id="zoom">
+        <button type="button" data-act="fit" aria-label="Fit board to view" title="Fit to view">⛶</button>
+        <button type="button" data-act="out" aria-label="Zoom out">−</button>
+        <button type="button" class="zoomval" data-act="reset" aria-label="Reset zoom to 100 percent">100%</button>
+        <button type="button" data-act="in" aria-label="Zoom in">+</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script src="board.js"></script>
+<script>
+  document.getElementById('brand-ico').innerHTML = icon('floppy');
+  document.getElementById('hero-ico').innerHTML =
+    icon('term','Plugma icon').replace('class="ico"','class="ico ico--lg"');
+  drawBoard({ viewport:'vp', world:'world', zoom:'zoom', count:'objcount' });
+</script>
+
+</body>
+</html>

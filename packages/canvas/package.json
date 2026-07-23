@@ -1,0 +1,41 @@
+{
+  "name": "@gavinmcfarland/canvas",
+  "version": "0.0.0",
+  "description": "Embeddable pan/zoom/annotate canvas React component",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./styles.css": "./src/styles.css",
+    "./core.css": "./src/core.css",
+    "./theme.css": "./src/theme.css",
+    "./enamel.css": "./src/enamel.css"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "demo": "vite --config vite.demo.config.js",
+    "split-css": "node scripts/split-css.mjs",
+    "prepublishOnly": "node scripts/split-css.mjs && vite build"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "dependencies": {
+    "lucide-react": "^1.24.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "vite": "^5.4.21"
+  }
+}

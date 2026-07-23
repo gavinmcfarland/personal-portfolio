@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Plugma — Gavin McFarland</title>
+<meta name="description" content="Plugma — a zero-config toolchain for building Figma plugins, with real hot reloading." />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body data-page="project">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<header class="bar">
+  <div class="bar__in">
+    <a class="brand" href="index.html"><span id="brand-ico"></span>Gavin McFarland</a>
+    <nav id="nav" aria-label="Main"></nav>
+    <button id="grid-toggle" class="btn" type="button" aria-pressed="false" style="min-width:0;padding:3px 8px" title="Layout grid (G)">Grid</button>
+    <button id="theme-toggle" class="btn" type="button" aria-pressed="false" style="min-width:0;padding:3px 8px">Theme</button>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <nav class="rail" aria-label="Contents">
+    <a href="#brief">Brief</a>
+    <a href="#facts">Facts</a>
+    <a href="#problem">Problem</a>
+    <a href="#build">Build</a>
+    <a href="#board">Board</a>
+    <a href="#result">Result</a>
+  </nav>
+
+  <main class="main">
+
+    <section id="brief" class="sec">
+      <div class="grid10">
+        <div style="grid-column:1 / -1; display:flex; align-items:flex-start; gap:12px; margin-bottom:var(--bl)">
+          <span id="hero-ico"></span>
+          <span>
+            <span class="display" style="display:block">Plugma</span>
+            <span class="lead" style="display:block; margin-top:4px; color:var(--dim)">
+              A zero-config toolchain for Figma plugins
+            </span>
+          </span>
+        </div>
+
+        <div class="prose" style="grid-column:1 / -1">
+          <p>
+            Give Figma plugins the development loop every other web project already has: change
+            a line, see it. No rebuild, no reload, and no losing the state you were halfway
+            through testing.
+          </p>
+        </div>
+
+        <p style="grid-column:1 / -1; margin:var(--bl) 0 0; display:flex; gap:8px; flex-wrap:wrap">
+          <a class="btn btn--primary" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">plugma.dev ↗</a>
+          <a class="btn" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">Source ↗</a>
+          <a class="btn" href="project-canvas.html">Open board</a>
+        </p>
+      </div>
+    </section>
+
+    <section id="facts" class="sec">
+      <h2 class="sec__head"><span class="sec__n">01</span> Facts</h2>
+      <div class="grid10">
+        <div class="list grid10">
+          <div class="list__row"><span class="c-term">Type</span><span class="c-body">Command-line toolchain</span></div>
+          <div class="list__row"><span class="c-term">Year</span><span class="c-body">2024 — ongoing</span></div>
+          <div class="list__row"><span class="c-term">Role</span><span class="c-body">Creator, maintainer</span></div>
+          <div class="list__row"><span class="c-term">Built with</span><span class="c-body">Node, TypeScript, Vite</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="problem" class="sec">
+      <h2 class="sec__head"><span class="sec__n">02</span> Problem</h2>
+      <div class="prose">
+        <p>
+          A Figma plugin is two programs that cannot see each other. One runs in a sandbox with
+          access to the document and no DOM; the other runs in an iframe with the DOM and no
+          document. They speak only by passing messages.
+        </p>
+        <p>
+          Neither half can be served from disk the way an ordinary web app can, so the UI has to
+          be inlined into the built file. <strong>That single requirement is what breaks the
+          development loop</strong> — inlining is a build step, and a build step means you are no
+          longer editing, you are rebuilding and reloading by hand.
+        </p>
+      </div>
+    </section>
+
+    <section id="build" class="sec">
+      <h2 class="sec__head"><span class="sec__n">03</span> Build</h2>
+      <div class="prose">
+        <p>
+          Plugma puts all of it underneath one command. One scaffolds, one develops, one ships,
+          and the framework stays your choice.
+        </p>
+        <p>
+          The trick is where the UI lives. In development it is served from a dev server; at
+          build time the same UI is inlined. The sandbox half never notices the difference, so
+          hot module reloading works the way it does anywhere else.
+        </p>
+      </div>
+    </section>
+
+    <section id="board" class="sec">
+      <h2 class="sec__head">
+        <span class="sec__n">04</span> Board
+        <span class="sec__note">Fig. 1</span>
+      </h2>
+
+      <div class="prose" style="margin-bottom:var(--bl)">
+        <p>
+          The working notes live on a board rather than in a document, because the argument is
+          spatial — two halves, a bridge, and what each side can reach.
+        </p>
+      </div>
+
+      <div class="grid10">
+        <figure class="figure">
+          <div class="figure__stage board">
+            <div class="vp" style="cursor:default" aria-hidden="true">
+              <div class="figure__scale" id="mini"></div>
+            </div>
+          </div>
+          <figcaption class="figure__cap">
+            <span>Fig. 1 — working board at 52%</span>
+            <a href="project-canvas.html">Open full board →</a>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="result" class="sec">
+      <h2 class="sec__head"><span class="sec__n">05</span> Result</h2>
+      <div class="prose" style="margin-bottom:var(--bl)">
+        <p>
+          What it replaces took most of a day, every time. It now takes one command. Still
+          maintained, and the substrate under every plugin I have built since.
+        </p>
+      </div>
+      <div class="grid10">
+        <div class="list grid10" id="neighbours"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="foot">
+  <div class="foot__in">
+    <span><span class="k">Index</span> <span id="counts">—</span></span>
+    <span><span class="k">This</span> Plugma · Tool · 2024</span>
+    <span><span class="k">Mail</span> <a href="mailto:gavin@limitlessloop.com">gavin@limitlessloop.com</a></span>
+  </div>
+</footer>
+
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script src="board.js"></script>
+<script>
+  document.getElementById('brand-ico').innerHTML = icon('floppy');
+  document.getElementById('hero-ico').innerHTML =
+    icon('term','Plugma icon').replace('class="ico"','class="ico ico--xl"');
+
+  /* The figure is the board itself at 52% — not a picture of it. */
+  drawFigure(document.getElementById('mini'), 0.52, 16);
+
+  /* Neighbours come from the same array the index reads. */
+  const i = DATA.projects.findIndex((p) => p.slug === 'plugma');
+  const near = [
+    { label:'Next', p:DATA.projects[i + 1] },
+    { label:'Previous', p:DATA.projects[i - 1] },
+  ].filter((n) => n.p);
+
+  document.getElementById('neighbours').innerHTML = near.map((n) => `
+    <a class="list__row" href="${esc(n.p.href)}"${n.p.href.startsWith('http') ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+      <span class="c-term">${n.label}</span>
+      <span class="c-body">${icon(n.p.icon)}&nbsp;${esc(n.p.name)} — ${esc(n.p.desc)}</span>
+    </a>`).join('') + `
+    <a class="list__row" href="index.html#work">
+      <span class="c-term">All</span>
+      <span class="c-body">Back to the index →</span>
+    </a>`;
+
+  /* The icons inside those rows are inline, so align them. */
+  document.querySelectorAll('#neighbours .c-body .ico')
+    .forEach((s) => { s.style.display = 'inline-block'; s.style.verticalAlign = '-3px'; });
+</script>
+
+</body>
+</html>

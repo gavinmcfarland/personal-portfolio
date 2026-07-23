@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Board · plugma — Galley</title>
+<meta name="description" content="The plugma working board — notes, code and the argument, laid out spatially.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F4F1E9'/%3E%3Crect x='4' y='4' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='9' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='14' width='9' height='2' fill='%231A1916'/%3E%3Crect x='22' y='4' width='2' height='12' fill='%23A82818'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<!-- The board keeps the sheet's own paper and its own running head.
+     What changes on arriving here is not the surface but the fact
+     that colour is suddenly allowed on it. -->
+<body data-page="board">
+<a class="skip" href="#board">Skip to the board</a>
+
+<header class="head">
+  <a class="head__name" href="index.html">G. McFarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="head__tools" style="align-items:center">
+    <output id="board-zoomval" class="micro faint" aria-live="off" style="min-width:4ch;text-align:right">100%</output>
+    <button class="btn" id="board-reset" type="button" style="padding:.15rem .8rem">Reset</button>
+    <button id="theme-toggle" type="button">Theme</button>
+  </div>
+</header>
+
+<div class="board" id="board"></div>
+
+<p class="board__hint" id="board-hint" aria-hidden="true">Drag or scroll to pan · pinch to zoom · 0 fits</p>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script src="board.js"></script>
+<script>
+  (() => {
+    const api = Board.mount(document.getElementById('board'), DATA.board.notes);
+    document.getElementById('board-reset').addEventListener('click', () => api.fit());
+
+    /* The hint earns its keep once, then leaves. */
+    const hint = document.getElementById('board-hint');
+    const dismiss = () => { hint.style.opacity = '0'; };
+    addEventListener('pointerdown', dismiss, { once: true });
+    addEventListener('wheel', dismiss, { once: true });
+    setTimeout(dismiss, 8000);
+  })();
+</script>
+</body>
+</html>

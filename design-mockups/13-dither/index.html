@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gavin(1) — Gavin McFarland</title>
+<meta name="description" content="Gavin McFarland, design engineer. Design systems and the developer tooling they are built with.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230E0F0D'/%3E%3Cg fill='%23D9D7CB'%3E%3Crect x='3' y='3' width='1' height='1'/%3E%3Crect x='5' y='4' width='1' height='1'/%3E%3Crect x='7' y='3' width='1' height='1'/%3E%3Crect x='4' y='6' width='1' height='1'/%3E%3Crect x='6' y='7' width='1' height='1'/%3E%3Crect x='9' y='6' width='1' height='1'/%3E%3Crect x='8' y='9' width='1' height='1'/%3E%3Crect x='11' y='8' width='1' height='1'/%3E%3Crect x='10' y='11' width='1' height='1'/%3E%3Crect x='12' y='12' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<!-- A terminal is dark. Bone is opt-in rather than inferred. -->
+<script>(()=>{document.documentElement.classList.toggle('light',localStorage.getItem('gm-surface-13')==='bone');})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="index">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="bar__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── NAME ─────────────────────────────────────────────────────── -->
+  <section class="sec ground ground--patch">
+    <div class="sheet" style="position:relative">
+      <!-- Register marks. They mean one thing — "this is a proof" —
+           and they say it without a word of explanation. -->
+      <span class="decal decal--crop" style="top:-4px;left:calc(var(--pad) - 30px)" aria-hidden="true"></span>
+      <h1 class="man__h">Name</h1>
+      <div class="man__b">
+        <p class="ink"><span class="b">gavin</span> — design engineer; builds the tools design systems are
+        made with, and the systems themselves.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SYNOPSIS. Decals hang off the corners of the block. ─────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Synopsis</h2>
+      <div class="man__b">
+        <p class="ink" style="margin-bottom:.5rem">
+          <span class="green">$</span> gavin
+          <span class="dim">[--design-systems] [--front-end] [--tooling]</span>
+        </p>
+        <p class="ink">
+          <span class="green">$</span> gavin
+          <span class="dim">--hire</span> <span class="faint">[--remote | --london]</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DESCRIPTION ──────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Description</h2>
+      <div class="man__b">
+        <p>
+          Fifteen years between design and front-end, mostly spent on the seam:
+          token pipelines, component APIs, and the editor plugins that keep the two
+          halves honest with each other.
+        </p>
+        <p>
+          Every tool listed under <a class="ln" href="work.html">work(1)</a> began as
+          a problem that kept recurring, and exists because the thing that would
+          have fixed it did not.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── OPTIONS ──────────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Options</h2>
+      <div class="man__dl" id="capabilities"></div>
+    </div>
+  </section>
+
+  <div class="sheet"><div class="stripe" aria-hidden="true"></div></div>
+
+  <!-- ── EXAMPLES — three entries, each with its plate ───────────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Examples</h2>
+      <div class="man__b" style="margin-bottom:1rem">
+        <p>Three of <span data-count="projects">—</span>. The rest are under
+        <a class="ln" href="work.html">work(1)</a>.</p>
+      </div>
+      <div id="entries"></div>
+    </div>
+  </section>
+
+  <!-- ── ENVIRONMENT ──────────────────────────────────────────────── -->
+  <section class="sec ground ground--band">
+    <div class="sheet">
+      <h2 class="man__h">Environment</h2>
+      <div class="man__dl" id="environment"></div>
+    </div>
+  </section>
+
+  <!-- ── BUGS. Understated joke, stated deadpan. ────────────────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Bugs</h2>
+      <!-- The chip lands past the end of the shorter second line, so
+           it overlaps the block without ever sitting on a word. The
+           one place this set is allowed to be funny. -->
+      <div class="man__b" style="position:relative;display:inline-block">
+        <span class="decal decal--chip" style="bottom:-22px;right:-86px" aria-hidden="true"></span>
+        <p>
+          Occasionally begins building the tool before finishing the design file.
+          Known behaviour; will not fix.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SEE ALSO — man-page cross references ────────────────────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="work.html">work</a><span class="n">(1)</span>,
+          <a href="journal.html">journal</a><span class="n">(1)</span>,
+          <a href="textures.html">dither</a><span class="n">(7)</span>,
+          <a href="board.html">board</a><span class="n">(1)</span>,
+          <a href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">github</a><span class="n">(7)</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── AUTHOR ───────────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Author</h2>
+      <div class="man__b">
+        <p class="ink">Written by Gavin McFarland.</p>
+        <p class="ink" style="margin-top:.4rem">
+          Report issues to <a class="ln" data-email href="#">—</a>
+          <button class="copy" type="button" data-copy aria-label="Copy address">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="M5 5V3h8v8h-2M3 5h8v8H3z"/>
+            </svg><span class="copy__label sm"></span>
+          </button>
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <p>gavin(1) &nbsp;·&nbsp; 13 · Dither &nbsp;·&nbsp; London, United Kingdom</p>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    if (!window.DATA) return;
+
+    document.getElementById('capabilities').innerHTML = DATA.capabilities.map((c) => `
+      <div><dt style="text-transform:none;letter-spacing:0">${esc(c.k)}</dt><dd>${esc(c.v)}</dd></div>`).join('');
+
+    document.getElementById('environment').innerHTML = DATA.environment.map((e) => `
+      <div><dt>${esc(e.k)}</dt><dd>${esc(e.v)}</dd></div>`).join('');
+
+    renderEntries(document.getElementById('entries'), DATA.projects.slice(0, 3));
+  })();
+</script>
+</body>
+</html>

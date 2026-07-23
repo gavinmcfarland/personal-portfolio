@@ -1,0 +1,897 @@
+/* ══════════════════════════════════════════════════════════════════
+   08 · HARD MOUNT — the design system
+   ------------------------------------------------------------------
+   The mount idea of `07-passepartout` — content is never loose on the
+   page, it sits inside a bordered surface with deep, even padding —
+   rebuilt in the drafting register of `02-plate-drafting`.
+
+   THE THREE RULES, inherited from 02 and obeyed without exception:
+
+     1. NO CURVES.   `border-radius: 0` is set globally on
+        *, *::before, *::after and is never overridden — not on
+        frames, plates, buttons, chips, inputs or board nodes.
+     2. NO SHADOWS.  There is not one `box-shadow` declaration in this
+        file. A frame sits on the sheet because it is RULED, not
+        because it floats above it.
+     3. EVERYTHING SNAPS. 12 columns across, a 24px baseline down.
+        Spacing is a multiple of 8. Press G to overlay the grid and
+        check it.
+
+   WHAT CHANGED FROM 07, and why:
+
+     07 carried depth in shadow and softness — 14px radii, three
+     shadow steps, a warm clay accent. Strip those and the mount has
+     nothing left to hold it to the page, so the border does the work
+     instead: it goes from 1px at 11% alpha to 1px at full ink. The
+     mount stops being a card and becomes a DRAWN BOX, which is the
+     whole difference between the two variations.
+
+     Hierarchy gets flatter still. 07 allowed one 32px display per
+     page; here the largest step is ~30px and it is barely above body
+     size. What carries rank instead is INVERSION — a black block with
+     stock-coloured text — and the numbering. Every section, frame and
+     plate is numbered, because on a drawing everything is.
+
+   §1 tokens · §2 primitives · §3 components · §4 board
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+
+:root {
+  /* Bone stock, white plates, true black ink. */
+  --stock:     #E5E2DB;
+  --plate-bg:  #FFFFFF;
+  --sunk:      #DAD6CD;
+  --ink:       #0A0A0A;
+  --muted:     #3E3E3B;
+  --faint:     #74736E;
+
+  /* Two signals, and they do different jobs.
+     ACCENT is for anything that is text or a line — links, focus,
+     connectors — so it must pass AA on the stock. It does: 8.1:1.
+     MARK is a block fill only, never text on the stock, always with
+     black set on top of it. Yellow type would fail every check;
+     yellow as a filled block with black on it is 12.4:1. */
+  --accent:      #1B3BE0;
+  --accent-soft: #D8DDF9;
+  --mark:        #F2C300;
+  --mark-ink:    #0A0A0A;
+
+  --rule:      #0A0A0A;   /* the drawn line — full ink */
+  --rule-hair: #B9B5AC;   /* the secondary line */
+  --grid-minor:#D3CFC5;
+  --grid-major:#BCB7AC;
+
+  /* Board blocks — flat fills, hairline bordered, no shadow. */
+  --bk-a: #F2C300; --bk-a-ink: #2E2400;
+  --bk-b: #B9C7EE; --bk-b-ink: #0E1B47;
+  --bk-c: #BDD0B4; --bk-c-ink: #16290F;
+  --bk-d: #E8C0A8; --bk-d-ink: #3B1F0A;
+
+  /* Type — one superfamily, so the sans and the mono share a skeleton */
+  --f-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --f-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Five steps, 11 → ~30. The display step is barely above body:
+     rank is carried by inversion, rules and numbering instead. */
+  --t-micro:   .6875rem;   /* 11 */
+  --t-label:   .75rem;     /* 12 */
+  --t-mono:    .8125rem;   /* 13 */
+  --t-body:    .9375rem;   /* 15 */
+  --t-lead:    1rem;       /* 16 */
+  --t-display: clamp(1.5rem, 3vw, 1.875rem);
+
+  /* Grid — 12 columns, 24px baseline, 8px spacing unit */
+  --sheet: 78rem;
+  --gutter: 1.5rem;
+  --pad: clamp(1rem, 3vw, 2rem);
+  --bl: 1.5rem;
+  --frame-pad: 1.5rem;
+  --frame-pad-deep: 2.5rem;
+
+  color-scheme: light;
+}
+
+.dark {
+  --stock:     #0A0A0A;
+  --plate-bg:  #151515;
+  --sunk:      #050505;
+  --ink:       #EDEDEA;
+  --muted:     #A9A8A3;
+  --faint:     #6E6D69;
+
+  --accent:      #93A8FF;
+  --accent-soft: #1B2247;
+  --mark:        #F2C300;
+  --mark-ink:    #0A0A0A;
+
+  --rule:      #EDEDEA;
+  --rule-hair: #37372F;
+  --grid-minor:#1A1A18;
+  --grid-major:#2A2A26;
+
+  --bk-a: #7A6300; --bk-a-ink: #FFF3C7;
+  --bk-b: #2C3A6B; --bk-b-ink: #DCE3FA;
+  --bk-c: #35492D; --bk-c-ink: #DDEBD6;
+  --bk-d: #5E3A21; --bk-d-ink: #F7E0CE;
+
+  color-scheme: dark;
+}
+
+
+/* ── §2 · PRIMITIVES ───────────────────────────────────────────── */
+
+/* Rule 1, stated once and never undone. */
+*, *::before, *::after { box-sizing: border-box; border-radius: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--stock);
+  color: var(--ink);
+  font-family: var(--f-sans);
+  font-size: var(--t-body);
+  line-height: var(--bl);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, p, figure, dl, dd, ul, ol { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+img, svg { display: block; max-width: 100%; }
+button, input, textarea, select { font: inherit; color: inherit; }
+
+::selection { background: var(--mark); color: var(--mark-ink); }
+
+/* Components below set explicit `display` values, which would beat
+   the UA rule for [hidden]. The gallery filter depends on this. */
+[hidden] { display: none !important; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.skip { position: absolute; left: -9999px; z-index: 200; }
+.skip:focus {
+  left: 0; top: 0;
+  padding: .5rem 1rem;
+  background: var(--ink); color: var(--stock);
+  font-family: var(--f-mono); font-size: var(--t-label);
+  text-transform: uppercase; letter-spacing: .08em;
+}
+
+.sr {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Sheet and grid ─────────────────────────────────────────────── */
+
+.sheet {
+  width: 100%;
+  max-width: var(--sheet);
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+
+.g12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--gutter);
+}
+@media (max-width: 899px) { .g12 { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (max-width: 599px) { .g12 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Column spans. Below 900 everything falls to full width unless it
+   opts out with .keep — auto-placement across a 6-track grid strands
+   items in ways you cannot predict from the desktop layout. */
+.c2  { grid-column: span 2; }
+.c3  { grid-column: span 3; }
+.c4  { grid-column: span 4; }
+.c5  { grid-column: span 5; }
+.c6  { grid-column: span 6; }
+.c7  { grid-column: span 7; }
+.c8  { grid-column: span 8; }
+.c9  { grid-column: span 9; }
+.c12 { grid-column: span 12; }
+@media (max-width: 899px) {
+  .c2, .c3, .c4, .c5, .c6, .c7, .c8, .c9, .c12 { grid-column: 1 / -1; }
+  .keep.c3, .keep.c6 { grid-column: span 3; }
+}
+@media (max-width: 599px) {
+  .keep.c3, .keep.c6 { grid-column: 1 / -1; }
+}
+
+.section { padding-block: calc(var(--bl) * 2); }
+.stack   { display: grid; gap: var(--gutter); }
+.stack-s { display: grid; gap: .5rem; }
+.stack-l { display: grid; gap: calc(var(--bl) * 1.5); }
+.row     { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.spread  { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 1.5rem; }
+
+/* Construction grid overlay — press G. Mirrors .sheet's box model
+   exactly (same max-width, same padding) so the bands land on the
+   real columns rather than near them. */
+#gridlines {
+  position: fixed; inset: 0;
+  z-index: 300;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+}
+#gridlines[data-on='true'] { opacity: 1; }
+#gridlines .sheet { height: 100%; }
+#gridlines .g12 { height: 100%; }
+#gridlines .g12 > i { display: block; background: var(--accent); opacity: .09; }
+
+
+/* ── §3 · COMPONENTS ───────────────────────────────────────────── */
+
+/* ── Type ───────────────────────────────────────────────────────── */
+
+.label {
+  font-family: var(--f-mono);
+  font-size: var(--t-label);
+  font-weight: 400;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.label--ink { color: var(--ink); }
+.label--accent { color: var(--accent); }
+
+/* Inversion — the loudest thing in the system, and the reason the
+   type ramp can stay as flat as it does. */
+.block {
+  display: inline-block;
+  padding: .25rem .55rem .3rem;
+  background: var(--ink);
+  color: var(--stock);
+  font-family: var(--f-mono);
+  font-size: var(--t-label);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+.block--mark { background: var(--mark); color: var(--mark-ink); }
+.block--accent { background: var(--accent); color: #FFFFFF; }
+.dark .block--accent { color: #0A0A0A; }
+
+.display {
+  font-size: var(--t-display);
+  font-weight: 500;
+  letter-spacing: -.02em;
+  line-height: 1.16;
+}
+.title {
+  font-size: var(--t-lead);
+  font-weight: 500;
+  letter-spacing: -.005em;
+  line-height: var(--bl);
+}
+.lead  { font-size: var(--t-lead); line-height: calc(var(--bl) * 1.15); color: var(--muted); }
+.body  { font-size: var(--t-body); color: var(--muted); }
+.small { font-size: var(--t-mono); color: var(--muted); }
+.mono  { font-family: var(--f-mono); font-size: var(--t-mono); }
+.micro { font-family: var(--f-mono); font-size: var(--t-micro); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.quiet { color: var(--faint); }
+.strong { color: var(--ink); font-weight: 500; }
+
+.prose { display: grid; gap: var(--bl); color: var(--muted); max-width: 64ch; }
+.prose strong { color: var(--ink); font-weight: 500; }
+.prose code {
+  font-family: var(--f-mono);
+  font-size: .86em;
+  background: var(--accent-soft);
+  color: var(--ink);
+  padding: .05em .3em;
+}
+
+a { color: inherit; }
+
+.ln {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .2em;
+}
+.ln:hover { background: var(--accent); color: #FFFFFF; text-decoration-color: transparent; }
+.dark .ln:hover { color: #0A0A0A; }
+
+.lnq { text-decoration: none; color: var(--muted); }
+.lnq:hover { color: var(--ink); text-decoration: underline; text-underline-offset: .2em; }
+
+/* ── The frame — 07's mount, drawn instead of floated ───────────── */
+
+.frame {
+  background: var(--plate-bg);
+  border: 1px solid var(--rule);
+  padding: var(--frame-pad);
+}
+.frame--deep { padding: var(--frame-pad-deep); }
+.frame--sunk { background: var(--sunk); }
+.frame--stock { background: transparent; }
+.frame--bare { padding: 0; }
+
+a.frame { display: block; text-decoration: none; }
+a.frame:hover { background: var(--accent-soft); }
+.dark a.frame:hover { background: var(--accent-soft); }
+
+/* The caption strip. On a drawing the caption is ruled off from the
+   thing it describes, not floated under it. */
+.frame__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  padding: .4rem .6rem;
+  border-top: 1px solid var(--rule);
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.frame__bar--top { border-top: 0; border-bottom: 1px solid var(--rule); }
+
+hr.rule  { height: 0; border: 0; border-top: 1px solid var(--rule); margin: 0; }
+hr.hair  { height: 0; border: 0; border-top: 1px solid var(--rule-hair); margin: 0; }
+
+/* Numbered section head — a ruled band with a number in it. */
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: var(--gutter);
+}
+.head__num {
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .1em;
+  color: var(--stock);
+  background: var(--ink);
+  padding: .15rem .4rem .2rem;
+  flex: none;
+}
+.head__t { font-size: var(--t-body); font-weight: 500; letter-spacing: -.005em; }
+.head__x { margin-left: auto; }
+
+/* ── The plate ──────────────────────────────────────────────────
+   Every plate is drawn in CSS. Hard-edged: the patterns are solid
+   rules and blocks, with none of 07's low-alpha softness. */
+
+.plate {
+  position: relative;
+  background: var(--sunk);
+  border: 1px solid var(--rule);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.plate--wide { aspect-ratio: 16 / 9; }
+.plate--tall { aspect-ratio: 3 / 4; }
+
+.plate__art { position: absolute; inset: 0; }
+
+.plate__art[data-art='grid'] {
+  background-image:
+    linear-gradient(var(--rule-hair) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rule-hair) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.plate__art[data-art='arcs'] {
+  background-image:
+    radial-gradient(circle at 16% 116%, transparent 30%, var(--rule-hair) 30%, var(--rule-hair) 31%, transparent 31%),
+    radial-gradient(circle at 16% 116%, transparent 52%, var(--rule-hair) 52%, var(--rule-hair) 53%, transparent 53%),
+    radial-gradient(circle at 16% 116%, transparent 74%, var(--rule-hair) 74%, var(--rule-hair) 75%, transparent 75%),
+    radial-gradient(circle at 16% 116%, transparent 96%, var(--rule-hair) 96%, var(--rule-hair) 97%, transparent 97%);
+}
+.plate__art[data-art='stack'] {
+  background-image: repeating-linear-gradient(180deg, transparent 0 15px, var(--rule-hair) 15px 16px);
+}
+.plate__art[data-art='bars'] {
+  background-image: repeating-linear-gradient(90deg, var(--mark) 0 8px, transparent 8px 24px);
+}
+.plate__art[data-art='dots'] {
+  background-image: radial-gradient(var(--rule-hair) 2px, transparent 2px);
+  background-size: 16px 16px;
+}
+.plate__art[data-art='rule'] {
+  background-image: repeating-linear-gradient(45deg, var(--rule-hair) 0 1px, transparent 1px 11px);
+}
+
+/* The glyph — a hard block, not a floating tile. */
+.plate__glyph {
+  position: relative;
+  font-family: var(--f-mono);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: .35rem .5rem;
+  background: var(--ink);
+  color: var(--stock);
+}
+
+/* ── Chrome ─────────────────────────────────────────────────────── */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--stock);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar__in {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+  min-height: 48px;
+}
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  text-decoration: none;
+  flex: none;
+  padding-right: 1rem;
+  border-right: 1px solid var(--rule-hair);
+}
+.mark__glyph {
+  width: 18px; height: 18px;
+  flex: none;
+  background: var(--ink);
+  position: relative;
+}
+.mark__glyph::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 50% 50%;
+  background: var(--mark);
+}
+.mark__name {
+  font-family: var(--f-mono);
+  font-size: var(--t-label);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.nav {
+  display: flex;
+  align-items: stretch;
+  margin-left: auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.nav::-webkit-scrollbar { display: none; }
+
+.nav a {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 .7rem;
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  text-decoration: none;
+}
+.nav a:hover { color: var(--ink); background: var(--sunk); }
+.nav a[aria-current='page'] { background: var(--ink); color: var(--stock); }
+
+.tools { display: flex; align-items: stretch; flex: none; border-left: 1px solid var(--rule-hair); }
+.ghost {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--faint);
+  cursor: pointer;
+}
+.ghost:hover { color: var(--ink); background: var(--sunk); }
+.ghost[aria-pressed='true'] { background: var(--mark); color: var(--mark-ink); }
+.ghost svg { width: 15px; height: 15px; }
+.icon-sun  { display: block; }
+.icon-moon { display: none; }
+.dark .icon-sun  { display: none; }
+.dark .icon-moon { display: block; }
+
+/* Title block — the footer, drawn as one on a drawing. */
+.titleblock {
+  border-top: 1px solid var(--rule);
+  margin-top: calc(var(--bl) * 2);
+}
+.tb {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--rule);
+  border-bottom: 0;
+}
+@media (max-width: 599px) { .tb { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tb > div {
+  padding: .55rem .7rem .7rem;
+  border-right: 1px solid var(--rule-hair);
+  border-bottom: 1px solid var(--rule);
+  min-width: 0;
+}
+.tb > div:last-child { border-right: 0; }
+.tb dt {
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.tb dd {
+  margin: 0;
+  font-size: var(--t-mono);
+  font-family: var(--f-mono);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* ── Controls ───────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .55rem 1rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--stock);
+  font-family: var(--f-mono);
+  font-size: var(--t-label);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:hover { background: var(--mark); color: var(--mark-ink); border-color: var(--mark); }
+
+.btn--quiet { background: transparent; color: var(--ink); }
+.btn--quiet:hover { background: var(--ink); color: var(--stock); border-color: var(--ink); }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: .15rem .45rem .2rem;
+  border: 1px solid var(--rule-hair);
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.tags { display: flex; flex-wrap: wrap; gap: .35rem; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0; border: 1px solid var(--rule); width: fit-content; max-width: 100%; }
+.chip { position: relative; display: flex; }
+.chip + .chip { border-left: 1px solid var(--rule); }
+.chip input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.chip span {
+  display: block;
+  padding: .35rem .7rem;
+  background: var(--plate-bg);
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.chip input:hover + span { background: var(--sunk); color: var(--ink); }
+.chip input:checked + span { background: var(--ink); color: var(--stock); }
+.chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* ── Schedules — the ruled table that carries most content ──────── */
+
+.sched { display: grid; border-top: 1px solid var(--rule); }
+
+.sched__row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 6rem 4rem;
+  align-items: baseline;
+  gap: 0 var(--gutter);
+  padding: .6rem .5rem;
+  border-bottom: 1px solid var(--rule-hair);
+  text-decoration: none;
+}
+.sched__row:hover { background: var(--sunk); }
+.sched__num { font-family: var(--f-mono); font-size: var(--t-micro); color: var(--faint); font-variant-numeric: tabular-nums; }
+.sched__name { font-size: var(--t-body); font-weight: 500; letter-spacing: -.005em; }
+.sched__desc { display: block; font-size: var(--t-mono); color: var(--muted); font-weight: 400; }
+.sched__kind { font-family: var(--f-mono); font-size: var(--t-micro); letter-spacing: .06em; text-transform: uppercase; color: var(--faint); display: inline-flex; align-items: center; gap: .4rem; }
+.sched__year { font-family: var(--f-mono); font-size: var(--t-micro); color: var(--faint); text-align: right; font-variant-numeric: tabular-nums; }
+.swatch { width: 8px; height: 8px; flex: none; border: 1px solid var(--rule); }
+
+/* Stated explicitly rather than left to auto-placement: the
+   description precedes the year in the DOM, so auto-placement would
+   strand the year on a row of its own. (This is the exact bug 02
+   found and fixed; inheriting the fix rather than the bug.) */
+@media (max-width: 599px) {
+  .sched__row {
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    grid-template-areas: 'num name year' '. kind kind';
+    row-gap: .25rem;
+  }
+  .sched__num  { grid-area: num; }
+  .sched__name { grid-area: name; }
+  .sched__year { grid-area: year; }
+  .sched__kind { grid-area: kind; }
+}
+
+/* Definition schedule — the spec table */
+.defs { display: grid; border-top: 1px solid var(--rule-hair); }
+.defs > div {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: var(--gutter);
+  padding: .5rem .5rem;
+  border-bottom: 1px solid var(--rule-hair);
+  font-size: var(--t-mono);
+}
+.defs dt {
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.defs dd { margin: 0; }
+
+/* ── Cards — the gallery unit ───────────────────────────────────── */
+
+.card { display: flex; flex-direction: column; }
+.card__plate { padding: .5rem .5rem 0; }
+.card__body  { padding: .75rem .75rem 0; flex: 1 1 auto; }
+
+/* ── Form ───────────────────────────────────────────────────────── */
+
+.field { display: grid; gap: .3rem; }
+.field > label {
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.input {
+  width: 100%;
+  padding: .55rem .65rem;
+  background: var(--stock);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: var(--t-mono);
+}
+.dark .input { background: var(--sunk); }
+.input::placeholder { color: var(--faint); }
+.input:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
+textarea.input { min-height: 8rem; resize: vertical; line-height: var(--bl); }
+
+.field[data-invalid='true'] .input { border-color: #C81E1E; border-width: 2px; }
+.dark .field[data-invalid='true'] .input { border-color: #FF6B6B; }
+
+.err {
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #C81E1E;
+  min-height: 1.2em;
+}
+.dark .err { color: #FF6B6B; }
+
+.note-ok {
+  display: flex;
+  gap: .6rem;
+  padding: .7rem .8rem;
+  border: 1px solid var(--rule);
+  background: var(--mark);
+  color: var(--mark-ink);
+  font-size: var(--t-mono);
+}
+.note-ok .strong { color: var(--mark-ink); }
+
+.empty {
+  padding: calc(var(--bl) * 2) 1rem;
+  text-align: center;
+  border: 1px dashed var(--rule-hair);
+  font-family: var(--f-mono);
+  font-size: var(--t-mono);
+  color: var(--faint);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §4 · THE BOARD
+   The page is a ruled sheet; the board is SQUARED PAPER — 20px minor,
+   100px major, both scaling with zoom. Same discipline, different
+   substrate, exactly as in 02.
+
+   Every node is a §3 frame with a position: same 1px full-ink border,
+   same square corners, same ruled caption strip. Nothing on the board
+   has a radius or a shadow either, and connectors are ORTHOGONAL —
+   right angles only, because rule 1 applies to lines as well as boxes.
+   ══════════════════════════════════════════════════════════════════ */
+
+.board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  contain: strict;
+  background: var(--stock);
+}
+
+.board__vp {
+  position: absolute;
+  inset: 0;
+  background-color: var(--stock);
+  cursor: grab;
+  touch-action: none;
+}
+.board__vp:active { cursor: grabbing; }
+.board__vp:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* A boxed board sits inside a page that scrolls, so it must not eat
+   the wheel. The full-bleed board owns the viewport and may. */
+.board[data-mode='boxed'] .board__vp { touch-action: pan-y; }
+
+.board__world { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+.board__node  { position: absolute; top: 0; left: 0; }
+.board__svg   { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: visible; pointer-events: none; }
+
+.nd {
+  background: var(--plate-bg);
+  border: 1px solid var(--rule);
+}
+.nd__bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .3rem .5rem .35rem;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.nd__body { padding: .75rem .8rem .8rem; }
+
+.nd-doc { width: 320px; }
+.nd-doc h3 { font-size: var(--t-body); font-weight: 500; margin-bottom: .4rem; letter-spacing: -.005em; }
+.nd-doc p  { font-size: var(--t-mono); line-height: var(--bl); color: var(--muted); margin-bottom: .5rem; }
+.nd-doc p:last-child { margin-bottom: 0; }
+.nd-doc code { font-family: var(--f-mono); font-size: .88em; background: var(--accent-soft); color: var(--ink); padding: .05em .3em; }
+
+/* 07's tinted note cards become flat numbered blocks — the same
+   information redrawn as something that belongs on a drawing. */
+.nd-block {
+  width: 180px;
+  min-height: 120px;
+  border: 1px solid var(--rule);
+  background: var(--bk-a);
+  color: var(--bk-a-ink);
+  display: flex;
+  flex-direction: column;
+}
+.nd-block[data-fill='b'] { background: var(--bk-b); color: var(--bk-b-ink); }
+.nd-block[data-fill='c'] { background: var(--bk-c); color: var(--bk-c-ink); }
+.nd-block[data-fill='d'] { background: var(--bk-d); color: var(--bk-d-ink); }
+.nd-block__num {
+  padding: .25rem .45rem .3rem;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .1em;
+}
+.nd-block__t {
+  padding: .6rem .5rem .7rem;
+  font-family: var(--f-mono);
+  font-size: var(--t-mono);
+  line-height: 1.45;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  white-space: pre-wrap;
+}
+
+/* The board's one display-sized thing — set in mono caps, because a
+   handwritten note would be the one item on the sheet not drafted. */
+.nd-title {
+  font-family: var(--f-mono);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--ink);
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: .15rem;
+}
+
+.nd-code { width: 400px; }
+.nd-code pre {
+  margin: 0;
+  padding: .7rem .8rem;
+  font-family: var(--f-mono);
+  font-size: .75rem;
+  line-height: 1.7;
+  color: var(--ink);
+  white-space: pre;
+  overflow-x: auto;
+}
+.nd-code .cm { color: var(--faint); }
+.nd-code .kw { color: var(--accent); font-weight: 700; }
+
+.nd-plate { width: 260px; }
+.nd-plate .nd__body { padding: .5rem; }
+
+.nd-link { width: 260px; display: block; text-decoration: none; }
+.nd-link:hover { background: var(--accent-soft); }
+.nd-link__t { font-size: var(--t-mono); font-weight: 500; color: var(--ink); display: block; }
+.nd-link__d { font-size: var(--t-micro); line-height: 1.5; color: var(--muted); display: block; margin-top: .2rem; }
+.nd-link__h { font-family: var(--f-mono); font-size: var(--t-micro); color: var(--faint); display: block; margin-top: .4rem; text-transform: uppercase; letter-spacing: .06em; }
+
+/* Board chrome — ruled boxes, not floating panels. */
+.board__ui {
+  position: absolute;
+  z-index: 100;
+  background: var(--plate-bg);
+  border: 1px solid var(--rule);
+}
+.board__zoom { right: 12px; top: 12px; display: flex; align-items: stretch; }
+.board__zoom button {
+  display: grid;
+  place-items: center;
+  height: 28px;
+  min-width: 28px;
+  border: 0;
+  border-right: 1px solid var(--rule-hair);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.board__zoom button:last-child { border-right: 0; }
+.board__zoom button:hover { background: var(--ink); color: var(--stock); }
+.board__zoom svg { width: 13px; height: 13px; }
+#board-zoomval {
+  padding-inline: .5rem;
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .04em;
+}
+
+.board__hint {
+  left: 12px; bottom: 12px;
+  padding: .3rem .5rem .35rem;
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--faint);
+  pointer-events: none;
+  transition: opacity .3s ease;
+}

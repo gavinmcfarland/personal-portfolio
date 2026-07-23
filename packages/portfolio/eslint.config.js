@@ -26,4 +26,11 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    // Vite config and dev plugins run in Node, not the browser.
+    files: ['*.config.js', 'vite-plugin-*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])

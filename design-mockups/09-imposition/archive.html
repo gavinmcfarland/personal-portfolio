@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Archive — Gavin McFarland</title>
+<meta name="description" content="Everything on one sheet: every page, project and journal entry, at maximum density.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23161511'/%3E%3Crect x='18' y='6' width='8' height='8' fill='%23C23A08'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="archive" class="page">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="rail">
+  <a class="rail__mark" href="index.html"><span class="ph ph--16" aria-hidden="true"></span>g.mcfarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">theme</button>
+    <span>london, uk</span>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- The density stress test: one table, everything, no air at all.
+       The landing sheet shows the system at its emptiest; this one
+       shows it at its fullest. Both are the same system. -->
+  <section class="section" style="margin-top:2rem" aria-labelledby="ar-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="ar-h">everything</h2>
+        <span class="head__x micro dim" id="ar-count"></span>
+      </div>
+      <div class="scroll-x">
+        <div id="everything">
+          <noscript><p class="mono dim">The archive is rendered from a shared data file. It needs JavaScript.</p></noscript>
+        </div>
+      </div>
+      <p class="micro scroll-hint">scroll →</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>sheet</dt><dd>06 / 08</dd></div>
+      <div><dt>form</dt><dd>09 · imposition</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  /* Page-local: fold pages, projects and posts into one ruled table.
+     Three sources, one treatment — the archive is the proof that the
+     table does not care what it is fed. */
+  (() => {
+    if (!window.DATA) return;
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const ext = (href) => /^https?:/.test(href);
+    const attrs = (href) => ext(href)
+      ? ` href="${esc(href)}" target="_blank" rel="noopener noreferrer"`
+      : ` href="${esc(href)}"`;
+
+    const rows = [
+      ...DATA.nav.map((n) => ({ type: 'sheet', tone: 'sage', name: n.name, desc: 'page in this set', year: '—', href: n.href })),
+      ...DATA.projects.map((p) => ({ type: 'project', tone: DATA.kinds[p.kind].tone, name: p.name, desc: p.desc, year: p.year, href: p.href })),
+      ...DATA.posts.map((p) => ({ type: 'note', tone: 'cyan', name: p.title, desc: p.lede, year: p.year, href: p.href })),
+    ];
+
+    document.getElementById('everything').innerHTML = `<div class="tbl tbl--arch">
+      <div class="tbl__row tbl__head">
+        <span>no.</span><span>type</span><span>item</span><span>description</span><span style="text-align:right">year</span>
+      </div>
+      ${rows.map((r, i) => `
+      <a class="tbl__row"${attrs(r.href)}>
+        <span class="tbl__num">${pad2(i + 1)}</span>
+        <span class="chip" data-tone="${esc(r.tone)}" style="justify-self:start"><span class="sw" data-tone="${esc(r.tone)}"></span>${esc(r.type)}</span>
+        <span class="tbl__item">${esc(r.name)}${ext(r.href) ? ' ↗' : ''}</span>
+        <span class="tbl__desc">${esc(r.desc)}</span>
+        <span class="tbl__year">${esc(r.year)}</span>
+      </a>`).join('')}
+    </div>`;
+
+    document.getElementById('ar-count').textContent =
+      `${pad2(rows.length)} rows · ${pad2(DATA.nav.length)} sheets · ${pad2(DATA.projects.length)} projects · ${pad2(DATA.posts.length)} notes`;
+  })();
+</script>
+</body>
+</html>

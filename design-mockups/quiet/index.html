@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Quiet</title>
+<meta name="description" content="Designer and full-stack engineer building tools and web apps." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<!-- Set theme before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Quiet
+     Direction: full-bleed but understated. No display type, no
+     accent colour, no gradients — one neutral grotesque at three
+     sizes, hairlines, and a great deal of air. The width is used
+     for breathing room and wide column measures rather than for
+     scale. Everything that moves, moves in opacity only.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+
+  :root {
+    --ink: #23211F;      /* never pure black — softer on paper white */
+    --plane: #FCFBF9;
+    --raise: #F6F4F1;
+    --muted: #8A837C;
+    --faint: #B5AEA6;
+    --hair: rgba(35,33,31,.13);
+
+    /* Narrower gutter than the louder mockups: the page should feel
+       open, not framed. Full-bleed at every breakpoint. */
+    --pad: clamp(1.15rem, 3.2vw, 3.75rem);
+    --sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+
+  .dark {
+    --ink: #E8E4DF;
+    --plane: #121110;
+    --raise: #1A1918;
+    --muted: #8B857E;
+    --faint: #605B56;
+    --hair: rgba(232,228,223,.14);
+  }
+
+  html { font-family: var(--sans); }
+  body {
+    background: var(--plane); color: var(--ink);
+    font-size: 15px; font-weight: 400; line-height: 1.6;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
+
+  ::selection { background: var(--ink); color: var(--plane); }
+  :focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; }
+  a { color: inherit; text-decoration: none; }
+
+  /* The entire type system: three sizes and two weights. */
+  .micro { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+  .body  { font-size: .95rem; line-height: 1.7; color: var(--muted); font-weight: 300; }
+  .lead  { font-size: clamp(1.15rem, 2.1vw, 1.9rem); line-height: 1.35; letter-spacing: -.02em; font-weight: 400; }
+
+  /* ── Top bar ───────────────────────────────────────────────────── */
+
+  .bar {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+    padding: 1.1rem var(--pad);
+    background: color-mix(in srgb, var(--plane) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--hair);
+  }
+  .bar nav { display: flex; gap: clamp(1rem, 2vw, 2rem); }
+  .bar a { transition: color .25s; }
+  .bar nav a:hover, .bar nav a.active { color: var(--ink); }
+
+  .toggle {
+    padding: 0; border: 0; background: none; cursor: pointer; font: inherit;
+    color: var(--muted); transition: color .25s;
+  }
+  .toggle:hover { color: var(--ink); }
+
+  /* ── Hero ──────────────────────────────────────────────────────── */
+
+  /* Understated scale: the statement is set at reading size, and the
+     width is spent on empty space to its right instead of on type. */
+  .hero { padding: clamp(5rem, 20vh, 14rem) var(--pad) clamp(4rem, 10vh, 8rem); }
+  .hero-grid { display: grid; gap: clamp(2.5rem, 5vw, 5rem); }
+  @media (min-width: 900px) { .hero-grid { grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); } }
+
+  .statement { margin: 0; max-width: 26ch; }
+  .statement .fade { opacity: 0; animation: fade .9s ease forwards; animation-delay: calc(var(--i,0) * 140ms); }
+  @keyframes fade { to { opacity: 1; } }
+
+  .rotator { display: inline-grid; }
+  .rotator > span { grid-area: 1/1; opacity: 0; animation: cycle 14s infinite; animation-delay: calc(var(--n) * 3.5s); }
+  @keyframes cycle {
+    0%, 2%    { opacity: 0; }
+    6%, 22%   { opacity: 1; }
+    26%, 100% { opacity: 0; }
+  }
+
+  .hero-side { display: grid; gap: 1.75rem; align-content: end; }
+  .hero-side div { display: grid; gap: .4rem; }
+
+  /* ── Full-width index table ────────────────────────────────────── */
+
+  .sec { padding: clamp(3rem, 7vw, 6rem) 0 0; }
+  .sec-head { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; padding: 0 var(--pad) 1.25rem; }
+
+  .table { border-top: 1px solid var(--hair); }
+
+  .tr {
+    display: grid; gap: .35rem 2rem; align-items: baseline;
+    padding: clamp(1.5rem, 2.6vw, 2.4rem) var(--pad);
+    border-bottom: 1px solid var(--hair);
+    transition: background-color .35s ease;
+  }
+  /* Year first, then title — reads as an archive rather than a promo. */
+  @media (min-width: 880px) {
+    .tr { grid-template-columns: 4rem minmax(0,1.5fr) minmax(0,1fr) minmax(0,1.2fr) auto; gap: 2.5rem; }
+  }
+  .tr:hover, .tr:focus-within { background: var(--raise); }
+
+  .tr h3 { margin: 0; font-size: 1.05rem; font-weight: 500; letter-spacing: -.01em; }
+  .tr .desc { font-size: .88rem; line-height: 1.6; color: var(--muted); font-weight: 300; }
+  .tr .stack { font-size: .78rem; color: var(--faint); font-weight: 300; }
+
+  .tr-links { display: flex; gap: 1.25rem; }
+  .tr-links a { position: relative; color: var(--muted); transition: color .25s; }
+  .tr-links a:hover { color: var(--ink); }
+  /* Underline draws in rather than appearing. */
+  .tr-links a::after {
+    content: ''; position: absolute; left: 0; bottom: -3px; height: 1px; width: 100%;
+    background: currentColor; transform: scaleX(0); transform-origin: left;
+    transition: transform .3s cubic-bezier(.2,.7,.3,1);
+  }
+  .tr-links a:hover::after { transform: scaleX(1); }
+
+  /* ── About: prose spread across the full width ─────────────────── */
+
+  .about { padding: clamp(4rem, 9vw, 8rem) var(--pad); border-top: 1px solid var(--hair); margin-top: clamp(3rem,7vw,6rem); }
+  /* Multi-column text is how this one uses the width — a wide,
+     newspaper-like spread instead of one long measure. */
+  .columns { columns: 1; column-gap: clamp(2rem, 4vw, 4.5rem); margin-top: 2.5rem; }
+  @media (min-width: 760px)  { .columns { columns: 2; } }
+  @media (min-width: 1280px) { .columns { columns: 3; } }
+  .columns p { margin: 0 0 1.4rem; break-inside: avoid; }
+  .columns strong { color: var(--ink); font-weight: 500; }
+
+  .facts { list-style: none; margin: clamp(3rem,6vw,5rem) 0 0; padding: 0;
+    display: grid; gap: 0; border-top: 1px solid var(--hair); }
+  @media (min-width: 760px) { .facts { grid-template-columns: repeat(4, 1fr); border-top: 0; } }
+  .facts li { display: grid; gap: .35rem; padding: 1.1rem 0; border-bottom: 1px solid var(--hair); }
+  @media (min-width: 760px) { .facts li { border-bottom: 0; border-top: 1px solid var(--hair); padding: 1.25rem 1.5rem 1.25rem 0; } }
+
+  /* ── Contact ───────────────────────────────────────────────────── */
+
+  .contact { border-top: 1px solid var(--hair); }
+  .contact-toggle {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+    padding: clamp(3rem, 6vw, 5rem) var(--pad);
+    background: none; border: 0; color: inherit; cursor: pointer; text-align: left; font: inherit;
+  }
+  .contact-toggle .lead { display: block; max-width: 20ch; }
+  .chev { color: var(--muted); transition: transform .4s cubic-bezier(.2,.7,.3,1), color .25s; }
+  .contact-toggle:hover .chev { color: var(--ink); }
+  .contact-toggle[aria-expanded='true'] .chev { transform: rotate(180deg); }
+
+  /* 0fr → 1fr animates to the panel's intrinsic height. */
+  .expander { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .5s cubic-bezier(.2,.7,.3,1); }
+  .expander > div { overflow: hidden; }
+  .expander[data-open='true'] { grid-template-rows: 1fr; }
+  .expander [data-field] { opacity: 0; transition: opacity .45s ease; }
+  .expander[data-open='true'] [data-field] { opacity: 1; transition-delay: calc(var(--f) * 80ms + 120ms); }
+
+  .form { display: grid; gap: clamp(1.5rem, 3vw, 2.5rem); padding: 0 var(--pad) clamp(3rem,6vw,5rem); }
+  @media (min-width: 880px) { .form { grid-template-columns: repeat(3, 1fr); align-items: start; } }
+  .wide { grid-column: 1 / -1; }
+  label { display: block; margin-bottom: .6rem; }
+  input, textarea {
+    width: 100%; padding: .7rem 0; font: inherit; font-size: .95rem; font-weight: 300;
+    color: var(--ink); background: transparent;
+    border: 0; border-bottom: 1px solid var(--hair); outline: none;
+    transition: border-color .3s;
+  }
+  input::placeholder, textarea::placeholder { color: var(--faint); }
+  input:focus, textarea:focus { border-bottom-color: var(--ink); }
+  textarea { resize: vertical; }
+
+  .btn {
+    justify-self: start; padding: .7rem 1.5rem; cursor: pointer;
+    font: inherit; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink); background: none; border: 1px solid var(--hair); border-radius: 999px;
+    transition: border-color .3s, background-color .3s, color .3s;
+  }
+  .btn:hover { border-color: var(--ink); background: var(--ink); color: var(--plane); }
+
+  /* ── Footer ────────────────────────────────────────────────────── */
+
+  footer { border-top: 1px solid var(--hair); }
+  .foot { display: grid; gap: 1.5rem; padding: clamp(2.5rem,5vw,4rem) var(--pad); }
+  @media (min-width: 760px) { .foot { grid-template-columns: repeat(4, 1fr); align-items: end; } }
+  .socials { display: flex; flex-wrap: wrap; gap: 1.25rem; list-style: none; margin: 0; padding: 0; }
+  .socials a { color: var(--muted); transition: color .25s; }
+  .socials a:hover { color: var(--ink); }
+
+  /* ── Reveal + motion ───────────────────────────────────────────── */
+
+  /* Opacity only — nothing slides or scales anywhere on this page. */
+  .reveal { opacity: 0; transition: opacity .8s ease; }
+  .reveal.shown { opacity: 1; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  .skip:focus { position: fixed; top: 1rem; left: 1rem; z-index: 99; width: auto; height: auto; clip: auto;
+    padding: .7rem 1.2rem; background: var(--ink); color: var(--plane); border-radius: 999px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .statement .fade, .rotator > span { animation: none; opacity: 1; }
+    .reveal { opacity: 1; transition: none; }
+    .tr, .tr-links a::after, .chev, .expander, .expander [data-field], .btn { transition: none; }
+  }
+</style>
+</head>
+
+<body>
+
+<a href="#work" class="sr-only skip">Skip to work</a>
+
+<header class="bar micro">
+  <a href="#" style="color:var(--ink);">Gavin McFarland</a>
+  <nav aria-label="Sections">
+    <a href="#work">Work</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <button class="toggle micro" id="theme-toggle" type="button" aria-pressed="false">
+    <span id="toggle-label">Dark</span>
+  </button>
+</header>
+
+<!-- ── Hero ────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-grid">
+    <p class="statement lead">
+      <span class="fade" style="--i:0; display:block;">Gavin McFarland is a designer and full-stack engineer.</span>
+      <span class="fade" style="--i:1; display:block; margin-top:.5em; color:var(--muted);">He builds design systems, the tooling around them, and the occasional thing nobody asked for.</span>
+    </p>
+
+    <div class="hero-side">
+      <div>
+        <span class="micro">Currently</span>
+        <span class="body" style="color:var(--ink);">
+          <span class="rotator">
+            <span style="--n:0">Design systems</span>
+            <span style="--n:1">Design tooling</span>
+            <span style="--n:2">Web platform work</span>
+            <span style="--n:3">Front-end architecture</span>
+          </span>
+        </span>
+      </div>
+      <div>
+        <span class="micro">Based in</span>
+        <span class="body" style="color:var(--ink);">Edinburgh, working remotely</span>
+      </div>
+      <div>
+        <span class="micro">Contact</span>
+        <a href="mailto:hello@example.com" class="body" style="color:var(--ink);">hello@example.com</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Work ────────────────────────────────────────────────────────── -->
+<section id="work" class="sec">
+  <div class="sec-head">
+    <span class="micro">Selected work</span>
+    <span class="micro">Six projects · 2019—2026</span>
+  </div>
+
+  <div class="table">
+
+    <article class="tr reveal">
+      <span class="micro">2024</span>
+      <h3>Plugma</h3>
+      <p class="desc" style="margin:0;">A build tool that makes developing Figma plugins feel like modern web work.</p>
+      <span class="stack">Svelte · TypeScript · Vite</span>
+      <span class="tr-links micro">
+        <a href="#">Demo</a>
+        <a href="#">Case study</a>
+      </span>
+    </article>
+
+    <article class="tr reveal">
+      <span class="micro">2023</span>
+      <h3>Token pipeline</h3>
+      <p class="desc" style="margin:0;">Design tokens flowing from Figma variables to shipped CSS, with a diffing step.</p>
+      <span class="stack">Style Dictionary · TypeScript · CI</span>
+      <span class="tr-links micro">
+        <a href="#">Demo</a>
+        <a href="#">Case study</a>
+      </span>
+    </article>
+
+    <article class="tr reveal">
+      <span class="micro">2022</span>
+      <h3>Atlas design system</h3>
+      <p class="desc" style="margin:0;">Component library and documentation site for a 40-person product org.</p>
+      <span class="stack">Svelte · Storybook · A11y</span>
+      <span class="tr-links micro">
+        <a href="#">Demo</a>
+        <a href="#">Case study</a>
+      </span>
+    </article>
+
+    <article class="tr reveal">
+      <span class="micro">2022</span>
+      <h3>Spec exporter</h3>
+      <p class="desc" style="margin:0;">Turns a selected Figma frame into engineer-ready redlines and a props table.</p>
+      <span class="stack">Figma API · TypeScript · Canvas</span>
+      <span class="tr-links micro">
+        <a href="#">Demo</a>
+        <a href="#">Case study</a>
+      </span>
+    </article>
+
+    <article class="tr reveal">
+      <span class="micro">2021</span>
+      <h3>Pulse dashboard</h3>
+      <p class="desc" style="margin:0;">Real-time analytics surface rebuilt for speed — sub-800ms first paint, cold cache.</p>
+      <span class="stack">Svelte · TypeScript · D3</span>
+      <span class="tr-links micro">
+        <a href="#">Demo</a>
+        <a href="#">Case study</a>
+      </span>
+    </article>
+
+    <article class="tr reveal">
+      <span class="micro">2019</span>
+      <h3>Field notes</h3>
+      <p class="desc" style="margin:0;">Identity and editorial system for a research publication.</p>
+      <span class="stack">Identity · Type · Print</span>
+      <span class="tr-links micro">
+        <a href="#">Demo</a>
+        <a href="#">Case study</a>
+      </span>
+    </article>
+
+  </div>
+</section>
+
+<!-- ── About ───────────────────────────────────────────────────────── -->
+<section id="about" class="about">
+  <span class="micro">About</span>
+
+  <div class="columns body reveal">
+    <p>
+      I started in graphic design and ended up writing the code too — mostly out of impatience.
+      Handing a beautiful static file to someone else and hoping felt like the wrong end of the job.
+    </p>
+    <p>
+      These days I sit in the gap between the two: close enough to design to argue about optical
+      spacing, close enough to engineering to know what that argument costs in render time.
+    </p>
+    <p>
+      Most of the work is <strong>design systems and the tooling around them</strong> — the
+      unglamorous plumbing that decides whether a team ships consistently or just talks about it.
+    </p>
+    <p>
+      That means component libraries, token pipelines, documentation nobody wanted to write, and
+      the occasional plugin that saves a team an afternoon a week.
+    </p>
+    <p>
+      I care about the boring parts: how a thing behaves at 320px, what happens on a slow
+      connection, whether the focus ring is visible, whether the build is still fast in a year.
+    </p>
+    <p>
+      Outside of that — too many half-finished side projects, a long-running interest in
+      typography, and a habit of rewriting things that already worked fine.
+    </p>
+  </div>
+
+  <ul class="facts">
+    <li><span class="micro">Now</span><span class="body">Independent — design engineering for product teams</span></li>
+    <li><span class="micro">2021</span><span class="body">Design systems lead, fintech platform</span></li>
+    <li><span class="micro">2018</span><span class="body">Senior product designer, agency side</span></li>
+    <li><span class="micro">2014</span><span class="body">Graphic design, print and identity</span></li>
+  </ul>
+</section>
+
+<!-- ── Contact ─────────────────────────────────────────────────────── -->
+<section id="contact" class="contact">
+  <button class="contact-toggle" id="contact-toggle" type="button" aria-expanded="false" aria-controls="contact-panel">
+    <span>
+      <span class="lead">Currently taking on new work.</span>
+      <span class="micro" style="display:block;margin-top:.85rem;">Open the form</span>
+    </span>
+    <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 9l6 6 6-6"/>
+    </svg>
+  </button>
+
+  <div class="expander" id="contact-panel" data-open="false">
+    <div>
+      <form class="form" id="contact-form" novalidate>
+        <div data-field style="--f:0">
+          <label for="name" class="micro">Name</label>
+          <input id="name" name="name" type="text" required autocomplete="name" placeholder="Your name" />
+        </div>
+        <div data-field style="--f:1">
+          <label for="email" class="micro">Email</label>
+          <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@company.com" />
+        </div>
+        <div data-field style="--f:2">
+          <label for="message" class="micro">What are you building?</label>
+          <textarea id="message" name="message" rows="1" required placeholder="A sentence or two is plenty."></textarea>
+        </div>
+        <div data-field style="--f:3; display:flex; flex-wrap:wrap; align-items:center; gap:1.5rem;" class="wide">
+          <button type="submit" class="btn">Send</button>
+          <p id="form-status" role="status" aria-live="polite" class="micro" style="margin:0;"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <div><span class="micro">Email</span><br /><a href="mailto:hello@example.com" class="body" style="color:var(--ink);">hello@example.com</a></div>
+    <div>
+      <span class="micro">Elsewhere</span><br />
+      <ul class="socials body" style="margin-top:.35rem;">
+        <li><a href="#">GitHub</a></li>
+        <li><a href="#">LinkedIn</a></li>
+        <li><a href="#">Bluesky</a></li>
+      </ul>
+    </div>
+    <div><span class="micro">Colophon</span><br /><span class="body">Set in Geist</span></div>
+    <div><span class="micro">© 2026 Gavin McFarland</span></div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+  const root = document.documentElement;
+
+  /* Theme — a word rather than an icon, to keep the bar quiet. ----------- */
+  const toggle = document.getElementById('theme-toggle');
+  const label  = document.getElementById('toggle-label');
+  const paint = () => {
+    const dark = root.classList.contains('dark');
+    toggle.setAttribute('aria-pressed', String(dark));
+    toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    label.textContent = dark ? 'Light' : 'Dark';
+  };
+  paint();
+  toggle.addEventListener('click', () => {
+    const dark = root.classList.toggle('dark');
+    localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+    paint();
+  });
+
+  /* Scroll reveal --------------------------------------------------------- */
+  const reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('shown');
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    reveals.forEach((el) => io.observe(el));
+  } else {
+    reveals.forEach((el) => el.classList.add('shown'));
+  }
+
+  /* Nav active state ------------------------------------------------------ */
+  const links = [...document.querySelectorAll('.bar nav a')];
+  const sections = links.map((l) => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  if ('IntersectionObserver' in window && sections.length) {
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        links.forEach((l) => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+      });
+    }, { rootMargin: '-45% 0px -45% 0px' });
+    sections.forEach((s) => spy.observe(s));
+  }
+
+  /* Contact expander ------------------------------------------------------ */
+  const cToggle = document.getElementById('contact-toggle');
+  const panel   = document.getElementById('contact-panel');
+  const message = document.getElementById('message');
+
+  cToggle.addEventListener('click', () => {
+    const open = panel.dataset.open !== 'true';
+    panel.dataset.open = String(open);
+    cToggle.setAttribute('aria-expanded', String(open));
+    if (open) setTimeout(() => document.getElementById('name').focus(), 450);
+  });
+
+  /* Textarea grows with its content, so the form starts as one quiet line. */
+  const grow = () => {
+    message.style.height = 'auto';
+    message.style.height = message.scrollHeight + 'px';
+  };
+  message.addEventListener('input', grow);
+
+  /* Form — mockup only, nothing leaves the page. -------------------------- */
+  const form = document.getElementById('contact-form');
+  const status = document.getElementById('form-status');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!form.checkValidity()) {
+      status.textContent = 'Fill in every field first.';
+      form.reportValidity();
+      return;
+    }
+    status.textContent = 'Sent — mockup only.';
+    form.reset();
+    grow();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contact — Gavin McFarland</title>
+<meta name="description" content="Get in touch with Gavin McFarland." />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+</head>
+
+<body data-page="contact">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<header class="bar">
+  <div class="bar__in">
+    <a class="brand" href="index.html"><span id="brand-ico"></span>Gavin McFarland</a>
+    <nav id="nav" aria-label="Main"></nav>
+    <button id="grid-toggle" class="btn" type="button" aria-pressed="false" style="min-width:0;padding:3px 8px" title="Layout grid (G)">Grid</button>
+    <button id="theme-toggle" class="btn" type="button" aria-pressed="false" style="min-width:0;padding:3px 8px">Theme</button>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <nav class="rail" aria-label="Contents">
+    <a href="#form">Message</a>
+    <a href="#direct">Direct</a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ── The form ─────────────────────────────────────────────────
+         Sections instead of group boxes, a flat notice instead of a
+         modal dialog. Validation is real: it marks fields, lists what
+         is wrong, and moves focus to the first problem.
+
+         Nothing is sent. This is a mockup, and a form that silently
+         swallowed a message would be worse than one that says so. -->
+    <section id="form" class="sec">
+      <div class="grid10">
+        <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+          <p class="display">Send a message</p>
+          <p class="lead" style="margin-top:6px; color:var(--dim)">
+            Design system and tooling work, from September.
+          </p>
+        </div>
+
+        <div style="grid-column:1 / -1; max-width:46rem">
+
+          <div class="notice" id="notice" role="status">
+            <span id="notice-ico"></span>
+            <div id="notice-body"></div>
+          </div>
+
+          <form id="contact-form" novalidate>
+
+            <h2 class="sec__head"><span class="sec__n">01</span> You</h2>
+
+            <div class="formrow">
+              <label for="name">Name</label>
+              <div>
+                <input class="field" id="name" name="name" type="text" autocomplete="name" />
+                <span class="errmsg" id="err-name" hidden></span>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <label for="email">E-mail</label>
+              <div>
+                <input class="field" id="email" name="email" type="email" autocomplete="email" />
+                <span class="hint">I reply to everything that is not a recruiter mailshot.</span>
+                <span class="errmsg" id="err-email" hidden></span>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <label for="org">Company</label>
+              <div>
+                <input class="field" id="org" name="org" type="text" autocomplete="organization" />
+                <span class="hint">Optional.</span>
+              </div>
+            </div>
+
+            <h2 class="sec__head" style="margin-top:calc(var(--bl) * 1.5)"><span class="sec__n">02</span> Enquiry</h2>
+
+            <div class="formrow">
+              <label for="topic">Regarding</label>
+              <div>
+                <select class="field" id="topic" name="topic">
+                  <option>Design system work</option>
+                  <option>Front-end build</option>
+                  <option>Developer tooling</option>
+                  <option>Something about Plugma</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <label for="timing">Timing</label>
+              <div>
+                <select class="field" id="timing" name="timing">
+                  <option>Available from September</option>
+                  <option>Later in the year</option>
+                  <option>Just making contact</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <label for="message">Message</label>
+              <div>
+                <textarea class="field" id="message" name="message" rows="7"></textarea>
+                <span class="hint">What is falling between two teams?</span>
+                <span class="errmsg" id="err-message" hidden></span>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <span></span>
+              <label class="check">
+                <input type="checkbox" id="copy" name="copy" checked />
+                <span>Send me a copy of this message</span>
+              </label>
+            </div>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:calc(var(--bl) * 1.5)">
+              <button class="btn btn--primary" type="submit">Send message</button>
+              <button class="btn" type="reset">Reset</button>
+              <a class="btn" href="index.html">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- direct ---------------------------------------------------- -->
+    <section id="direct" class="sec">
+      <h2 class="sec__head"><span class="sec__n">03</span> Or directly</h2>
+      <div class="grid10">
+        <div class="list grid10">
+          <a class="list__row" href="mailto:gavin@limitlessloop.com">
+            <span class="c-name" id="row-mail">E-mail</span>
+            <span class="c-desc">gavin@limitlessloop.com</span>
+            <span class="c-meta dim">Fastest</span>
+          </a>
+          <a class="list__row" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">
+            <span class="c-name" id="row-gh">GitHub ↗</span>
+            <span class="c-desc">gavinmcfarland</span>
+            <span class="c-meta dim">Code</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="foot">
+  <div class="foot__in">
+    <span><span class="k">Index</span> <span id="counts">—</span></span>
+    <span><span class="k">Based</span> London, UK</span>
+    <span><span class="k">Status</span> <span id="formstatus">Ready</span></span>
+  </div>
+</footer>
+
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  document.getElementById('brand-ico').innerHTML = icon('floppy');
+  document.getElementById('row-mail').insertAdjacentHTML('afterbegin', icon('mail'));
+  document.getElementById('row-gh').insertAdjacentHTML('afterbegin', icon('net'));
+
+  const form = document.getElementById('contact-form');
+  const status = document.getElementById('formstatus');
+  const notice = document.getElementById('notice');
+  const noticeBody = document.getElementById('notice-body');
+  const noticeIco = document.getElementById('notice-ico');
+
+  const RULES = [
+    { id:'name',    test:(v) => v.trim().length > 0, msg:'Enter your name.' },
+    { id:'email',   test:(v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()), msg:'Enter a valid e-mail address.' },
+    { id:'message', test:(v) => v.trim().length >= 10, msg:'Write at least a sentence.' },
+  ];
+
+  function clear(id) {
+    const e = document.getElementById('err-' + id);
+    const f = document.getElementById(id);
+    if (e) { e.hidden = true; e.innerHTML = ''; }
+    if (f) f.removeAttribute('aria-invalid');
+  }
+
+  RULES.forEach((r) => document.getElementById(r.id).addEventListener('input', () => clear(r.id)));
+
+  form.addEventListener('reset', () => {
+    RULES.forEach((r) => clear(r.id));
+    notice.dataset.open = 'false';
+    status.textContent = 'Ready';
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const bad = [];
+
+    RULES.forEach((r) => {
+      const el = document.getElementById(r.id);
+      const err = document.getElementById('err-' + r.id);
+      if (r.test(el.value)) { clear(r.id); return; }
+      bad.push(r);
+      err.hidden = false;
+      err.innerHTML = `${icon('doc')}<span>${esc(r.msg)}</span>`;
+      el.setAttribute('aria-invalid', 'true');
+    });
+
+    if (bad.length) {
+      notice.className = 'notice notice--warn';
+      notice.dataset.open = 'true';
+      noticeIco.innerHTML = icon('doc').replace('class="ico"','class="ico ico--lg"');
+      noticeBody.innerHTML =
+        `<p><strong>This message is not ready to send.</strong></p>
+         <ul>${bad.map((b) => `<li>${esc(b.msg)}</li>`).join('')}</ul>`;
+      status.textContent = `${bad.length} field(s) need attention`;
+      document.getElementById(bad[0].id).focus();
+      return;
+    }
+
+    /* Deliberately honest: nothing is transmitted from a mockup. */
+    notice.className = 'notice notice--ok';
+    notice.dataset.open = 'true';
+    noticeIco.innerHTML = icon('mail').replace('class="ico"','class="ico ico--lg"');
+    noticeBody.innerHTML =
+      `<p><strong>Validated — but not sent.</strong></p>
+       <p class="dim" style="margin-top:4px">This is a design mockup with no mail server behind it.
+       In the real thing this would go to <span class="mono">gavin@limitlessloop.com</span>.</p>`;
+    status.textContent = 'Validated';
+    notice.scrollIntoView({ block:'nearest' });
+  });
+})();
+</script>
+
+</body>
+</html>

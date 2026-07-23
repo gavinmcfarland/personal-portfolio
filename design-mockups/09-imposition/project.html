@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>plugma — Gavin McFarland</title>
+<meta name="description" content="plugma: a zero-config toolchain for building Figma plugins, with the hot reloading the platform never shipped.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23161511'/%3E%3Crect x='18' y='6' width='8' height='8' fill='%23C23A08'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="project" class="page">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="rail">
+  <a class="rail__mark" href="index.html"><span class="ph ph--16" aria-hidden="true"></span>g.mcfarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">theme</button>
+    <span>london, uk</span>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── The offset hero — 7 columns of plate against 5 of facts ──── -->
+  <section class="section" style="margin-top:2rem" aria-labelledby="pj-h">
+    <div class="sheet">
+      <p class="micro dim" style="margin-bottom:1rem">
+        <a class="ln" href="index.html" style="text-transform:none;letter-spacing:0">work</a>
+        / sheet 04 / 08 · plugma
+      </p>
+      <div class="g12">
+
+        <div class="c7">
+          <div class="plate" data-tone="yellow" style="min-height:16rem">
+            <span class="tx tx-check" aria-hidden="true"></span>
+            <span class="folio" aria-hidden="true" style="font-size:8rem;right:.75rem;bottom:-1rem">01</span>
+          </div>
+          <div class="boardfig__bar" style="border-top:0">
+            <span>plate 01 · check on yellow</span><span>2024 —</span>
+          </div>
+        </div>
+
+        <div class="c5">
+          <h1 class="display" style="margin-bottom:.75rem">plugma</h1>
+          <p class="dim" style="max-width:38ch;margin-bottom:1.25rem">
+            A zero-config toolchain for building Figma plugins — with the hot
+            reloading the platform never shipped.
+          </p>
+          <div class="tbl tbl--spec">
+            <div class="tbl__row"><span class="tbl__num">year</span><span class="tbl__val">2024 — now</span></div>
+            <div class="tbl__row"><span class="tbl__num">role</span><span class="tbl__val">creator, maintainer</span></div>
+            <div class="tbl__row"><span class="tbl__num">status</span><span class="tbl__val">maintained</span></div>
+            <div class="tbl__row"><span class="tbl__num">stack</span><span class="tbl__val">node, typescript, vite</span></div>
+            <div class="tbl__row"><span class="tbl__num">licence</span><span class="tbl__val">MIT</span></div>
+          </div>
+          <p class="mono" style="margin-top:1rem">
+            <a class="ln" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">plugma.dev ↗</a>
+            <span class="faint" style="margin:0 .5rem">·</span>
+            <a class="ln" href="https://github.com/gavinmcfarland/plugma" target="_blank" rel="noopener noreferrer">source ↗</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 01 · Problem ──────────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="pr-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="pr-h">problem</h2>
+      </div>
+      <div class="prose">
+        <p>
+          A Figma plugin is two programs that cannot see each other. One runs in
+          a sandbox with access to the document; the other runs in an iframe with
+          access to the DOM. They speak only by passing messages, and neither can
+          be served from disk the way an ordinary web app can.
+        </p>
+        <p>
+          So every plugin began with the same lost day: a bundler, a manifest, a
+          message bridge, and a build step that inlines the UI. Change a line,
+          rebuild, re-run, lose your state.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 02 · Build log — the accordion treatment ──────────────────── -->
+  <section class="section" aria-labelledby="bl-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">02</span>
+        <h2 id="bl-h">build log</h2>
+      </div>
+      <details class="fold">
+        <summary>2024-02 — the manifest is the seam</summary>
+        <p class="fold__body">
+          In development the manifest points at a dev server; at build time it
+          points at the inlined output. Everything else followed from making that
+          one file the only thing that changes between the two modes.
+        </p>
+      </details>
+      <details class="fold">
+        <summary>2024-05 — state-preserving reload</summary>
+        <p class="fold__body">
+          The sandbox half keeps running while the iframe half hot-reloads, so
+          selection, document state and in-flight operations survive an edit.
+          This is the feature the platform never shipped, and the reason the tool
+          exists.
+        </p>
+      </details>
+      <details class="fold">
+        <summary>2024-09 — framework-agnostic templates</summary>
+        <p class="fold__body">
+          React, Svelte, Vue or none. The toolchain owns the bridge and the
+          build; the framework stays your choice. One scaffolds, one develops,
+          one ships.
+        </p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ── 03 · The board figure — same vocabulary, reduced scale ────── -->
+  <section class="section" aria-labelledby="bd-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">03</span>
+        <h2 id="bd-h">board</h2>
+        <span class="head__x micro dim">fig. 1</span>
+      </div>
+      <p class="dim" style="max-width:52ch;margin-bottom:1rem">
+        The working notes live on a board rather than in a document, because the
+        argument is spatial — two halves, a bridge, and what each side can reach.
+      </p>
+      <div class="boardfig tx-dots" id="boardfig" aria-label="Static preview of the plugma working board"></div>
+      <div class="boardfig__bar">
+        <span>fig. 1 — working board at 52%</span>
+        <a class="ln" href="board.html">open full board →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Prev / next ───────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="sheet">
+      <hr class="rule">
+      <div style="display:flex;justify-content:space-between;margin-top:.75rem" class="mono">
+        <span class="faint">← previous: none — this is the newest</span>
+        <a class="ln" href="https://github.com/gavinmcfarland/askeroo" target="_blank" rel="noopener noreferrer">next: askeroo ↗</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>sheet</dt><dd>04 / 08</dd></div>
+      <div><dt>form</dt><dd>09 · imposition</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  /* Page-local: the static board figure — the same notes board.html
+     renders live, drawn here at 52% with no interaction. */
+  (() => {
+    if (!window.DATA) return;
+    const fig = document.getElementById('boardfig');
+    const notes = DATA.board.notes;
+    const minX = Math.min(...notes.map((n) => n.x));
+    const minY = Math.min(...notes.map((n) => n.y));
+
+    const nodeHtml = (n) => {
+      const x = n.x - minX, y = n.y - minY;
+      const pos = `position:absolute;left:${x}px;top:${y}px;width:${n.w}px`;
+      if (n.kind === 'note') {
+        return `<div class="note" data-tone="${esc(n.tone)}" style="${pos};min-height:8rem">
+          <span class="note__label">${esc(n.label)}</span>${esc(n.text)}</div>`;
+      }
+      if (n.kind === 'code') {
+        return `<div class="nd-code" style="${pos}">
+          <div class="nd-code__bar">${esc(n.label)}</div><pre>${esc(n.text)}</pre></div>`;
+      }
+      return `<div class="nd-doc" style="${pos}">
+        <span class="micro"><span class="ph ph--16" aria-hidden="true"></span>${esc(n.label)}</span>${esc(n.text)}</div>`;
+    };
+
+    fig.innerHTML = `<div class="boardfig__world">${notes.map(nodeHtml).join('')}</div>`;
+  })();
+</script>
+</body>
+</html>

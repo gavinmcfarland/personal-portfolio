@@ -1,0 +1,430 @@
+/* ══════════════════════════════════════════════════════════════════
+   11 · GALLEY — the design system
+   ------------------------------------------------------------------
+   A galley proof is type set in one long column before it is made up
+   into pages, printed on a sheet far wider than the column needs so
+   the corrector has somewhere to write. The type is the artefact;
+   the emptiness around it is not waste, it is the working surface.
+
+   That is the whole idea here. 09 explored page types, 10 explored
+   structures — this one explores OCCUPATION: how much of the sheet
+   the content takes, where on it the content sits, and what the
+   remainder is doing. §3 is a placement vocabulary rather than a
+   layout library, and `space.html` walks through all nine
+   occupations a full viewport at a time.
+
+   THREE CONSTRAINTS SET THIS VARIATION APART
+
+     A. NO SANS-SERIF, anywhere, including the fallback stacks. Prose
+        is Spectral; every structural mark — labels, tables, nav,
+        metadata, the board — is Courier Prime, a typewriter face
+        with real serifs. The generic fallbacks are `serif` and
+        `monospace`; the word `sans-serif` does not appear in this
+        file.
+
+     B. TWO INKS AND A CORRECTION. Paper, ink, and one red — the
+        proofreader's pencil. Greys are ink held back, not new
+        colours. There is no second accent and no tinted surface.
+
+     C. COLOUR LIVES ON THE BOARD, AND NOWHERE ELSE. §5 defines five
+        note tones, and they are the only saturated colour in the
+        set. Reaching the board should feel like opening a drawer of
+        materials after reading a proof — which is exactly what it
+        is.
+
+   THE DOCTRINE, carried from 09 and 10 unchanged:
+     1. NO CURVES — `border-radius: 0` globally, never overridden.
+     2. NO SHADOWS — not one box-shadow declaration.
+     3. NO GRADIENTS — the .tx-* utilities are hard-stop ink
+        patterns. A gradient that does not grade is a pattern.
+     4. FLAT TYPE — 17px prose, 12px marks. Three exceptions: one
+        display line per sheet; folio numerals as ornament; one
+        oversized quotation, on the note sheet only.
+     5. FEW BUTTONS — one .btn, appearing twice in the whole set.
+
+   §1 tokens · §2 primitives · §3 placement · §4 components · §5 board
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+
+:root {
+  /* Two inks. The greys are --ink held back, not new colours. */
+  --paper: #F4F1E9;
+  --ink:   #1A1916;
+  --mid:   #6B6960;
+  --faint: #A9A69C;
+  --hair:  #D9D4C7;
+
+  /* The correction. The only accent in the document half. */
+  --red:   #A82818;
+
+  /* Type — a serif for the argument, a typewriter for the marks.
+     Constraint A: no `sans-serif` keyword appears below. */
+  --f-text: 'Spectral', ui-serif, Georgia, 'Times New Roman', serif;
+  --f-mark: 'Courier Prime', ui-monospace, 'Courier New', monospace;
+
+  --t-micro:   .6875rem;   /* 11 — tracked uppercase marks */
+  --t-mark:    .75rem;     /* 12 — all structural type     */
+  --t-text:    1.0625rem;  /* 17 — the only prose size     */
+  --t-display: clamp(2.25rem, 5.5vw, 3.375rem);
+  --t-quote:   1.5rem;     /* note.html only               */
+  --t-folio:   5rem;
+
+  /* Space is the subject, so the padding is deliberately expensive.
+     --pad-x is what keeps the measure off the left edge; --pad-y is
+     what keeps a frame from ever feeling packed. */
+  --pad-x: clamp(1.5rem, 7vw, 7rem);
+  --pad-y: clamp(3rem, 9vh, 7rem);
+  --head:  2.5rem;
+  --measure: 34em;
+
+  --tx-ink: var(--hair);
+
+  color-scheme: light;
+}
+
+.dark {
+  --paper: #111110;
+  --ink:   #EBE7DC;
+  --mid:   #97948B;
+  --faint: #63615A;
+  --hair:  #2C2B27;
+  --red:   #E0563C;
+
+  color-scheme: dark;
+}
+
+
+/* ── §2 · PRIMITIVES ───────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; border-radius: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  padding-top: var(--head);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-text);
+  font-size: var(--t-text);
+  font-weight: 400;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, p, figure, dl, dd, ul, ol, blockquote { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+img, svg { display: block; max-width: 100%; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+table { border-collapse: collapse; }
+
+::selection { background: var(--red); color: var(--paper); }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+
+.skip { position: absolute; left: -9999px; z-index: 300; }
+.skip:focus {
+  left: 0; top: 0;
+  padding: .5rem 1rem;
+  background: var(--ink); color: var(--paper);
+  font-family: var(--f-mark); font-size: var(--t-mark);
+}
+
+/* Rules run to the frame's padding; .rule--bleed runs to the sheet. */
+.rule  { border: 0; border-top: 1px solid var(--ink);  margin: 0; }
+.hair  { border: 0; border-top: 1px solid var(--hair); margin: 0; }
+.rule--bleed { margin-inline: calc(var(--pad-x) * -1); }
+
+/* The construction grid. */
+#gridlines { position: fixed; inset: var(--head) 0 0; z-index: 90; pointer-events: none; display: none; }
+#gridlines[data-on="true"] { display: block; }
+#gridlines .g { height: 100%; display: grid; grid-template-columns: repeat(12, 1fr); padding-inline: var(--pad-x); }
+#gridlines i { border-inline: 1px solid rgba(168,40,24,.18); background: rgba(168,40,24,.04); }
+
+/* ── Ink textures — hard-stop patterns, never tonal ────────────── */
+.tx-rule    { background-image: repeating-linear-gradient(0deg, var(--tx-ink) 0 1px, transparent 1px 6px); }
+.tx-hatch   { background-image: repeating-linear-gradient(45deg, var(--tx-ink) 0 1px, transparent 1px 7px); }
+.tx-grid    { background-image: repeating-linear-gradient(0deg, var(--tx-ink) 0 1px, transparent 1px 9px),
+                                repeating-linear-gradient(90deg, var(--tx-ink) 0 1px, transparent 1px 9px); }
+.tx-weave   { background-image: repeating-linear-gradient(0deg, var(--tx-ink) 0 2px, transparent 2px 8px),
+                                repeating-linear-gradient(90deg, var(--tx-ink) 0 2px, transparent 2px 8px); }
+.tx-stipple { background-image: radial-gradient(circle, var(--tx-ink) 1px, transparent 1.1px);
+              background-size: 9px 9px; }
+
+/* ── Type utilities ────────────────────────────────────────────── */
+.mark  { font-family: var(--f-mark); font-size: var(--t-mark); line-height: 1.5; }
+.micro { font-family: var(--f-mark); font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .12em; line-height: 1.4; }
+.dim   { color: var(--mid); }
+.faint { color: var(--faint); }
+.red   { color: var(--red); }
+.it    { font-style: italic; }
+
+/* Exception (a) — one per sheet. Spectral at a large size with a
+   tight measure; the display line is allowed to be big precisely
+   because so much of the sheet is empty. */
+.display { font-size: var(--t-display); font-weight: 400; line-height: 1.06; letter-spacing: -.018em; }
+.display em { font-style: italic; }
+
+/* Exception (b) — ornament. */
+.folio { font-family: var(--f-mark); font-size: var(--t-folio); line-height: .8; color: var(--faint); }
+
+/* Exception (c) — note.html only, once. */
+.quote { font-size: var(--t-quote); font-style: italic; line-height: 1.35; max-width: 22em; }
+
+/* The correction mark: a red mono annotation, the way a proof is
+   corrected. Used for numbering and for margin notes. */
+.corr { font-family: var(--f-mark); font-size: var(--t-mark); color: var(--red); }
+
+a { color: inherit; }
+.ln { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: var(--faint); }
+.ln:hover { color: var(--red); text-decoration-color: var(--red); }
+.ln--bare { text-decoration: none; }
+.ln--bare:hover { color: var(--red); }
+
+.btn {
+  display: inline-block; padding: .5rem 1.5rem;
+  border: 1px solid var(--ink); background: transparent; color: var(--ink);
+  font-family: var(--f-mark); font-size: var(--t-mark);
+}
+.btn:hover { background: var(--ink); color: var(--paper); }
+
+/* Icon placeholder — a transparent square with a border. */
+.ph { display: inline-block; flex: none; width: 20px; height: 20px; border: 1px solid currentColor; background: transparent; }
+.ph--12 { width: 12px; height: 12px; }
+.ph--32 { width: 32px; height: 32px; }
+.ph--hatch { background-image: repeating-linear-gradient(45deg, currentColor 0 1px, transparent 1px 5px); }
+
+.swap { transition: opacity 140ms linear; }
+.swap[data-fading="true"] { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .swap { transition: none; } }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §3 · PLACEMENT
+   Not a layout library — an occupation vocabulary. A .frame is a
+   full viewport of sheet; the modifier says where in it the content
+   sits, and a .hold says how wide the content is allowed to be.
+   Everything the content does not take is left open on purpose.
+   ══════════════════════════════════════════════════════════════════ */
+
+.frame {
+  min-height: calc(100vh - var(--head));
+  min-height: calc(100svh - var(--head));
+  padding: var(--pad-y) var(--pad-x);
+  display: grid;
+  position: relative;
+}
+
+/* Shorter frames, for sheets that should not cost a viewport each. */
+.frame--half  { min-height: 60svh; }
+.frame--auto  { min-height: 0; }
+
+/* P1 · Top left — the default. Content where the eye already is. */
+.frame--tl { place-content: start start; }
+/* P2 · Bottom left — emptiness above, pressing down. */
+.frame--bl { place-content: end start; }
+/* P3 · Centred left — calmer, and expensive. */
+.frame--cl { place-content: center start; }
+/* P4 · Right — the counterweight, used once. */
+.frame--tr { place-content: start end; text-align: right; }
+/* P5 · Held apart — one block at the head, one at the foot. */
+.frame--split { align-content: space-between; justify-items: start; }
+/* P6 · Full width — the measure released. Only rules and tables
+   survive out here, which is why prose is not given it. */
+.frame--wide { place-content: start stretch; }
+/* P7 · Full bleed — no margin at all. */
+.frame--bleed { padding-inline: 0; place-content: center stretch; }
+.frame--bleed > * { padding-inline: var(--pad-x); }
+
+/* Widths. .hold is the galley column; everything else is a
+   deliberate departure from it. */
+.hold          { max-width: var(--measure); }
+.hold--narrow  { max-width: 22em; }
+.hold--wide    { max-width: 52em; }
+.hold--full    { max-width: none; width: 100%; }
+
+/* P8 · Hanging notes — the measure on the left, annotations out in
+   the open field beside it. On a galley this is what the empty
+   part of the sheet is FOR. */
+.hang { display: grid; grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr); gap: clamp(2rem, 6vw, 6rem); align-items: start; }
+.hang__notes > * { margin-bottom: 1.5rem; padding-left: .875rem; border-left: 1px solid var(--red); }
+.hang__notes .micro { display: block; color: var(--red); margin-bottom: .25rem; }
+@media (max-width: 899px) {
+  .hang { grid-template-columns: 1fr; gap: 2rem; }
+}
+
+/* The frame's own annotation, printed small in the empty part —
+   a galley proof always carries its marks in the margin. */
+.frame__mark {
+  position: absolute; top: var(--pad-y); right: var(--pad-x);
+  font-family: var(--f-mark); font-size: var(--t-micro);
+  text-transform: uppercase; letter-spacing: .12em; color: var(--faint);
+  text-align: right;
+}
+.frame--tr .frame__mark { right: auto; left: var(--pad-x); text-align: left; }
+
+/* A hairline that marks where a frame begins, run to the sheet
+   edges so the frames read as a stack of proofs. */
+.frame + .frame { border-top: 1px solid var(--hair); }
+
+
+/* ── §4 · COMPONENTS ───────────────────────────────────────────── */
+
+/* ── The running head ─────────────────────────────────────────────
+   Thin, fixed, mono. It takes as little of the sheet as a piece of
+   navigation can and still be found. */
+.head {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--head);
+  z-index: 100;
+  background: var(--paper);
+  border-bottom: 1px solid var(--hair);
+  display: flex; align-items: center; gap: 1.5rem;
+  padding-inline: var(--pad-x);
+  font-family: var(--f-mark); font-size: var(--t-mark);
+}
+.head__name { white-space: nowrap; text-decoration: none; }
+.head nav { display: flex; gap: 1.1rem; overflow-x: auto; scrollbar-width: none; }
+.head nav::-webkit-scrollbar { display: none; }
+.head nav a { text-decoration: none; color: var(--faint); white-space: nowrap; }
+.head nav a:hover { color: var(--ink); }
+.head nav a[aria-current="page"] { color: var(--ink); }
+/* The current sheet is marked the way a proof is: in red, in the
+   margin of the word rather than under it. */
+.head nav a[aria-current="page"]::before { content: '·'; color: var(--red); margin-right: .3em; }
+.head__tools { margin-left: auto; display: flex; gap: 1rem; }
+.head__tools button { font-family: var(--f-mark); font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .12em; color: var(--faint); }
+.head__tools button:hover { color: var(--ink); }
+@media (max-width: 699px) { .head__name { display: none; } }
+
+/* ── Section marker — a number, a rule, a name ─────────────────── */
+.marker { display: flex; align-items: baseline; gap: .875rem; border-top: 1px solid var(--ink); padding-top: .5rem; margin-bottom: 2rem; }
+.marker h1, .marker h2, .marker h3 { font-family: var(--f-mark); font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .12em; font-weight: 400; }
+.marker__x { margin-left: auto; font-family: var(--f-mark); font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .12em; color: var(--faint); }
+
+/* ── The index — a ruled list, set in typewriter ───────────────── */
+.index { width: 100%; font-family: var(--f-mark); font-size: var(--t-mark); }
+.index__row {
+  display: grid; grid-template-columns: 3rem minmax(7rem, 14rem) 1fr 6rem 4rem;
+  gap: 1.5rem; align-items: baseline;
+  padding: .7rem 0; border-bottom: 1px solid var(--hair);
+  text-decoration: none;
+}
+.index__row:first-child { border-top: 1px solid var(--ink); }
+a.index__row:hover .index__name { color: var(--red); }
+.index__n    { color: var(--red); }
+.index__desc { font-family: var(--f-text); font-size: var(--t-text); color: var(--mid); }
+.index__year { text-align: right; color: var(--faint); }
+.index--head { color: var(--faint); text-transform: uppercase; letter-spacing: .12em; font-size: var(--t-micro); }
+@media (max-width: 899px) {
+  .index__row { grid-template-columns: 2.5rem 1fr 4rem; gap: .75rem; }
+  .index__desc, .index__kind { display: none; }
+}
+
+/* ── Plate — texture in ink, no colour, a folio numeral ────────── */
+.plate { position: relative; border: 1px solid var(--ink); overflow: hidden; min-height: 9rem; display: block; }
+.plate .tx { position: absolute; inset: 0; --tx-ink: var(--ink); opacity: .22; }
+.plate .folio { position: absolute; right: .5rem; bottom: -.65rem; }
+
+/* ── Definition list ───────────────────────────────────────────── */
+.defs { display: grid; gap: .3rem; font-family: var(--f-mark); font-size: var(--t-mark); }
+.defs > div { display: grid; grid-template-columns: 8rem 1fr; gap: 1.5rem; }
+.defs dt { color: var(--faint); }
+.defs dd { margin: 0; }
+
+/* ── Stepper — the space.html control ──────────────────────────── */
+.stepper { display: flex; align-items: center; gap: 1.25rem; font-family: var(--f-mark); font-size: var(--t-mark); }
+.stepper button { text-decoration: underline; text-underline-offset: 3px; }
+.stepper button:hover { color: var(--red); }
+.stepper output { color: var(--faint); }
+
+.tick { display: flex; gap: .4rem; flex-wrap: wrap; }
+.tick button {
+  font-family: var(--f-mark); font-size: var(--t-micro);
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--faint); padding: .2rem 0; border-bottom: 1px solid transparent;
+}
+.tick button:hover { color: var(--ink); }
+.tick button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--red); }
+
+/* ── Accordion ─────────────────────────────────────────────────── */
+.fold { border-top: 1px solid var(--hair); }
+.fold:last-of-type { border-bottom: 1px solid var(--hair); }
+.fold summary { list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: .8rem; padding: .6rem 0; font-family: var(--f-mark); font-size: var(--t-mark); }
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary::before { content: '+'; color: var(--red); width: 1ch; }
+.fold[open] summary::before { content: '−'; }
+.fold summary:hover { color: var(--red); }
+.fold__body { padding: 0 0 1rem 1.8ch; color: var(--mid); max-width: var(--measure); }
+
+/* ── Form ──────────────────────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1.1rem; }
+.field label { font-family: var(--f-mark); font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .12em; color: var(--mid); }
+/* Underlines, not boxes — a form on a galley is a blank to fill. */
+.input { border: 0; border-bottom: 1px solid var(--ink); background: transparent; padding: .4rem 0; font-family: var(--f-mark); font-size: var(--t-mark); width: 100%; }
+.input:focus-visible { outline: 0; border-bottom-color: var(--red); border-bottom-width: 2px; }
+textarea.input { resize: vertical; min-height: 5rem; }
+.field[data-invalid="true"] .input { border-bottom-color: var(--red); }
+.err { font-family: var(--f-mark); font-size: var(--t-micro); color: var(--red); min-height: 1em; }
+
+.foot { border-top: 1px solid var(--ink); padding: 1.5rem var(--pad-x) 3rem; }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §5 · BOARD — the one place colour lives
+   Constraint C. Everything above this line is paper, ink and one
+   red. Below it, five note tones. The board is a drawer of
+   materials opened after reading a proof, and it should feel like
+   one — so the colour is unapologetic rather than tinted.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --n-citron: #E8C51C;  --n-citron-ink: #1F1A00;
+  --n-sky:    #6FA8D6;  --n-sky-ink:    #041A2A;
+  --n-rose:   #DE8397;  --n-rose-ink:   #2B060F;
+  --n-moss:   #8CA269;  --n-moss-ink:   #131C08;
+  --n-ink:    #23221E;  --n-ink-ink:    #F4F1E9;
+}
+
+.board { position: fixed; inset: var(--head) 0 0; background: var(--paper); overflow: hidden; --tx-ink: var(--hair); }
+.board__vp {
+  position: absolute; inset: 0; cursor: grab; touch-action: none;
+  background-image: radial-gradient(circle, var(--tx-ink) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.board__vp:active { cursor: grabbing; }
+.board__world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.board__node { position: absolute; }
+
+.note {
+  border: 1px solid var(--ink); padding: .75rem;
+  font-family: var(--f-mark); font-size: var(--t-mark);
+  white-space: pre-line; display: flex; flex-direction: column; gap: .7rem;
+  min-height: 7.5rem;
+}
+.note__label { font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .12em; opacity: .7; }
+.note[data-tone="citron"] { background: var(--n-citron); color: var(--n-citron-ink); }
+.note[data-tone="sky"]    { background: var(--n-sky);    color: var(--n-sky-ink); }
+.note[data-tone="rose"]   { background: var(--n-rose);   color: var(--n-rose-ink); }
+.note[data-tone="moss"]   { background: var(--n-moss);   color: var(--n-moss-ink); }
+.note[data-tone="ink"]    { background: var(--n-ink);    color: var(--n-ink-ink); }
+
+.nd-doc { border: 1px solid var(--ink); background: var(--paper); padding: .75rem; color: var(--mid); font-size: var(--t-text); }
+.nd-doc .micro { display: flex; align-items: center; gap: .5rem; color: var(--ink); border-bottom: 1px solid var(--hair); padding-bottom: .5rem; margin-bottom: .5rem; }
+.nd-code { border: 1px solid var(--ink); background: var(--paper); }
+.nd-code__bar { border-bottom: 1px solid var(--hair); padding: .35rem .6rem; font-family: var(--f-mark); font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .12em; color: var(--mid); }
+.nd-code pre { margin: 0; padding: .65rem; font-family: var(--f-mark); font-size: var(--t-mark); line-height: 1.6; white-space: pre; }
+
+.board__hint { position: fixed; bottom: 1rem; left: var(--pad-x); font-family: var(--f-mark); font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .12em; color: var(--faint); transition: opacity 140ms linear; z-index: 10; }
+
+/* The board drawn small and inert as a figure on a sheet — the only
+   colour permitted to appear on a document page, and only because
+   it is a picture OF the board. */
+.boardfig { position: relative; border: 1px solid var(--ink); overflow: hidden; height: 17rem; --tx-ink: var(--hair); }
+.boardfig__world { position: absolute; left: 1rem; top: 1rem; transform: scale(.5); transform-origin: 0 0; width: 200%; }
+.boardfig__bar { display: flex; justify-content: space-between; border: 1px solid var(--ink); border-top: 0; padding: .4rem .6rem; font-family: var(--f-mark); font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .12em; color: var(--mid); }
+
+@media print { .head, #gridlines, .board__hint { display: none; } body { padding-top: 0; } }

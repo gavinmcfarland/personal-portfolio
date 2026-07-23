@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Studio Mockup</title>
+<meta name="description" content="Designer and full-stack engineer. Design systems, product interfaces and developer tooling for teams in finance, government and retail." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap" rel="stylesheet" />
+
+<!-- Set theme before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          ink:     { DEFAULT: '#0E1116', dark: '#EDEFF2' },
+          muted:   { DEFAULT: '#414A55', dark: '#A8B0BA' },
+          faint:   { DEFAULT: '#79838F', dark: '#6C7783' },
+          surface: { DEFAULT: '#F5F6F8', dark: '#14181D' },
+          canvas:  { DEFAULT: '#FFFFFF', dark: '#0A0C0F' },
+          accent:  { DEFAULT: '#1F55D6', dark: '#7FA5FF' },
+          rule:    { DEFAULT: 'rgba(14,17,22,.10)', dark: 'rgba(237,239,242,.13)' },
+        },
+        fontFamily: {
+          sans:  ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          serif: ['Newsreader', 'Georgia', 'Times New Roman', 'serif'],
+        },
+        maxWidth: { content: '76rem' },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Studio
+     Direction: the confident agency one-pager. Everything sits on a
+     visible 12-column armature — hairline rules, numbered sections,
+     tabular figures — so the page reads as a capability document
+     rather than a gallery. Sans carries the structure; the serif is
+     rationed to two moments (the lede and the quote) where a human
+     voice needs to cut through the grid. One blue does all the
+     pointing. Motion only sequences the first read.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  ::selection { background: #1F55D6; color: #fff; }
+  .dark ::selection { background: #7FA5FF; color: #0A0C0F; }
+
+  :focus-visible { outline: 2px solid #1F55D6; outline-offset: 3px; border-radius: 2px; }
+  .dark :focus-visible { outline-color: #7FA5FF; }
+
+  /* Figures line up in the stat strip and the year column. */
+  .tnum { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+
+  /* Section numbering — the armature made visible. */
+  .sec-no::before {
+    content: counter(sec, decimal-leading-zero);
+    counter-increment: sec;
+  }
+  body { counter-reset: sec; }
+
+  /* ── Motion ──────────────────────────────────────────────────
+     Two primitives only: .rise sequences the hero on load (via --i),
+     .reveal fades sections in on scroll. Both collapse to nothing
+     under prefers-reduced-motion. */
+
+  @keyframes rise { from { opacity: 0; transform: translateY(.5rem); } to { opacity: 1; transform: none; } }
+  .rise { opacity: 0; animation: rise .7s cubic-bezier(.2,.7,.3,1) forwards; animation-delay: calc(var(--i, 0) * 80ms); }
+
+  .reveal { opacity: 0; transform: translateY(.75rem); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.3,1); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise, .reveal { opacity: 1 !important; transform: none !important; animation: none !important; transition: none !important; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* Underline that draws in from the left on hover. */
+  .link-draw { position: relative; }
+  .link-draw::after {
+    content: ''; position: absolute; left: 0; bottom: -2px; height: 1px; width: 100%;
+    background: currentColor; transform: scaleX(0); transform-origin: left;
+    transition: transform .3s cubic-bezier(.2,.7,.3,1);
+  }
+  .link-draw:hover::after, .link-draw:focus-visible::after { transform: scaleX(1); }
+
+  /* Work rows: the arrow steps out, the row tints. Hairline grid is
+     built from gap-px over a coloured parent, so borders never double. */
+  .row-arrow { transition: transform .3s cubic-bezier(.2,.7,.3,1); }
+  .work-row:hover .row-arrow { transform: translateX(.25rem); }
+
+  /* Marquee for the client wordmarks. Duplicated track, translated
+     by exactly -50% so the loop is seamless. */
+  @keyframes slide { from { transform: none; } to { transform: translateX(-50%); } }
+  .marquee { animation: slide 38s linear infinite; }
+  .marquee-mask:hover .marquee { animation-play-state: paused; }
+  @media (prefers-reduced-motion: reduce) { .marquee { animation: none; } }
+</style>
+</head>
+
+<body class="bg-canvas font-sans text-ink antialiased dark:bg-canvas-dark dark:text-ink-dark">
+
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:text-white">
+  Skip to content
+</a>
+
+<!-- ── Header ──────────────────────────────────────────────────
+     Sticky, hairline-bottomed, blurred. The CTA stays visible at
+     every breakpoint — on a studio page it is the whole point. -->
+<header class="sticky top-0 z-50 border-b border-rule bg-canvas/85 backdrop-blur-md dark:border-rule-dark dark:bg-canvas-dark/85">
+  <div class="mx-auto flex max-w-content items-center justify-between gap-6 px-5 py-3.5 sm:px-8">
+
+    <a href="#" class="group flex items-center gap-2.5">
+      <span class="grid h-7 w-7 place-items-center rounded-[5px] bg-ink text-[11px] font-semibold tracking-tight text-canvas transition group-hover:bg-accent dark:bg-ink-dark dark:text-canvas-dark dark:group-hover:bg-accent-dark dark:group-hover:text-canvas-dark">GM</span>
+      <span class="text-[.9rem] font-semibold tracking-tight">Gavin McFarland</span>
+    </a>
+
+    <nav class="hidden items-center gap-8 text-[.85rem] text-muted dark:text-muted-dark md:flex">
+      <a href="#services" class="link-draw transition hover:text-ink dark:hover:text-ink-dark">Services</a>
+      <a href="#work"     class="link-draw transition hover:text-ink dark:hover:text-ink-dark">Work</a>
+      <a href="#process"  class="link-draw transition hover:text-ink dark:hover:text-ink-dark">Process</a>
+      <a href="#about"    class="link-draw transition hover:text-ink dark:hover:text-ink-dark">About</a>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <button id="theme-toggle" type="button" aria-label="Toggle dark mode"
+        class="grid h-9 w-9 place-items-center rounded-md border border-rule text-muted transition hover:border-accent hover:text-accent dark:border-rule-dark dark:text-muted-dark dark:hover:border-accent-dark dark:hover:text-accent-dark">
+        <svg class="h-[17px] w-[17px] dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <svg class="hidden h-[17px] w-[17px] dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+
+      <a href="#contact" class="hidden rounded-md bg-ink px-4 py-2 text-[.85rem] font-medium text-canvas transition hover:bg-accent dark:bg-ink-dark dark:text-canvas-dark dark:hover:bg-accent-dark sm:block">
+        Start a project
+      </a>
+
+      <button id="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav"
+        class="grid h-9 w-9 place-items-center rounded-md border border-rule text-muted transition hover:text-ink dark:border-rule-dark dark:text-muted-dark dark:hover:text-ink-dark md:hidden">
+        <svg class="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <path d="M4 7h16M4 12h16M4 17h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile nav. Hidden by default; toggled by the button above. -->
+  <nav id="mobile-nav" class="hidden border-t border-rule px-5 py-3 dark:border-rule-dark md:!hidden">
+    <ul class="grid gap-1 text-sm">
+      <li><a href="#services" class="block rounded-md px-2 py-2.5 text-muted transition hover:bg-surface hover:text-ink dark:text-muted-dark dark:hover:bg-surface-dark dark:hover:text-ink-dark">Services</a></li>
+      <li><a href="#work"     class="block rounded-md px-2 py-2.5 text-muted transition hover:bg-surface hover:text-ink dark:text-muted-dark dark:hover:bg-surface-dark dark:hover:text-ink-dark">Work</a></li>
+      <li><a href="#process"  class="block rounded-md px-2 py-2.5 text-muted transition hover:bg-surface hover:text-ink dark:text-muted-dark dark:hover:bg-surface-dark dark:hover:text-ink-dark">Process</a></li>
+      <li><a href="#about"    class="block rounded-md px-2 py-2.5 text-muted transition hover:bg-surface hover:text-ink dark:text-muted-dark dark:hover:bg-surface-dark dark:hover:text-ink-dark">About</a></li>
+      <li><a href="#contact"  class="mt-1 block rounded-md bg-ink px-2 py-2.5 text-center font-medium text-canvas dark:bg-ink-dark dark:text-canvas-dark">Start a project</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ── Hero ────────────────────────────────────────────────────
+     Asymmetric 12-column split: the claim takes 7, the credentials
+     panel takes 5 and stays factual. No decorative imagery — the
+     grid itself is the composition. -->
+<section class="border-b border-rule dark:border-rule-dark">
+  <div class="mx-auto max-w-content px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-20 lg:grid lg:grid-cols-12 lg:gap-12">
+
+    <div class="lg:col-span-7">
+      <p class="rise flex items-center gap-3 text-[.7rem] font-medium uppercase tracking-[.18em] text-faint dark:text-faint-dark" style="--i:0">
+        <span class="h-px w-8 bg-accent dark:bg-accent-dark"></span>
+        Independent practice · London
+      </p>
+
+      <h1 class="mt-7 text-[clamp(2.35rem,5.6vw,4.35rem)] font-semibold leading-[1.04] tracking-[-.033em]">
+        <span class="rise block" style="--i:1">Design and engineering</span>
+        <span class="rise block" style="--i:2">for teams that ship</span>
+        <span class="rise block text-accent dark:text-accent-dark" style="--i:3">serious software.</span>
+      </h1>
+
+      <p class="rise mt-8 max-w-2xl font-serif text-[1.2rem] leading-[1.65] text-muted dark:text-muted-dark sm:text-[1.32rem]" style="--i:4">
+        I sit in the gap between design and engineering — where a beautiful spec meets
+        the reality of shipping it. Fifteen years across finance, government and retail,
+        and a shelf of open-source tools used by designers every week.
+      </p>
+
+      <div class="rise mt-10 flex flex-wrap items-center gap-x-7 gap-y-4" style="--i:5">
+        <a href="#contact" class="rounded-md bg-ink px-6 py-3 text-sm font-medium text-canvas transition hover:bg-accent dark:bg-ink-dark dark:text-canvas-dark dark:hover:bg-accent-dark">
+          Start a project
+        </a>
+        <a href="#work" class="link-draw text-sm font-medium text-muted transition hover:text-ink dark:text-muted-dark dark:hover:text-ink-dark">
+          See selected work
+        </a>
+      </div>
+    </div>
+
+    <!-- Credentials panel. Sits on the surface tint so it reads as a
+         separate register from the claim: facts, not pitch. -->
+    <aside class="rise mt-14 rounded-lg border border-rule bg-surface p-6 dark:border-rule-dark dark:bg-surface-dark sm:p-7 lg:col-span-5 lg:mt-2" style="--i:6">
+      <h2 class="text-[.7rem] font-semibold uppercase tracking-[.16em] text-faint dark:text-faint-dark">At a glance</h2>
+
+      <dl class="mt-6 grid grid-cols-2 gap-x-6 gap-y-7">
+        <div>
+          <dt class="text-[.75rem] text-faint dark:text-faint-dark">Years practising</dt>
+          <dd class="tnum mt-1 text-3xl font-semibold tracking-tight">15</dd>
+        </div>
+        <div>
+          <dt class="text-[.75rem] text-faint dark:text-faint-dark">Tools shipped</dt>
+          <dd class="tnum mt-1 text-3xl font-semibold tracking-tight">6</dd>
+        </div>
+        <div>
+          <dt class="text-[.75rem] text-faint dark:text-faint-dark">Disciplines</dt>
+          <dd class="mt-1 text-[.95rem] font-medium leading-snug">Design systems<br />Front-end engineering</dd>
+        </div>
+        <div>
+          <dt class="text-[.75rem] text-faint dark:text-faint-dark">Sectors</dt>
+          <dd class="mt-1 text-[.95rem] font-medium leading-snug">Finance, government<br />and retail</dd>
+        </div>
+      </dl>
+
+      <div class="mt-7 border-t border-rule pt-5 dark:border-rule-dark">
+        <p class="text-[.8rem] leading-relaxed text-muted dark:text-muted-dark">
+          Engagements run from a two-week design-system audit to an embedded
+          quarter as a founding front-end.
+        </p>
+      </div>
+    </aside>
+
+  </div>
+</section>
+
+<!-- ── Client marquee ──────────────────────────────────────────
+     Wordmarks as plain type, deliberately unbranded. Duplicated
+     track for a seamless loop; masked at both edges. -->
+<section aria-label="Previous clients" class="border-b border-rule bg-surface dark:border-rule-dark dark:bg-surface-dark">
+  <div class="mx-auto flex max-w-content flex-col gap-5 px-5 py-8 sm:px-8 lg:flex-row lg:items-center lg:gap-10">
+    <p class="shrink-0 text-[.7rem] font-semibold uppercase tracking-[.16em] text-faint dark:text-faint-dark">
+      Previously with
+    </p>
+
+    <div class="marquee-mask relative min-w-0 flex-1 overflow-hidden"
+         style="mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);">
+      <ul class="marquee flex w-max items-center gap-10 whitespace-nowrap text-[.95rem] font-medium tracking-tight text-muted dark:text-muted-dark sm:gap-14">
+        <li>American Express</li><li>NatWest</li><li>Home Office</li><li>John Lewis</li><li>LSEG</li><li>Ecologi</li><li>Amazon</li>
+        <!-- Duplicate set — the -50% translate lands exactly here. -->
+        <li aria-hidden="true">American Express</li><li aria-hidden="true">NatWest</li><li aria-hidden="true">Home Office</li><li aria-hidden="true">John Lewis</li><li aria-hidden="true">LSEG</li><li aria-hidden="true">Ecologi</li><li aria-hidden="true">Amazon</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── Services ────────────────────────────────────────────────
+     Three numbered capabilities. Hairline grid via gap-px on a
+     tinted parent — one rule between cells, none doubled. -->
+<section id="services" class="border-b border-rule dark:border-rule-dark">
+  <div class="mx-auto max-w-content px-5 py-20 sm:px-8 sm:py-28">
+
+    <div class="reveal lg:grid lg:grid-cols-12 lg:gap-12">
+      <p class="sec-no shrink-0 text-[.7rem] font-semibold uppercase tracking-[.16em] text-accent dark:text-accent-dark lg:col-span-3"></p>
+      <div class="mt-3 lg:col-span-9 lg:mt-0">
+        <h2 class="max-w-2xl text-[clamp(1.7rem,3.2vw,2.5rem)] font-semibold leading-[1.15] tracking-[-.028em]">
+          Three ways I tend to be useful
+        </h2>
+        <p class="mt-5 max-w-xl text-[1.02rem] leading-relaxed text-muted dark:text-muted-dark">
+          Most engagements start with one of these and quietly become another. That is
+          usually a good sign.
+        </p>
+      </div>
+    </div>
+
+    <div class="reveal mt-14 grid gap-px overflow-hidden rounded-lg border border-rule bg-rule dark:border-rule-dark dark:bg-rule-dark md:grid-cols-3">
+
+      <article class="group bg-canvas p-7 transition-colors hover:bg-surface dark:bg-canvas-dark dark:hover:bg-surface-dark sm:p-9">
+        <p class="tnum text-[.7rem] font-semibold tracking-[.16em] text-faint dark:text-faint-dark">01</p>
+        <h3 class="mt-5 text-lg font-semibold tracking-tight">Design systems</h3>
+        <p class="mt-3.5 text-[.93rem] leading-relaxed text-muted dark:text-muted-dark">
+          Tokens, components and the governance that keeps them honest. Built so the
+          design file and the codebase describe the same thing — and stay that way after
+          I leave.
+        </p>
+        <ul class="mt-6 space-y-2 border-t border-rule pt-5 text-[.83rem] text-faint dark:border-rule-dark dark:text-faint-dark">
+          <li>Audit &amp; consolidation</li>
+          <li>Token architecture</li>
+          <li>Component libraries</li>
+        </ul>
+      </article>
+
+      <article class="group bg-canvas p-7 transition-colors hover:bg-surface dark:bg-canvas-dark dark:hover:bg-surface-dark sm:p-9">
+        <p class="tnum text-[.7rem] font-semibold tracking-[.16em] text-faint dark:text-faint-dark">02</p>
+        <h3 class="mt-5 text-lg font-semibold tracking-tight">Product &amp; front-end</h3>
+        <p class="mt-3.5 text-[.93rem] leading-relaxed text-muted dark:text-muted-dark">
+          Interface design taken all the way to production code. I still start every
+          project in a design file, because a problem you cannot draw is a problem you
+          do not understand yet.
+        </p>
+        <ul class="mt-6 space-y-2 border-t border-rule pt-5 text-[.83rem] text-faint dark:border-rule-dark dark:text-faint-dark">
+          <li>Interface &amp; interaction design</li>
+          <li>TypeScript, Svelte, React</li>
+          <li>Accessibility &amp; performance</li>
+        </ul>
+      </article>
+
+      <article class="group bg-canvas p-7 transition-colors hover:bg-surface dark:bg-canvas-dark dark:hover:bg-surface-dark sm:p-9">
+        <p class="tnum text-[.7rem] font-semibold tracking-[.16em] text-faint dark:text-faint-dark">03</p>
+        <h3 class="mt-5 text-lg font-semibold tracking-tight">Developer tooling</h3>
+        <p class="mt-3.5 text-[.93rem] leading-relaxed text-muted dark:text-muted-dark">
+          The missing internal tool nobody owns. A CLI, a plugin, a build step — the
+          small piece of infrastructure that turns a day of setup into a command.
+        </p>
+        <ul class="mt-6 space-y-2 border-t border-rule pt-5 text-[.83rem] text-faint dark:border-rule-dark dark:text-faint-dark">
+          <li>CLIs &amp; build tooling</li>
+          <li>Figma plugin development</li>
+          <li>Node.js &amp; Vite</li>
+        </ul>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Work ────────────────────────────────────────────────────
+     Rows, not cards: a studio index reads as a table. Number,
+     title, summary, stack, year. Injected from data below. -->
+<section id="work" class="border-b border-rule bg-surface dark:border-rule-dark dark:bg-surface-dark">
+  <div class="mx-auto max-w-content px-5 py-20 sm:px-8 sm:py-28">
+
+    <div class="reveal lg:grid lg:grid-cols-12 lg:gap-12">
+      <p class="sec-no shrink-0 text-[.7rem] font-semibold uppercase tracking-[.16em] text-accent dark:text-accent-dark lg:col-span-3"></p>
+      <div class="mt-3 flex flex-wrap items-end justify-between gap-6 lg:col-span-9 lg:mt-0">
+        <h2 class="text-[clamp(1.7rem,3.2vw,2.5rem)] font-semibold leading-[1.15] tracking-[-.028em]">
+          Selected work
+        </h2>
+        <p class="tnum text-[.78rem] uppercase tracking-[.14em] text-faint dark:text-faint-dark">2021 — 2024</p>
+      </div>
+    </div>
+
+    <div id="work-list" class="reveal mt-12 border-t border-rule dark:border-rule-dark">
+      <!-- Rows injected below. -->
+    </div>
+
+    <p class="reveal mt-8 text-[.88rem] text-faint dark:text-faint-dark">
+      Plus client work under NDA — happy to walk through it directly.
+    </p>
+  </div>
+</section>
+
+<!-- ── Process ─────────────────────────────────────────────────
+     Four steps on a connected rail. The rail is a single absolute
+     hairline behind the markers, so the steps stay flexible. -->
+<section id="process" class="border-b border-rule dark:border-rule-dark">
+  <div class="mx-auto max-w-content px-5 py-20 sm:px-8 sm:py-28">
+
+    <div class="reveal lg:grid lg:grid-cols-12 lg:gap-12">
+      <p class="sec-no shrink-0 text-[.7rem] font-semibold uppercase tracking-[.16em] text-accent dark:text-accent-dark lg:col-span-3"></p>
+      <div class="mt-3 lg:col-span-9 lg:mt-0">
+        <h2 class="max-w-2xl text-[clamp(1.7rem,3.2vw,2.5rem)] font-semibold leading-[1.15] tracking-[-.028em]">
+          How an engagement runs
+        </h2>
+        <p class="mt-5 max-w-xl text-[1.02rem] leading-relaxed text-muted dark:text-muted-dark">
+          Short loops, visible artefacts, no long silences. You should always be able to
+          see what I am working on.
+        </p>
+      </div>
+    </div>
+
+    <ol class="reveal relative mt-16 grid gap-12 md:grid-cols-4 md:gap-8">
+      <!-- The rail. Desktop only — vertical stacking reads fine without it. -->
+      <div aria-hidden="true" class="absolute left-0 right-0 top-[9px] hidden h-px bg-rule dark:bg-rule-dark md:block"></div>
+
+      <li class="relative">
+        <span class="relative z-10 block h-[19px] w-[19px] rounded-full border-[5px] border-canvas bg-accent dark:border-canvas-dark dark:bg-accent-dark"></span>
+        <h3 class="mt-5 text-[.95rem] font-semibold tracking-tight">Frame the problem</h3>
+        <p class="mt-2.5 text-[.9rem] leading-relaxed text-muted dark:text-muted-dark">
+          A week of listening and reading the codebase. You get a written diagnosis and a
+          scope — not a proposal deck.
+        </p>
+      </li>
+
+      <li class="relative">
+        <span class="relative z-10 block h-[19px] w-[19px] rounded-full border-[5px] border-canvas bg-ink/25 dark:border-canvas-dark dark:bg-ink-dark/25"></span>
+        <h3 class="mt-5 text-[.95rem] font-semibold tracking-tight">Draw it</h3>
+        <p class="mt-2.5 text-[.9rem] leading-relaxed text-muted dark:text-muted-dark">
+          Design file first, at whatever fidelity the decision needs. Cheap to throw away
+          is the entire point.
+        </p>
+      </li>
+
+      <li class="relative">
+        <span class="relative z-10 block h-[19px] w-[19px] rounded-full border-[5px] border-canvas bg-ink/25 dark:border-canvas-dark dark:bg-ink-dark/25"></span>
+        <h3 class="mt-5 text-[.95rem] font-semibold tracking-tight">Build it properly</h3>
+        <p class="mt-2.5 text-[.9rem] leading-relaxed text-muted dark:text-muted-dark">
+          Production code in your repo, in your conventions, reviewed by your team as it
+          lands.
+        </p>
+      </li>
+
+      <li class="relative">
+        <span class="relative z-10 block h-[19px] w-[19px] rounded-full border-[5px] border-canvas bg-ink/25 dark:border-canvas-dark dark:bg-ink-dark/25"></span>
+        <h3 class="mt-5 text-[.95rem] font-semibold tracking-tight">Hand it over</h3>
+        <p class="mt-2.5 text-[.9rem] leading-relaxed text-muted dark:text-muted-dark">
+          Documentation and a walkthrough, so the work outlives the engagement. That is
+          the measure of it.
+        </p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ── About ───────────────────────────────────────────────────
+     The one place the serif runs at length. Facts pulled out into
+     a scannable column so nobody has to read prose for them. -->
+<section id="about" class="border-b border-rule bg-surface dark:border-rule-dark dark:bg-surface-dark">
+  <div class="mx-auto max-w-content px-5 py-20 sm:px-8 sm:py-28">
+
+    <div class="reveal lg:grid lg:grid-cols-12 lg:gap-12">
+      <p class="sec-no shrink-0 text-[.7rem] font-semibold uppercase tracking-[.16em] text-accent dark:text-accent-dark lg:col-span-3"></p>
+
+      <div class="mt-3 lg:col-span-9 lg:mt-0">
+        <h2 class="text-[clamp(1.7rem,3.2vw,2.5rem)] font-semibold leading-[1.15] tracking-[-.028em]">About</h2>
+
+        <div class="mt-8 grid gap-14 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <div class="space-y-6 font-serif text-[1.15rem] leading-[1.7] text-muted dark:text-muted-dark">
+            <p>
+              I have spent fifteen years in the gap between design and engineering, and it
+              turns out the gap is where most of the interesting problems live.
+            </p>
+            <p>
+              The pattern repeats: a team is slowed by something nobody owns. A design system
+              with no source of truth. A plugin toolchain that takes a day to configure. So I
+              build the missing tool. <span class="font-medium text-ink dark:text-ink-dark">Plugma</span>
+              came out of that instinct and now underpins Figma plugins across the community.
+            </p>
+            <p>
+              Lately I write more code than pixels — mostly TypeScript, Svelte and Node — but I
+              still start every project in a design file, because a problem you cannot draw is
+              a problem you do not understand yet.
+            </p>
+          </div>
+
+          <aside>
+            <dl class="divide-y divide-rule border-y border-rule text-[.88rem] dark:divide-rule-dark dark:border-rule-dark">
+              <div class="flex justify-between gap-4 py-3.5">
+                <dt class="text-faint dark:text-faint-dark">Based</dt>
+                <dd class="font-medium">London, UK</dd>
+              </div>
+              <div class="flex justify-between gap-4 py-3.5">
+                <dt class="text-faint dark:text-faint-dark">Experience</dt>
+                <dd class="tnum font-medium">15 years</dd>
+              </div>
+              <div class="flex justify-between gap-4 py-3.5">
+                <dt class="text-faint dark:text-faint-dark">Focus</dt>
+                <dd class="text-right font-medium">Design systems, dev tools</dd>
+              </div>
+              <div class="flex justify-between gap-4 py-3.5">
+                <dt class="text-faint dark:text-faint-dark">Sectors</dt>
+                <dd class="text-right font-medium">Finance, gov, retail</dd>
+              </div>
+            </dl>
+
+            <h3 class="mt-9 text-[.7rem] font-semibold uppercase tracking-[.16em] text-faint dark:text-faint-dark">Toolkit</h3>
+            <ul class="mt-4 flex flex-wrap gap-2">
+              <li class="rounded border border-rule px-2.5 py-1 text-[.78rem] text-muted dark:border-rule-dark dark:text-muted-dark">TypeScript</li>
+              <li class="rounded border border-rule px-2.5 py-1 text-[.78rem] text-muted dark:border-rule-dark dark:text-muted-dark">Svelte</li>
+              <li class="rounded border border-rule px-2.5 py-1 text-[.78rem] text-muted dark:border-rule-dark dark:text-muted-dark">Node.js</li>
+              <li class="rounded border border-rule px-2.5 py-1 text-[.78rem] text-muted dark:border-rule-dark dark:text-muted-dark">React</li>
+              <li class="rounded border border-rule px-2.5 py-1 text-[.78rem] text-muted dark:border-rule-dark dark:text-muted-dark">Figma API</li>
+              <li class="rounded border border-rule px-2.5 py-1 text-[.78rem] text-muted dark:border-rule-dark dark:text-muted-dark">Vite</li>
+            </ul>
+          </aside>
+        </div>
+
+        <!-- The second and last serif moment. -->
+        <blockquote class="mt-16 border-l-2 border-accent pl-6 dark:border-accent-dark sm:pl-8">
+          <p class="font-serif text-[1.4rem] italic leading-[1.5] tracking-tight text-ink dark:text-ink-dark sm:text-[1.65rem]">
+            A problem you cannot draw is a problem you do not understand yet.
+          </p>
+        </blockquote>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Contact ─────────────────────────────────────────────────
+     Form is a mockup: it validates and reports status locally, then
+     resets. No network call, nothing is sent. -->
+<section id="contact">
+  <div class="mx-auto max-w-content px-5 py-20 sm:px-8 sm:py-28">
+
+    <div class="reveal lg:grid lg:grid-cols-12 lg:gap-12">
+      <p class="sec-no shrink-0 text-[.7rem] font-semibold uppercase tracking-[.16em] text-accent dark:text-accent-dark lg:col-span-3"></p>
+
+      <div class="mt-3 lg:col-span-9 lg:mt-0">
+        <h2 class="max-w-2xl text-[clamp(1.7rem,3.2vw,2.5rem)] font-semibold leading-[1.15] tracking-[-.028em]">
+          Tell me what is slowing your team down
+        </h2>
+        <p class="mt-5 max-w-xl text-[1.02rem] leading-relaxed text-muted dark:text-muted-dark">
+          Open to design-system, product design and front-end engineering work — and always
+          glad to hear about a tool that ought to exist.
+        </p>
+
+        <div class="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
+
+          <form id="contact-form" novalidate class="grid gap-5">
+            <div class="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label for="name" class="block text-[.78rem] font-medium text-faint dark:text-faint-dark">Name</label>
+                <input id="name" name="name" type="text" required autocomplete="name"
+                  class="mt-2 w-full rounded-md border border-rule bg-canvas px-3.5 py-2.5 text-[.92rem] transition placeholder:text-faint/70 focus:border-accent focus:outline-none dark:border-rule-dark dark:bg-surface-dark dark:focus:border-accent-dark"
+                  placeholder="Your name" />
+              </div>
+              <div>
+                <label for="email" class="block text-[.78rem] font-medium text-faint dark:text-faint-dark">Email</label>
+                <input id="email" name="email" type="email" required autocomplete="email"
+                  class="mt-2 w-full rounded-md border border-rule bg-canvas px-3.5 py-2.5 text-[.92rem] transition placeholder:text-faint/70 focus:border-accent focus:outline-none dark:border-rule-dark dark:bg-surface-dark dark:focus:border-accent-dark"
+                  placeholder="you@company.com" />
+              </div>
+            </div>
+
+            <div>
+              <label for="message" class="block text-[.78rem] font-medium text-faint dark:text-faint-dark">Project</label>
+              <textarea id="message" name="message" rows="5" required
+                class="mt-2 w-full resize-y rounded-md border border-rule bg-canvas px-3.5 py-2.5 text-[.92rem] transition placeholder:text-faint/70 focus:border-accent focus:outline-none dark:border-rule-dark dark:bg-surface-dark dark:focus:border-accent-dark"
+                placeholder="What are you building, and what is in the way?"></textarea>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-4">
+              <button type="submit"
+                class="rounded-md bg-ink px-6 py-3 text-sm font-medium text-canvas transition hover:bg-accent dark:bg-ink-dark dark:text-canvas-dark dark:hover:bg-accent-dark">
+                Send enquiry
+              </button>
+              <p id="form-status" role="status" aria-live="polite" class="text-[.85rem] text-faint dark:text-faint-dark"></p>
+            </div>
+          </form>
+
+          <aside>
+            <h3 class="text-[.7rem] font-semibold uppercase tracking-[.16em] text-faint dark:text-faint-dark">Or reach me directly</h3>
+            <ul class="mt-4 divide-y divide-rule border-y border-rule text-[.88rem] dark:divide-rule-dark dark:border-rule-dark">
+              <li>
+                <a href="mailto:gavin@limitlessloop.com" class="group flex items-center justify-between gap-4 py-3.5 transition hover:text-accent dark:hover:text-accent-dark">
+                  <span>gavin@limitlessloop.com</span>
+                  <svg class="row-arrow h-3.5 w-3.5 shrink-0 text-faint transition group-hover:translate-x-0.5 group-hover:text-accent dark:group-hover:text-accent-dark" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 10 4M4.6 4H10v5.4"/></svg>
+                </a>
+              </li>
+              <li>
+                <a href="https://github.com/gavinmcfarland" class="group flex items-center justify-between gap-4 py-3.5 transition hover:text-accent dark:hover:text-accent-dark">
+                  <span>GitHub</span>
+                  <svg class="row-arrow h-3.5 w-3.5 shrink-0 text-faint transition group-hover:translate-x-0.5 group-hover:text-accent dark:group-hover:text-accent-dark" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 10 4M4.6 4H10v5.4"/></svg>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.figma.com/@gavinmcfarland" class="group flex items-center justify-between gap-4 py-3.5 transition hover:text-accent dark:hover:text-accent-dark">
+                  <span>Figma Community</span>
+                  <svg class="row-arrow h-3.5 w-3.5 shrink-0 text-faint transition group-hover:translate-x-0.5 group-hover:text-accent dark:group-hover:text-accent-dark" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 10 4M4.6 4H10v5.4"/></svg>
+                </a>
+              </li>
+            </ul>
+
+            <p class="mt-6 text-[.83rem] leading-relaxed text-faint dark:text-faint-dark">
+              Enquiries usually answered within two working days.
+            </p>
+          </aside>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="border-t border-rule dark:border-rule-dark">
+  <div class="mx-auto flex max-w-content flex-col gap-3 px-5 py-8 text-[.82rem] text-faint dark:text-faint-dark sm:flex-row sm:items-center sm:justify-between sm:px-8">
+    <p>© 2026 Gavin McFarland</p>
+    <p>Designed and built in London</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ── Theme ─────────────────────────────────────────────────
+     The pre-paint script above set the class; this only handles
+     the toggle and persistence. */
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const dark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+  });
+
+  /* ── Mobile nav ────────────────────────────────────────────── */
+  const menuBtn = document.getElementById('menu-toggle');
+  const mobileNav = document.getElementById('mobile-nav');
+
+  const setMenu = (open) => {
+    mobileNav.classList.toggle('hidden', !open);
+    menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  };
+
+  menuBtn.addEventListener('click', () => setMenu(mobileNav.classList.contains('hidden')));
+  // Tapping a link should navigate and close, not leave the sheet open.
+  mobileNav.addEventListener('click', (e) => { if (e.target.closest('a')) setMenu(false); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+
+  /* ── Work rows ─────────────────────────────────────────────
+     Data-driven so the markup above stays readable. Newest first;
+     titles are escaped on the way in as a matter of habit. */
+  const projects = [
+    { title: 'Plugma', year: '2024', role: 'Creator & maintainer',
+      summary: 'A zero-config CLI for building Figma plugins with true hot-module reloading. Works with React, Svelte and Vue.',
+      tech: ['Node.js', 'TypeScript', 'Vite'],
+      href: 'https://www.plugma.dev/', hrefLabel: 'plugma.dev' },
+    { title: 'Askeroo', year: '2024', role: 'Creator & maintainer',
+      summary: 'A modern CLI prompt library with stateful back-navigation, conditional fields and task runners. Built on React and Ink.',
+      tech: ['TypeScript', 'React', 'Ink'],
+      href: 'https://github.com/gavinmcfarland/askeroo', hrefLabel: 'GitHub' },
+    { title: 'Screenshot 2 Layout', year: '2024', role: 'Plugin developer',
+      summary: 'Turns a flat screenshot into an editable, auto-layout Figma frame — structure recovered, not redrawn by hand.',
+      tech: ['TypeScript', 'Figma API', 'Vision'],
+      href: '#', hrefLabel: 'Live demo' },
+    { title: 'Figlet', year: '2023', role: 'Creator',
+      summary: 'A browser-based IDE for Figma plugins — write and run plugin code instantly, no local setup. Like CodePen for Figma.',
+      tech: ['JavaScript', 'Figma API', 'Svelte'],
+      href: 'https://www.figma.com/community/plugin/1215620774867583125/figlet', hrefLabel: 'Figma Community' },
+    { title: 'Table Creator', year: '2022', role: 'Creator',
+      summary: 'A Figma plugin for creating and maintaining complex data tables on the canvas, with dynamic content and bulk edits.',
+      tech: ['TypeScript', 'Figma API', 'Svelte'],
+      href: 'https://www.figma.com/community/plugin/885838970710285271/table-creator', hrefLabel: 'Figma Community' },
+    { title: 'Icon Preview', year: '2021', role: 'Creator',
+      summary: 'A Figma plugin that live-previews the icon you are editing at preset sizes for web, iOS and Android.',
+      tech: ['JavaScript', 'Figma API'],
+      href: 'https://www.figma.com/community/plugin/888907972695800109/icon-preview', hrefLabel: 'Figma Community' },
+  ];
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  const list = document.getElementById('work-list');
+  list.innerHTML = projects.map((p, i) => {
+    const external = p.href.startsWith('http');
+    const n = String(i + 1).padStart(2, '0');
+    return `
+      <a class="work-row group grid items-baseline gap-x-6 gap-y-3 border-b border-rule py-7 transition-colors hover:bg-canvas dark:border-rule-dark dark:hover:bg-canvas-dark md:grid-cols-12 md:px-4"
+         href="${esc(p.href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+
+        <div class="flex items-baseline gap-4 md:col-span-3">
+          <span class="tnum text-[.72rem] font-semibold text-faint dark:text-faint-dark">${n}</span>
+          <div>
+            <h3 class="text-[1.15rem] font-semibold tracking-tight transition-colors group-hover:text-accent dark:group-hover:text-accent-dark">${esc(p.title)}</h3>
+            <p class="mt-1 text-[.78rem] uppercase tracking-[.12em] text-faint dark:text-faint-dark">${esc(p.role)}</p>
+          </div>
+        </div>
+
+        <p class="text-[.95rem] leading-relaxed text-muted dark:text-muted-dark md:col-span-5">${esc(p.summary)}</p>
+
+        <ul class="flex flex-wrap gap-1.5 md:col-span-2">
+          ${p.tech.map((t) => `<li class="rounded border border-rule px-2 py-0.5 text-[.72rem] text-faint dark:border-rule-dark dark:text-faint-dark">${esc(t)}</li>`).join('')}
+        </ul>
+
+        <div class="flex items-center justify-between gap-4 md:col-span-2 md:justify-end">
+          <span class="tnum text-[.85rem] text-faint dark:text-faint-dark">${esc(p.year)}</span>
+          <span class="flex items-center gap-1.5 text-[.82rem] font-medium text-muted transition-colors group-hover:text-accent dark:text-muted-dark dark:group-hover:text-accent-dark">
+            <span class="hidden lg:inline">${esc(p.hrefLabel)}</span>
+            <svg class="row-arrow h-3.5 w-3.5 shrink-0" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 10 4M4.6 4H10v5.4"/></svg>
+          </span>
+        </div>
+      </a>`;
+  }).join('');
+
+  /* ── Scroll reveal ─────────────────────────────────────────
+     One observer, unobserving as it goes. Reduced-motion users get
+     everything visible immediately (the CSS above handles that), so
+     we skip the observer entirely for them. */
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const targets = document.querySelectorAll('.reveal');
+
+  if (reduced || !('IntersectionObserver' in window)) {
+    targets.forEach((el) => el.classList.add('in'));
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+
+    targets.forEach((el) => io.observe(el));
+  }
+
+  /* ── Contact form ──────────────────────────────────────────
+     Mockup only: validates client-side, reports status, resets.
+     Nothing leaves the page. */
+  const form = document.getElementById('contact-form');
+  const status = document.getElementById('form-status');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    // form.elements, not form.name — HTMLFormElement.name is the form's
+    // own attribute and would shadow the field.
+    const fields = form.elements;
+    const name = fields.name.value.trim();
+    const email = fields.email.value.trim();
+    const message = fields.message.value.trim();
+
+    if (!name || !email || !message) {
+      status.textContent = 'Please complete every field.';
+      status.className = 'text-[.85rem] text-accent dark:text-accent-dark';
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      status.textContent = 'That email address does not look right.';
+      status.className = 'text-[.85rem] text-accent dark:text-accent-dark';
+      fields.email.focus();
+      return;
+    }
+
+    status.textContent = 'Thanks — this is a mockup, so nothing was sent.';
+    status.className = 'text-[.85rem] text-faint dark:text-faint-dark';
+    form.reset();
+  });
+})();
+</script>
+
+</body>
+</html>

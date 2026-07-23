@@ -1,0 +1,590 @@
+/* ══════════════════════════════════════════════════════════════════
+   10 · BROADSHEET — the design system
+   ------------------------------------------------------------------
+   09 · Imposition asked what happens when many page TYPES print from
+   one form. This variation asks the next question: how many
+   STRUCTURES can one voice hold before it stops being one voice?
+
+   So the register changes — newsprint stock, a serif that carries
+   the prose, a condensed sans that carries everything structural, a
+   masthead across the top instead of a rail down the side, spot red
+   and spot blue printed flat the way a two-colour press would — and
+   the layout vocabulary is where the investment goes. §3 is a
+   library of twelve structures, and `layouts.html` runs the same six
+   items through all of them so the shapes can be compared with the
+   content held still.
+
+   THE DOCTRINE, unchanged from 09 because it is what makes these
+   read as siblings:
+
+     1. NO CURVES.    `border-radius: 0` globally, never overridden.
+     2. NO SHADOWS.   Not one box-shadow declaration. Panels sit on
+        the stock because they are ruled or filled.
+     3. NO GRADIENTS. The repeating-gradient calls in §2's texture
+        utilities are hard-stop patterns — adjacent stops at
+        identical positions, zero tonal transition. They are how a
+        press makes a tone out of a solid ink, which is the point.
+     4. FLAT TYPE.    16px serif prose, 13px sans structure. Rank is
+        carried by rules, inversion, numbering, column width and
+        pattern. Three sanctioned exceptions, and only three:
+          a. one --t-display line per page, maximum;
+          b. oversized folio numerals — ornament, not hierarchy;
+          c. one drop cap, and only the feature sheet may set it.
+     5. FEW BUTTONS.  One .btn style, appearing twice in the set:
+        the contact submit and the board's reset control.
+
+   WHAT IS DELIBERATELY DIFFERENT FROM 09
+     Navigation runs horizontally, so pages are full width and the
+     structures get the whole sheet to work in. Prose is a serif, so
+     the sans is free to be small, tight and structural everywhere.
+     Stock is cooler and darker; the two spot colours are printed,
+     not accented — they fill shapes far more often than they tint
+     text.
+
+   §1 tokens · §2 primitives · §3 layouts · §4 components · §5 board
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+
+:root {
+  /* Newsprint: cooler and a shade darker than 09's cream. */
+  --stock:   #D8D6CD;
+  --plate:   #EEEDE7;   /* the white-ish inset panel */
+  --sunk:    #C7C5BA;
+  --ink:     #17171A;
+  --muted:   #4C4C50;
+  --faint:   #86858A;
+  --rule:    #17171A;
+  --hair:    #B2B0A6;
+
+  /* Two spot inks, printed flat. RED is also the working accent —
+     links, marks, the active nav rule — so it must hold as text:
+     4.9:1 on the stock. BLUE is a fill first and a text colour only
+     inside a panel it also fills. */
+  --red:   #C4321B;  --red-ink:   #FFF4F1;
+  --blue:  #1B3C96;  --blue-ink:  #EDF0FA;
+  --ochre: #C08A12;  --ochre-ink: #241A00;
+  --moss:  #56663F;  --moss-ink:  #EFF3E7;
+  --slate: #6B7A8C;  --slate-ink: #F1F4F7;
+
+  /* Type — the serif argues, the sans organises. */
+  --f-serif: 'Newsreader', ui-serif, Georgia, serif;
+  --f-sans:  'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+
+  --t-micro:   .6875rem;   /* 11 — tracked uppercase sans labels */
+  --t-meta:    .8125rem;   /* 13 — all structural sans           */
+  --t-body:    1rem;       /* 16 — the only prose size           */
+  --t-display: clamp(1.75rem, 3.5vw, 2.125rem);  /* ≤34 */
+  --t-folio:   4.5rem;     /* 72 — decorative numerals           */
+
+  --sheet:  84rem;
+  --gutter: 1.25rem;
+  --pad:    clamp(1rem, 3vw, 2.25rem);
+  --bar-h:  3.25rem;
+
+  --tx-ink: var(--hair);
+
+  color-scheme: light;
+}
+
+.dark {
+  --stock: #131316;
+  --plate: #1C1C20;
+  --sunk:  #0D0D0F;
+  --ink:   #E9E8E2;
+  --muted: #A3A2A0;
+  --faint: #6C6B70;
+  --rule:  #E9E8E2;
+  --hair:  #34343A;
+
+  --red:  #F0553A;  --red-ink:  #1A0603;
+  --blue: #6D8CFF;  --blue-ink: #060B22;
+
+  color-scheme: dark;
+}
+
+
+/* ── §2 · PRIMITIVES ───────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; border-radius: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--stock);
+  color: var(--ink);
+  font-family: var(--f-serif);
+  font-size: var(--t-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, p, figure, dl, dd, ul, ol, blockquote { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+img, svg { display: block; max-width: 100%; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+table { border-collapse: collapse; }
+
+::selection { background: var(--red); color: var(--red-ink); }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+.skip { position: absolute; left: -9999px; z-index: 200; }
+.skip:focus {
+  left: 0; top: 0;
+  padding: .5rem 1rem;
+  background: var(--ink); color: var(--stock);
+  font-family: var(--f-sans); font-size: var(--t-meta);
+}
+
+/* ── Structure shells ──────────────────────────────────────────── */
+
+.sheet  { max-width: var(--sheet); margin: 0 auto; padding: 0 var(--pad); }
+.sheet--narrow { max-width: 52rem; }
+.sheet--full   { max-width: none; }
+
+.band { padding-block: 2.5rem; }
+.band--tight { padding-block: 1.5rem; }
+.band--inv { background: var(--ink); color: var(--stock); }
+.band--inv .ln { text-decoration-color: rgba(255,255,255,.4); }
+.band--sunk { background: var(--sunk); }
+.band + .band { border-top: 1px solid var(--hair); }
+
+.g12 { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: var(--gutter); }
+.c1{grid-column:span 1}  .c2{grid-column:span 2}  .c3{grid-column:span 3}
+.c4{grid-column:span 4}  .c5{grid-column:span 5}  .c6{grid-column:span 6}
+.c7{grid-column:span 7}  .c8{grid-column:span 8}  .c9{grid-column:span 9}
+.c10{grid-column:span 10} .c12{grid-column:span 12}
+
+@media (max-width: 899px) {
+  .c2, .c3, .c4 { grid-column: span 6; }
+  .c5, .c6, .c7, .c8, .c9, .c10 { grid-column: span 12; }
+}
+
+/* The construction grid — built from the real primitives so it
+   inherits their box model instead of approximating it. */
+#gridlines { position: fixed; inset: 0; z-index: 90; pointer-events: none; display: none; }
+#gridlines[data-on="true"] { display: block; }
+#gridlines .sheet, #gridlines .g12 { height: 100%; }
+#gridlines i { background: rgba(196,50,27,.06); border-inline: 1px solid rgba(196,50,27,.22); }
+
+.rule  { border: 0; border-top: 1px solid var(--rule); margin: 0; }
+.hair  { border: 0; border-top: 1px solid var(--hair); margin: 0; }
+/* The thick-over-thin pair a broadsheet puts under its masthead. */
+.rule--double { border: 0; border-top: 3px solid var(--rule); border-bottom: 1px solid var(--rule); height: 3px; margin: 0; }
+
+.air { padding-block: 6.5rem; }
+
+/* ── Textures — hard-stop press patterns ───────────────────────── */
+
+/* Two offset dot layers, the way a halftone actually prints. */
+.tx-halftone {
+  background-image:
+    radial-gradient(circle, var(--tx-ink) 1.4px, transparent 1.5px),
+    radial-gradient(circle, var(--tx-ink) 1.4px, transparent 1.5px);
+  background-size: 8px 8px, 8px 8px;
+  background-position: 0 0, 4px 4px;
+}
+.tx-crosshatch {
+  background-image:
+    repeating-linear-gradient(45deg,  var(--tx-ink) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-45deg, var(--tx-ink) 0 1px, transparent 1px 7px);
+}
+.tx-rules {
+  background-image: repeating-linear-gradient(0deg, var(--tx-ink) 0 1px, transparent 1px 5px);
+}
+.tx-stipple {
+  background-image:
+    radial-gradient(circle, var(--tx-ink) 1px, transparent 1.1px),
+    radial-gradient(circle, var(--tx-ink) .6px, transparent .7px);
+  background-size: 11px 11px, 7px 7px;
+  background-position: 0 0, 3px 5px;
+}
+.tx-weave {
+  background-image:
+    repeating-linear-gradient(0deg,  var(--tx-ink) 0 1px, transparent 1px 6px),
+    repeating-linear-gradient(90deg, var(--tx-ink) 0 1px, transparent 1px 6px);
+}
+
+/* ── Type utilities ────────────────────────────────────────────── */
+
+.micro {
+  font-family: var(--f-sans); font-size: var(--t-micro); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .09em; line-height: 1.3;
+}
+.meta { font-family: var(--f-sans); font-size: var(--t-meta); line-height: 1.45; font-variant-numeric: tabular-nums; }
+.prose { font-family: var(--f-serif); font-size: var(--t-body); }
+.dim { color: var(--muted); }
+.faint { color: var(--faint); }
+.strong { font-weight: 600; }
+
+/* Exception (a) — one per page. */
+.display {
+  font-family: var(--f-serif); font-size: var(--t-display);
+  font-weight: 600; line-height: 1.15; letter-spacing: -.015em;
+}
+/* Exception (b) — ornament. */
+.folio {
+  font-family: var(--f-sans); font-size: var(--t-folio); font-weight: 600;
+  line-height: .8; letter-spacing: -.04em; color: var(--faint);
+}
+/* Exception (c) — feature sheet only, once. */
+.dropcap::first-letter {
+  float: left;
+  font-family: var(--f-serif); font-weight: 600;
+  font-size: 3.6em; line-height: .8;
+  padding: .04em .1em 0 0;
+  color: var(--red);
+}
+
+.num { font-family: var(--f-sans); font-size: var(--t-meta); font-weight: 600; color: var(--red); font-variant-numeric: tabular-nums; }
+
+a { color: inherit; }
+.ln {
+  text-decoration: underline; text-decoration-thickness: 1px;
+  text-underline-offset: 3px; text-decoration-color: var(--faint);
+}
+.ln:hover { color: var(--red); text-decoration-color: var(--red); }
+.ln--bare { text-decoration: none; }
+.ln--bare:hover { color: var(--red); }
+
+.btn {
+  display: inline-block; padding: .5rem 1.25rem;
+  border: 1px solid var(--rule); background: var(--stock); color: var(--ink);
+  font-family: var(--f-sans); font-size: var(--t-meta); font-weight: 600;
+}
+.btn:hover { background: var(--ink); color: var(--stock); }
+
+/* Icon placeholder — a transparent square with a border, standing
+   where an icon would. Never filled, never a glyph. */
+.ph { display: inline-block; flex: none; width: 22px; height: 22px; border: 1px solid currentColor; background: transparent; }
+.ph--14 { width: 14px; height: 14px; }
+.ph--36 { width: 36px; height: 36px; }
+.ph--hatch { background-image: repeating-linear-gradient(45deg, currentColor 0 1px, transparent 1px 5px); }
+
+.flag {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .1rem .45rem; border: 1px solid var(--hair);
+  font-family: var(--f-sans); font-size: var(--t-micro); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .07em; color: var(--muted);
+  text-decoration: none;
+}
+.flag .sw { width: 7px; height: 7px; flex: none; border: 1px solid var(--rule); }
+
+.sw[data-tone="red"],   [data-tone="red"]   > .sw { background: var(--red); }
+.sw[data-tone="blue"],  [data-tone="blue"]  > .sw { background: var(--blue); }
+.sw[data-tone="ochre"], [data-tone="ochre"] > .sw { background: var(--ochre); }
+.sw[data-tone="moss"],  [data-tone="moss"]  > .sw { background: var(--moss); }
+.sw[data-tone="slate"], [data-tone="slate"] > .sw { background: var(--slate); }
+
+.swap { transition: opacity 120ms linear; }
+.swap[data-fading="true"] { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .swap { transition: none; } }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §3 · LAYOUTS
+   The library this variation exists for. Twelve structures, each
+   able to hold the same content. `layouts.html` steps through all of
+   them; the other sheets each commit to two or three.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── L1 · Column flow ──────────────────────────────────────────────
+   Real newspaper columns with a rule between. Text flows and breaks
+   wherever it lands, which is the point and also the risk. */
+.l-flow { column-gap: 2rem; column-rule: 1px solid var(--hair); }
+.l-flow--2 { column-count: 2; }
+.l-flow--3 { column-count: 3; }
+.l-flow--4 { column-count: 4; }
+.l-flow p { margin-bottom: .9rem; }
+/* Items must not be split across a column break. */
+.l-flow .keep { break-inside: avoid; margin-bottom: 1.25rem; }
+@media (max-width: 899px) { .l-flow--3, .l-flow--4 { column-count: 2; } }
+@media (max-width: 599px) { .l-flow--2, .l-flow--3, .l-flow--4 { column-count: 1; } }
+
+/* ── L2 · Split screen ─────────────────────────────────────────────
+   One half holds still while the other moves. The sticky half needs
+   a height cap or it fights the footer. */
+.l-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0; align-items: stretch; }
+.l-split > * { padding: 2rem var(--pad); }
+/* The CELL stretches — so its fill and its dividing rule run the
+   full height of the taller half — and the CONTENT inside it is
+   what sticks. Putting sticky on the cell itself would collapse it
+   to its own content height and leave the fill stopping short. */
+.l-split__fixed { align-self: stretch; border-right: 1px solid var(--rule); }
+.l-split__fixed > .is-sticky { position: sticky; top: calc(var(--bar-h) + 2rem); }
+@media (max-width: 899px) {
+  .l-split { grid-template-columns: 1fr; }
+  .l-split__fixed { border-right: 0; border-bottom: 1px solid var(--rule); }
+  .l-split__fixed > .is-sticky { position: static; }
+}
+
+/* ── L3 · Filmstrip ────────────────────────────────────────────────
+   Horizontal scroll with snap. Cells keep a fixed width so the
+   sequence reads as a sequence, not a reflowing grid. */
+.l-strip {
+  display: flex; gap: var(--gutter);
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  padding-bottom: .75rem;
+  scrollbar-width: thin;
+}
+.l-strip > * { flex: 0 0 clamp(15rem, 26vw, 20rem); scroll-snap-align: start; }
+
+/* ── L4 · Staggered ────────────────────────────────────────────────
+   A grid with alternate cells dropped. Enough to break the ledger
+   rhythm; not enough to lose the grid. */
+.l-stagger { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gutter) var(--gutter); }
+.l-stagger > :nth-child(3n+2) { margin-top: 3rem; }
+.l-stagger > :nth-child(3n+3) { margin-top: 1.5rem; }
+@media (max-width: 899px) {
+  .l-stagger { grid-template-columns: repeat(2, 1fr); }
+  .l-stagger > * { margin-top: 0 !important; }
+}
+
+/* ── L5 · Overlap ──────────────────────────────────────────────────
+   The one structure allowed to break its own column: panels cross
+   into each other and stack in z. Used once per set, on purpose. */
+.l-overlap { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); align-items: start; }
+.l-overlap > * { position: relative; }
+.l-overlap > :nth-child(1) { grid-area: 1 / 1 / span 1 / span 7; z-index: 1; }
+.l-overlap > :nth-child(2) { grid-area: 1 / 6 / span 1 / span 7; z-index: 3; margin-top: 4.5rem; }
+.l-overlap > :nth-child(3) { grid-area: 2 / 2 / span 1 / span 6; z-index: 2; margin-top: -2rem; }
+.l-overlap > :nth-child(4) { grid-area: 2 / 8 / span 1 / span 5; z-index: 4; margin-top: 1.5rem; }
+.l-overlap > :nth-child(5) { grid-area: 3 / 1 / span 1 / span 5; z-index: 2; margin-top: -1rem; }
+.l-overlap > :nth-child(6) { grid-area: 3 / 6 / span 1 / span 6; z-index: 5; margin-top: 2.5rem; }
+@media (max-width: 899px) {
+  .l-overlap { grid-template-columns: 1fr; gap: var(--gutter); }
+  .l-overlap > * { grid-area: auto !important; margin-top: 0 !important; }
+}
+
+/* ── L6 · Full-bleed bands ─────────────────────────────────────────
+   Edge-to-edge strips, alternating fill. Rank comes from inversion
+   and from how much width a band is allowed to keep. */
+.l-bands > * { padding-block: 1.75rem; border-bottom: 1px solid var(--hair); }
+.l-bands > :nth-child(even) { background: var(--sunk); }
+.l-bands > .is-lead { background: var(--ink); color: var(--stock); border-bottom-color: var(--ink); }
+
+/* ── L7 · Asymmetric ───────────────────────────────────────────────
+   Seven of argument, five of apparatus, an empty column between. */
+.l-asym { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: var(--gutter); }
+.l-asym__main { grid-column: 1 / span 7; }
+.l-asym__side { grid-column: 9 / span 4; }
+@media (max-width: 899px) { .l-asym__main, .l-asym__side { grid-column: 1 / -1; } }
+
+/* ── L8 · Classifieds ──────────────────────────────────────────────
+   Small ads. Three columns of dense entries, hairline between,
+   nothing featured. The densest thing in the system. */
+.l-classified { column-count: 3; column-gap: 1.75rem; column-rule: 1px solid var(--hair); }
+.l-classified > * { break-inside: avoid; padding: .3rem 0; border-bottom: 1px solid var(--hair); }
+@media (max-width: 899px) { .l-classified { column-count: 2; } }
+@media (max-width: 599px) { .l-classified { column-count: 1; } }
+
+/* ── L9 · Bento ────────────────────────────────────────────────────
+   Uneven spans on one grid. Honest only when the items genuinely
+   differ in weight. */
+.l-bento { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: var(--gutter); }
+.l-bento > * { min-height: 9rem; }
+
+/* ── L10 · Rungs ───────────────────────────────────────────────────
+   A rail down the left with rows hung off it. The shape a
+   chronology wants; the tick is drawn, not an image. */
+/* --rail is the single source of the offset: the rail sits at x=0 of
+   the container, the rows are pushed right by it, and the tick and
+   dot are pulled back by exactly the same amount. Overriding the
+   padding directly would desynchronise them, so set --rail instead. */
+.l-rungs { --rail: 1.75rem; position: relative; padding-left: var(--rail); }
+.l-rungs::before { content: ''; position: absolute; left: 0; top: .4rem; bottom: .4rem; width: 1px; background: var(--rule); }
+.l-rungs > * { position: relative; padding: .75rem 0; border-bottom: 1px solid var(--hair); }
+.l-rungs > *::before {
+  content: ''; position: absolute; top: 1.15rem;
+  left: calc(var(--rail) * -1); width: calc(var(--rail) - .45rem);
+  height: 1px; background: var(--rule);
+}
+.l-rungs > *::after {
+  content: ''; position: absolute; top: .85rem;
+  left: calc(var(--rail) * -1 - 4.5px);
+  width: 7px; height: 7px; background: var(--stock); border: 1px solid var(--rule);
+}
+.l-rungs > .is-mark::after { background: var(--red); border-color: var(--red); }
+
+/* ── L11 · Single measure ──────────────────────────────────────────
+   One narrow column, a great deal of nothing, and the only shape
+   that can carry a long argument. */
+.l-measure { max-width: 34rem; margin-inline: auto; }
+.l-measure p { margin-bottom: 1.1rem; }
+
+/* ── L12 · Ruled table ─────────────────────────────────────────────
+   The baseline every other structure argues against. */
+.l-table { width: 100%; font-family: var(--f-sans); font-size: var(--t-meta); font-variant-numeric: tabular-nums; }
+.l-table th, .l-table td { text-align: left; padding: .45rem .75rem .45rem 0; border-bottom: 1px solid var(--hair); vertical-align: baseline; }
+.l-table thead th { border-bottom: 1px solid var(--rule); color: var(--faint); font-weight: 600; font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .09em; }
+.l-table tbody tr:hover { background: var(--plate); }
+.l-table tbody tr:hover .t-item { color: var(--red); }
+.l-table .t-num { color: var(--red); font-weight: 600; width: 3rem; }
+.l-table .t-desc { font-family: var(--f-serif); font-size: var(--t-body); color: var(--muted); }
+.l-table .t-year { text-align: right; color: var(--faint); width: 4rem; }
+
+.scroll-x { overflow-x: auto; }
+.scroll-x > * { min-width: 42rem; }
+.scroll-hint { display: none; color: var(--faint); margin-top: .4rem; }
+@media (max-width: 899px) { .scroll-hint { display: block; } }
+
+
+/* ── §4 · COMPONENTS ───────────────────────────────────────────── */
+
+/* ── Masthead + the nav bar ────────────────────────────────────────
+   Horizontal, so every structure below gets the full sheet. The bar
+   is sticky; the masthead above it scrolls away. */
+.masthead { padding-top: 1.5rem; }
+.masthead__top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.masthead__title {
+  font-family: var(--f-sans); font-weight: 600;
+  font-size: clamp(1.5rem, 4.5vw, 2.5rem);
+  letter-spacing: -.02em; text-transform: uppercase; line-height: 1;
+}
+.masthead__strap { color: var(--muted); font-style: italic; }
+
+.bar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--stock);
+  border-bottom: 1px solid var(--rule);
+}
+.bar__in { display: flex; align-items: center; gap: 1.25rem; height: var(--bar-h); }
+.bar nav { display: flex; gap: 1.1rem; overflow-x: auto; scrollbar-width: none; }
+.bar nav::-webkit-scrollbar { display: none; }
+.bar nav a {
+  font-family: var(--f-sans); font-size: var(--t-meta); font-weight: 500;
+  text-decoration: none; color: var(--muted);
+  padding: .25rem 0; border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.bar nav a:hover { color: var(--ink); }
+.bar nav a[aria-current="page"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--red); }
+.bar__tools { margin-left: auto; display: flex; gap: .875rem; }
+.bar__tools button {
+  font-family: var(--f-sans); font-size: var(--t-micro); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .09em; color: var(--faint);
+}
+.bar__tools button:hover { color: var(--ink); }
+
+/* ── Section head — a kicker over a thick rule ─────────────────── */
+.head { display: flex; align-items: baseline; gap: .75rem; border-top: 2px solid var(--rule); padding-top: .5rem; margin-bottom: 1.1rem; }
+.head h1, .head h2, .head h3 { font-family: var(--f-sans); font-size: var(--t-micro); font-weight: 600; text-transform: uppercase; letter-spacing: .09em; }
+.head__x { margin-left: auto; font-family: var(--f-sans); font-size: var(--t-micro); }
+
+/* ── Panel + plate ─────────────────────────────────────────────── */
+.panel { border: 1px solid var(--rule); background: var(--plate); padding: .875rem; display: flex; flex-direction: column; }
+a.panel { text-decoration: none; }
+a.panel:hover { outline: 2px solid var(--red); outline-offset: -1px; }
+.panel--sunk { background: var(--sunk); }
+.panel--bare { border: 0; background: none; padding: 0; }
+
+.plate { position: relative; flex: 1; min-height: 5rem; border: 1px solid var(--rule); overflow: hidden; }
+.plate[data-tone="red"]   { background: var(--red);   color: var(--red-ink); }
+.plate[data-tone="blue"]  { background: var(--blue);  color: var(--blue-ink); }
+.plate[data-tone="ochre"] { background: var(--ochre); color: var(--ochre-ink); }
+.plate[data-tone="moss"]  { background: var(--moss);  color: var(--moss-ink); }
+.plate[data-tone="slate"] { background: var(--slate); color: var(--slate-ink); }
+.plate .tx { position: absolute; inset: 0; --tx-ink: currentColor; opacity: .3; }
+.plate .folio { position: absolute; right: .4rem; bottom: -.5rem; color: currentColor; opacity: .5; }
+
+/* ── Entry — the atom the layouts rearrange ───────────────────────
+   Every structure in §3 is fed the same entry markup. That is what
+   makes the atlas a fair comparison. */
+.entry { text-decoration: none; display: block; }
+.entry__k { display: flex; align-items: baseline; gap: .5rem; margin-bottom: .25rem; }
+.entry__t { font-family: var(--f-sans); font-size: var(--t-meta); font-weight: 600; }
+.entry:hover .entry__t { color: var(--red); }
+.entry__d { color: var(--muted); }
+.entry__y { margin-left: auto; font-family: var(--f-sans); font-size: var(--t-micro); color: var(--faint); }
+
+/* ── Editorial rows, definition lists ──────────────────────────── */
+.edrows { border-top: 1px solid var(--rule); }
+.edrow { display: grid; grid-template-columns: minmax(8rem,1fr) 2.4fr; gap: var(--gutter); padding: .8rem 0; border-bottom: 1px solid var(--hair); }
+.edrow__k { font-family: var(--f-sans); font-size: var(--t-meta); font-weight: 600; display: flex; align-items: flex-start; gap: .625rem; }
+.edrow__v { color: var(--muted); max-width: 58ch; }
+@media (max-width: 599px) { .edrow { grid-template-columns: 1fr; gap: .25rem; } }
+
+.defs { display: grid; gap: .2rem; }
+.defs > div { display: grid; grid-template-columns: 8rem 1fr; gap: var(--gutter); font-family: var(--f-sans); font-size: var(--t-meta); }
+.defs dt { color: var(--faint); }
+.defs dd { margin: 0; }
+
+/* ── Tabs + stepper — the atlas controls ───────────────────────── */
+.tabs { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.tab {
+  font-family: var(--f-sans); font-size: var(--t-meta);
+  padding: .25rem .6rem; border: 1px solid var(--hair); color: var(--muted);
+}
+.tab:hover { color: var(--ink); border-color: var(--rule); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--stock); border-color: var(--ink); font-weight: 600; }
+
+.stepper { display: flex; align-items: center; gap: 1rem; font-family: var(--f-sans); font-size: var(--t-meta); }
+.stepper button { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.stepper button:hover { color: var(--red); }
+.stepper output { color: var(--faint); font-variant-numeric: tabular-nums; }
+
+/* ── Accordion ─────────────────────────────────────────────────── */
+.fold { border-top: 1px solid var(--hair); }
+.fold:last-of-type { border-bottom: 1px solid var(--hair); }
+.fold summary { list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: .7rem; padding: .5rem 0; font-family: var(--f-sans); font-size: var(--t-meta); font-weight: 600; }
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary::before { content: '+'; color: var(--red); width: 1ch; }
+.fold[open] summary::before { content: '−'; }
+.fold summary:hover { color: var(--red); }
+.fold__body { padding: 0 0 .9rem 1.7ch; color: var(--muted); max-width: 62ch; }
+
+/* ── Note — board vocabulary, allowed to leak onto sheets ──────── */
+.note { border: 1px solid var(--rule); padding: .7rem; font-family: var(--f-sans); font-size: var(--t-meta); white-space: pre-line; display: flex; flex-direction: column; gap: .6rem; }
+.note__label { font-size: var(--t-micro); font-weight: 600; letter-spacing: .07em; text-transform: uppercase; opacity: .72; }
+.note[data-tone="red"]   { background: var(--red);   color: var(--red-ink); }
+.note[data-tone="blue"]  { background: var(--blue);  color: var(--blue-ink); }
+.note[data-tone="ochre"] { background: var(--ochre); color: var(--ochre-ink); }
+.note[data-tone="moss"]  { background: var(--moss);  color: var(--moss-ink); }
+.note[data-tone="slate"] { background: var(--slate); color: var(--slate-ink); }
+
+/* ── Form ──────────────────────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: .3rem; margin-bottom: .9rem; }
+.field label { font-family: var(--f-sans); font-size: var(--t-micro); font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+.input { border: 1px solid var(--hair); background: var(--plate); padding: .5rem .625rem; font-family: var(--f-sans); font-size: var(--t-meta); width: 100%; }
+.input:focus-visible { outline: 2px solid var(--red); outline-offset: 0; }
+textarea.input { resize: vertical; min-height: 6.5rem; }
+.field[data-invalid="true"] .input { border-color: var(--red); }
+.err { font-family: var(--f-sans); font-size: var(--t-micro); color: var(--red); min-height: 1em; }
+
+.foot { border-top: 3px solid var(--rule); margin-top: 3.5rem; padding: 1.25rem 0 2.5rem; }
+
+
+/* ── §5 · BOARD ────────────────────────────────────────────────── */
+
+.board { position: fixed; inset: 0; top: var(--bar-h); background: var(--stock); overflow: hidden; --tx-ink: var(--hair); }
+.board__vp {
+  position: absolute; inset: 0; cursor: grab; touch-action: none;
+  background-image: radial-gradient(circle, var(--tx-ink) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.board__vp:active { cursor: grabbing; }
+.board__world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.board__node { position: absolute; }
+.board__node .note { width: 100%; min-height: 7.5rem; }
+
+.nd-doc { border: 1px solid var(--rule); background: var(--plate); padding: .7rem; color: var(--muted); }
+.nd-doc .micro { display: flex; align-items: center; gap: .5rem; color: var(--ink); border-bottom: 1px solid var(--hair); padding-bottom: .45rem; margin-bottom: .45rem; }
+.nd-code { border: 1px solid var(--rule); background: var(--sunk); }
+.nd-code__bar { border-bottom: 1px solid var(--hair); padding: .35rem .6rem; font-family: var(--f-sans); font-size: var(--t-micro); font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+.nd-code pre { margin: 0; padding: .6rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--t-meta); line-height: 1.55; white-space: pre; }
+
+.board__hint { position: fixed; bottom: .75rem; left: var(--pad); font-family: var(--f-sans); font-size: var(--t-micro); color: var(--faint); transition: opacity 120ms linear; z-index: 10; }
+
+/* The same board drawn small and inert as a figure on a sheet. */
+.boardfig { position: relative; border: 1px solid var(--rule); background: var(--sunk); overflow: hidden; height: 16rem; --tx-ink: var(--hair); }
+.boardfig__world { position: absolute; left: 1rem; top: 1rem; transform: scale(.5); transform-origin: 0 0; width: 200%; }
+.boardfig__bar { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--rule); border-top: 0; padding: .35rem .6rem; font-family: var(--f-sans); font-size: var(--t-micro); color: var(--muted); }
+
+@media print {
+  .bar, #gridlines, .board__hint { display: none; }
+}

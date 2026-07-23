@@ -1,0 +1,526 @@
+/* ══════════════════════════════════════════════════════════════════
+   13 · DITHER — the design system
+   ------------------------------------------------------------------
+   A manual page. Everything is set in one monospaced family at one
+   size; sections are named in bold capitals and their bodies are
+   indented, the way `man` has done it since 1971. Understated on
+   purpose — there is no display type, no colour beyond a single
+   green, and no component that announces itself.
+
+   WHERE THE INTEREST GOES INSTEAD: §3, the dither engine.
+
+   Earlier sets in this folder used texture as a flat pattern poured
+   into a bordered box — an abstract stand-in for a picture that was
+   never going to exist. Here the texture IS the picture. §3 builds
+   1-bit fields out of SQUARE dots — a dither is a decision made per
+   pixel, and a pixel is square — arranged on grids that are visibly
+   constructed rather than scattered. Denser passages are masked into
+   repeating geometry: checkerboards of rectangles, grids of true
+   circles, horizontal bands. Nothing fades anywhere; dithering is the
+   art of making tone out of marks that are either there or not,
+   which is exactly what this system's no-gradients rule required.
+
+   The same engine then does two more jobs:
+
+     · GROUNDS — whole sections carry a faint field, so the sheet
+       reads as printed matter rather than as a background colour.
+     · DECALS — seals, crop marks, tabs, chips and stripes, placed
+       half off the edge of things. This is where the set is allowed
+       to be playful; the playfulness is in where they land, not in
+       the geometry, which stays rectangles and true circles.
+
+   THE DOCTRINE, unchanged across 09–13:
+     1. NO CURVES — `border-radius: 0` globally, never overridden.
+        (Circles in §3 are mask geometry, not painted corners.)
+     2. NO SHADOWS — not one box-shadow declaration.
+     3. NO GRADIENTS — every stop in this file is hard. A gradient
+        that does not grade is a pattern; a pattern that clumps is a
+        dither.
+     4. FLAT TYPE — two sizes, plus one step for command lines.
+     5. FEW BUTTONS — one .btn, appearing twice in the whole set.
+
+   §1 tokens · §2 primitives · §3 dither · §4 manual · §5 board
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+
+:root {
+  --bg:    #0E0F0D;
+  --raise: #151613;
+  --ink:   #D9D7CB;
+  --mid:   #8C8A80;
+  --faint: #575650;
+  --line:  #24251F;
+
+  /* One colour. It marks the prompt, the live item and nothing else. */
+  --green: #7BD88F;
+
+  /* The dither ink. Everything in §3 draws with this, so a section
+     can re-tint its whole field by setting one property. */
+  --tx: rgba(217, 215, 203, .22);
+  --tx-strong: rgba(217, 215, 203, .40);
+  /* Grounds sit BEHIND running text, so they get their own much
+     weaker ink. A field you can read a paragraph through is the
+     whole point; one you cannot is just noise. */
+  --tx-ground: rgba(217, 215, 203, .085);
+
+  /* THE DOT. A conic-gradient's first quadrant fills exactly one
+     quarter of its tile, and that quarter is a square — so these
+     four values are the only marks §3 ever paints. `--sq` is 25%
+     ink; two offset --sq layers make 50%; `--check` is a 50%
+     checker. They are declared once here and resolve against
+     whatever --tx is in scope, which is why a note can quieten its
+     whole field by re-declaring one property. */
+  --sq:           conic-gradient(var(--tx) 0deg 90deg, transparent 90deg);
+  --sq-strong:    conic-gradient(var(--tx-strong) 0deg 90deg, transparent 90deg);
+  --sq-ground:    conic-gradient(var(--tx-ground) 0deg 90deg, transparent 90deg);
+  --check:        repeating-conic-gradient(var(--tx) 0% 25%, transparent 0% 50%);
+  --check-strong: repeating-conic-gradient(var(--tx-strong) 0% 25%, transparent 0% 50%);
+
+  --f: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, 'Courier New', monospace;
+
+  --t-sm:  .75rem;      /* 12 — captions, meta            */
+  --t:     .875rem;     /* 14 — everything, headers too   */
+  --t-cmd: 1.0625rem;   /* 17 — command lines only        */
+
+  --pad: clamp(1.25rem, 5vw, 4rem);
+  --sheet: 74rem;
+  --bar: 2.5rem;
+  --indent: 3ch;
+
+  color-scheme: dark;
+}
+
+/* Bone — a manual page that got printed. */
+.light {
+  --bg:    #E6E3D8;
+  --raise: #DDDACE;
+  --ink:   #1A1B14;
+  --mid:   #5C5B52;
+  --faint: #8E8C82;
+  --line:  #C9C5B7;
+  --green: #2C7A4B;
+
+  --tx: rgba(26, 27, 20, .22);
+  --tx-strong: rgba(26, 27, 20, .38);
+  --tx-ground: rgba(26, 27, 20, .10);
+
+  color-scheme: light;
+}
+
+
+/* ── §2 · PRIMITIVES ───────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; border-radius: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  padding-top: var(--bar);
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--f);
+  font-size: var(--t);
+  font-weight: 400;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 { font-size: var(--t); font-weight: 700; margin: 0; }
+p, figure, dl, dd, ul, ol, blockquote, pre { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+img, svg { display: block; max-width: 100%; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+table { border-collapse: collapse; }
+
+::selection { background: var(--green); color: var(--bg); }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+.skip { position: absolute; left: -9999px; z-index: 300; }
+.skip:focus { left: 0; top: 0; padding: .5rem 1rem; background: var(--ink); color: var(--bg); }
+
+.sheet { max-width: var(--sheet); margin: 0 auto; padding-inline: var(--pad); }
+
+.sm    { font-size: var(--t-sm); }
+.dim   { color: var(--mid); }
+.faint { color: var(--faint); }
+.green { color: var(--green); }
+.b     { font-weight: 700; }
+
+a { color: inherit; }
+.ln { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: var(--faint); }
+.ln:hover { color: var(--green); text-decoration-color: var(--green); }
+.ln--bare { text-decoration: none; }
+.ln--bare:hover { color: var(--green); }
+
+.hr { border: 0; border-top: 1px solid var(--line); margin: 0; }
+
+.btn { display: inline-block; padding: .35rem 1.1rem; border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: var(--t-sm); }
+.btn:hover { border-color: var(--green); color: var(--green); }
+
+/* The only icon in the set: a copy mark beside the address. Drawn,
+   not fetched, and 12px so it sits on the baseline of the text. */
+.copy { display: inline-flex; align-items: center; gap: .4rem; background: none; color: var(--faint); }
+.copy:hover { color: var(--green); }
+.copy svg { width: 12px; height: 12px; }
+
+#gridlines { position: fixed; inset: var(--bar) 0 0; z-index: 90; pointer-events: none; display: none; }
+#gridlines[data-on="true"] { display: block; }
+#gridlines .g { height: 100%; max-width: var(--sheet); margin: 0 auto; padding-inline: var(--pad); display: grid; grid-template-columns: repeat(12, 1fr); }
+#gridlines i { border-inline: 1px solid rgba(123,216,143,.2); background: rgba(123,216,143,.04); }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §3 · DITHER
+   The engine. Two rules govern all of it:
+
+     THE DOT IS A SQUARE. Every mark in every field is a square,
+     never a circle — a dither is a decision made per pixel, and a
+     pixel is square. Squares are cut with `conic-gradient`, whose
+     first quadrant fills exactly a quarter of its tile: one layer
+     gives 25% ink, two offset layers give 50%, and a
+     `repeating-conic-gradient` gives a 50% checker. No dot in this
+     file is round.
+
+     THE CLUMPING IS ORDERED. The denser passages are not scattered.
+     They are masked into repeating geometry — checkerboards of
+     rectangles, grids of true circles, and horizontal bands — so a
+     field reads as something built on a grid rather than as noise
+     that happened. Where a circle appears it is a PERFECT circle,
+     cut with an explicit pixel radius (`circle 26px`) so it stays
+     round whatever the aspect of the box it is drawn in. There are
+     no ellipses anywhere below.
+
+   Each field is three layers: an even base of square dots, then two
+   coarser grids masked into that repeating geometry so the field has
+   structure at two scales. Every stop is hard.
+   ══════════════════════════════════════════════════════════════════ */
+
+.plate {
+  /* Declared block explicitly: plates are written as <span> inside
+     anchor markup, and an inline box would collapse the height the
+     whole field depends on. */
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background-color: transparent;
+  border: 1px solid var(--line);
+  min-height: 8rem;
+}
+.plate::before, .plate::after { content: ''; position: absolute; inset: 0; pointer-events: none; }
+
+/* ── a · grid ─────────────────────────────────────────────────────
+   Square dots on a 6px pitch; the denser passages fall on a 72px
+   checkerboard, so the clumping is laid out on a grid rather than
+   dropped at random. The default field. */
+.plate[data-plate="a"] { background-image: var(--sq); background-size: 6px 6px; }
+.plate[data-plate="a"]::before {
+  background-image: var(--sq-strong); background-size: 6px 6px; background-position: 3px 3px;
+  -webkit-mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%); -webkit-mask-size: 72px 72px;
+          mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%);         mask-size: 72px 72px;
+}
+.plate[data-plate="a"]::after {
+  background-image: var(--check-strong); background-size: 10px 10px;
+  -webkit-mask-image: radial-gradient(circle 18px at 50% 50%, #000 99%, transparent 100%); -webkit-mask-size: 96px 96px;
+          mask-image: radial-gradient(circle 18px at 50% 50%, #000 99%, transparent 100%);         mask-size: 96px 96px;
+}
+
+/* ── b · band ─────────────────────────────────────────────────────
+   Rectangular bands at a fixed 62px repeat — a wide band of checker
+   with a narrower, denser rule sitting inside it. Wants a wide crop;
+   a tall one cuts the rhythm. */
+.plate[data-plate="b"] { background-image: var(--sq); background-size: 5px 5px; }
+.plate[data-plate="b"]::before {
+  background-image: var(--check-strong); background-size: 8px 8px;
+  -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 26px, transparent 26px 62px);
+          mask-image: repeating-linear-gradient(180deg, #000 0 26px, transparent 26px 62px);
+}
+.plate[data-plate="b"]::after {
+  background-image: var(--sq-strong); background-size: 12px 12px;
+  -webkit-mask-image: repeating-linear-gradient(180deg, transparent 0 34px, #000 34px 46px, transparent 46px 62px);
+          mask-image: repeating-linear-gradient(180deg, transparent 0 34px, #000 34px 46px, transparent 46px 62px);
+}
+
+/* ── c · fine ─────────────────────────────────────────────────────
+   An even 4px field with a single true circle of denser dots at the
+   centre. The quietest of the six: use it when the plate is
+   decoration and the words beside it are carrying the entry. */
+.plate[data-plate="c"] { background-image: var(--sq); background-size: 4px 4px; }
+.plate[data-plate="c"]::before {
+  background-image: var(--sq-strong); background-size: 4px 4px; background-position: 2px 2px;
+  -webkit-mask-image: radial-gradient(circle 74px at 50% 50%, #000 99%, transparent 100%);
+  -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
+          mask-image: radial-gradient(circle 74px at 50% 50%, #000 99%, transparent 100%);
+          mask-repeat: no-repeat;         mask-position: center;
+}
+
+/* ── d · disc ─────────────────────────────────────────────────────
+   A regular grid of true circles at 78px, each with a smaller
+   concentric circle of coarser dots inside it. The loudest field —
+   one per page. */
+.plate[data-plate="d"] { background-image: var(--sq); background-size: 7px 7px; }
+.plate[data-plate="d"]::before {
+  background-image: var(--check-strong); background-size: 7px 7px;
+  -webkit-mask-image: radial-gradient(circle 26px at 50% 50%, #000 99%, transparent 100%); -webkit-mask-size: 78px 78px;
+          mask-image: radial-gradient(circle 26px at 50% 50%, #000 99%, transparent 100%);         mask-size: 78px 78px;
+}
+.plate[data-plate="d"]::after {
+  background-image: var(--sq-strong); background-size: 14px 14px;
+  -webkit-mask-image: radial-gradient(circle 11px at 50% 50%, #000 99%, transparent 100%); -webkit-mask-size: 78px 78px;
+          mask-image: radial-gradient(circle 11px at 50% 50%, #000 99%, transparent 100%);         mask-size: 78px 78px;
+}
+
+/* ── e · moiré ────────────────────────────────────────────────────
+   Two square-dot grids at 7px and 8px. They beat against each other
+   and produce broad interference — the one field here whose pattern
+   is generated by arithmetic rather than drawn by a mask. */
+.plate[data-plate="e"] { background-image: var(--sq); background-size: 7px 7px; }
+.plate[data-plate="e"]::before { background-image: var(--sq); background-size: 8px 8px; }
+.plate[data-plate="e"]::after {
+  background-image: var(--check-strong); background-size: 9px 9px;
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 30px, transparent 30px 70px);
+          mask-image: repeating-linear-gradient(90deg, #000 0 30px, transparent 30px 70px);
+}
+
+/* ── f · block ────────────────────────────────────────────────────
+   Two checkerboards of rectangles, at 40px and 120px — a modular
+   mosaic. Every edge in this field is vertical or horizontal, which
+   makes it the most obviously constructed of the six. */
+.plate[data-plate="f"] { background-image: var(--sq); background-size: 5px 5px; }
+.plate[data-plate="f"]::before {
+  background-image: var(--check-strong); background-size: 5px 5px;
+  -webkit-mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%); -webkit-mask-size: 40px 40px;
+          mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%);         mask-size: 40px 40px;
+}
+.plate[data-plate="f"]::after {
+  background-image: var(--sq-strong); background-size: 10px 10px;
+  -webkit-mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%); -webkit-mask-size: 120px 120px;
+          mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%);         mask-size: 120px 120px;
+}
+
+/* A plate is an illustration, so it gets a caption rather than a
+   label. The numbering is the point of the caption. */
+.plate-cap { margin-top: .4rem; font-size: var(--t-sm); color: var(--faint); }
+
+/* ── Grounds ──────────────────────────────────────────────────────
+   The same square dots at about a third the ink, poured over a whole
+   region so the sheet reads as printed matter rather than a
+   background colour. Always behind content, never over it. */
+.ground { position: relative; }
+.ground > * { position: relative; z-index: 1; }
+.ground::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: var(--sq-ground); background-size: 5px 5px;
+}
+/* Cut to a rectangle occupying the right of the region — a single
+   hard stop, so the field simply stops. Anchored right because the
+   man-page column is indented from the left and a patch under the
+   first line of every section would be unreadable. */
+.ground--patch::before {
+  background-size: 6px 6px;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0 46%, #000 46%);
+          mask-image: linear-gradient(90deg, transparent 0 46%, #000 46%);
+}
+.ground--band::before {
+  background-size: 5px 5px;
+  -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 22px, transparent 22px 44px);
+          mask-image: repeating-linear-gradient(180deg, #000 0 22px, transparent 22px 44px);
+}
+
+/* ── Decals ───────────────────────────────────────────────────────
+   Where this set is allowed to enjoy itself. Each is a small square-
+   dotted shape meant to be placed half off the edge of something,
+   the way a sticker or a register mark is. The shapes themselves are
+   strictly rectangles and true circles — the playfulness is in where
+   they land, not in the geometry. */
+.decal { position: absolute; pointer-events: none; z-index: 2; }
+.decal--tr { top: -14px; right: -14px; }
+.decal--tl { top: -14px; left: -14px; }
+.decal--br { bottom: -14px; right: -14px; }
+.decal--bl { bottom: -14px; left: -14px; }
+
+/* seal — a true circular ring, cut with an explicit radius. */
+.decal--seal {
+  width: 64px; height: 64px;
+  background-image: var(--sq-strong); background-size: 4px 4px;
+  -webkit-mask-image: radial-gradient(circle 32px at 50% 50%, transparent 0 40%, #000 41% 78%, transparent 79%);
+          mask-image: radial-gradient(circle 32px at 50% 50%, transparent 0 40%, #000 41% 78%, transparent 79%);
+}
+
+/* crop — register marks. Lines, not dots; the one decal that is not
+   dithered, because a register mark has to be exact. */
+.decal--crop { width: 22px; height: 22px; }
+.decal--crop::before, .decal--crop::after { content: ''; position: absolute; background: var(--faint); }
+.decal--crop::before { left: 0; top: 50%; width: 100%; height: 1px; }
+.decal--crop::after  { top: 0; left: 50%; height: 100%; width: 1px; }
+
+/* tab — a rectangle of checkered squares that hangs off an edge. */
+.decal--tab {
+  width: 46px; height: 18px;
+  background-image: var(--check-strong); background-size: 4px 4px;
+  border: 1px solid var(--line);
+}
+
+/* chip — a rectangle with a true circle set beside it, both filled
+   with the same dots. Geometric rather than blobby: it overlaps what
+   it is placed on, but it is plainly a constructed shape. */
+.decal--chip {
+  width: 92px; height: 44px;
+  background-image: var(--sq-strong); background-size: 5px 5px;
+  -webkit-mask-image: linear-gradient(90deg, #000 0 52%, transparent 52%), radial-gradient(circle 20px at 76% 50%, #000 99%, transparent 100%);
+          mask-image: linear-gradient(90deg, #000 0 52%, transparent 52%), radial-gradient(circle 20px at 76% 50%, #000 99%, transparent 100%);
+}
+
+/* stripe — a band of squares used as a rule with weight. In the flow
+   rather than absolute. */
+.stripe {
+  position: relative; height: 14px;
+  background-image: var(--check-strong); background-size: 4px 4px;
+}
+
+
+/* ── §4 · MANUAL ───────────────────────────────────────────────── */
+
+/* ── The bar. A path line, because that is what a terminal shows. ─ */
+.bar {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--bar); z-index: 100;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 1.25rem;
+  padding-inline: var(--pad); font-size: var(--t-sm);
+}
+.bar nav { display: flex; gap: 1rem; overflow-x: auto; scrollbar-width: none; }
+.bar nav::-webkit-scrollbar { display: none; }
+.bar nav a { text-decoration: none; color: var(--faint); white-space: nowrap; }
+.bar nav a:hover { color: var(--ink); }
+.bar nav a[aria-current="page"] { color: var(--ink); }
+.bar nav a[aria-current="page"]::before { content: '·'; color: var(--green); margin-right: .35em; }
+.bar__tools { margin-left: auto; display: flex; gap: 1rem; }
+.bar__tools button { font-size: var(--t-sm); color: var(--faint); }
+.bar__tools button:hover { color: var(--ink); }
+
+/* ── Section, header, indented body — the man(7) shape ─────────── */
+.sec { padding-block: 2rem; }
+.man__h { font-weight: 700; text-transform: uppercase; letter-spacing: .14em; margin-bottom: .75rem; }
+.man__b { padding-left: var(--indent); max-width: 74ch; color: var(--mid); }
+.man__b p + p { margin-top: .9rem; }
+.man__b .ink { color: var(--ink); }
+
+/* The tab-stop list: ENVIRONMENT, and anything else shaped like it. */
+.man__dl { padding-left: var(--indent); display: grid; gap: .4rem; }
+.man__dl > div { display: grid; grid-template-columns: minmax(12ch, 20ch) 1fr; gap: 1.5rem; }
+.man__dl dt { font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.man__dl dd { margin: 0; color: var(--mid); }
+@media (max-width: 699px) {
+  .man__dl > div { grid-template-columns: 1fr; gap: 0; }
+}
+
+/* ── The command entry — the set's one type-size step ───────────── */
+.cmd { font-size: var(--t-cmd); display: flex; align-items: baseline; gap: .75rem; }
+.cmd__$ { color: var(--green); }
+.cmd__name { font-weight: 700; text-decoration: none; }
+a.cmd:hover .cmd__name, .entry:hover .cmd__name { color: var(--green); }
+.cmd__year { margin-left: auto; font-size: var(--t-sm); color: var(--faint); }
+
+.entry { display: block; text-decoration: none; padding-block: 1.5rem; border-top: 1px solid var(--line); }
+.entry__grid { display: grid; grid-template-columns: minmax(0, 30rem) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3.5rem); margin-top: 1rem; padding-left: var(--indent); }
+.entry__grid .plate { height: 13rem; }
+.entry__desc { color: var(--mid); max-width: 56ch; }
+@media (max-width: 899px) {
+  .entry__grid { grid-template-columns: 1fr; }
+  .entry__grid .plate { height: 10rem; }
+}
+
+/* ── Cross-reference line: github(7), plugma(1) ─────────────────── */
+.xref a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: var(--faint); }
+.xref a:hover { color: var(--green); }
+.xref .n { color: var(--faint); }
+
+/* ── Fold ──────────────────────────────────────────────────────── */
+.fold { border-top: 1px solid var(--line); }
+.fold:last-of-type { border-bottom: 1px solid var(--line); }
+.fold summary { list-style: none; cursor: pointer; display: flex; gap: .8rem; padding: .5rem 0; }
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary::before { content: '+'; color: var(--green); }
+.fold[open] summary::before { content: '−'; }
+.fold summary:hover { color: var(--green); }
+.fold__body { padding: 0 0 .9rem calc(var(--indent) + .8rem); color: var(--mid); max-width: 70ch; }
+
+/* ── Code block ────────────────────────────────────────────────── */
+.pre { border: 1px solid var(--line); background: var(--raise); padding: .75rem .9rem; overflow-x: auto; font-size: var(--t-sm); line-height: 1.7; }
+.pre .c { color: var(--faint); }
+
+/* ── Form — prompt-style fields ────────────────────────────────── */
+.field { margin-bottom: 1rem; }
+.field label { display: block; color: var(--mid); margin-bottom: .2rem; }
+.input { width: 100%; border: 1px solid var(--line); background: var(--raise); color: var(--ink); padding: .45rem .6rem; font-size: var(--t-sm); }
+.input:focus-visible { outline: 0; border-color: var(--green); }
+textarea.input { resize: vertical; min-height: 6rem; }
+.field[data-invalid="true"] .input { border-color: var(--green); }
+.err { font-size: var(--t-sm); color: var(--green); min-height: 1em; }
+
+.foot { border-top: 1px solid var(--line); margin-top: 2.5rem; padding: 1.25rem 0 3rem; color: var(--faint); font-size: var(--t-sm); }
+
+
+/* ── §5 · BOARD ────────────────────────────────────────────────── */
+
+.board { position: fixed; inset: var(--bar) 0 0; background: var(--bg); overflow: hidden; }
+.board__vp { position: absolute; inset: 0; cursor: grab; touch-action: none; }
+/* The canvas grid is square dots too. It is drawn on a ::before
+   rather than on the viewport itself, because the square is cut by
+   intersecting a mask with the background — and a mask on the
+   viewport would clip the notes inside it. board.js moves it by
+   setting --gx / --gy / --g. */
+.board__vp::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  --g: 24px;
+  background-image: repeating-linear-gradient(180deg, var(--tx) 0 2px, transparent 2px var(--g));
+  background-position: var(--gx, 0) var(--gy, 0);
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 2px, transparent 2px var(--g));
+  -webkit-mask-position: var(--gx, 0) var(--gy, 0);
+          mask-image: repeating-linear-gradient(90deg, #000 0 2px, transparent 2px var(--g));
+          mask-position: var(--gx, 0) var(--gy, 0);
+}
+.board__world { z-index: 1; }
+.board__vp:active { cursor: grabbing; }
+.board__world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.board__node { position: absolute; }
+
+/* Board notes are dither plates with type on them, so the board is
+   made of the same material as the sheets rather than of coloured
+   card. The label sits in the corner like a plate number. */
+.note { position: relative; border: 1px solid var(--line); background: var(--raise); padding: .8rem; min-height: 7rem; white-space: pre-line; overflow: hidden; }
+.note > * { position: relative; z-index: 1; }
+.note__label { display: block; font-size: var(--t-sm); color: var(--mid); letter-spacing: .12em; margin-bottom: .5rem; }
+/* A note carries type ON its field, which the plates elsewhere never
+   have to. So it re-declares the dither ink at roughly a third
+   strength: the material stays the same, there is just less of it.
+   Fading the plate with opacity would have done it too, but this
+   keeps every dot fully on or fully off — which is the rule. */
+.note {
+  --tx: rgba(217, 215, 203, .09);
+  --tx-strong: rgba(217, 215, 203, .15);
+}
+.light .note {
+  --tx: rgba(26, 27, 20, .10);
+  --tx-strong: rgba(26, 27, 20, .17);
+}
+
+.nd-doc { border: 1px solid var(--line); background: var(--raise); padding: .8rem; color: var(--mid); }
+.nd-doc .lbl { display: block; font-size: var(--t-sm); font-weight: 700; letter-spacing: .14em; color: var(--ink); border-bottom: 1px solid var(--line); padding-bottom: .4rem; margin-bottom: .5rem; }
+.nd-code { border: 1px solid var(--line); background: var(--raise); }
+.nd-code__bar { border-bottom: 1px solid var(--line); padding: .35rem .6rem; font-size: var(--t-sm); color: var(--mid); }
+.nd-code pre { margin: 0; padding: .6rem; font-size: var(--t-sm); line-height: 1.65; white-space: pre; }
+
+.board__hint { position: fixed; bottom: .9rem; left: var(--pad); font-size: var(--t-sm); color: var(--faint); transition: opacity 140ms linear; z-index: 10; }
+
+.boardfig { position: relative; border: 1px solid var(--line); background: var(--raise); overflow: hidden; height: 16rem; }
+.boardfig__world { position: absolute; left: 1rem; top: 1rem; transform: scale(.5); transform-origin: 0 0; width: 200%; }
+.boardfig__bar { display: flex; justify-content: space-between; border: 1px solid var(--line); border-top: 0; padding: .35rem .6rem; font-size: var(--t-sm); color: var(--faint); }
+
+@media (prefers-reduced-motion: reduce) { .board__hint { transition: none; } }
+@media print { .bar, #gridlines, .board__hint { display: none; } body { padding-top: 0; } }

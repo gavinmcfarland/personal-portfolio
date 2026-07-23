@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact — The Working Sheet</title>
+<meta name="description" content="Get in touch about design systems, tooling, or front-end work.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23D8D6CD'/%3E%3Crect x='4' y='4' width='24' height='7' fill='%2317171A'/%3E%3Crect x='4' y='14' width='11' height='14' fill='%23C4321B'/%3E%3Crect x='17' y='14' width='11' height='14' fill='%231B3C96'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="contact">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <div class="sheet bar__in">
+    <nav id="nav" aria-label="Primary"></nav>
+    <div class="bar__tools">
+      <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+      <button id="theme-toggle" type="button">Theme</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── L2 at full bleed: the invitation holds, the form scrolls ──── -->
+  <div class="l-split" style="border-bottom:1px solid var(--rule)">
+
+    <div class="l-split__fixed band--sunk">
+     <div class="is-sticky">
+      <p class="micro dim">Contact</p>
+      <h1 class="display" style="margin:.7rem 0 1rem;max-width:15ch">
+        The fastest route is email.
+      </h1>
+      <p class="dim" style="max-width:34ch">
+        Everything on this side is context for what happens after you send one.
+        Two working days, usually sooner.
+      </p>
+
+      <div class="edrows" style="margin-top:1.75rem;max-width:30rem">
+        <div class="edrow" style="grid-template-columns:1fr">
+          <span class="edrow__k"><span class="ph ph--14" aria-hidden="true"></span> <a class="ln" data-email href="#">—</a></span>
+        </div>
+        <div class="edrow" style="grid-template-columns:1fr">
+          <span class="edrow__k"><span class="ph ph--14" aria-hidden="true"></span>
+            <a class="ln" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">github.com/gavinmcfarland ↗</a></span>
+        </div>
+        <div class="edrow" style="grid-template-columns:1fr">
+          <span class="edrow__k"><span class="ph ph--14" aria-hidden="true"></span> London, UK — GMT / BST</span>
+        </div>
+      </div>
+     </div>
+    </div>
+
+    <div>
+      <p class="micro dim" style="margin-bottom:1rem">Write</p>
+      <form id="contact-form" novalidate style="max-width:32rem">
+        <div class="field">
+          <label for="f-name">Name</label>
+          <input class="input" id="f-name" name="name" type="text" autocomplete="name">
+          <span class="err" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input class="input" id="f-email" name="email" type="email" autocomplete="email">
+          <span class="err" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="f-msg">Message</label>
+          <textarea class="input" id="f-msg" name="message"></textarea>
+          <span class="err" aria-live="polite"></span>
+        </div>
+        <button class="btn" type="submit">Send it</button>
+        <p class="meta dim" id="form-done" hidden tabindex="-1" style="margin-top:.75rem">
+          This sheet is a mockup — nothing was sent. The address on the left works, though.
+        </p>
+      </form>
+
+      <p class="micro dim" style="margin:2.5rem 0 .5rem;border-top:1px solid var(--rule);padding-top:.5rem">
+        Likely questions
+      </p>
+      <div style="max-width:32rem">
+        <details class="fold">
+          <summary>Do you take retained work?</summary>
+          <p class="fold__body">Yes — most design-system engagements settle into a few days a month once the heavy build is done.</p>
+        </details>
+        <details class="fold">
+          <summary>Remote or on-site?</summary>
+          <p class="fold__body">Remote by default, on-site in London for kick-offs and the weeks where a whiteboard beats a call.</p>
+        </details>
+        <details class="fold">
+          <summary>Can you audit an existing system?</summary>
+          <p class="fold__body">Usually the best first engagement — two weeks, a written report, and a board of what to fix in what order.</p>
+        </details>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Availability, as a plain band under the split ─────────────── -->
+  <section class="band" aria-labelledby="av-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="av-h">Availability</h2>
+      </div>
+      <div class="l-flow l-flow--3">
+        <div class="keep">
+          <p class="micro dim" style="border-bottom:1px solid var(--hair);padding-bottom:.35rem;margin-bottom:.45rem">Status</p>
+          <p class="dim">Taking conversations for autumn 2026.</p>
+        </div>
+        <div class="keep">
+          <p class="micro dim" style="border-bottom:1px solid var(--hair);padding-bottom:.35rem;margin-bottom:.45rem">Engagements</p>
+          <p class="dim">Design systems, plugin tooling, front-end builds.</p>
+        </div>
+        <div class="keep">
+          <p class="micro dim" style="border-bottom:1px solid var(--hair);padding-bottom:.35rem;margin-bottom:.45rem">Overlap</p>
+          <p class="dim">GMT / BST. Mornings work well with the US east coast.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Sheet</dt><dd>Contact</dd></div>
+      <div><dt>Set</dt><dd>10 · Broadsheet</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>

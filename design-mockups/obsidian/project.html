@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Plugma — Gavin McFarland</title>
+<meta name="description" content="Plugma — a zero-config toolchain for building Figma plugins, with real hot reloading. Built by Gavin McFarland." />
+<meta name="color-scheme" content="dark" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          base:  '#08090A',
+          rise:  '#0D0F11',
+          ink:   '#EDEEF0',
+          muted: '#878D96',
+          faint: '#565C65',
+          dim:   '#3A3F46',
+          edge:  'rgba(255,255,255,.08)',
+        },
+        fontFamily: {
+          sans: ['Inter Tight', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        },
+        maxWidth: { shell: '68rem' },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Obsidian — project detail
+     Same system as the index. The detail page adds a spec panel, a
+     structure panel, and prev/next paging.
+     No screenshots anywhere, by design: the panels are built from
+     type and rules, so nothing here depends on assets that don't
+     exist yet, and nothing pretends to show a product it can't.
+     Reading order is problem-first. A project page that opens with
+     a feature list is a brochure; one that opens with the problem
+     argues for having built the thing at all.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+
+  ::selection { background: #EDEEF0; color: #08090A; }
+  :focus-visible { outline: 2px solid #EDEEF0; outline-offset: 3px; border-radius: 3px; }
+
+  .panel {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,.038), rgba(255,255,255,.011));
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+  }
+  .panel::before {
+    content: ''; position: absolute; inset: 0 0 auto; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: .67rem; letter-spacing: .2em; text-transform: uppercase;
+  }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: #EDEEF0; color: #08090A;
+    padding: .62rem 1.15rem; border-radius: 8px;
+    font-size: .86rem; font-weight: 500;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .pill:hover { background: #fff; transform: translateY(-1px); }
+
+  .aura {
+    position: absolute; inset: -20% -10% auto; height: 40rem; z-index: -1;
+    background:
+      radial-gradient(46% 50% at 50% 20%, rgba(120,150,255,.09), transparent 70%),
+      radial-gradient(38% 44% at 70% 6%, rgba(255,255,255,.05), transparent 72%);
+    filter: blur(8px);
+    pointer-events: none;
+  }
+
+  /* Body measure. Kept narrow — the page is wide, the prose is not. */
+  .prose p { margin: 0 0 1.2rem; max-width: 60ch; line-height: 1.75; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose strong { font-weight: 500; color: #EDEEF0; }
+
+  @keyframes lift { from { opacity: 0; transform: translateY(.9rem); } to { opacity: 1; transform: none; } }
+  .lift { opacity: 0; animation: lift .75s cubic-bezier(.2,.7,.3,1) forwards; animation-delay: calc(var(--i,0) * 90ms); }
+
+  .rev { opacity: 0; transform: translateY(1rem); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.3,1); }
+  .rev.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lift, .rev { opacity: 1 !important; transform: none !important; animation: none !important; transition: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="bg-base font-sans text-ink antialiased">
+
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-base">Skip to content</a>
+
+<header class="lift sticky top-0 z-50 border-b border-edge bg-base/80 backdrop-blur-md" style="--i:0">
+  <div class="mx-auto flex max-w-shell items-center justify-between px-5 py-3.5 sm:px-8">
+    <a href="index.html" class="flex items-center gap-2.5">
+      <span class="grid h-5 w-5 place-items-center rounded-[4px] border border-white/25 font-mono text-[.6rem]">G</span>
+      <span class="eyebrow text-ink">Gavin McFarland</span>
+    </a>
+
+    <nav class="flex items-center gap-6">
+      <a href="index.html#work" class="eyebrow text-faint transition hover:text-ink">Work</a>
+      <a href="index.html#contact" class="eyebrow text-faint transition hover:text-ink">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── Title ────────────────────────────────────────────────
+       Centred, matching the index hero, so the two pages read as
+       one site rather than two templates. -->
+  <section class="relative px-5 pb-20 pt-24 text-center sm:px-8 sm:pt-32">
+    <div class="aura" aria-hidden="true"></div>
+
+    <p class="lift eyebrow text-faint" style="--i:1">Tool · 2024 · Creator &amp; maintainer</p>
+
+    <h1 class="lift mt-7 text-[clamp(2.6rem,6.5vw,4.6rem)] font-medium leading-[1.02] tracking-[-.04em]" style="--i:2">Plugma</h1>
+
+    <p class="lift mx-auto mt-6 max-w-xl text-[1.05rem] leading-[1.6] text-muted" style="--i:3">
+      A zero-config toolchain for building Figma plugins — with the hot reloading the
+      platform never shipped.
+    </p>
+
+    <div class="lift mt-9 flex flex-wrap items-center justify-center gap-x-7 gap-y-4" style="--i:4">
+      <a href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer" class="pill">Visit plugma.dev ↗</a>
+      <a href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer"
+         class="text-[.88rem] text-muted underline decoration-white/20 underline-offset-4 transition hover:text-ink">Source ↗</a>
+    </div>
+  </section>
+
+  <!-- ── Spec panel ───────────────────────────────────────────
+       Where the reference would put a hero screenshot. Four facts at
+       display scale earn the space that an image would have taken. -->
+  <section class="rev px-5 pb-28 sm:px-8">
+    <div class="mx-auto max-w-shell">
+      <div class="panel grid gap-px overflow-hidden bg-white/[.06] sm:grid-cols-2 lg:grid-cols-4">
+
+        <div class="bg-[#0A0B0D] p-7 sm:p-8">
+          <p class="eyebrow text-dim">Year</p>
+          <p class="mt-3 font-mono text-[1.35rem]">2024</p>
+        </div>
+
+        <div class="bg-[#0A0B0D] p-7 sm:p-8">
+          <p class="eyebrow text-dim">Role</p>
+          <p class="mt-3 text-[1.05rem] font-medium">Creator, maintainer</p>
+        </div>
+
+        <div class="bg-[#0A0B0D] p-7 sm:p-8">
+          <p class="eyebrow text-dim">Status</p>
+          <p class="mt-3 text-[1.05rem] font-medium">Actively maintained</p>
+        </div>
+
+        <div class="bg-[#0A0B0D] p-7 sm:p-8">
+          <p class="eyebrow text-dim">Built with</p>
+          <p class="mt-3 font-mono text-[.88rem] leading-[1.9] text-muted">
+            Node<br />TypeScript<br />Vite
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Problem ──────────────────────────────────────────────— -->
+  <section class="rev px-5 pb-24 sm:px-8 sm:pb-28">
+    <div class="mx-auto max-w-shell">
+      <div class="grid gap-8 lg:grid-cols-12 lg:gap-16">
+        <div class="lg:col-span-4">
+          <p class="eyebrow text-faint">The problem</p>
+          <h2 class="mt-5 text-[clamp(1.5rem,2.8vw,2.1rem)] font-medium leading-[1.2] tracking-[-.03em]">
+            Every plugin started with the same lost day.
+          </h2>
+        </div>
+
+        <div class="prose text-muted lg:col-span-8">
+          <p>
+            A Figma plugin is two programs that can't see each other. One runs in a sandbox
+            with access to the document; the other runs in an iframe with access to the DOM.
+            They speak only by passing messages, and neither can be served from disk the way
+            an ordinary web app can.
+          </p>
+          <p>
+            So every plugin begins by wiring a bundler, a manifest, a message bridge, and a
+            build step that inlines the UI. <strong>Change one line and you rebuild and reload
+            by hand.</strong> I had assembled that same toolchain enough times to stop
+            pretending it was a one-off.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Structure panel ──────────────────────────────────────
+       A composed diagram rather than a screenshot: the shape of a
+       scaffolded project, drawn in type.
+       ILLUSTRATIVE — shows the arrangement, not a verbatim listing. -->
+  <section class="rev px-5 pb-24 sm:px-8 sm:pb-28">
+    <div class="mx-auto max-w-shell">
+      <div class="panel overflow-hidden">
+        <div class="border-b border-edge px-6 py-4 sm:px-8">
+          <p class="eyebrow text-faint">Shape of a project</p>
+        </div>
+
+        <div class="grid gap-px bg-white/[.06] md:grid-cols-3">
+          <div class="bg-[#0A0B0D] p-7 sm:p-9">
+            <p class="font-mono text-[.75rem] text-dim">manifest.json</p>
+            <h3 class="mt-4 text-[1rem] font-medium">What Figma reads</h3>
+            <p class="mt-2.5 text-[.9rem] leading-[1.7] text-muted">
+              Declares the two entry points and the permissions. Generated and kept in sync.
+            </p>
+          </div>
+
+          <div class="bg-[#0A0B0D] p-7 sm:p-9">
+            <p class="font-mono text-[.75rem] text-dim">src/main.ts</p>
+            <h3 class="mt-4 text-[1rem] font-medium">The sandbox</h3>
+            <p class="mt-2.5 text-[.9rem] leading-[1.7] text-muted">
+              Document access. No DOM, no network, no bundler assumptions that hold anywhere else.
+            </p>
+          </div>
+
+          <div class="bg-[#0A0B0D] p-7 sm:p-9">
+            <p class="font-mono text-[.75rem] text-dim">src/ui.tsx</p>
+            <h3 class="mt-4 text-[1rem] font-medium">The interface</h3>
+            <p class="mt-2.5 text-[.9rem] leading-[1.7] text-muted">
+              An ordinary front-end app in React, Svelte or Vue. This is the half that reloads.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Approach ─────────────────────────────────────────────— -->
+  <section class="rev px-5 pb-24 sm:px-8 sm:pb-28">
+    <div class="mx-auto max-w-shell">
+      <div class="grid gap-8 lg:grid-cols-12 lg:gap-16">
+        <div class="lg:col-span-4">
+          <p class="eyebrow text-faint">The approach</p>
+          <h2 class="mt-5 text-[clamp(1.5rem,2.8vw,2.1rem)] font-medium leading-[1.2] tracking-[-.03em]">
+            Treat it as an ordinary front-end project.
+          </h2>
+        </div>
+
+        <div class="prose text-muted lg:col-span-8">
+          <p>
+            Plugma hides the two-program problem underneath. One command scaffolds, one
+            develops, one ships. The framework is your choice, because the tool sits under
+            the framework rather than beside it.
+          </p>
+          <p>
+            The part worth having is <strong>real hot module reloading</strong>. Edits appear
+            without a rebuild and without losing plugin state, which turns interface work from
+            a stop-start loop into something continuous — the single biggest difference to how
+            the work actually feels.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Quiet notes ──────────────────────────────────────────— -->
+  <section class="rev px-5 pb-24 sm:px-8 sm:pb-32">
+    <div class="mx-auto max-w-shell space-y-20 sm:space-y-24">
+
+      <div class="ml-auto max-w-sm text-right">
+        <p class="eyebrow text-dim">Constraint</p>
+        <p class="mt-4 text-[.95rem] leading-[1.75] text-faint">
+          The sandbox can't be served from disk, so the UI has to be inlined at build time.
+          Most of the work was making that invisible during development without changing what
+          ships.
+        </p>
+      </div>
+
+      <div class="ml-auto max-w-sm text-right">
+        <p class="eyebrow text-dim">Since</p>
+        <p class="mt-4 text-[.95rem] leading-[1.75] text-faint">
+          Plugma became the substrate for everything after it — the later plugins listed on
+          this site are all Plugma projects.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Outcome ──────────────────────────────────────────────
+       Deliberately unquantified. Adoption figures belong here once
+       there's a citable source for them. -->
+  <section class="rev border-t border-edge px-5 py-24 text-center sm:px-8 sm:py-32">
+    <div class="mx-auto max-w-shell">
+      <p class="eyebrow text-faint">Outcome</p>
+      <h2 class="mx-auto mt-6 max-w-2xl text-[clamp(1.6rem,3.4vw,2.4rem)] font-medium leading-[1.18] tracking-[-.03em]">
+        The setup it replaces took most of a day. It now takes a command.
+      </h2>
+      <p class="mx-auto mt-6 max-w-lg text-[.98rem] leading-[1.7] text-muted">
+        Plugma is used by plugin developers across the Figma community and is still
+        maintained.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Paging ───────────────────────────────────────────────— -->
+  <nav class="rev px-5 pb-24 sm:px-8" aria-label="More projects">
+    <div class="mx-auto max-w-shell">
+      <div class="panel grid gap-px overflow-hidden bg-white/[.06] sm:grid-cols-2">
+        <a class="group bg-[#0A0B0D] p-7 transition hover:bg-[#0E1013] sm:p-8" href="index.html#work">
+          <p class="eyebrow text-dim">← Previous</p>
+          <p class="mt-3 text-[1.05rem] font-medium transition group-hover:text-white">Icon Preview</p>
+        </a>
+        <a class="group bg-[#0A0B0D] p-7 text-right transition hover:bg-[#0E1013] sm:p-8" href="index.html#work">
+          <p class="eyebrow text-dim">Next →</p>
+          <p class="mt-3 text-[1.05rem] font-medium transition group-hover:text-white">Askeroo</p>
+        </a>
+      </div>
+
+      <p class="mt-8 text-center">
+        <a class="text-[.88rem] text-muted underline decoration-white/20 underline-offset-4 transition hover:text-ink"
+           href="index.html#work">All work</a>
+      </p>
+    </div>
+  </nav>
+
+</main>
+
+<footer class="border-t border-edge px-5 py-7 sm:px-8">
+  <div class="mx-auto flex max-w-shell flex-wrap items-center justify-between gap-3">
+    <p class="eyebrow text-dim">© 2026 Gavin McFarland</p>
+    <p class="eyebrow text-dim">Built in London</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  const targets = document.querySelectorAll('.rev');
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+    targets.forEach((el) => el.classList.add('in'));
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.06 });
+
+    targets.forEach((el) => io.observe(el));
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1016 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gavin McFarland — Drafting</title>
+<meta name="description" content="Designer and full-stack engineer building tools and web apps." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Set theme before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Archivo', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Drafting
+     Direction: the page as a drawing sheet. Where the other mockups
+     in this folder treat the browser as paper or as canvas, this one
+     treats it as vellum on a drafting board — a measured plane with
+     a grid, dimension lines that actually annotate the layout,
+     leader lines that point at things, plate numbers, and a title
+     block ruled across the footer.
+     Accent is a single drafting blue. Nothing is decorative that
+     couldn't plausibly appear on a real technical drawing: every
+     rule either measures something or separates two fields.
+     Motion is mechanical — things are *drawn in* (stroke reveals,
+     widths animating from zero), never faded or floated.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --ink:      #14181D;   /* graphite, not black */
+    --plane:    #F4F2ED;   /* vellum */
+    --raise:    #FBFAF7;
+    --sunken:   #EAE7E0;
+    --muted:    #5C636C;
+    --faint:    #9AA0A8;
+    --blue:     #1B54C8;   /* drafting blue */
+    --blue-ink: #1B54C8;
+    --wash:     rgba(27,84,200,.07);
+    --hair:     rgba(20,24,29,.16);
+    --hair-2:   rgba(20,24,29,.30);
+    --grid:     rgba(20,24,29,.055);
+    --grid-10:  rgba(20,24,29,.085);
+
+    --margin: clamp(1.1rem, 4.5vw, 4.5rem);
+    --gutter: clamp(1rem, 2vw, 2rem);
+    --maxw:   1440px;
+    --ease:   cubic-bezier(.2, .7, .3, 1);
+  }
+
+  html.dark {
+    --ink:      #DDE3EA;
+    --plane:    #0D1117;   /* board under low light */
+    --raise:    #131A22;
+    --sunken:   #0A0E13;
+    --muted:    #98A1AC;
+    --faint:    #5E6874;
+    --blue:     #64A0FF;
+    --blue-ink: #8FBAFF;
+    --wash:     rgba(100,160,255,.10);
+    --hair:     rgba(221,227,234,.16);
+    --hair-2:   rgba(221,227,234,.32);
+    --grid:     rgba(221,227,234,.055);
+    --grid-10:  rgba(221,227,234,.09);
+  }
+
+  html { background: var(--plane); -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--plane);
+    color: var(--ink);
+    font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  /* ── The board ─────────────────────────────────────────────────
+     5mm grid with a heavier line every 10th, exactly like graph
+     vellum. Fixed so the page slides over it rather than dragging
+     it along — it reads as the surface, not as content. */
+  .board {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(to right,  var(--grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid) 1px, transparent 1px),
+      linear-gradient(to right,  var(--grid-10) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-10) 1px, transparent 1px);
+    background-size: 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+    /* Fade the grid out toward the bottom so the footer title block
+       sits on clean paper. */
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 62%, transparent 96%);
+            mask-image: linear-gradient(to bottom, #000 0%, #000 62%, transparent 96%);
+  }
+
+  .sheet { position: relative; z-index: 1; max-width: var(--maxw); margin: 0 auto; }
+
+  /* ── Type ──────────────────────────────────────────────────── */
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+  .tag {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10.5px; font-weight: 500;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--faint);
+  }
+  .tag-ink { color: var(--muted); }
+  .tag-blue { color: var(--blue-ink); }
+
+  h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -.022em; line-height: 1.05; }
+
+  .lede { font-size: clamp(1.02rem, 1.5vw, 1.2rem); line-height: 1.6; color: var(--muted); }
+  .body-copy { color: var(--muted); }
+  .body-copy strong { color: var(--ink); font-weight: 600; }
+
+  /* ── Dimension lines ───────────────────────────────────────────
+     A real one: two end ticks, a rule, and a measurement sitting on
+     the rule. Used to annotate the hero and each section head. */
+  .dim {
+    position: relative; height: 1px; background: var(--hair-2);
+    transform-origin: left center;
+  }
+  .dim::before, .dim::after {
+    content: ''; position: absolute; top: -4px; width: 1px; height: 9px;
+    background: var(--hair-2);
+  }
+  .dim::before { left: 0; }
+  .dim::after  { right: 0; }
+  .dim-label {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--plane); padding: 0 .55rem; white-space: nowrap;
+  }
+
+  /* Vertical rule with a tick at each end — the left-hand section spine. */
+  .spine {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
+    background: var(--hair);
+  }
+
+  /* ── Header ────────────────────────────────────────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--plane) 88%, transparent);
+    backdrop-filter: blur(10px) saturate(1.1);
+    -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    border-bottom: 1px solid var(--hair);
+  }
+  .topbar-inner {
+    max-width: var(--maxw); margin: 0 auto;
+    padding: .8rem var(--margin);
+    display: flex; align-items: center; gap: var(--gutter);
+  }
+  .navlink {
+    position: relative; color: var(--muted); text-decoration: none;
+    padding-bottom: 2px;
+  }
+  .navlink::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+    height: 1px; background: var(--blue);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .32s var(--ease);
+  }
+  .navlink:hover { color: var(--ink); }
+  .navlink:hover::after, .navlink[data-active="true"]::after { transform: scaleX(1); }
+  .navlink[data-active="true"] { color: var(--ink); }
+
+  .iconbtn {
+    display: grid; place-items: center;
+    width: 34px; height: 34px;
+    border: 1px solid var(--hair); background: transparent; color: var(--muted);
+    cursor: pointer;
+    transition: border-color .2s var(--ease), color .2s var(--ease), background .2s var(--ease);
+  }
+  .iconbtn:hover { color: var(--ink); border-color: var(--hair-2); background: var(--raise); }
+  .iconbtn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  /* ── Sections ──────────────────────────────────────────────── */
+  section { padding-inline: var(--margin); }
+
+  .sec-head {
+    position: relative;
+    display: grid; grid-template-columns: 1fr; gap: .9rem;
+    padding-block: clamp(3rem, 7vw, 5.5rem) clamp(1.6rem, 3vw, 2.6rem);
+  }
+  .sec-head .rule { height: 1px; background: var(--hair-2); }
+
+  /* ── Hero ──────────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    padding-block: clamp(3.5rem, 11vw, 8.5rem) clamp(3rem, 7vw, 6rem);
+  }
+  /* The one gradient on the page: a soft wash bleeding off the top
+     corner, as if the blueprint were exposed unevenly. */
+  .hero::before {
+    content: ''; position: absolute; z-index: -1;
+    top: -32%; right: -18%; width: 78vw; height: 78vw;
+    max-width: 1000px; max-height: 1000px;
+    background:
+      radial-gradient(closest-side, var(--wash), transparent 72%),
+      radial-gradient(closest-side at 62% 38%, color-mix(in srgb, var(--blue) 9%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.9rem, 9.5vw, 7.5rem);
+    letter-spacing: -.04em;
+    line-height: .92;
+  }
+
+  /* Words are drawn in from behind a mask, one after another. */
+  .draw-word { display: inline-block; overflow: hidden; vertical-align: bottom; }
+  .draw-word > span {
+    display: inline-block;
+    transform: translateY(105%);
+    animation: draw-up .95s var(--ease) forwards;
+    animation-delay: var(--d, 0s);
+  }
+  @keyframes draw-up { to { transform: translateY(0); } }
+
+  /* The rule under the name extends itself, like a pen stroke. */
+  .stroke-in { transform: scaleX(0); transform-origin: left center; animation: stroke 1.1s var(--ease) .5s forwards; }
+  @keyframes stroke { to { transform: scaleX(1); } }
+
+  .fade-in { opacity: 0; animation: fade .8s var(--ease) forwards; animation-delay: var(--d, 0s); }
+  @keyframes fade { to { opacity: 1; } }
+
+  /* Caret on the spec line, blinking like a plotter at rest. */
+  .caret {
+    display: inline-block; width: .55ch; height: 1.05em;
+    background: var(--blue); vertical-align: -.16em; margin-left: .18em;
+    animation: blink 1.15s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── Callout: a leader line with a note at the end ─────────── */
+  .callout { position: relative; display: none; }
+  @media (min-width: 1100px) { .callout { display: block; } }
+  .callout .leader { height: 1px; background: var(--hair-2); transform-origin: left; }
+  .callout .dot {
+    position: absolute; left: -3px; top: -2.5px;
+    width: 6px; height: 6px; border-radius: 50%;
+    border: 1px solid var(--blue); background: var(--plane);
+  }
+
+  /* ── Plates (projects) ─────────────────────────────────────── */
+  .plates {
+    display: grid; gap: 1px;
+    background: var(--hair);
+    border: 1px solid var(--hair);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 700px)  { .plates { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1180px) { .plates { grid-template-columns: repeat(3, 1fr); } }
+
+  .plate {
+    position: relative;
+    background: var(--plane);
+    padding: 1.5rem 1.4rem 1.35rem;
+    display: flex; flex-direction: column; gap: .85rem;
+    min-height: 268px;
+    transition: background .28s var(--ease);
+  }
+  .plate:hover { background: var(--raise); }
+
+  /* Registration marks in the plate corners, drawn on hover. */
+  .plate .reg {
+    position: absolute; width: 11px; height: 11px;
+    border: 0 solid var(--blue); opacity: 0;
+    transition: opacity .28s var(--ease);
+  }
+  .plate:hover .reg, .plate:focus-within .reg { opacity: 1; }
+  .plate .reg.tl { top: 8px;  left: 8px;  border-top-width: 1px; border-left-width: 1px; }
+  .plate .reg.tr { top: 8px;  right: 8px; border-top-width: 1px; border-right-width: 1px; }
+  .plate .reg.bl { bottom: 8px; left: 8px;  border-bottom-width: 1px; border-left-width: 1px; }
+  .plate .reg.br { bottom: 8px; right: 8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  .plate h3 { font-size: 1.32rem; letter-spacing: -.025em; }
+  .plate .desc { font-size: .93rem; color: var(--muted); margin: 0; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: .32rem; margin-top: auto; }
+  .chip {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--hair);
+    padding: .22rem .42rem;
+    white-space: nowrap;
+    transition: border-color .22s var(--ease), color .22s var(--ease);
+  }
+  .plate:hover .chip { border-color: var(--hair-2); color: var(--ink); }
+
+  .plate-links {
+    display: flex; align-items: center; gap: 1.1rem;
+    padding-top: .85rem; border-top: 1px solid var(--hair);
+  }
+  .plink {
+    position: relative;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none;
+    display: inline-flex; align-items: center; gap: .35rem;
+    transition: color .2s var(--ease);
+  }
+  .plink::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px;
+    background: var(--blue); transform: scaleX(0); transform-origin: left;
+    transition: transform .3s var(--ease);
+  }
+  .plink:hover { color: var(--blue-ink); }
+  .plink:hover::after { transform: scaleX(1); }
+  .plink:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+  .plink svg { transition: transform .3s var(--ease); }
+  .plink:hover svg { transform: translate(2px, -2px); }
+
+  /* ── About: revision table ─────────────────────────────────── */
+  .about-grid { display: grid; gap: clamp(2rem, 5vw, 4.5rem); grid-template-columns: 1fr; }
+  @media (min-width: 940px) { .about-grid { grid-template-columns: 1.35fr 1fr; } }
+
+  .about-copy p { margin: 0 0 1.15rem; max-width: 62ch; }
+  .about-copy p:last-child { margin-bottom: 0; }
+
+  .revtable { width: 100%; border-collapse: collapse; }
+  .revtable th, .revtable td {
+    text-align: left; padding: .72rem .5rem;
+    border-bottom: 1px solid var(--hair);
+    vertical-align: baseline;
+  }
+  .revtable th {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--faint); font-weight: 500;
+    border-bottom-color: var(--hair-2);
+  }
+  .revtable td:first-child, .revtable th:first-child { padding-left: 0; width: 3.4rem; }
+  .revtable td:nth-child(2) { width: 5rem; }
+  .revtable tbody td:first-child,
+  .revtable tbody td:nth-child(2) {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px; color: var(--faint);
+  }
+  .revtable tbody tr:last-child td { border-bottom: 0; }
+  .revtable tbody tr { transition: background .2s var(--ease); }
+  .revtable tbody tr:hover { background: var(--wash); }
+
+  /* ── Contact drawer ────────────────────────────────────────── */
+  .drawer-toggle {
+    width: 100%; text-align: left; cursor: pointer;
+    background: transparent; border: 1px solid var(--hair); border-left-width: 2px;
+    border-left-color: var(--blue);
+    padding: clamp(1.4rem, 3vw, 2.1rem) clamp(1.2rem, 3vw, 2rem);
+    display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+    color: inherit; font: inherit;
+    transition: background .28s var(--ease), border-color .28s var(--ease);
+  }
+  .drawer-toggle:hover { background: var(--raise); border-color: var(--hair-2); border-left-color: var(--blue); }
+  .drawer-toggle:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .drawer-toggle .headline {
+    font-size: clamp(1.35rem, 3.4vw, 2.15rem); font-weight: 600; letter-spacing: -.03em;
+  }
+  .drawer-toggle .chev { flex: none; transition: transform .4s var(--ease); color: var(--muted); }
+  .drawer-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
+  /* Height-based expansion via grid-template-rows — animates cleanly
+     without measuring scrollHeight in JS. */
+  .drawer {
+    display: grid; grid-template-rows: 0fr;
+    border: 1px solid var(--hair); border-top: 0; border-left-width: 2px; border-left-color: var(--blue);
+    transition: grid-template-rows .48s var(--ease);
+  }
+  .drawer[data-open="true"] { grid-template-rows: 1fr; }
+  .drawer > .drawer-inner { overflow: hidden; }
+  .drawer-pad { padding: clamp(1.4rem, 3vw, 2.2rem); }
+
+  .form-grid { display: grid; gap: 1.1rem 1.4rem; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .form-grid { grid-template-columns: 1fr 1fr; } .form-grid .span-2 { grid-column: 1 / -1; } }
+
+  .field label {
+    display: block; margin-bottom: .42rem;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint);
+  }
+  .field input, .field textarea {
+    width: 100%; background: transparent; color: var(--ink);
+    border: 0; border-bottom: 1px solid var(--hair);
+    border-radius: 0;
+    padding: .55rem 0; font: inherit; font-size: .95rem;
+    transition: border-color .24s var(--ease);
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--faint); }
+  .field input:focus, .field textarea:focus {
+    outline: none; border-bottom-color: var(--blue); box-shadow: 0 1px 0 0 var(--blue);
+  }
+  .field textarea { resize: vertical; min-height: 96px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: .6rem;
+    background: var(--ink); color: var(--plane);
+    border: 1px solid var(--ink);
+    padding: .72rem 1.4rem; cursor: pointer;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    transition: background .22s var(--ease), color .22s var(--ease), border-color .22s var(--ease);
+  }
+  .btn:hover { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+  .btn[disabled] { opacity: .55; cursor: default; }
+
+  .social {
+    color: var(--muted); text-decoration: none;
+    display: inline-flex; align-items: center; gap: .5rem;
+    transition: color .2s var(--ease);
+  }
+  .social:hover { color: var(--blue-ink); }
+  .social:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+  /* ── Title block ───────────────────────────────────────────── */
+  .titleblock {
+    border: 1px solid var(--hair-2);
+    display: grid; grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 640px)  { .titleblock { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1000px) { .titleblock { grid-template-columns: 1.8fr repeat(4, 1fr); } }
+  .tb-cell {
+    padding: .85rem 1rem;
+    border-right: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+    min-height: 76px;
+    display: flex; flex-direction: column; justify-content: space-between; gap: .5rem;
+  }
+  .tb-cell .val { font-size: .92rem; font-weight: 500; }
+
+  /* ── Reveal on scroll ──────────────────────────────────────── */
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+  .reveal[data-shown="true"] { opacity: 1; transform: none; }
+
+  /* Section rules draw themselves left-to-right as they enter. */
+  .rule-draw { transform: scaleX(0); transform-origin: left; transition: transform .85s var(--ease); }
+  .rule-draw[data-shown="true"] { transform: scaleX(1); }
+
+  ::selection { background: var(--blue); color: #fff; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+    }
+    .draw-word > span, .stroke-in, .rule-draw { transform: none !important; }
+    .fade-in, .reveal { opacity: 1 !important; }
+    .reveal { transform: none !important; }
+  }
+</style>
+</head>
+
+<body>
+<div class="board" aria-hidden="true"></div>
+
+<a href="#projects" class="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:top-3 focus:left-3 focus:bg-[var(--ink)] focus:text-[var(--plane)] focus:px-4 focus:py-2 mono text-xs">Skip to projects</a>
+
+<!-- ── Top bar ─────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#top" class="mono text-[12px] tracking-[.16em] uppercase no-underline text-[var(--ink)] font-medium">
+      G. McFarland
+    </a>
+    <span class="tag hidden sm:inline">Sheet 01 / 01</span>
+
+    <nav class="ml-auto hidden md:flex items-center gap-6 text-[13px]">
+      <a href="#projects" class="navlink" data-nav>Plates</a>
+      <a href="#about"    class="navlink" data-nav>Notes</a>
+      <a href="#contact"  class="navlink" data-nav>Enquiry</a>
+    </nav>
+
+    <button id="theme" class="iconbtn ml-auto md:ml-3" type="button" aria-label="Toggle dark mode">
+      <svg class="sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 2.2v2.4M12 19.4v2.4M2.2 12h2.4M19.4 12h2.4M5.1 5.1l1.7 1.7M17.2 17.2l1.7 1.7M18.9 5.1l-1.7 1.7M6.8 17.2l-1.7 1.7"/>
+      </svg>
+      <svg class="moon hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main class="sheet" id="top">
+
+  <!-- ── Hero ──────────────────────────────────────────────────────── -->
+  <section class="hero">
+
+    <div class="flex items-center gap-3 mb-7 fade-in" style="--d:.05s">
+      <span class="tag tag-blue">Rev. C</span>
+      <span class="w-8 h-px bg-[var(--hair-2)]"></span>
+      <span class="tag">Design engineering · Bristol, UK</span>
+    </div>
+
+    <h1 aria-label="Gavin McFarland">
+      <span class="draw-word"><span style="--d:.1s">Gavin</span></span><br />
+      <span class="draw-word"><span style="--d:.22s">McFarland</span></span>
+    </h1>
+
+    <!-- Dimension line measuring the title, annotated like a drawing. -->
+    <div class="relative mt-8 mb-8 max-w-[560px]">
+      <div class="dim stroke-in"></div>
+      <span class="tag dim-label">Designer &amp; full-stack engineer</span>
+    </div>
+
+    <div class="grid gap-x-[var(--gutter)] gap-y-8 md:grid-cols-12 items-start">
+      <p class="lede md:col-span-6 lg:col-span-5 fade-in" style="--d:.75s">
+        I design interfaces and then build them properly — mostly design systems,
+        internal tooling, and the unglamorous plumbing that decides whether a team
+        ships consistently or just talks about it.
+      </p>
+
+      <!-- Spec block: reads like the notes column on a drawing. -->
+      <div class="md:col-span-5 md:col-start-8 fade-in" style="--d:.9s">
+        <div class="tag mb-3">Specification</div>
+        <dl class="mono text-[12.5px] leading-[1.9] text-[var(--muted)] space-y-0">
+          <div class="flex gap-3 border-b border-[var(--hair)] py-1.5">
+            <dt class="w-[5.6rem] flex-none text-[var(--faint)]">Discipline</dt>
+            <dd class="m-0">Design systems, tooling</dd>
+          </div>
+          <div class="flex gap-3 border-b border-[var(--hair)] py-1.5">
+            <dt class="w-[5.6rem] flex-none text-[var(--faint)]">Stack</dt>
+            <dd class="m-0">Svelte, TypeScript, Node</dd>
+          </div>
+          <div class="flex gap-3 border-b border-[var(--hair)] py-1.5">
+            <dt class="w-[5.6rem] flex-none text-[var(--faint)]">Engagement</dt>
+            <dd class="m-0">Independent, contract</dd>
+          </div>
+          <div class="flex gap-3 py-1.5">
+            <dt class="w-[5.6rem] flex-none text-[var(--faint)]">Output</dt>
+            <dd class="m-0" id="typed"><span class="caret" aria-hidden="true"></span></dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Annotation leader pointing back up at the spec block. -->
+    <div class="callout mt-14 fade-in" style="--d:1.15s">
+      <div class="flex items-center gap-3">
+        <span class="relative">
+          <span class="dot"></span>
+          <span class="leader stroke-in block w-[120px]"></span>
+        </span>
+        <span class="tag">Scroll for plates — six selected, 2019–2025</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Projects ──────────────────────────────────────────────────── -->
+  <section id="projects">
+    <div class="sec-head">
+      <div class="flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <span class="tag tag-blue">Sheet A</span>
+          <h2 class="text-[clamp(1.7rem,4vw,2.9rem)] mt-2">Plates</h2>
+        </div>
+        <span class="tag">06 items · scale 1:1</span>
+      </div>
+      <div class="rule rule-draw reveal-rule"></div>
+    </div>
+
+    <div class="plates reveal">
+
+      <article class="plate">
+        <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+        <div class="flex items-baseline justify-between gap-3">
+          <span class="tag">A—01</span>
+          <span class="tag">2025</span>
+        </div>
+        <h3>Plugma</h3>
+        <p class="desc">A build tool for Figma plugins — hot reload, framework-agnostic, one command from empty folder to running plugin.</p>
+        <div class="chips">
+          <span class="chip">TypeScript</span><span class="chip">Vite</span><span class="chip">Figma API</span>
+        </div>
+        <div class="plate-links">
+          <a href="#" class="plink">Demo
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 7.5 7.5 2.5M3.6 2.5h3.9v3.9"/></svg>
+          </a>
+          <a href="#" class="plink">Case study</a>
+        </div>
+      </article>
+
+      <article class="plate">
+        <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+        <div class="flex items-baseline justify-between gap-3">
+          <span class="tag">A—02</span>
+          <span class="tag">2024</span>
+        </div>
+        <h3>Token pipeline</h3>
+        <p class="desc">Design tokens flowing from Figma variables to shipped CSS, with a diffing step that fails the build on drift.</p>
+        <div class="chips">
+          <span class="chip">Style Dictionary</span><span class="chip">TypeScript</span><span class="chip">CI</span>
+        </div>
+        <div class="plate-links">
+          <a href="#" class="plink">Demo
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 7.5 7.5 2.5M3.6 2.5h3.9v3.9"/></svg>
+          </a>
+          <a href="#" class="plink">Case study</a>
+        </div>
+      </article>
+
+      <article class="plate">
+        <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+        <div class="flex items-baseline justify-between gap-3">
+          <span class="tag">A—03</span>
+          <span class="tag">2024</span>
+        </div>
+        <h3>Atlas design system</h3>
+        <p class="desc">Component library and documentation site for a 40-person product org. Ninety components, one accessibility budget.</p>
+        <div class="chips">
+          <span class="chip">Svelte</span><span class="chip">Storybook</span><span class="chip">A11y</span>
+        </div>
+        <div class="plate-links">
+          <a href="#" class="plink">Demo
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 7.5 7.5 2.5M3.6 2.5h3.9v3.9"/></svg>
+          </a>
+          <a href="#" class="plink">Case study</a>
+        </div>
+      </article>
+
+      <article class="plate">
+        <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+        <div class="flex items-baseline justify-between gap-3">
+          <span class="tag">A—04</span>
+          <span class="tag">2023</span>
+        </div>
+        <h3>Spec exporter</h3>
+        <p class="desc">Turns a selected Figma frame into engineer-ready redlines and a props table. Saves a team roughly an afternoon a week.</p>
+        <div class="chips">
+          <span class="chip">Figma API</span><span class="chip">TypeScript</span><span class="chip">Canvas</span>
+        </div>
+        <div class="plate-links">
+          <a href="#" class="plink">Demo
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 7.5 7.5 2.5M3.6 2.5h3.9v3.9"/></svg>
+          </a>
+          <a href="#" class="plink">Case study</a>
+        </div>
+      </article>
+
+      <article class="plate">
+        <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+        <div class="flex items-baseline justify-between gap-3">
+          <span class="tag">A—05</span>
+          <span class="tag">2021</span>
+        </div>
+        <h3>Pulse dashboard</h3>
+        <p class="desc">Real-time analytics surface rebuilt for speed — sub-800ms first paint on a cold cache, on a mid-range Android.</p>
+        <div class="chips">
+          <span class="chip">Svelte</span><span class="chip">D3</span><span class="chip">WebSocket</span>
+        </div>
+        <div class="plate-links">
+          <a href="#" class="plink">Demo
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 7.5 7.5 2.5M3.6 2.5h3.9v3.9"/></svg>
+          </a>
+          <a href="#" class="plink">Case study</a>
+        </div>
+      </article>
+
+      <article class="plate">
+        <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+        <div class="flex items-baseline justify-between gap-3">
+          <span class="tag">A—06</span>
+          <span class="tag">2019</span>
+        </div>
+        <h3>Field notes</h3>
+        <p class="desc">Identity and editorial system for a research publication — typographic scale, print grid, and a static site to match.</p>
+        <div class="chips">
+          <span class="chip">Identity</span><span class="chip">Type</span><span class="chip">Eleventy</span>
+        </div>
+        <div class="plate-links">
+          <a href="#" class="plink">Demo
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 7.5 7.5 2.5M3.6 2.5h3.9v3.9"/></svg>
+          </a>
+          <a href="#" class="plink">Case study</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── About ─────────────────────────────────────────────────────── -->
+  <section id="about">
+    <div class="sec-head">
+      <div class="flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <span class="tag tag-blue">Sheet B</span>
+          <h2 class="text-[clamp(1.7rem,4vw,2.9rem)] mt-2">General notes</h2>
+        </div>
+        <span class="tag">Read in conjunction with Sheet A</span>
+      </div>
+      <div class="rule rule-draw reveal-rule"></div>
+    </div>
+
+    <div class="about-grid pb-[clamp(3rem,7vw,5.5rem)]">
+      <div class="about-copy body-copy reveal">
+        <p class="text-[1.02rem]">
+          <span class="mono text-[var(--faint)] text-[12px] mr-2">01</span>
+          I started in graphic design and ended up writing the code too, mostly out of
+          impatience. Handing over a beautiful static file and hoping for the best always
+          felt like the wrong end of the job.
+        </p>
+        <p>
+          <span class="mono text-[var(--faint)] text-[12px] mr-2">02</span>
+          These days I sit in the gap: close enough to design to argue about optical spacing,
+          close enough to engineering to know what that argument costs in render time.
+          <strong>Most of the work is design systems and the tooling around them.</strong>
+        </p>
+        <p>
+          <span class="mono text-[var(--faint)] text-[12px] mr-2">03</span>
+          I care about the parts nobody demos — how a component behaves at 320px, what
+          happens on a slow connection, whether the focus ring is visible, whether the
+          build is still fast in a year's time.
+        </p>
+        <p>
+          <span class="mono text-[var(--faint)] text-[12px] mr-2">04</span>
+          Outside of that: too many half-finished side projects, a long-running interest in
+          typography, and a habit of rewriting things that already worked fine.
+        </p>
+      </div>
+
+      <div class="reveal">
+        <div class="tag mb-3">Revision history</div>
+        <table class="revtable">
+          <thead>
+            <tr><th scope="col">Rev</th><th scope="col">Year</th><th scope="col">Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>C</td><td>2023—</td><td>Independent — design engineering for product teams</td></tr>
+            <tr><td>B</td><td>2021</td><td>Design systems lead, fintech platform</td></tr>
+            <tr><td>A</td><td>2018</td><td>Senior product designer, agency side</td></tr>
+            <tr><td>—</td><td>2014</td><td>Graphic design, print and identity</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Contact ───────────────────────────────────────────────────── -->
+  <section id="contact">
+    <div class="sec-head">
+      <div class="flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <span class="tag tag-blue">Sheet C</span>
+          <h2 class="text-[clamp(1.7rem,4vw,2.9rem)] mt-2">Enquiry</h2>
+        </div>
+        <span class="tag">Response within two working days</span>
+      </div>
+      <div class="rule rule-draw reveal-rule"></div>
+    </div>
+
+    <div class="reveal">
+      <button type="button" id="drawer-toggle" class="drawer-toggle" aria-expanded="false" aria-controls="drawer">
+        <span>
+          <span class="headline block">Taking on work from March.</span>
+          <span class="tag block mt-3">Open the enquiry form</span>
+        </span>
+        <svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+
+      <div class="drawer" id="drawer" data-open="false">
+        <div class="drawer-inner">
+          <div class="drawer-pad">
+            <form id="contact-form" class="form-grid" novalidate>
+              <div class="field">
+                <label for="f-name">Name</label>
+                <input id="f-name" name="name" type="text" autocomplete="name" placeholder="Your name" required />
+              </div>
+              <div class="field">
+                <label for="f-email">Email</label>
+                <input id="f-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required />
+              </div>
+              <div class="field span-2">
+                <label for="f-scope">Scope</label>
+                <input id="f-scope" name="scope" type="text" placeholder="Design system audit, plugin build, contract engagement…" />
+              </div>
+              <div class="field span-2">
+                <label for="f-msg">Notes</label>
+                <textarea id="f-msg" name="message" placeholder="Timeline, team size, what's currently broken." required></textarea>
+              </div>
+
+              <div class="span-2 flex flex-wrap items-center gap-x-6 gap-y-4 pt-1">
+                <button type="submit" class="btn" id="submit">
+                  Send enquiry
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.8 2.2 10.5 6l-3.7 3.8"/></svg>
+                </button>
+                <p class="mono text-[11px] tracking-[.1em] uppercase m-0 text-[var(--faint)]" id="form-status" role="status" aria-live="polite"></p>
+              </div>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-[var(--hair)] flex flex-wrap items-center gap-x-7 gap-y-3">
+              <span class="tag">Or direct</span>
+              <a class="social mono text-[13px]" href="mailto:hello@example.com">hello@example.com</a>
+              <span class="hidden sm:block w-px h-4 bg-[var(--hair)]"></span>
+              <a class="social text-[13px]" href="#" rel="noopener">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.5 3.17-1.18 3.17-1.18.63 1.59.24 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>
+                GitHub
+              </a>
+              <a class="social text-[13px]" href="#" rel="noopener">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.06 3.77-2.06 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.4c0-1.29-.02-2.95-1.8-2.95-1.8 0-2.08 1.4-2.08 2.85V21H9z"/></svg>
+                LinkedIn
+              </a>
+              <a class="social text-[13px]" href="#" rel="noopener">
+                <svg width="14" height="14" viewBox="0 0 16 24" fill="currentColor" aria-hidden="true">
+                  <path d="M4 0h4v8H4a4 4 0 0 1 0-8z"/>
+                  <path d="M8 0h4a4 4 0 0 1 0 8H8V0z"/>
+                  <path d="M4 8h4v8H4a4 4 0 0 1 0-8z"/>
+                  <circle cx="12" cy="12" r="4"/>
+                  <path d="M8 16v4a4 4 0 1 1-4-4h4z"/>
+                </svg>
+                Figma
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Title block ───────────────────────────────────────────────── -->
+  <footer class="pb-[clamp(2.5rem,6vw,4.5rem)] pt-[clamp(3rem,7vw,5rem)]">
+    <div class="titleblock reveal">
+      <div class="tb-cell">
+        <span class="tag">Drawing title</span>
+        <span class="val">Portfolio — Drafting direction</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tag">Drawn by</span>
+        <span class="val">G. McFarland</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tag">Scale</span>
+        <span class="val mono">1:1 @ <span id="vw">—</span>px</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tag">Rev</span>
+        <span class="val mono">C</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tag">Sheet</span>
+        <span class="val mono">01 of 01</span>
+      </div>
+    </div>
+    <p class="tag mt-5 mb-0">© <span id="year">2025</span> Gavin McFarland — all dimensions in pixels unless noted</p>
+  </footer>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Theme ─────────────────────────────────────────────────────── */
+  const root = document.documentElement;
+  const btn  = document.getElementById('theme');
+  const sun  = btn.querySelector('.sun');
+  const moon = btn.querySelector('.moon');
+
+  const syncIcon = () => {
+    const dark = root.classList.contains('dark');
+    sun.classList.toggle('hidden', dark);
+    moon.classList.toggle('hidden', !dark);
+    btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+  };
+  syncIcon();
+
+  btn.addEventListener('click', () => {
+    const dark = !root.classList.contains('dark');
+    root.classList.toggle('dark', dark);
+    localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+    syncIcon();
+  });
+
+  /* ── Typed spec value ──────────────────────────────────────────────
+     Cycles through the kinds of thing that come out the other end.
+     Purely decorative, so it's skipped entirely under reduced motion. */
+  const typed = document.getElementById('typed');
+  const caret = typed.querySelector('.caret');
+  const WORDS = ['Design systems', 'Figma plugins', 'Component libraries', 'Build tooling'];
+
+  if (reduced) {
+    typed.insertBefore(document.createTextNode(WORDS[0]), caret);
+  } else {
+    let w = 0, i = 0, erasing = false;
+    const text = document.createTextNode('');
+    typed.insertBefore(text, caret);
+
+    const tick = () => {
+      const word = WORDS[w];
+      i += erasing ? -1 : 1;
+      text.nodeValue = word.slice(0, i);
+
+      let wait = erasing ? 32 : 62;
+      if (!erasing && i === word.length) { erasing = true; wait = 1900; }
+      else if (erasing && i === 0)       { erasing = false; w = (w + 1) % WORDS.length; wait = 320; }
+      setTimeout(tick, wait);
+    };
+    setTimeout(tick, 1500);
+  }
+
+  /* ── Reveal on scroll ──────────────────────────────────────────── */
+  const targets = document.querySelectorAll('.reveal, .rule-draw');
+  if (reduced || !('IntersectionObserver' in window)) {
+    targets.forEach(el => el.dataset.shown = 'true');
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.dataset.shown = 'true';
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.06 });
+    targets.forEach(el => io.observe(el));
+  }
+
+  /* ── Contact drawer ────────────────────────────────────────────── */
+  const toggle = document.getElementById('drawer-toggle');
+  const drawer = document.getElementById('drawer');
+
+  const setOpen = (open) => {
+    drawer.dataset.open = String(open);
+    toggle.setAttribute('aria-expanded', String(open));
+    if (open) setTimeout(() => document.getElementById('f-name').focus(), reduced ? 0 : 420);
+  };
+
+  toggle.addEventListener('click', () => setOpen(drawer.dataset.open !== 'true'));
+
+  /* Deep link — /#contact opens the drawer rather than landing on a
+     closed panel with nothing to read. */
+  if (location.hash === '#contact') setOpen(true);
+
+  /* ── Form (mockup — no backend) ────────────────────────────────── */
+  const form   = document.getElementById('contact-form');
+  const status = document.getElementById('form-status');
+  const submit = document.getElementById('submit');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const email = String(data.get('email') || '');
+
+    if (!data.get('name') || !data.get('message') || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      status.textContent = 'Check the required fields.';
+      status.style.color = 'var(--blue-ink)';
+      return;
+    }
+
+    submit.disabled = true;
+    status.style.color = 'var(--faint)';
+    status.textContent = 'Sending…';
+
+    setTimeout(() => {
+      status.textContent = 'Received — reply within two working days.';
+      form.reset();
+      submit.disabled = false;
+    }, 700);
+  });
+
+  /* ── Nav highlighting ──────────────────────────────────────────── */
+  const links = [...document.querySelectorAll('[data-nav]')];
+  const sections = links
+    .map(a => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+
+  if ('IntersectionObserver' in window && sections.length) {
+    const navObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        links.forEach(a => a.dataset.active = String(a.getAttribute('href') === '#' + e.target.id));
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    sections.forEach(s => navObserver.observe(s));
+  }
+
+  /* ── Title block readouts ──────────────────────────────────────── */
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  const vw = document.getElementById('vw');
+  const setVW = () => { vw.textContent = window.innerWidth; };
+  setVW();
+  addEventListener('resize', setVW, { passive: true });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>article(7) · Tokens are a contract — Gavin McFarland</title>
+<meta name="description" content="A token is not a variable. It is a promise made in two codebases at once — and the cost of breaking it is paid by whoever is downstream.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='1' y='1' width='7' height='7' fill='%23000080'/%3E%3Crect x='8' y='1' width='7' height='7' fill='%23008080'/%3E%3Crect x='1' y='8' width='7' height='7' fill='%23FFFF00'/%3E%3Crect x='8' y='8' width='7' height='7' fill='%23C0C0C0'/%3E%3C/svg%3E">
+<script>(()=>{document.documentElement.classList.toggle('dark',localStorage.getItem('gm-surface-14')==='dark');})();</script>
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="article">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<aside class="rail">
+  <a class="rail__mark" href="index.html"><span class="sw" data-c="navy"></span>gavin(1)</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="strip rail__strip" data-strip="a" id="rail-strip" aria-hidden="true"></div>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+    <span>14 · colourbar</span>
+  </div>
+</aside>
+
+<div class="page">
+<main id="main">
+  <div class="sheet">
+
+    <article class="art">
+
+      <!-- ── The masthead. A 3px rule above, the kicker, the title,
+           and the standfirst on the 15px step. ─────────────────── -->
+      <header class="art__head">
+        <p class="art__kicker micro">
+          <span>article(7)</span><span>·</span><span>systems</span><span>·</span><span>5 min</span>
+        </p>
+        <h1 class="art__title">Tokens are a contract</h1>
+        <p class="art__stand">
+          A token is not a variable. It is a promise made in two codebases at once, and the
+          cost of breaking it is always paid by whoever is downstream of you.
+        </p>
+        <p class="art__byline">
+          <span>Gavin McFarland</span>
+          <span class="faint">2025-11</span>
+          <span class="faint">revised 2026-03</span>
+        </p>
+      </header>
+
+      <div class="art__body">
+
+        <p>
+          The first design system I worked on shipped a file called <span class="mono">colors.json</span>
+          and considered the job done. It was not a contract. It was a suggestion that happened to
+          be machine-readable, and within two quarters three teams had each forked it, because a
+          suggestion is the kind of thing you edit locally when it is inconvenient.
+        </p>
+        <p>
+          What makes a token a contract is not its format. It is that two parties have agreed what
+          the name means and neither may change it alone.<a class="art__ref" href="#n1" id="r1">1</a>
+          <span class="ink">Everything else — the pipeline, the transforms, the docs — is machinery
+          for keeping that agreement honest.</span>
+        </p>
+
+        <!-- A figure may break the measure. The prose may not. -->
+        <figure class="art__fig art__fig--wide">
+          <div class="strip" data-strip="a" style="height:8rem" aria-hidden="true">
+            <i data-c="navy"></i><i data-c="teal"></i><i data-c="aqua"></i><i data-c="silver"></i><i data-c="white"></i><i data-c="yellow"></i><i data-c="olive"></i><i data-c="maroon"></i>
+          </div>
+          <figcaption class="strip-cap">
+            Strip 01 — step. Eight named patches, one per token. A control strip is exactly this
+            argument in physical form: the printer and the press have agreed what these eight mean,
+            and the sheet is checkable against the agreement.
+          </figcaption>
+        </figure>
+
+        <h2>What breaks</h2>
+        <p>
+          The failure is never the rename itself. It is that a rename is cheap in the design file
+          and expensive three repositories away, and nothing in the tooling makes that asymmetry
+          visible at the moment of the decision. Somebody drags a swatch, and a fortnight later a
+          native team is reading a changelog trying to work out which of forty renamed values was
+          the one their bottom sheet used.
+        </p>
+
+        <blockquote class="art__quote">
+          A token you can rename without asking anyone is not a token. It is a variable with
+          ambitions.
+          <cite>— the version of this I say in code review</cite>
+        </blockquote>
+
+        <p>
+          The fix is unglamorous and mostly social: a deprecation path, a window, and a build that
+          fails rather than warns.<a class="art__ref" href="#n2" id="r2">2</a> The old name keeps
+          resolving, the pipeline emits a deprecation for it, and after the window it stops. Nobody
+          is surprised, because the surprise was budgeted.
+        </p>
+
+        <h2>What that costs</h2>
+        <p>
+          It costs the ability to tidy up whenever you feel like it, which is a real loss and worth
+          naming. A system with a deprecation policy accumulates a tail of names it does not love.
+          The alternative is a system that cannot remove anything at all, because every removal is
+          an incident — and that system grows until it is ignored.
+        </p>
+        <p>
+          So: two codebases, one promise, and a window in which breaking it is allowed as long as
+          it is announced. That is the whole of it. The JSON is an implementation detail.
+        </p>
+
+      </div>
+
+      <!-- ── Notes. Markers in the text, numbered rows at the foot. -->
+      <section class="art__notes" aria-label="Notes">
+        <h2 class="micro faint" style="margin-bottom:.4rem">Notes</h2>
+        <ol>
+          <li id="n1"><span>1</span><span>Which is why a token pipeline owned by one team is a pipeline with one party to the contract. <a class="ln" href="#r1">back</a></span></li>
+          <li id="n2"><span>2</span><span>Failing rather than warning is the entire mechanism. A warning is a deprecation nobody has to action. <a class="ln" href="#r2">back</a></span></li>
+        </ol>
+      </section>
+
+      <nav class="art__nav" aria-label="More writing">
+        <a href="note.html"><span class="faint">previous</span><span>Two programs, one plugin</span></a>
+        <a href="journal.html"><span class="faint">index</span><span>journal(1) — all <span data-count="posts">—</span></span></a>
+      </nav>
+
+    </article>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="sheet"><p>article(7) &nbsp;·&nbsp; 2025-11 &nbsp;·&nbsp; 14 · Colourbar</p></div>
+</footer>
+</div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>

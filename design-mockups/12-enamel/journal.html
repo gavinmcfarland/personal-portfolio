@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Journal — Enamel</title>
+<meta name="description" content="Field notes on design systems, Figma tooling and the seam between design and front-end.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2324282D'/%3E%3Crect x='4' y='4' width='11' height='11' fill='%23FF6A4D'/%3E%3Crect x='17' y='4' width='11' height='11' fill='%233B6DFF'/%3E%3Crect x='4' y='17' width='11' height='11' fill='%23C9F23A'/%3E%3Crect x='17' y='17' width='11' height='11' fill='%2324BDB8'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-surface');document.documentElement.classList.toggle('light',s?s==='steel':matchMedia('(prefers-color-scheme: light)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+</head>
+
+<body data-page="journal">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="bar__name" href="index.html">G.McF</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="bar__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Surface</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="band band--tight">
+    <div class="sheet">
+      <div class="g12">
+        <div class="c6">
+          <p class="mark faint">Journal</p>
+          <h1 style="margin-top:.6rem">Notes taken while the work was still warm.</h1>
+          <p class="dim" style="margin-top:.5rem;max-width:52ch">
+            Written when a project taught me something worth keeping. Short, dated,
+            filed under the year they happened — <span data-count="posts">—</span>
+            entries so far. Each carries the enamel of its subject.
+          </p>
+        </div>
+        <div class="c5" style="grid-column:8 / span 5">
+          <a class="fill" data-tone="blue" href="note.html" style="text-decoration:none;display:block">
+            <p class="mark" style="opacity:.75">Latest · 2026-05 · 6 min</p>
+            <p class="strong" style="margin-top:.4rem">Two programs, one plugin</p>
+            <p style="opacity:.82;margin-top:.2rem">
+              A Figma plugin looks like one thing and behaves like two. Almost every
+              difficulty in building one comes from that gap.
+            </p>
+            <p class="mono" style="margin-top:.75rem"><span class="ln">Read →</span></p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── All entries, edge-marked by subject ──────────────────────── -->
+  <section class="band" aria-labelledby="all-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">01</span>
+        <h2 id="all-h">All entries, by year</h2>
+        <span class="head__x">Collapse a year to set it aside</span>
+      </div>
+      <div id="posts">
+        <noscript><p class="mono dim">The journal is rendered from a shared data file. It needs JavaScript.</p></noscript>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Elsewhere ────────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="el-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">02</span>
+        <h2 id="el-h">Elsewhere</h2>
+      </div>
+      <div class="rows">
+        <div class="row">
+          <span class="row__k"><span class="ph ph--12" aria-hidden="true"></span> GitHub</span>
+          <p class="row__v">Most of what these notes describe ships as code — <a class="ln" href="https://github.com/gavinmcfarland" target="_blank" rel="noopener noreferrer">github.com/gavinmcfarland ↗</a></p>
+        </div>
+        <div class="row">
+          <span class="row__k"><span class="ph ph--12" aria-hidden="true"></span> Boards</span>
+          <p class="row__v">The working notes behind each project stay on their <a class="ln" href="board.html">boards</a> — the honest version of how the work went.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Sheet</dt><dd>Journal</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Set</dt><dd>12 · Enamel</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>renderPosts(document.getElementById('posts'));</script>
+</body>
+</html>
