@@ -235,7 +235,7 @@ function Code({ node }) {
   const painted = hl(editing ? src : (node.text || ''), lang);
   const rendered = (node.text || '').trim()
     ? painted
-    : '<span class="code-empty">Empty — double-click to edit</span>';
+    : '<span class="cv-code-empty">Empty — double-click to edit</span>';
 
   const style = { transform: `translate(${rx}px,${ry}px) scale(${node.scale || 1})`, zIndex: node.z, width: (node.w || 420) + 'px', ...(reflowed ? { transition: 'transform 200ms ease' } : null) };
 

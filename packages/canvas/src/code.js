@@ -9,7 +9,9 @@
    the default fallback, so that npm package stays entirely optional. */
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const wrap = (cls, s) => `<span class="${cls}">${s}</span>`;
+/* Token spans carry the `cv-` prefix so they match the `.cv-c-*` rules in
+   canvas.css (the package's global class-naming convention). */
+const wrap = (cls, s) => `<span class="cv-${cls}">${s}</span>`;
 
 /* Values that read as literals across most languages. */
 const LIT = new Set('true false null undefined None True False nil NaN Infinity'.split(' '));
