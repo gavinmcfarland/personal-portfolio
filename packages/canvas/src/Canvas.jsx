@@ -847,10 +847,10 @@ export default function Canvas() {
         if (mk === 'v') return;
         if (mk === 'd') { if (!S.readOnly && S.selected.length) { e.preventDefault(); eng.duplicateSelected(); } return; }
       }
-      // `g` toggles the viewport centre crosshair. Works in either mode (it's a
-      // pure view aid, never edits the board); a stale-closure-safe functional
-      // update keeps the once-bound listener correct.
-      if (e.key.toLowerCase() === 'g' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      // `g` toggles the viewport centre crosshair — an edit-mode alignment aid, so
+      // it's ignored while read-only. A stale-closure-safe functional update keeps
+      // the once-bound listener correct.
+      if (e.key.toLowerCase() === 'g' && !e.metaKey && !e.ctrlKey && !e.altKey && !S.readOnly) {
         e.preventDefault();
         setCenterGuides((v) => !v);
         return;
@@ -1075,7 +1075,7 @@ export default function Canvas() {
       <div className={cx('cv-viewport', classNames?.canvas)} data-cv-part="canvas" ref={viewportRef} onPointerDown={onPointerDown} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu} onDragOver={onDragOver} onDrop={onDrop}>
         <World />
       </div>
-      {centerGuides && <div className="cv-center-lines" aria-hidden="true" />}
+      {centerGuides && !readOnly && <div className="cv-center-lines" aria-hidden="true" />}
       <Chrome />
       {ui && (
         <>
