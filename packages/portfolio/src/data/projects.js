@@ -2,12 +2,17 @@
 
    `summary` drives the list row on the home page; the richer fields
    (`tagline`, `description`, `highlights`, `role`, `year`, …) drive the
-   dedicated project page at /projects/:id. */
+   dedicated project page at /projects/:id.
+
+   Set `draft: true` to hide a project everywhere — it's kept out of the home
+   list and its /projects/:id page returns Not Found. Use `visibleProjects`
+   (below) anywhere you want only the published set. */
 export const projects = [
 	{
 		id: 'plugma',
 		title: 'Plugma',
 		kind: 'tool',
+		draft: true,
 		summary: 'A zero-config CLI for building Figma plugins with true hot-module reloading. Works with React, Svelte and Vue.',
 		tagline: 'A zero-config CLI for building Figma plugins — with hot-module reloading that actually works.',
 		tech: ['Node.js', 'TypeScript', 'Vite'],
@@ -75,6 +80,7 @@ export const projects = [
 		id: 'table-creator',
 		title: 'Table Creator',
 		kind: 'plugin',
+		draft: true,
 		summary: 'A Figma plugin for creating and maintaining complex data tables on the canvas, with dynamic content and bulk edits.',
 		tagline: 'A Figma plugin for building and maintaining complex data tables directly on the canvas.',
 		tech: ['TypeScript', 'Figma API', 'Svelte'],
@@ -98,7 +104,7 @@ export const projects = [
 		title: 'Icon Preview',
 		kind: 'plugin',
 		summary: 'A Figma plugin that live-previews the icon you are editing at preset sizes for web, iOS and Android.',
-		tagline: 'See the icon you are editing rendered live at every size that matters — web, iOS and Android.',
+		tagline: 'See the icon you are editing rendered live at every size that matters, web, iOS and Android.',
 		tech: ['JavaScript', 'Figma API'],
 		role: 'Creator',
 		year: '2021',
@@ -116,3 +122,7 @@ export const projects = [
 		],
 	},
 ];
+
+/* The published set — everything not marked `draft`. This is what the home
+   list and the numbered count should use. */
+export const visibleProjects = projects.filter((p) => !p.draft);

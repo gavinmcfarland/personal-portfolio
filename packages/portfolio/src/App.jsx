@@ -13,12 +13,13 @@ import Home from "./pages/Home";
 import ProjectPage from "./pages/ProjectPage";
 import CollisionDemoPage from "./pages/CollisionDemoPage";
 import NotFound from "./pages/NotFound";
-import { projects } from "./data/projects";
+import { visibleProjects } from "./data/projects";
 
-/* Resolve the :id param to a project, or render the 404 page. */
+/* Resolve the :id param to a project, or render the 404 page. Draft projects
+   are excluded from `visibleProjects`, so their URLs return Not Found too. */
 function ProjectRoute() {
   const { id } = useParams();
-  const project = projects.find((p) => p.id === id);
+  const project = visibleProjects.find((p) => p.id === id);
   return project ? <ProjectPage project={project} /> : <NotFound />;
 }
 

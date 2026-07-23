@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { projects } from '../data/projects';
+import { visibleProjects as projects } from '../data/projects';
 import { Section } from './ui';
 
 /* Work, as the Enamel table (design-mockups/12-enamel/index.html): tracked mono
