@@ -97,11 +97,6 @@ const Home = () => (
             onUnfurl={unfurlLink}
           />
         </div>
-        <p className="mt-3 text-[0.8125rem] text-faint">
-          Embedded with a single{" "}
-          <code className="font-sans">{'<Canvas fit="contain" />'}</code>{" "}
-          component.
-        </p>
       </Section>
 
       <PastExperience />

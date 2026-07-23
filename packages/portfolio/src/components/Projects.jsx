@@ -1,38 +1,42 @@
-import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
-import { visibleProjects as projects } from '../data/projects';
-import { Section } from './ui';
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { Link } from "react-router-dom";
+import { visibleProjects as projects } from "../data/projects";
+import { Section } from "./ui";
 
 /* Work, as the Enamel table (design-mockups/12-enamel/index.html): tracked mono
    structure, a Chivo description column, and a flat enamel swatch + tag for the
    Kind. Each row links to the project's page. */
 
 const KINDS = {
-  tool: { label: 'Tool', tone: 'blue' },
-  library: { label: 'Library', tone: 'lime' },
-  plugin: { label: 'Plugin', tone: 'teal' },
+  tool: { label: "Tool", tone: "blue" },
+  library: { label: "Library", tone: "lime" },
+  plugin: { label: "Plugin", tone: "teal" },
 };
 
 /* The four enamels, as CSS vars that flip with the theme (see app.css). */
 const TONE_VAR = {
-  vermilion: 'var(--tone-vermilion)',
-  blue: 'var(--tone-blue)',
-  lime: 'var(--tone-lime)',
-  teal: 'var(--tone-teal)',
+  vermilion: "var(--tone-vermilion)",
+  blue: "var(--tone-blue)",
+  lime: "var(--tone-lime)",
+  teal: "var(--tone-teal)",
 };
 
-const pad2 = (n) => String(n).padStart(2, '0');
+const pad2 = (n) => String(n).padStart(2, "0");
 
 /* Shared column track so the header row and every body row line up. */
 const GRID =
-  'grid grid-cols-[2.75rem_10rem_minmax(0,1fr)_7.5rem] items-baseline gap-x-3 px-3';
+  "grid grid-cols-[2.75rem_10rem_minmax(0,1fr)_7.5rem] items-baseline gap-x-3 px-3";
 
 function KindTag({ kind }) {
-  const k = KINDS[kind] || { label: kind, tone: 'teal' };
+  const k = KINDS[kind] || { label: kind, tone: "teal" };
   return (
     <span className="inline-flex items-center gap-[0.4rem] border border-line px-[0.45rem] py-[0.1rem] font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-muted">
-      <span className="h-2 w-2 flex-none" style={{ background: TONE_VAR[k.tone] }} aria-hidden="true" />
+      <span
+        className="h-2 w-2 flex-none"
+        style={{ background: TONE_VAR[k.tone] }}
+        aria-hidden="true"
+      />
       {k.label}
     </span>
   );
@@ -58,9 +62,9 @@ const Projects = () => {
     // would appear "randomly" on load and stick. Only drive it from a real
     // hover-capable pointer.
     if (
-      typeof window !== 'undefined' &&
+      typeof window !== "undefined" &&
       window.matchMedia &&
-      !window.matchMedia('(hover: hover) and (pointer: fine)').matches
+      !window.matchMedia("(hover: hover) and (pointer: fine)").matches
     )
       return;
 
@@ -90,18 +94,23 @@ const Projects = () => {
   useEffect(() => {
     if (!tip) return;
     const clear = () => setTip(null);
-    window.addEventListener('scroll', clear, { passive: true, capture: true });
-    return () => window.removeEventListener('scroll', clear, { capture: true });
+    window.addEventListener("scroll", clear, { passive: true, capture: true });
+    return () => window.removeEventListener("scroll", clear, { capture: true });
   }, [tip]);
 
   return (
     <Section id="projects" label="Projects">
+      <p className="mb-8 max-w-2xl text-pretty text-[1.0625rem] leading-relaxed text-muted">
+        A selection of work I've designed and built end to end. Each one
+        reflects a problem I wanted to solve and the craft that went into making
+        it feel effortless to use.
+      </p>
       <div className="overflow-x-auto" onMouseLeave={() => setTip(null)}>
         <div className="min-w-[44rem]">
           {/* Column header — 11px tracked mono marks over a drawn rule. */}
           <div
             className={`${GRID} pb-[0.5rem] font-mono text-[0.6875rem] font-medium uppercase tracking-[0.1em] text-faint`}
-            style={{ borderBottom: '2px solid var(--line-strong)' }}
+            style={{ borderBottom: "2px solid var(--line-strong)" }}
           >
             <span>No.</span>
             <span>Item</span>
@@ -123,7 +132,10 @@ const Projects = () => {
               <span className="font-mono text-[0.75rem] font-semibold text-ink transition-colors duration-150 group-hover:text-accent">
                 {p.title}
               </span>
-              <span data-desc className="block min-w-0 truncate font-sans text-[0.9375rem] text-muted">
+              <span
+                data-desc
+                className="block min-w-0 truncate font-sans text-[0.9375rem] text-muted"
+              >
                 {p.summary}
               </span>
               <span>
@@ -150,7 +162,7 @@ const Projects = () => {
             style={{
               left: tip.left,
               top: tip.top,
-              width: 'max-content',
+              width: "max-content",
               maxWidth: `min(${TIP_W}px, calc(100vw - 2rem))`,
             }}
           >
@@ -158,7 +170,7 @@ const Projects = () => {
               {tip.summary}
             </span>
           </div>,
-          document.body
+          document.body,
         )}
     </Section>
   );

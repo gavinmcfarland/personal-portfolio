@@ -60,7 +60,7 @@ export const projects = [
 		kind: 'tool',
 		summary: 'A browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup. Like CodePen for Figma.',
 		tagline: 'A browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup.',
-		tech: ['JavaScript', 'Figma API', 'Svelte'],
+		tech: ['JavaScript', 'Figma API', 'Svelte', 'Supabase'],
 		role: 'Creator',
 		year: '2023',
 		link: 'https://www.figma.com/community/plugin/1215620774867583125/figlet',
