@@ -80,6 +80,7 @@ export default function ProjectCanvas({ project }) {
       onPublish={boardSaver(storageKey)}
       onUploadImage={uploadMedia}
       onUploadVideo={uploadMedia}
+      onUploadAudio={uploadMedia}
       onUploadHtml={uploadMedia}
       onUnfurl={unfurlLink}
     />

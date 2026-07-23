@@ -14,14 +14,18 @@ const ASSET_DIR = path.resolve(process.cwd(), 'public/canvas-assets');
    filename-safe alphabet so the key can never escape BOARD_DIR. */
 const KEY_RE = /^[a-zA-Z0-9_-]+$/;
 
-/* data:image/png;base64,… → { ext, buffer }. Returns null if not a data URL. */
+/* data:image/png;base64,… → { ext, buffer }. Returns null if not a data URL.
+   Audio recorded via MediaRecorder carries codec params (audio/webm;codecs=opus),
+   so we match the base MIME type and ignore any trailing parameters. Audio webm/mp4/ogg
+   get their own extensions (weba/m4a/oga) so they never collide with the video variants. */
 const EXT = {
   'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp', 'image/svg+xml': 'svg', 'image/avif': 'avif',
   'video/mp4': 'mp4', 'video/webm': 'webm', 'video/ogg': 'ogv', 'video/quicktime': 'mov',
+  'audio/webm': 'weba', 'audio/mp4': 'm4a', 'audio/mpeg': 'mp3', 'audio/ogg': 'oga', 'audio/wav': 'wav', 'audio/x-wav': 'wav', 'audio/aac': 'aac',
   'text/html': 'html',
 };
 function decodeDataUrl(dataUrl) {
-  const m = /^data:([^;]+);base64,(.+)$/s.exec(dataUrl || '');
+  const m = /^data:([\w.+-]+\/[\w.+-]+)(?:;[^,]*?)?;base64,(.+)$/s.exec(dataUrl || '');
   if (!m) return null;
   const ext = EXT[m[1]];
   if (!ext) return null;
@@ -30,12 +34,13 @@ function decodeDataUrl(dataUrl) {
 
 /* Only our content-hash-named files are eligible for pruning — anything else in
    the folder (manually added images) is left untouched. */
-const ASSET_RE = /^[0-9a-f]{16}\.(?:png|jpg|gif|webp|svg|avif|mp4|webm|ogv|mov|html)$/;
+const ASSET_RE = /^[0-9a-f]{16}\.(?:png|jpg|gif|webp|svg|avif|mp4|webm|ogv|mov|weba|m4a|mp3|oga|wav|aac|html)$/;
 
 /* Content types for assets we serve directly (see the /canvas-assets handler). */
 const MIME = {
   png: 'image/png', jpg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml', avif: 'image/avif',
   mp4: 'video/mp4', webm: 'video/webm', ogv: 'video/ogg', mov: 'video/quicktime',
+  weba: 'audio/webm', m4a: 'audio/mp4', mp3: 'audio/mpeg', oga: 'audio/ogg', wav: 'audio/wav', aac: 'audio/aac',
   html: 'text/html',
 };
 

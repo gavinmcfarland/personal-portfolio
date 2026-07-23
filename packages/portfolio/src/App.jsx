@@ -132,7 +132,7 @@ function App() {
                   `fixed` child position relative to the panel (not the
                   viewport), so it slides in and out with the page — and it
                   stays pinned to the corner while the panel's content scrolls. */}
-              <ThemeToggle className="fixed right-[22px] top-[22px] z-50" />
+              <ThemeToggle className="fixed right-[22px] top-[max(22px,calc(env(safe-area-inset-top)+12px))] z-50" />
               <Routes location={overlayLoc}>
                 <Route path="/projects/:id" element={<ProjectRoute />} />
                 <Route path="/responsive" element={<CollisionDemoPage />} />

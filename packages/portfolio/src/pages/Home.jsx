@@ -92,6 +92,7 @@ const Home = () => (
             onPublish={boardSaver("footer-canvas-demo")}
             onUploadImage={uploadMedia}
             onUploadVideo={uploadMedia}
+            onUploadAudio={uploadMedia}
             onUploadHtml={uploadMedia}
             onUnfurl={unfurlLink}
           />
