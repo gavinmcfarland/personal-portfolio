@@ -69,6 +69,11 @@ export default function Canvas() {
   // scroll-to-pan should just work (matching the imperative handlers below).
   const coopView = COOP && readOnly && !maximized;
 
+  // Screen-space centre crosshair (a vertical + horizontal hairline through the
+  // viewport centre), toggled with `g`. A transient alignment aid only — not
+  // persisted and never part of the board content.
+  const [centerGuides, setCenterGuides] = useState(false);
+
   // Touch-primary devices phrase things differently ("tap" vs "click", etc.).
   const coarsePointer = typeof matchMedia !== 'undefined' && matchMedia('(hover: none)').matches;
   const interactLabel = coarsePointer ? 'Tap to interact' : 'Click to interact';
@@ -842,6 +847,14 @@ export default function Canvas() {
         if (mk === 'v') return;
         if (mk === 'd') { if (!S.readOnly && S.selected.length) { e.preventDefault(); eng.duplicateSelected(); } return; }
       }
+      // `g` toggles the viewport centre crosshair. Works in either mode (it's a
+      // pure view aid, never edits the board); a stale-closure-safe functional
+      // update keeps the once-bound listener correct.
+      if (e.key.toLowerCase() === 'g' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        setCenterGuides((v) => !v);
+        return;
+      }
       const map = S.readOnly
         ? { v: 'select', h: 'hand' }
         : { v: 'select', h: 'hand', k: 'scale', n: 'note', t: 'text', m: 'md', c: 'code', p: 'pen', l: 'line', a: 'arrow', r: 'rect', o: 'ellipse', f: 'frame' };
@@ -1062,6 +1075,7 @@ export default function Canvas() {
       <div className={cx('cv-viewport', classNames?.canvas)} data-cv-part="canvas" ref={viewportRef} onPointerDown={onPointerDown} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu} onDragOver={onDragOver} onDrop={onDrop}>
         <World />
       </div>
+      {centerGuides && <div className="cv-center-lines" aria-hidden="true" />}
       <Chrome />
       {ui && (
         <>

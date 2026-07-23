@@ -40,6 +40,9 @@
      prop) re-tints every accent-soft surface with no extra tokens to set. */
   --cv-accent-soft: color-mix(in srgb, var(--cv-accent) 10%, transparent);
   --cv-snap-guide: #f5317f;
+  /* Viewport centre crosshair (the `g` toggle) — a cyan hairline, its own token
+     so a skin can retint it without touching the snap guides. */
+  --cv-center-guide: rgba(0, 190, 214, 0.85);
   --cv-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.09);
   --cv-ui-bg: rgba(255, 255, 255, 0.82);
   --cv-ui-border: rgba(0, 0, 0, 0.1);
@@ -104,6 +107,7 @@
   --cv-accent: #c88be8;
   --cv-accent-soft: color-mix(in srgb, var(--cv-accent) 16%, transparent);
   --cv-snap-guide: #ff6ba3;
+  --cv-center-guide: rgba(34, 211, 238, 0.85);
   --cv-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.5);
   --cv-ui-bg: rgba(22, 22, 25, 0.82);
   --cv-ui-border: rgba(255, 255, 255, 0.12);
@@ -292,6 +296,17 @@
 .canvas-root[data-cv-grid="off"] .cv-viewport {
   background-image: none;
 }
+/* Viewport centre crosshair (the `g` toggle): two screen-space hairlines through
+   the middle of the viewport. Fixed to the container centre — unlike the world,
+   they never pan or zoom — so this is pure CSS, no per-frame placement. Purely a
+   visual alignment aid: click-through, and never captured in the board. */
+.canvas-root .cv-center-lines::before,
+.canvas-root .cv-center-lines::after {
+  content: "";
+  background: var(--cv-center-guide);
+}
+/* Vertical line at the horizontal centre. */
+/* Horizontal line at the vertical centre. */
 /* Edit mode (select tool, not read-only) shows a custom accent pointer. */
 /* During a node drag the viewport captures the pointer, so its cursor (not the
    node's) is shown — keep it on the hover variant. */

@@ -174,6 +174,36 @@
   cursor: default;
 }
 /* Dot grid toggled off (board setting) — keep the background colour, drop dots. */
+/* Viewport centre crosshair (the `g` toggle): two screen-space hairlines through
+   the middle of the viewport. Fixed to the container centre — unlike the world,
+   they never pan or zoom — so this is pure CSS, no per-frame placement. Purely a
+   visual alignment aid: click-through, and never captured in the board. */
+.canvas-root .cv-center-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 41;
+}
+.canvas-root .cv-center-lines::before,
+.canvas-root .cv-center-lines::after {
+  position: absolute;
+}
+/* Vertical line at the horizontal centre. */
+.canvas-root .cv-center-lines::before {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-0.5px);
+}
+/* Horizontal line at the vertical centre. */
+.canvas-root .cv-center-lines::after {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-0.5px);
+}
 /* Edit mode (select tool, not read-only) shows a custom accent pointer. */
 .canvas-root[data-tool="select"]:not([data-readonly]):not([data-panning]) .cv-viewport {
   cursor: var(--cv-cur-edit), default;

@@ -35,6 +35,9 @@
      prop) re-tints every accent-soft surface with no extra tokens to set. */
   --cv-accent-soft: color-mix(in srgb, var(--cv-accent) 10%, transparent);
   --cv-snap-guide: #f5317f;
+  /* Viewport centre crosshair (the `g` toggle) — a cyan hairline, its own token
+     so a skin can retint it without touching the snap guides. */
+  --cv-center-guide: rgba(0, 190, 214, 0.85);
   --cv-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.09);
   --cv-ui-bg: rgba(255, 255, 255, 0.82);
   --cv-ui-border: rgba(0, 0, 0, 0.1);
@@ -98,6 +101,7 @@
   --cv-accent: #c88be8;
   --cv-accent-soft: color-mix(in srgb, var(--cv-accent) 16%, transparent);
   --cv-snap-guide: #ff6ba3;
+  --cv-center-guide: rgba(34, 211, 238, 0.85);
   --cv-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.5);
   --cv-ui-bg: rgba(22, 22, 25, 0.82);
   --cv-ui-border: rgba(255, 255, 255, 0.12);
@@ -390,6 +394,38 @@
 /* Dot grid toggled off (board setting) — keep the background colour, drop dots. */
 .canvas-root[data-cv-grid="off"] .cv-viewport {
   background-image: none;
+}
+/* Viewport centre crosshair (the `g` toggle): two screen-space hairlines through
+   the middle of the viewport. Fixed to the container centre — unlike the world,
+   they never pan or zoom — so this is pure CSS, no per-frame placement. Purely a
+   visual alignment aid: click-through, and never captured in the board. */
+.canvas-root .cv-center-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 41;
+}
+.canvas-root .cv-center-lines::before,
+.canvas-root .cv-center-lines::after {
+  content: "";
+  position: absolute;
+  background: var(--cv-center-guide);
+}
+/* Vertical line at the horizontal centre. */
+.canvas-root .cv-center-lines::before {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-0.5px);
+}
+/* Horizontal line at the vertical centre. */
+.canvas-root .cv-center-lines::after {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-0.5px);
 }
 /* Edit mode (select tool, not read-only) shows a custom accent pointer. */
 .canvas-root[data-tool="select"]:not([data-readonly]):not([data-panning]) .cv-viewport {
