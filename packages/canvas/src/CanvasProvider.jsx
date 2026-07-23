@@ -1624,6 +1624,10 @@ export function CanvasProvider({
     // another canvas instance, so we don't persist/re-emit and loop.
     function setMode(ro, broadcast = true) {
       setReadOnlyState(ro);
+      // Each mode transition re-locks a cooperative board: entering edit mode no
+      // longer auto-unlocks scroll-to-pan (the user clicks the board to engage),
+      // and returning to view mode drops back to the lock button / page-scroll.
+      setEngaged(false);
       if (ro) { deselect(); setCtxMenu(null); setGridEditId(null); setToolState((t) => (t === 'select' || t === 'hand' ? t : 'select')); }
       if (EDITABLE && broadcast) setGlobalReadOnly(ro);
     }

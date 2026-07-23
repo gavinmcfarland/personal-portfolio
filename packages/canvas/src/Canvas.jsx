@@ -208,6 +208,12 @@ export default function Canvas() {
     }
     eng.freezeView();
 
+    // COOP: clicking into the board engages it (unlocks scroll-to-pan). In edit
+    // mode there's no lock button, so this click is how the user unlocks — the
+    // board stays cooperatively locked until then, so entering edit mode doesn't
+    // trap the page scroll. (Reaching here means we're not read-only.)
+    if (COOP && !CLICK_TO_INTERACT && !engagedRef.current) setEngaged(true);
+
     const nodeEl = e.target.closest('.cv-node');
     const shapeEl = e.target.closest('.cv-shape');
     const spacePan = e.button === 1 || panKey.current;
@@ -800,12 +806,14 @@ export default function Canvas() {
       // overlay is the affordance, so no wheel hint here.
       if (CLICK_TO_INTERACT) {
         if (!engagedRef.current && !maximizedRef.current) return; // locked → page scrolls past (but maximised owns the screen)
-      } else if (COOP && S.readOnly && !engagedRef.current && !maximizedRef.current && !zoomKey) {
-        // Cooperative gestures (view mode, locked): a plain wheel scrolls the host
-        // page (don't preventDefault). Surface the "scroll to pan is disabled"
-        // message since the user just tried to scroll the board. Unlocking via the
-        // lock button (engaged) or editing lets the wheel pan the board instead.
-        flashMsg();
+      } else if (COOP && !engagedRef.current && !maximizedRef.current && !zoomKey) {
+        // Cooperative gestures (locked): a plain wheel scrolls the host page
+        // (don't preventDefault) until the board is engaged — in edit mode too, so
+        // entering edit mode doesn't trap the page scroll. In view mode the lock
+        // button engages it; in edit mode a click into the board does. Surface the
+        // "scroll to pan is disabled" hint only in view mode, where that lock
+        // button is the affordance (edit mode has no lock UI).
+        if (S.readOnly) flashMsg();
         return;
       }
       e.preventDefault();
@@ -966,10 +974,14 @@ export default function Canvas() {
     const onDocDown = (e) => {
       const inside = !!(rootRef.current && rootRef.current.contains(e.target));
       activeInsideRef.current = inside;
-      // The board loses focus → relock an unlocked (engaged) board, whether it
-      // was unlocked via the cooperative lock button or the click-to-interact
-      // overlay. A press on the board's own lock button counts as inside.
-      if (engagedRef.current && !inside) setEngaged(false);
+      // The board loses focus → relock an unlocked (engaged) board, whether it was
+      // unlocked via the lock button, the click-to-interact overlay, or (in edit
+      // mode) a click into the board. A press on the board's own lock button counts
+      // as inside; so does the shared dock (Edit toggle + tools) — it's portaled
+      // outside the root but is still part of editing this board, so clicking it
+      // must not relock. Clicking anywhere else on the page does.
+      const inChrome = inside || !!(e.target.closest && e.target.closest('.cv-dock'));
+      if (engagedRef.current && !inChrome) setEngaged(false);
     };
 
     // Scrolling the host page relocks an unlocked board. Guard on the scroll
