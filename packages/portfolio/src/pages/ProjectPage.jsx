@@ -29,7 +29,7 @@ export default function ProjectPage({ project }) {
     <div className="absolute inset-0 flex flex-col bg-base lg:flex-row">
       {/* ── Header (top bar below lg, left sidebar from lg up) ───────── */}
       <header className="order-last shrink-0 border-t border-line bg-base lg:order-0 lg:w-80 lg:overflow-y-auto lg:border-t-0 lg:border-r xl:w-96">
-        <div className="flex flex-col px-5 pb-6 pt-4 sm:px-8 sm:pt-6 lg:min-h-full lg:py-8">
+        <div className="flex flex-col px-5 pb-10 pt-4 sm:px-8 sm:pt-6 lg:min-h-full lg:py-8">
           <div className="flex items-center justify-between gap-4">
             <Link
               to="/"
