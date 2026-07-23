@@ -205,12 +205,16 @@
   transform: translateY(-0.5px);
 }
 /* Edit mode (select tool, not read-only) shows a custom accent pointer. */
-.canvas-root[data-tool="select"]:not([data-readonly]):not([data-panning]) .cv-viewport {
+.canvas-root[data-tool="select"]:not([data-readonly]):not([data-panning])
+  .cv-viewport {
   cursor: var(--cv-cur-edit), default;
 }
 /* During a node drag the viewport captures the pointer, so its cursor (not the
    node's) is shown — keep it on the hover variant. */
-.canvas-root[data-tool="select"]:not([data-readonly]):has(.cv-node[data-dragging]) .cv-viewport {
+.canvas-root[data-tool="select"]:not([data-readonly]):has(
+    .cv-node[data-dragging]
+  )
+  .cv-viewport {
   cursor: var(--cv-cur-edit-hover), grabbing;
 }
 .canvas-root[data-tool="hand"] .cv-viewport,
@@ -1112,18 +1116,18 @@
    the left/right affordances (bottom corners + side strips), hide every
    vertical one — including the ne corner, which would clash with the edit-pencil
    button floating there. */
-.canvas-root .cv-rz[data-mode='ew'] .cv-rz-nw,
-.canvas-root .cv-rz[data-mode='ew'] .cv-rz-ne,
-.canvas-root .cv-rz[data-mode='ew'] .cv-rz-n,
-.canvas-root .cv-rz[data-mode='ew'] .cv-rz-s {
+.canvas-root .cv-rz[data-mode="ew"] .cv-rz-nw,
+.canvas-root .cv-rz[data-mode="ew"] .cv-rz-ne,
+.canvas-root .cv-rz[data-mode="ew"] .cv-rz-n,
+.canvas-root .cv-rz[data-mode="ew"] .cv-rz-s {
   display: none;
 }
 /* Scale mode (K tool): only the four corners (dragging one scales the object
    uniformly); the single-axis side strips don't apply. */
-.canvas-root .cv-rz[data-mode='scale'] .cv-rz-n,
-.canvas-root .cv-rz[data-mode='scale'] .cv-rz-s,
-.canvas-root .cv-rz[data-mode='scale'] .cv-rz-e,
-.canvas-root .cv-rz[data-mode='scale'] .cv-rz-w {
+.canvas-root .cv-rz[data-mode="scale"] .cv-rz-n,
+.canvas-root .cv-rz[data-mode="scale"] .cv-rz-s,
+.canvas-root .cv-rz[data-mode="scale"] .cv-rz-e,
+.canvas-root .cv-rz[data-mode="scale"] .cv-rz-w {
   display: none;
 }
 /* Media grid proportion-editing dividers — screen-space, so the accent stroke
@@ -1452,6 +1456,45 @@
   width: 14px;
   height: 14px;
 }
+/* Page-wide "now playing" bar — a minimal fixed pill at the viewport's
+   bottom-right: an accent play/pause button and a thin progress line. Portaled to
+   <body> (outside .canvas-root), so it's UNSCOPED; colours come from
+   host-overridable --cv-np-* vars (frosted defaults + a .dark variant), mirroring
+   the Edit dock. Shows whenever a sound is playing (or paused mid-clip) on any
+   board, and outlives the board that started it. */
+.cv-nowplaying {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.cv-np-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  cursor: default;
+}
+.cv-np-btn svg {
+  width: 15px;
+  height: 15px;
+}
+/* Vertical progress: a thin bar the height of the button, filling from the top
+   down as the clip plays (the fill's `height` is written each frame). */
+.cv-np-track {
+  width: 4px;
+  height: 28px;
+  overflow: hidden;
+}
+.cv-np-fill {
+  width: 100%;
+  height: 0%;
+}
 /* Passive background-save status, pinned to the bottom-right of the canvas.
    Auto-saves as the user edits, so this is an indicator, not a button. */
 .canvas-root .cv-save-status {
@@ -1731,10 +1774,14 @@
 .canvas-root :is(.cv-node, [data-cv-part="lightbox"]) img.cv-dark {
   display: none;
 }
-:is(.dark .canvas-root, .canvas-root.dark) :is(.cv-node, [data-cv-part="lightbox"]) img.cv-light {
+:is(.dark .canvas-root, .canvas-root.dark)
+  :is(.cv-node, [data-cv-part="lightbox"])
+  img.cv-light {
   display: none;
 }
-:is(.dark .canvas-root, .canvas-root.dark) :is(.cv-node, [data-cv-part="lightbox"]) img.cv-dark {
+:is(.dark .canvas-root, .canvas-root.dark)
+  :is(.cv-node, [data-cv-part="lightbox"])
+  img.cv-dark {
   display: block;
 }
 .canvas-root [data-cv-part="lightbox"] .cv-lb-close {

@@ -75,7 +75,8 @@
   --cv-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --cv-serif: "Tinos", "Times New Roman", Times, Georgia, serif;
   --cv-hand: "Caveat", cursive;
-  --cv-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --cv-mono:
+    "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
   /* Custom edit-mode pointer + its hover-over-object variant (inverted). */
   --cv-cur-edit: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cpath d='M5 3 L5 21 L10 16 L13.5 23.5 L16.5 22.2 L13 14.8 L20 14.8 Z' fill='%237C2D91' stroke='%23fff' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E")
     5 3;
@@ -130,7 +131,11 @@
 .canvas-root[data-cv-bg="custom"] {
   /* Mix in OKLCH, not sRGB: the base is near-neutral, so OKLCH keeps the pick's
      hue clean instead of greying it into a muddy tint. */
-  --cv-bg: color-mix(in oklch, var(--cv-bg-pick) var(--cv-bg-tint), var(--cv-bg-base));
+  --cv-bg: color-mix(
+    in oklch,
+    var(--cv-bg-pick) var(--cv-bg-tint),
+    var(--cv-bg-base)
+  );
 }
 
 /* ── Root container ───────────────────────────────────────────── */
@@ -428,12 +433,16 @@
   transform: translateY(-0.5px);
 }
 /* Edit mode (select tool, not read-only) shows a custom accent pointer. */
-.canvas-root[data-tool="select"]:not([data-readonly]):not([data-panning]) .cv-viewport {
+.canvas-root[data-tool="select"]:not([data-readonly]):not([data-panning])
+  .cv-viewport {
   cursor: var(--cv-cur-edit), default;
 }
 /* During a node drag the viewport captures the pointer, so its cursor (not the
    node's) is shown — keep it on the hover variant. */
-.canvas-root[data-tool="select"]:not([data-readonly]):has(.cv-node[data-dragging]) .cv-viewport {
+.canvas-root[data-tool="select"]:not([data-readonly]):has(
+    .cv-node[data-dragging]
+  )
+  .cv-viewport {
   cursor: var(--cv-cur-edit-hover), grabbing;
 }
 .canvas-root[data-tool="hand"] .cv-viewport,
@@ -582,10 +591,18 @@
   line-height: 1.4;
   color: var(--cv-ink);
 }
-.canvas-root .cv-tblock[data-font="sans"] { font-family: var(--cv-sans); }
-.canvas-root .cv-tblock[data-font="serif"] { font-family: var(--cv-serif); }
-.canvas-root .cv-tblock[data-font="mono"] { font-family: var(--cv-mono); }
-.canvas-root .cv-tblock[data-font="script"] { font-family: var(--cv-hand); }
+.canvas-root .cv-tblock[data-font="sans"] {
+  font-family: var(--cv-sans);
+}
+.canvas-root .cv-tblock[data-font="serif"] {
+  font-family: var(--cv-serif);
+}
+.canvas-root .cv-tblock[data-font="mono"] {
+  font-family: var(--cv-mono);
+}
+.canvas-root .cv-tblock[data-font="script"] {
+  font-family: var(--cv-hand);
+}
 .canvas-root .cv-tblock .cv-txt {
   outline: none;
   white-space: pre;
@@ -705,7 +722,9 @@
   background: transparent;
 }
 .canvas-root .cv-node.cv-html.cv-framed {
-  box-shadow: var(--cv-shadow); /* match framed media — the shared .framed rule adds surface + border */
+  box-shadow: var(
+    --cv-shadow
+  ); /* match framed media — the shared .framed rule adds surface + border */
 }
 .canvas-root .cv-node.cv-html .cv-html-shield {
   position: absolute;
@@ -842,7 +861,8 @@
   gap: calc(var(--cv-df-u) * 10);
   padding: 0 calc(var(--cv-df-u) * 12);
   background: color-mix(in srgb, var(--cv-surface) 97%, var(--cv-ink));
-  border-bottom: calc(var(--cv-df-u) * 1) solid color-mix(in srgb, var(--cv-line), transparent 65%);
+  border-bottom: calc(var(--cv-df-u) * 1) solid
+    color-mix(in srgb, var(--cv-line), transparent 65%);
   pointer-events: none;
   user-select: none;
 }
@@ -851,7 +871,9 @@
    them from inline flow so the flex `align-items:center` keeps them centred.
    Stroke width is set via each icon's strokeWidth prop (user units) so it scales
    with the icon box, rather than a fixed CSS px value that wouldn't. */
-.canvas-root .cv-df svg { display: block; }
+.canvas-root .cv-df svg {
+  display: block;
+}
 
 /* Editable frame label (browser URL / plugin title), committed on blur. */
 .canvas-root .cv-df-field-text,
@@ -871,7 +893,10 @@
   outline: none;
   cursor: text;
 }
-.canvas-root .cv-df-field-input::placeholder { color: var(--cv-muted); opacity: 0.7; }
+.canvas-root .cv-df-field-input::placeholder {
+  color: var(--cv-muted);
+  opacity: 0.7;
+}
 
 /* Browser chrome */
 .canvas-root .cv-df-dots {
@@ -885,8 +910,12 @@
   border-radius: 50%;
   background: #ff5f57;
 }
-.canvas-root .cv-df-dots i:nth-child(2) { background: #febc2e; }
-.canvas-root .cv-df-dots i:nth-child(3) { background: #28c840; }
+.canvas-root .cv-df-dots i:nth-child(2) {
+  background: #febc2e;
+}
+.canvas-root .cv-df-dots i:nth-child(3) {
+  background: #28c840;
+}
 .canvas-root .cv-df-nav {
   display: flex;
   align-items: center;
@@ -913,13 +942,19 @@
   padding: 0 calc(var(--cv-df-u) * 10);
   border-radius: 999px;
   background: var(--cv-bg-base);
-  border: calc(var(--cv-df-u) * 1) solid color-mix(in srgb, var(--cv-line), transparent 65%);
+  border: calc(var(--cv-df-u) * 1) solid
+    color-mix(in srgb, var(--cv-line), transparent 65%);
   color: var(--cv-muted);
   font-family: var(--cv-sans, system-ui);
   font-size: calc(var(--cv-df-u) * 12);
 }
-.canvas-root .cv-df-url .cv-df-field-text { width: 100%; }
-.canvas-root .cv-df-url .cv-df-field-input { width: 100%; color: var(--cv-ink); }
+.canvas-root .cv-df-url .cv-df-field-text {
+  width: 100%;
+}
+.canvas-root .cv-df-url .cv-df-field-input {
+  width: 100%;
+  color: var(--cv-ink);
+}
 
 /* Plugin window — app icon + name on the left, close button on the right. Same
    bar height / colours / text size as the browser chrome; only the controls
@@ -1012,7 +1047,6 @@
   cursor: zoom-in;
 }
 
-
 /* Sound object — a fixed-size audio player card (play / name / scrub bar) */
 .canvas-root .cv-node.cv-sound {
   display: flex;
@@ -1026,7 +1060,9 @@
   box-shadow: var(--cv-shadow);
   user-select: none;
 }
-.canvas-root .cv-node.cv-sound audio { display: none; }
+.canvas-root .cv-node.cv-sound audio {
+  display: none;
+}
 .canvas-root .cv-node.cv-sound .cv-splay {
   display: flex;
   align-items: center;
@@ -1210,7 +1246,9 @@
   animation: cv-spin 0.8s linear infinite;
 }
 @keyframes cv-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Markdown object — live-highlighted source while editing, rendered on blur */
@@ -1533,7 +1571,11 @@
   cursor: default;
   opacity: 0;
   pointer-events: none; /* while hidden, let clicks fall through so the header stays draggable */
-  transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
+  transition:
+    opacity 0.12s ease,
+    color 0.12s ease,
+    background-color 0.12s ease,
+    border-color 0.12s ease;
 }
 .canvas-root .cv-code:hover .cv-code-toggle,
 .canvas-root .cv-code[data-editing] .cv-code-toggle {
@@ -1815,10 +1857,18 @@
 }
 /* Centre-line alignments read as dashed; edge alignments stay solid. */
 .canvas-root .cv-guide-center-v {
-  background: repeating-linear-gradient(to bottom, var(--cv-snap-guide) 0 4px, transparent 4px 8px);
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--cv-snap-guide) 0 4px,
+    transparent 4px 8px
+  );
 }
 .canvas-root .cv-guide-center-h {
-  background: repeating-linear-gradient(to right, var(--cv-snap-guide) 0 4px, transparent 4px 8px);
+  background: repeating-linear-gradient(
+    to right,
+    var(--cv-snap-guide) 0 4px,
+    transparent 4px 8px
+  );
 }
 /* Resize handles: the .cv-rz container tracks the selection rect (placed by
    placeSel) and stays click-through. Inside sit four visible corner squares plus
@@ -1846,34 +1896,72 @@
   background: var(--cv-surface);
   border: 2px solid var(--cv-accent);
 }
-.canvas-root .cv-rz .cv-rz-nw { left: calc(-1 * var(--cv-rz-corner-half)); top: calc(-1 * var(--cv-rz-corner-half)); cursor: nwse-resize; }
-.canvas-root .cv-rz .cv-rz-ne { left: calc(100% - var(--cv-rz-corner-half)); top: calc(-1 * var(--cv-rz-corner-half)); cursor: nesw-resize; }
-.canvas-root .cv-rz .cv-rz-sw { left: calc(-1 * var(--cv-rz-corner-half)); top: calc(100% - var(--cv-rz-corner-half)); cursor: nesw-resize; }
-.canvas-root .cv-rz .cv-rz-se { left: calc(100% - var(--cv-rz-corner-half)); top: calc(100% - var(--cv-rz-corner-half)); cursor: nwse-resize; }
+.canvas-root .cv-rz .cv-rz-nw {
+  left: calc(-1 * var(--cv-rz-corner-half));
+  top: calc(-1 * var(--cv-rz-corner-half));
+  cursor: nwse-resize;
+}
+.canvas-root .cv-rz .cv-rz-ne {
+  left: calc(100% - var(--cv-rz-corner-half));
+  top: calc(-1 * var(--cv-rz-corner-half));
+  cursor: nesw-resize;
+}
+.canvas-root .cv-rz .cv-rz-sw {
+  left: calc(-1 * var(--cv-rz-corner-half));
+  top: calc(100% - var(--cv-rz-corner-half));
+  cursor: nesw-resize;
+}
+.canvas-root .cv-rz .cv-rz-se {
+  left: calc(100% - var(--cv-rz-corner-half));
+  top: calc(100% - var(--cv-rz-corner-half));
+  cursor: nwse-resize;
+}
 /* Side strips: invisible ~11px grab bands straddling each edge, inset from the
    corners so the corner squares stay reachable. */
 .canvas-root .cv-rz .cv-rz-n,
-.canvas-root .cv-rz .cv-rz-s { left: 8px; right: 8px; height: 11px; cursor: ns-resize; }
+.canvas-root .cv-rz .cv-rz-s {
+  left: 8px;
+  right: 8px;
+  height: 11px;
+  cursor: ns-resize;
+}
 .canvas-root .cv-rz .cv-rz-e,
-.canvas-root .cv-rz .cv-rz-w { top: 8px; bottom: 8px; width: 11px; cursor: ew-resize; }
-.canvas-root .cv-rz .cv-rz-n { top: -5px; }
-.canvas-root .cv-rz .cv-rz-s { bottom: -5px; }
-.canvas-root .cv-rz .cv-rz-e { right: -5px; }
-.canvas-root .cv-rz .cv-rz-w { left: -5px; }
+.canvas-root .cv-rz .cv-rz-w {
+  top: 8px;
+  bottom: 8px;
+  width: 11px;
+  cursor: ew-resize;
+}
+.canvas-root .cv-rz .cv-rz-n {
+  top: -5px;
+}
+.canvas-root .cv-rz .cv-rz-s {
+  bottom: -5px;
+}
+.canvas-root .cv-rz .cv-rz-e {
+  right: -5px;
+}
+.canvas-root .cv-rz .cv-rz-w {
+  left: -5px;
+}
 /* Width-only nodes (markdown, code, text, link) resize horizontally only: keep
    the left/right affordances (bottom corners + side strips), hide every
    vertical one — including the ne corner, which would clash with the edit-pencil
    button floating there. */
-.canvas-root .cv-rz[data-mode='ew'] .cv-rz-nw,
-.canvas-root .cv-rz[data-mode='ew'] .cv-rz-ne,
-.canvas-root .cv-rz[data-mode='ew'] .cv-rz-n,
-.canvas-root .cv-rz[data-mode='ew'] .cv-rz-s { display: none; }
+.canvas-root .cv-rz[data-mode="ew"] .cv-rz-nw,
+.canvas-root .cv-rz[data-mode="ew"] .cv-rz-ne,
+.canvas-root .cv-rz[data-mode="ew"] .cv-rz-n,
+.canvas-root .cv-rz[data-mode="ew"] .cv-rz-s {
+  display: none;
+}
 /* Scale mode (K tool): only the four corners (dragging one scales the object
    uniformly); the single-axis side strips don't apply. */
-.canvas-root .cv-rz[data-mode='scale'] .cv-rz-n,
-.canvas-root .cv-rz[data-mode='scale'] .cv-rz-s,
-.canvas-root .cv-rz[data-mode='scale'] .cv-rz-e,
-.canvas-root .cv-rz[data-mode='scale'] .cv-rz-w { display: none; }
+.canvas-root .cv-rz[data-mode="scale"] .cv-rz-n,
+.canvas-root .cv-rz[data-mode="scale"] .cv-rz-s,
+.canvas-root .cv-rz[data-mode="scale"] .cv-rz-e,
+.canvas-root .cv-rz[data-mode="scale"] .cv-rz-w {
+  display: none;
+}
 /* Media grid proportion-editing dividers — screen-space, so the accent stroke
    stays a constant 2px at any zoom. The wide strip is the grab target; the
    ::after line is what's drawn. Positioned by placeGridEdit(). */
@@ -1899,7 +1987,7 @@
   cursor: row-resize;
 }
 .canvas-root .cv-grid-line::after {
-  content: '';
+  content: "";
   position: absolute;
   background: var(--cv-accent);
   border-radius: 2px;
@@ -2110,8 +2198,13 @@
   animation: cv-rec-pulse 1.4s ease-in-out infinite;
 }
 @keyframes cv-rec-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.5); }
-  50% { box-shadow: 0 0 0 5px rgba(229, 72, 77, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(229, 72, 77, 0);
+  }
 }
 
 /* Floating recorder panel (mic capture in progress) */
@@ -2133,8 +2226,13 @@
   animation: cv-rec-blink 1.1s ease-in-out infinite;
 }
 @keyframes cv-rec-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.25; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
 }
 .canvas-root [data-cv-part="recorder"] .cv-rec-time {
   font-family: var(--cv-mono);
@@ -2264,10 +2362,19 @@
   outline: 2px solid var(--cv-accent);
   outline-offset: 1px;
 }
-.canvas-root .cv-font-btn[data-font="sans"] { font-family: var(--cv-sans); }
-.canvas-root .cv-font-btn[data-font="serif"] { font-family: var(--cv-serif); }
-.canvas-root .cv-font-btn[data-font="mono"] { font-family: var(--cv-mono); }
-.canvas-root .cv-font-btn[data-font="script"] { font-family: var(--cv-hand); font-size: 18px; }
+.canvas-root .cv-font-btn[data-font="sans"] {
+  font-family: var(--cv-sans);
+}
+.canvas-root .cv-font-btn[data-font="serif"] {
+  font-family: var(--cv-serif);
+}
+.canvas-root .cv-font-btn[data-font="mono"] {
+  font-family: var(--cv-mono);
+}
+.canvas-root .cv-font-btn[data-font="script"] {
+  font-family: var(--cv-hand);
+  font-size: 18px;
+}
 /* Horizontal-alignment buttons for text blocks. */
 .canvas-root .cv-align-btn {
   width: 26px;
@@ -2444,7 +2551,9 @@
   background: var(--cv-fab-bg, rgba(255, 255, 255, 0.82));
   backdrop-filter: blur(14px) saturate(1.4);
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.09);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.09);
 }
 .cv-edit-fab button {
   display: inline-flex;
@@ -2464,7 +2573,10 @@
 }
 .cv-edit-fab button:hover {
   color: var(--cv-fab-fg-strong, #141417);
-  background: var(--cv-fab-hover, color-mix(in srgb, var(--cv-fab-accent, #7c2d91) 10%, transparent));
+  background: var(
+    --cv-fab-hover,
+    color-mix(in srgb, var(--cv-fab-accent, #7c2d91) 10%, transparent)
+  );
 }
 .cv-edit-fab button svg {
   width: 14px;
@@ -2486,14 +2598,19 @@
 .dark .cv-edit-fab {
   border-color: var(--cv-fab-border, rgba(255, 255, 255, 0.12));
   background: var(--cv-fab-bg, rgba(22, 22, 25, 0.82));
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 10px 30px rgba(0, 0, 0, 0.5);
 }
 .dark .cv-edit-fab button {
   color: var(--cv-fab-fg, #b4b4b9);
 }
 .dark .cv-edit-fab button:hover {
   color: var(--cv-fab-fg-strong, #f2f2ef);
-  background: var(--cv-fab-hover, color-mix(in srgb, var(--cv-fab-accent-dark, #c88be8) 16%, transparent));
+  background: var(
+    --cv-fab-hover,
+    color-mix(in srgb, var(--cv-fab-accent-dark, #c88be8) 16%, transparent)
+  );
 }
 .dark .cv-edit-fab button[data-on] {
   color: var(--cv-fab-on, #fff);
@@ -2502,6 +2619,85 @@
 .dark .cv-edit-fab button[data-on]:hover {
   color: var(--cv-fab-on, #fff);
   background: var(--cv-fab-accent-dark, #c88be8);
+}
+/* Page-wide "now playing" bar — a minimal fixed pill at the viewport's
+   bottom-right: an accent play/pause button and a thin progress line. Portaled to
+   <body> (outside .canvas-root), so it's UNSCOPED; colours come from
+   host-overridable --cv-np-* vars (frosted defaults + a .dark variant), mirroring
+   the Edit dock. Shows whenever a sound is playing (or paused mid-clip) on any
+   board, and outlives the board that started it. */
+.cv-nowplaying {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px;
+  border-radius: 999px;
+  border: 1px solid var(--cv-np-border, rgba(0, 0, 0, 0.1));
+  background: var(--cv-np-bg, rgba(255, 255, 255, 0.82));
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.09);
+}
+.cv-np-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  color: var(--cv-np-on, #fff);
+  background: var(--cv-np-accent, #7c2d91);
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+  transition: 0.15s;
+}
+.cv-np-btn:hover {
+  filter: brightness(1.06);
+}
+.cv-np-btn svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+  stroke: none;
+}
+/* Vertical progress: a thin bar the height of the button, filling from the top
+   down as the clip plays (the fill's `height` is written each frame). */
+.cv-np-track {
+  width: 4px;
+  height: 28px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--cv-np-track, rgba(0, 0, 0, 0.12));
+}
+.cv-np-fill {
+  width: 100%;
+  height: 0%;
+  border-radius: 999px;
+  background: var(--cv-np-accent, #7c2d91);
+}
+.dark .cv-nowplaying {
+  border-color: var(--cv-np-border, rgba(255, 255, 255, 0.12));
+  background: var(--cv-np-bg, rgba(22, 22, 25, 0.82));
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.dark .cv-np-btn {
+  background: var(--cv-np-accent, #c88be8);
+}
+.dark .cv-np-fill {
+  background: var(--cv-np-accent, #c88be8);
+}
+.dark .cv-np-track {
+  background: var(--cv-np-track, rgba(255, 255, 255, 0.14));
 }
 /* Passive background-save status, pinned to the bottom-right of the canvas.
    Auto-saves as the user edits, so this is an indicator, not a button. */
@@ -3032,10 +3228,14 @@
 .canvas-root :is(.cv-node, [data-cv-part="lightbox"]) img.cv-dark {
   display: none;
 }
-:is(.dark .canvas-root, .canvas-root.dark) :is(.cv-node, [data-cv-part="lightbox"]) img.cv-light {
+:is(.dark .canvas-root, .canvas-root.dark)
+  :is(.cv-node, [data-cv-part="lightbox"])
+  img.cv-light {
   display: none;
 }
-:is(.dark .canvas-root, .canvas-root.dark) :is(.cv-node, [data-cv-part="lightbox"]) img.cv-dark {
+:is(.dark .canvas-root, .canvas-root.dark)
+  :is(.cv-node, [data-cv-part="lightbox"])
+  img.cv-dark {
   display: block;
 }
 .canvas-root [data-cv-part="lightbox"] .cv-lb-close {

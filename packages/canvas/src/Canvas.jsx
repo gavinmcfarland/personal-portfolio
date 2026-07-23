@@ -12,6 +12,7 @@ import DefaultSaveStatus from './ui/SaveStatus';
 import DefaultRecorder from './ui/Recorder';
 import DefaultLightbox from './ui/Lightbox';
 import DefaultBottomDock from './ui/BottomDock';
+import DefaultNowPlayingBar from './ui/NowPlayingBar';
 
 /* Recolour the custom edit caret (the inline-SVG cursor) to a given accent, with
    a contrasting outline so it stays legible over the board — white on light
@@ -64,6 +65,7 @@ export default function Canvas() {
   const Recorder = slot('Recorder', DefaultRecorder);
   const Lightbox = slot('Lightbox', DefaultLightbox);
   const BottomDock = slot('BottomDock', DefaultBottomDock);
+  const NowPlaying = slot('NowPlaying', DefaultNowPlayingBar);
   // Cooperative gestures only apply in view mode; while editing the board keeps
   // full gesture control. `readOnly` (reactive) drives the CSS attribute/render;
   // the imperative handlers read the live `S.readOnly` instead. Suspended while
@@ -1106,6 +1108,9 @@ export default function Canvas() {
         </>
       )}
       {Lightbox && <Lightbox />}
+      {/* Page-wide "now playing" bar — ungated by `ui`/`editable` since sounds play
+          in view/published boards. Portals to <body>; only the elected host paints. */}
+      {NowPlaying && <NowPlaying />}
       {coopView && (
         /* Bottom-left lock control: locked = the page scrolls past the board;
            tapping the lock unlocks scroll/one-finger pan (engaged). */

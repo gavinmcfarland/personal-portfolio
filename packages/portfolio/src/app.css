@@ -330,6 +330,16 @@ a.row:hover {
   --cv-fab-on: var(--on-accent);
 }
 
+/* Same treatment for the canvas package's "now playing" bar (also portaled to
+   <body>): point its vars at the enamel tokens so the pill matches the page. */
+.cv-nowplaying {
+  --cv-np-bg: var(--surface);
+  --cv-np-border: var(--line);
+  --cv-np-accent: var(--accent);
+  --cv-np-on: var(--on-accent);
+  --cv-np-track: var(--line);
+}
+
 /* On the project page the theme toggle (fixed, top-right) sits exactly where the
    canvas zoom cluster defaults to — nudge the cluster left so the two sit side by
    side instead of overlapping. Extra specificity (.canvas-root) beats the
