@@ -318,33 +318,42 @@ function Swatches() {
   );
 }
 
+/* The properties panel stays docked inside each canvas (it's contextual to the
+   board's selection); only the tools bar is hoisted into the shared bottom dock
+   (see BottomDock / ToolsPanel below). */
 export default function Toolbar() {
+  return <Swatches />;
+}
+
+/* The tools bar, rendered into the shared bottom dock. Kept inside the canvas
+   provider (via the dock's portal, which preserves React context) so every
+   button still drives this board through useCanvas()/eng. Uses `cv-panel`
+   (no `cv-ui`, so it isn't absolutely positioned) + `cv-tools`, which the dock
+   CSS lays out inline and shrinks to match the zoom controls. */
+export function ToolsPanel() {
   const { tool, eng, classNames } = useCanvas();
   return (
-    <>
-      <Swatches />
-      <div className={cx('cv-ui cv-panel', classNames?.toolbar)} data-cv-part="toolbar">
-        {TOOLS.map((item, i) =>
-          item.sep ? (
-            <span className="cv-sep" key={`sep-${i}`} />
-          ) : item.shapeMenu ? (
-            <ShapeMenu key="shape-menu" />
-          ) : item.record ? (
-            <RecordButton key="record" />
-          ) : (
-            <button
-              key={item.t}
-              className="cv-tool"
-              data-active={tool === item.t ? '' : undefined}
-              data-tool={item.t}
-              onClick={() => eng.setTool(item.t)}
-            >
-              <span className="cv-tip">{item.label}<b>{item.key}</b></span>
-              {item.icon}
-            </button>
-          )
-        )}
-      </div>
-    </>
+    <div className={cx('cv-panel cv-tools', classNames?.toolbar)} data-cv-part="toolbar">
+      {TOOLS.map((item, i) =>
+        item.sep ? (
+          <span className="cv-sep" key={`sep-${i}`} />
+        ) : item.shapeMenu ? (
+          <ShapeMenu key="shape-menu" />
+        ) : item.record ? (
+          <RecordButton key="record" />
+        ) : (
+          <button
+            key={item.t}
+            className="cv-tool"
+            data-active={tool === item.t ? '' : undefined}
+            data-tool={item.t}
+            onClick={() => eng.setTool(item.t)}
+          >
+            <span className="cv-tip">{item.label}<b>{item.key}</b></span>
+            {item.icon}
+          </button>
+        )
+      )}
+    </div>
   );
 }

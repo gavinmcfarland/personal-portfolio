@@ -1,22 +1,14 @@
-import { useRef, useEffect, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { Pencil } from "lucide-react";
 import { useCanvas } from "../CanvasProvider";
-import {
-  getGlobalReadOnly,
-  setGlobalReadOnly,
-  subscribeMode,
-  allocOwnerId,
-  joinOwners,
-  subscribeOwner,
-  primaryOwner,
-} from "../edit-mode";
+import { cx } from "../constants";
+import { ToolsPanel } from "./Toolbar";
 
 const EDIT_ICON = <Pencil />;
 
-/* The button paints into <body>, outside `.canvas-root`, so it can't read the
-   `--cv-accent` token the board is skinned with. Mirror the board's `accent`
-   prop onto the button as inline vars instead (light + dark, since `.dark` on
+/* The Edit toggle paints into <body>, outside `.canvas-root`, so it can't read
+   the `--cv-accent` token the board is skinned with. Mirror the board's `accent`
+   prop onto the toggle as inline vars instead (light + dark, since `.dark` on
    <body> picks which). Falls through to the CSS purple default when unset. */
 function accentVars(accent) {
   if (!accent) return undefined;
@@ -29,54 +21,45 @@ function accentVars(accent) {
   return vars;
 }
 
-/* The single, page-wide Edit toggle. Every editable canvas renders one of these,
-   but only the earliest-mounted instance actually paints (the owner election in
-   edit-mode.js) — so there is exactly one button no matter how many boards are
-   on the page. It portals to <body> and is `position: fixed`, so it sits at the
-   bottom-left of the viewport rather than inside any one board's TopBar, and
-   isn't clipped by a board's stacking/overflow context.
+/* The single, page-wide bottom-left dock: the Edit/Done toggle and — while
+   editing — the tools bar to its right. Only the elected primary editable canvas
+   paints it (see `isPrimaryCanvas` in CanvasProvider), so there is exactly one
+   dock however many boards are on the page.
 
-   It drives the shared global mode directly (no canvas engine needed): every
-   CanvasProvider listens for that change and flips together. */
-export default function EditModeButton() {
-  const { accent } = useCanvas();
+   It portals to <body> and is `position: fixed`, so it sits at the bottom-left
+   of the viewport and isn't re-anchored by the page's transformed panels. React
+   context still flows through the portal, so the tools drive THIS (primary)
+   board through useCanvas()/eng. The tools are wrapped in a nested `.canvas-root`
+   (carrying the same root classNames, e.g. the enamel skin) so they inherit the
+   full canvas skin + tokens and match the in-canvas zoom controls; `accentId`
+   reuses the board's already-injected accent <style> for the active-tool tint. */
+export default function BottomDock({ accentId }) {
+  const { isPrimaryCanvas, readOnly, eng, accent, classNames } = useCanvas();
 
-  // Stable id for this instance, claimed once. Registering happens in the effect
-  // below so an unmount cleanly hands ownership to the next board.
-  const idRef = useRef(null);
-  if (idRef.current === null) idRef.current = allocOwnerId();
-  const id = idRef.current;
-
-  useEffect(() => joinOwners(id), [id]);
-
-  const isPrimary = useSyncExternalStore(
-    subscribeOwner,
-    () => primaryOwner() === id,
-    () => false, // server: nothing to paint
-  );
-  const readOnly = useSyncExternalStore(
-    subscribeMode,
-    getGlobalReadOnly,
-    () => true, // server: default to view mode
-  );
-
-  if (!isPrimary || typeof document === "undefined") return null;
+  if (!isPrimaryCanvas || typeof document === "undefined") return null;
 
   return createPortal(
-    // A frosted `cv-panel`-style container holding one control, mirroring the
-    // in-canvas groups (zoom/topbar). The accent vars live on the container so
-    // the inner button inherits them for its "currently editing" state.
-    <div className="cv-edit-fab" data-cv-part="edit" style={accentVars(accent)}>
-      <button
-        type="button"
-        data-on={!readOnly ? "" : undefined}
-        title={readOnly ? "Edit boards" : "Editing — click to stop"}
-        aria-pressed={!readOnly}
-        onClick={() => setGlobalReadOnly(!readOnly)}
-      >
-        {EDIT_ICON}
-        <span>{readOnly ? "Edit" : "Done"}</span>
-      </button>
+    <div className="cv-dock">
+      <div className="cv-edit-fab" style={accentVars(accent)}>
+        <button
+          type="button"
+          data-on={!readOnly ? "" : undefined}
+          title={readOnly ? "Edit boards" : "Editing — click to stop"}
+          aria-pressed={!readOnly}
+          onClick={() => eng.setMode(!readOnly)}
+        >
+          {EDIT_ICON}
+          <span>{readOnly ? "Edit" : "Done"}</span>
+        </button>
+      </div>
+      {!readOnly && (
+        <div
+          className={cx("canvas-root cv-dock-canvas", classNames?.root)}
+          data-cv-accent={accent ? accentId : undefined}
+        >
+          <ToolsPanel />
+        </div>
+      )}
     </div>,
     document.body,
   );

@@ -11,7 +11,7 @@ import DefaultContextMenu from './ui/ContextMenu';
 import DefaultSaveStatus from './ui/SaveStatus';
 import DefaultRecorder from './ui/Recorder';
 import DefaultLightbox from './ui/Lightbox';
-import DefaultEditButton from './ui/EditModeButton';
+import DefaultBottomDock from './ui/BottomDock';
 
 /* Recolour the custom edit caret (the inline-SVG cursor) to a given accent, with
    a contrasting outline so it stays legible over the board — white on light
@@ -63,7 +63,7 @@ export default function Canvas() {
   const SaveStatus = slot('SaveStatus', DefaultSaveStatus);
   const Recorder = slot('Recorder', DefaultRecorder);
   const Lightbox = slot('Lightbox', DefaultLightbox);
-  const EditButton = slot('EditButton', DefaultEditButton);
+  const BottomDock = slot('BottomDock', DefaultBottomDock);
   // Cooperative gestures only apply in view mode; while editing the board keeps
   // full gesture control. `readOnly` (reactive) drives the CSS attribute/render;
   // the imperative handlers read the live `S.readOnly` instead. Suspended while
@@ -1082,9 +1082,10 @@ export default function Canvas() {
       {ui && (
         <>
           {TopBar && <TopBar />}
-          {/* One fixed, page-wide Edit toggle shared by every canvas — it portals
-              to <body>, and its owner election paints only a single button. */}
-          {EDITABLE && EditButton && <EditButton />}
+          {/* One fixed, page-wide dock (Edit toggle + tools bar) shared by every
+              canvas — it portals to <body>, and only the elected primary canvas
+              paints it. `Toolbar` now renders just the in-canvas properties panel. */}
+          {EDITABLE && BottomDock && <BottomDock accentId={accentId} />}
           {EDITABLE && Toolbar && <Toolbar />}
           {EDITABLE && Recorder && <Recorder />}
           {ZoomControls && <ZoomControls />}

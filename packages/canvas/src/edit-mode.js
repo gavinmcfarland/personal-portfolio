@@ -38,17 +38,20 @@ export function subscribeMode(cb) {
   };
 }
 
-/* ── Button-owner election ──────────────────────────────────────────
-   `owners` holds the ids of every mounted editable canvas, in ascending order;
-   the first is the one that paints the button. Ids are handed out by a simple
-   counter, so the owner is stable while the earliest board stays mounted and
-   fails over cleanly to the next when it unmounts. */
+/* ── Primary-canvas election ─────────────────────────────────────────
+   `owners` holds the ids of every mounted editable canvas; exactly one is the
+   "primary" that paints the shared dock and receives its tool actions. The
+   primary is the ACTIVE canvas — the one the user last mounted or interacted
+   with — so on a page where a project board opens over the (still-mounted) home
+   board, the dock follows the board actually on screen. When the active canvas
+   unmounts, ownership falls back to the most recently added survivor. */
 let owners = [];
 let ownerSeq = 0;
+let activeId = null;
 const ownerListeners = new Set();
 const notifyOwners = () => ownerListeners.forEach((fn) => fn());
 
-/* Called once per button instance (during render) to claim a stable id. */
+/* Called once per canvas (during render) to claim a stable id. */
 export function allocOwnerId() { return ++ownerSeq; }
 
 /* Called from an effect: joins the election, returns the leave() cleanup. */
@@ -61,9 +64,20 @@ export function joinOwners(id) {
   };
 }
 
+/* Mark a canvas as the active one (on mount, and on pointer interaction). */
+export function setActiveCanvas(id) {
+  if (activeId === id) return;
+  activeId = id;
+  notifyOwners();
+}
+
 export function subscribeOwner(cb) {
   ownerListeners.add(cb);
   return () => ownerListeners.delete(cb);
 }
 
-export function primaryOwner() { return owners[0]; }
+/* The active canvas if it's still mounted, else the most recently added one. */
+export function primaryOwner() {
+  if (activeId != null && owners.includes(activeId)) return activeId;
+  return owners.length ? owners[owners.length - 1] : undefined;
+}

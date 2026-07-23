@@ -1491,13 +1491,34 @@
   color: #fff;
   border-color: var(--cv-accent);
 }
-/* Page-wide Edit toggle. Rendered into <body> (outside `.canvas-root`), so it is
-   deliberately UNSCOPED and can't read the `--cv-*` tokens — the frosted
-   `cv-panel` look, its inner control, and a `.dark` variant are spelled out here
-   to match the in-canvas control groups (zoom/topbar). `position: fixed` pins
-   the panel to the viewport's bottom-left. The board's accent is fed in as the
+/* Page-wide bottom-left dock, portaled to <body>: a fixed row holding the Edit
+   toggle and — while editing — the tools bar to its right. `position: fixed` pins
+   it to the viewport so the page's transformed panels don't re-anchor it. */
+/* The tools bar lives in a nested `.canvas-root` wrapper so it inherits the full
+   canvas skin + tokens (the enamel grey, the accent). Undo the wrapper's default
+   full-size/relative/clipping box so it collapses to the bar and its tooltips /
+   shape menu can overflow above. */
+/* Re-anchor + shrink the tools bar for the dock: strip the in-canvas bottom-centre
+   placement and size the buttons down to match the zoom controls. */
+.canvas-root .cv-tools[data-cv-part="toolbar"] {
+  padding: 4px;
+}
+.canvas-root .cv-tools .cv-tool {
+  border-radius: 8px;
+}
+.canvas-root .cv-tools .cv-sep {
+  margin: 0 3px;
+}
+.canvas-root .cv-tools .cv-shape-menu {
+  padding: 4px;
+}
+/* The Edit toggle: a `cv-panel`-style control that sits inline in the dock. It is
+   UNSCOPED (outside the tools' `.canvas-root`) and can't read the `--cv-*` tokens,
+   so its frosted look + `.dark` variant are spelled out here to match the
+   in-canvas control groups (zoom/topbar). The board's accent is fed in as the
    `--cv-fab-accent(-dark)` inline vars for the hover + "currently editing"
-   (`data-on`) states, falling back to purple when unset. */
+   (`data-on`) states, falling back to purple when unset; a host can retint the
+   grey via the `--cv-fab-*` vars (see the portfolio's app.css). */
 .cv-edit-fab {
   padding: 4px;
   border-radius: 12px;

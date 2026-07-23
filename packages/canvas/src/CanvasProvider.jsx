@@ -1,8 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useMemo, useRef, useState, useEffect, useLayoutEffect } from 'react';
+import { createContext, useContext, useMemo, useRef, useState, useEffect, useLayoutEffect, useSyncExternalStore } from 'react';
 import { ZOOM, PAN, GRID, frameBarH, clampScale } from './constants';
 import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
-import { getGlobalReadOnly, setGlobalReadOnly, subscribeMode } from './edit-mode';
+import { getGlobalReadOnly, setGlobalReadOnly, subscribeMode, allocOwnerId, joinOwners, setActiveCanvas, subscribeOwner, primaryOwner } from './edit-mode';
 
 /* Default localStorage key for the dev autosave. Override with the `storageKey`
    prop when embedding more than one editable canvas on a page. */
@@ -2921,9 +2921,41 @@ export function CanvasProvider({
     eng.reframeOnResize();
   }, [maximized, eng]);
 
+  /* ── Single shared chrome: elect the primary editable canvas ──
+     Every editable canvas joins the election; the ACTIVE one (this canvas
+     becomes active on mount and on any pointer interaction) owns the page-wide
+     chrome (the fixed Edit toggle + tools dock), so there is one dock however
+     many boards are mounted, and it follows the board the user is working in.
+     Non-editable canvases never join, so they're never primary. */
+  const canvasIdRef = useRef(null);
+  if (canvasIdRef.current === null) canvasIdRef.current = allocOwnerId();
+  const canvasId = canvasIdRef.current;
+  useEffect(() => {
+    if (!EDITABLE) return undefined;
+    const leave = joinOwners(canvasId);
+    setActiveCanvas(canvasId); // newest editable canvas takes the dock
+    return leave;
+  }, [EDITABLE, canvasId]);
+  useEffect(() => {
+    if (!EDITABLE) return undefined;
+    const el = rootRef.current;
+    if (!el) return undefined;
+    // Capture so it fires even when a child stops propagation; interacting with
+    // a board makes it the one the shared dock drives.
+    const onDown = () => setActiveCanvas(canvasId);
+    el.addEventListener('pointerdown', onDown, true);
+    return () => el.removeEventListener('pointerdown', onDown, true);
+  }, [EDITABLE, canvasId]);
+  const isPrimaryCanvas = useSyncExternalStore(
+    subscribeOwner,
+    () => EDITABLE && primaryOwner() === canvasId,
+    () => false,
+  );
+
   const value = {
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
+    isPrimaryCanvas,
     publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls,
     // setters used by UI

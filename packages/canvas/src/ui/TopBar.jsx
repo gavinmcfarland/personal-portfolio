@@ -45,8 +45,8 @@ export default function TopBar() {
           {th.label}
         </button>
       )}
-      {/* The Edit toggle is no longer here: it's a single page-wide fixed button
-          (see EditModeButton), shared by every canvas on the page. */}
+      {/* The Edit toggle is no longer here: it's part of the single page-wide
+          fixed dock (see BottomDock), shared by every canvas on the page. */}
     </div>
   );
 }
