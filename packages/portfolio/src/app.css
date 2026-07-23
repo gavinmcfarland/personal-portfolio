@@ -316,6 +316,20 @@ a.row:hover {
     transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* The canvas package's single fixed Edit button portals to <body>, outside
+   .canvas-root, so it can't read the --cv-* skin tokens. Point its overridable
+   vars at the enamel tokens (which auto-flip in dark) so it reads as the same
+   grey-panel family as the theme toggle and canvas zoom controls. Accent stays
+   the vermilion fed in via the <Canvas accent> prop. */
+.cv-edit-fab {
+  --cv-fab-bg: var(--surface);
+  --cv-fab-border: var(--line);
+  --cv-fab-fg: var(--muted);
+  --cv-fab-fg-strong: var(--ink);
+  --cv-fab-hover: var(--hover);
+  --cv-fab-on: var(--on-accent);
+}
+
 /* On the project page the theme toggle (fixed, top-right) sits exactly where the
    canvas zoom cluster defaults to — nudge the cluster left so the two sit side by
    side instead of overlapping. Extra specificity (.canvas-root) beats the

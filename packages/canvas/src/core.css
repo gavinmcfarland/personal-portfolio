@@ -1373,6 +1373,33 @@
   width: 14px;
   height: 14px;
 }
+/* Page-wide Edit toggle. Rendered into <body> (outside `.canvas-root`), so it is
+   deliberately UNSCOPED and can't read the `--cv-*` tokens — the frosted
+   `cv-panel` look, its inner control, and a `.dark` variant are spelled out here
+   to match the in-canvas control groups (zoom/topbar). `position: fixed` pins
+   the panel to the viewport's bottom-left. The board's accent is fed in as the
+   `--cv-fab-accent(-dark)` inline vars for the hover + "currently editing"
+   (`data-on`) states, falling back to purple when unset. */
+.cv-edit-fab {
+  position: fixed;
+  left: 22px;
+  bottom: 22px;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.cv-edit-fab button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 28px;
+  cursor: default;
+}
+.cv-edit-fab button svg {
+  width: 14px;
+  height: 14px;
+}
 /* Passive background-save status, pinned to the bottom-right of the canvas.
    Auto-saves as the user edits, so this is an indicator, not a button. */
 .canvas-root .cv-save-status {

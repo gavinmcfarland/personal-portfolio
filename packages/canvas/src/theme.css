@@ -1491,6 +1491,72 @@
   color: #fff;
   border-color: var(--cv-accent);
 }
+/* Page-wide Edit toggle. Rendered into <body> (outside `.canvas-root`), so it is
+   deliberately UNSCOPED and can't read the `--cv-*` tokens — the frosted
+   `cv-panel` look, its inner control, and a `.dark` variant are spelled out here
+   to match the in-canvas control groups (zoom/topbar). `position: fixed` pins
+   the panel to the viewport's bottom-left. The board's accent is fed in as the
+   `--cv-fab-accent(-dark)` inline vars for the hover + "currently editing"
+   (`data-on`) states, falling back to purple when unset. */
+.cv-edit-fab {
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--cv-fab-border, rgba(0, 0, 0, 0.1));
+  background: var(--cv-fab-bg, rgba(255, 255, 255, 0.82));
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.09);
+}
+.cv-edit-fab button {
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--cv-fab-fg, #3c3c42);
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
+  transition: 0.15s;
+}
+.cv-edit-fab button:hover {
+  color: var(--cv-fab-fg-strong, #141417);
+  background: var(--cv-fab-hover, color-mix(in srgb, var(--cv-fab-accent, #7c2d91) 10%, transparent));
+}
+.cv-edit-fab button svg {
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cv-edit-fab button[data-on] {
+  color: var(--cv-fab-on, #fff);
+  background: var(--cv-fab-accent, #7c2d91);
+}
+.cv-edit-fab button[data-on]:hover {
+  color: var(--cv-fab-on, #fff);
+  background: var(--cv-fab-accent, #7c2d91);
+}
+.dark .cv-edit-fab {
+  border-color: var(--cv-fab-border, rgba(255, 255, 255, 0.12));
+  background: var(--cv-fab-bg, rgba(22, 22, 25, 0.82));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.dark .cv-edit-fab button {
+  color: var(--cv-fab-fg, #b4b4b9);
+}
+.dark .cv-edit-fab button:hover {
+  color: var(--cv-fab-fg-strong, #f2f2ef);
+  background: var(--cv-fab-hover, color-mix(in srgb, var(--cv-fab-accent-dark, #c88be8) 16%, transparent));
+}
+.dark .cv-edit-fab button[data-on] {
+  color: var(--cv-fab-on, #fff);
+  background: var(--cv-fab-accent-dark, #c88be8);
+}
+.dark .cv-edit-fab button[data-on]:hover {
+  color: var(--cv-fab-on, #fff);
+  background: var(--cv-fab-accent-dark, #c88be8);
+}
 /* Passive background-save status, pinned to the bottom-right of the canvas.
    Auto-saves as the user edits, so this is an indicator, not a button. */
 .canvas-root .cv-save-status {
