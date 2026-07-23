@@ -93,7 +93,7 @@ export default function PrivatePage() {
 
   if (status === STATUS.unlocked) {
     return (
-      <div className="fixed inset-0 bg-base">
+      <div className="private-canvas fixed inset-0 bg-base">
         <ThemeToggle />
         <Canvas
           fit="contain"

@@ -340,11 +340,13 @@ a.row:hover {
   --cv-np-track: var(--line);
 }
 
-/* On the project page the theme toggle (fixed, top-right) sits exactly where the
-   canvas zoom cluster defaults to — nudge the cluster left so the two sit side by
-   side instead of overlapping. Extra specificity (.canvas-root) beats the
-   package's own `.canvas-root [data-cv-part="zoom"]` regardless of load order. */
-.project-canvas .canvas-root [data-cv-part="zoom"] {
+/* On the project page — and on a private page's full-document canvas — the theme
+   toggle (fixed, top-right) sits exactly where the canvas zoom cluster defaults
+   to — nudge the cluster left so the two sit side by side instead of overlapping.
+   Extra specificity (.canvas-root) beats the package's own
+   `.canvas-root [data-cv-part="zoom"]` regardless of load order. */
+.project-canvas .canvas-root [data-cv-part="zoom"],
+.private-canvas .canvas-root [data-cv-part="zoom"] {
   right: 72px;
 }
 
