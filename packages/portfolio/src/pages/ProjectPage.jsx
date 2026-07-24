@@ -9,29 +9,27 @@ import { visibleProjects } from "../data/projects";
    view locks to the viewport (fixed inset-0) so nothing scrolls; you pan the
    canvas instead. */
 export default function ProjectPage({ project }) {
-  /* The visit pill renders in two spots: below `lg` it shares the top row with
-     the back link so the title and tagline can span the full width (the right
-     margin keeps it clear of the fixed theme toggle in the corner); from `lg`
-     up it sits below the text block in the sidebar. */
+  /* The visit link shares the top row with the back link on every breakpoint,
+     sitting in the top-right corner of the header/sidebar. */
   const visitPill = (visibility, label) =>
     project.link && (
       <a
         href={project.link}
         target="_blank"
         rel="noopener noreferrer"
-        className={`group shrink-0 items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 font-sans text-[0.8125rem] font-medium text-ink transition-colors duration-200 hover:bg-surface sm:text-[0.875rem] ${visibility}`}
+        className={`group shrink-0 items-center gap-1 font-sans text-[0.8125rem] font-medium text-muted transition-colors duration-200 hover:text-ink sm:text-[0.875rem] ${visibility}`}
       >
         {label}
         <ArrowUpRight className="h-3.5 w-3.5 text-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
       </a>
     );
 
-  /* Previous/next neighbours in the published list, wrapping around at the ends
-     so both controls always render and the sidebar footer stays balanced. */
+  /* Previous/next neighbours in the published list. No wrap-around: the first
+     project has no previous and the last has no next, so those controls hide. */
   const index = visibleProjects.findIndex((p) => p.id === project.id);
-  const count = visibleProjects.length;
-  const prev = visibleProjects[(index - 1 + count) % count];
-  const next = visibleProjects[(index + 1) % count];
+  const prev = index > 0 ? visibleProjects[index - 1] : null;
+  const next =
+    index < visibleProjects.length - 1 ? visibleProjects[index + 1] : null;
 
   const navLink = (target, direction) => {
     const isPrev = direction === "prev";
@@ -40,8 +38,8 @@ export default function ProjectPage({ project }) {
         to={`/projects/${target.id}`}
         aria-label={`${isPrev ? "Previous" : "Next"} project: ${target.title}`}
         title={`${isPrev ? "Previous" : "Next"}: ${target.title}`}
-        className={`flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-[0.875rem] font-medium text-muted transition-colors duration-150 hover:bg-hover hover:text-ink lg:flex-1 lg:px-3 ${
-          isPrev ? "lg:justify-start" : "lg:justify-end"
+        className={`flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-[0.875rem] font-medium text-muted transition-colors duration-150 hover:bg-hover hover:text-ink lg:w-[calc(50%-0.25rem)] lg:px-3 ${
+          isPrev ? "lg:mr-auto lg:justify-start" : "lg:ml-auto lg:justify-end"
         }`}
       >
         {isPrev && <ArrowLeft className="h-4 w-4 shrink-0" />}
@@ -64,7 +62,7 @@ export default function ProjectPage({ project }) {
               <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
               Back
             </Link>
-            {visitPill("inline-flex lg:hidden", "Visit")}
+            {visitPill("inline-flex", "Visit")}
           </div>
 
           <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 lg:mt-8 lg:flex-col lg:items-start lg:gap-y-2">
@@ -82,21 +80,15 @@ export default function ProjectPage({ project }) {
             </p>
           )}
 
-          {/* Visit link below the text block (lg+ only) */}
-          {visitPill(
-            "hidden lg:inline-flex lg:mt-6 lg:self-start",
-            project.linkLabel || "Visit",
-          )}
-
           {/* Previous / next project. Flows after the text on mobile; pinned to
               the bottom of the full-height sidebar from lg up. */}
-          {count > 1 && (
+          {(prev || next) && (
             <nav
               aria-label="Project navigation"
               className="mt-8 flex items-center justify-end gap-2 lg:mt-auto lg:justify-between"
             >
-              {navLink(prev, "prev")}
-              {navLink(next, "next")}
+              {prev && navLink(prev, "prev")}
+              {next && navLink(next, "next")}
             </nav>
           )}
         </div>
