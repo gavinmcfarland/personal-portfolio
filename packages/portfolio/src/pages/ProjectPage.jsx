@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import ProjectCanvas from "../components/ProjectCanvas";
-import { ArrowLeft, ArrowUpRight } from "../components/ui";
+import { ArrowLeft, ArrowRight, ArrowUpRight } from "../components/ui";
+import { visibleProjects } from "../data/projects";
 
 /* Full-screen project view. Below `lg` a compact header sits above the canvas;
    from `lg` up the same info becomes a full-height sidebar on the left, with
@@ -24,6 +25,31 @@ export default function ProjectPage({ project }) {
         <ArrowUpRight className="h-3.5 w-3.5 text-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
       </a>
     );
+
+  /* Previous/next neighbours in the published list, wrapping around at the ends
+     so both controls always render and the sidebar footer stays balanced. */
+  const index = visibleProjects.findIndex((p) => p.id === project.id);
+  const count = visibleProjects.length;
+  const prev = visibleProjects[(index - 1 + count) % count];
+  const next = visibleProjects[(index + 1) % count];
+
+  const navLink = (target, direction) => {
+    const isPrev = direction === "prev";
+    return (
+      <Link
+        to={`/projects/${target.id}`}
+        aria-label={`${isPrev ? "Previous" : "Next"} project: ${target.title}`}
+        title={`${isPrev ? "Previous" : "Next"}: ${target.title}`}
+        className={`flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-[0.875rem] font-medium text-muted transition-colors duration-150 hover:bg-hover hover:text-ink lg:flex-1 lg:px-3 ${
+          isPrev ? "lg:justify-start" : "lg:justify-end"
+        }`}
+      >
+        {isPrev && <ArrowLeft className="h-4 w-4 shrink-0" />}
+        <span className="hidden truncate lg:inline">{target.title}</span>
+        {!isPrev && <ArrowRight className="h-4 w-4 shrink-0" />}
+      </Link>
+    );
+  };
 
   return (
     <div className="absolute inset-0 flex flex-col bg-base lg:flex-row">
@@ -60,6 +86,18 @@ export default function ProjectPage({ project }) {
           {visitPill(
             "hidden lg:inline-flex lg:mt-6 lg:self-start",
             project.linkLabel || "Visit",
+          )}
+
+          {/* Previous / next project. Flows after the text on mobile; pinned to
+              the bottom of the full-height sidebar from lg up. */}
+          {count > 1 && (
+            <nav
+              aria-label="Project navigation"
+              className="mt-8 flex items-center justify-end gap-2 lg:mt-auto lg:justify-between"
+            >
+              {navLink(prev, "prev")}
+              {navLink(next, "next")}
+            </nav>
           )}
         </div>
       </header>
