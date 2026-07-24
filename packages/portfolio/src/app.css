@@ -369,9 +369,72 @@ a.row:hover {
   left: 22px;
 }
 .cv-dock.cv-dock {
+  /* Distance from the viewport bottom. `--dock-b` also anchors the grounding
+     gradient below, so both stay in sync when the value changes per breakpoint. */
+  --dock-b: 22px;
   left: 50%;
   right: auto;
+  bottom: var(--dock-b);
   transform: translateX(-50%);
+}
+
+/* Subtle grounding gradient behind the edit button + tools bar: a dark wash (in
+   both light and dark themes) that's solid along the viewport's bottom edge and
+   fades up and out to the sides, so the controls read against the (arbitrary)
+   canvas beneath. It lives in the dock's own (near-max z-index) stacking context
+   but sits behind the dock's panel via z-index:-1 — so it paints over the canvas,
+   under the controls. The vertical fade is the background; a horizontal mask
+   feathers the sides. Width is 200% of the dock, so the mask's solid band
+   (25%–75%) spans the controls exactly and feathers just beyond them. */
+.cv-dock.cv-dock::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(-1 * var(--dock-b));
+  transform: translateX(-50%);
+  width: 200%;
+  height: 100px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(8, 8, 10, 0.2) 0%,
+    rgba(8, 8, 10, 0.08) 45%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(0, 0, 0, 0.15) 10%,
+    rgba(0, 0, 0, 0.6) 20%,
+    #000 32%,
+    #000 68%,
+    rgba(0, 0, 0, 0.6) 80%,
+    rgba(0, 0, 0, 0.15) 90%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(0, 0, 0, 0.15) 10%,
+    rgba(0, 0, 0, 0.6) 20%,
+    #000 32%,
+    #000 68%,
+    rgba(0, 0, 0, 0.6) 80%,
+    rgba(0, 0, 0, 0.15) 90%,
+    transparent 100%
+  );
+}
+
+/* On the graphite (dark) ground the wash needs to be far stronger to register —
+   push the bottom to ~80% (mid stop scaled by the same ratio). */
+.dark .cv-dock.cv-dock::before {
+  background: linear-gradient(
+    to top,
+    rgba(8, 8, 10, 0.9) 0%,
+    rgba(8, 8, 10, 0.32) 45%,
+    transparent 100%
+  );
 }
 
 /* Below the project page's `lg` reflow, its header (with the prev/next buttons)
@@ -384,7 +447,9 @@ a.row:hover {
    package's own single-class rule (core.css, imported after this file in
    main.jsx) without needing !important. */
 @media (max-width: 1023px) {
-  .cv-dock.cv-dock,
+  .cv-dock.cv-dock {
+    --dock-b: calc(var(--spacing) * 10);
+  }
   .cv-nowplaying.cv-nowplaying {
     bottom: calc(var(--spacing) * 10);
   }
