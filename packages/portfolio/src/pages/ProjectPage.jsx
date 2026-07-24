@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import ProjectCanvas from "../components/ProjectCanvas";
-import { ArrowLeft, ArrowRight, ArrowUpRight } from "../components/ui";
+import { ArrowLeft, ArrowRight, ArrowUpRight, blurOnPointerClick } from "../components/ui";
 import { visibleProjects } from "../data/projects";
 
 /* Full-screen project view. Below `lg` a compact header sits above the canvas;
@@ -17,6 +17,7 @@ export default function ProjectPage({ project }) {
         href={project.link}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={blurOnPointerClick}
         className={`group shrink-0 items-center gap-1 font-sans text-[0.8125rem] font-medium text-muted transition-colors duration-200 hover:text-ink sm:text-[0.875rem] ${visibility}`}
       >
         {label}
@@ -38,6 +39,7 @@ export default function ProjectPage({ project }) {
         to={`/projects/${target.id}`}
         aria-label={`${isPrev ? "Previous" : "Next"} project: ${target.title}`}
         title={`${isPrev ? "Previous" : "Next"}: ${target.title}`}
+        onClick={blurOnPointerClick}
         className={`flex min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-[0.875rem] font-medium text-muted transition-colors duration-150 hover:bg-hover hover:text-ink h-[38px] lg:w-[calc(50%-0.25rem)] lg:px-3 ${
           isPrev ? "lg:mr-auto lg:justify-start" : "lg:ml-auto lg:justify-end"
         }`}
@@ -57,6 +59,7 @@ export default function ProjectPage({ project }) {
           <div className="flex items-center justify-between gap-4">
             <Link
               to="/"
+              onClick={blurOnPointerClick}
               className="group inline-flex items-center gap-2 font-sans text-[0.875rem] font-medium text-muted transition-colors duration-200 hover:text-ink"
             >
               <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />

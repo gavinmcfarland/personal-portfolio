@@ -3030,6 +3030,31 @@ export function CanvasProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, shapes, reflow, activePageId]);
 
+  /* Repaint the minimap when the theme flips. Its blobs are baked into the
+     <canvas> bitmap from CSS vars (--cv-minimap-node/-frame) read at draw time,
+     so a light/dark switch — which only swaps those vars — would otherwise leave
+     stale colours. We watch the source of the switch host-agnostically: the
+     `.dark` class the host toggles on <html>/<body>, plus the OS media query for
+     "system" mode. */
+  useEffect(() => {
+    if (!MINIMAP.on || typeof window === 'undefined') return undefined;
+    const repaint = () => eng.scheduleMinimap();
+    // The `.dark` class may live on <html>/<body> (host page) or on the canvas
+    // root itself (`.canvas-root.dark`), so watch all three.
+    const targets = [document.documentElement, document.body, rootRef.current].filter(Boolean);
+    let mo;
+    if (typeof MutationObserver !== 'undefined') {
+      mo = new MutationObserver(repaint);
+      for (const t of targets) mo.observe(t, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    }
+    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
+    mq?.addEventListener?.('change', repaint);
+    return () => {
+      mo?.disconnect();
+      mq?.removeEventListener?.('change', repaint);
+    };
+  }, [MINIMAP.on, eng]);
+
   /* Reframe (per `resizeAnchor`) and re-sync chrome whenever the container
      resizes (section reflow, window resize, sidebar toggles, …) — measured on
      the viewport, not the window. */

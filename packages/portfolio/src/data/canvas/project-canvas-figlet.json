@@ -6,20 +6,11 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 354.7187488804302,
-        "y": 43.46601494514547,
-        "scale": 0.36443316165004686
+        "x": 404.59774615435657,
+        "y": -563.250714648494,
+        "scale": 0.8633322052230392
       },
       "nodes": [
-        {
-          "id": "n13-md",
-          "type": "md",
-          "x": -403.81357405580763,
-          "y": 1323.861842966411,
-          "z": 92,
-          "w": 340,
-          "text": "Space is precious inside Figma so I wanted to be able to expand and collapse the plugin UI when it felt appropriate. Pages such as list views, settings, and logout collapse automatically, while code views expand automatically."
-        },
         {
           "id": "n37-tblock",
           "type": "tblock",
@@ -156,8 +147,8 @@
     }
   ],
   "viewport": {
-    "w": 836,
-    "h": 932
+    "w": 840,
+    "h": 923
   },
-  "savedAt": 1784900645925
+  "savedAt": 1784901162387
 }

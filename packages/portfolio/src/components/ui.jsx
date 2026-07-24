@@ -1,6 +1,17 @@
 import { Link } from 'react-router-dom';
 import { useReveal } from '../hooks/useReveal';
 
+/* onClick handler for navigation links/buttons: after a *mouse* activation, drop
+   focus from the element. Without this, a clicked link keeps DOM focus with no
+   visible ring (pointer modality), and the next keypress — e.g. the canvas
+   `g`/tool shortcuts on the project page — flips the browser into keyboard
+   modality and paints a stray :focus-visible ring on that link. Keyboard
+   activations (Enter/Space, where `detail === 0`) are left untouched, so real
+   keyboard navigation keeps its focus ring. */
+export const blurOnPointerClick = (e) => {
+  if (e.detail) e.currentTarget.blur();
+};
+
 /* Section demarcated by a full-bleed hairline above its label. The <section>
    breaks out of the parent <main>'s width cap (w-screen + a negative margin that
    matches main's left gutter) so the rule spans the whole viewport, while an inner

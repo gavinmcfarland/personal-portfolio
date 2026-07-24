@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { visibleProjects as projects } from "../data/projects";
-import { Section } from "./ui";
+import { Section, blurOnPointerClick } from "./ui";
 
 /* Work, as the Enamel table (design-mockups/12-enamel/index.html): tracked mono
    structure, a Chivo description column, and a flat enamel swatch + tag for the
@@ -123,6 +123,7 @@ const Projects = () => {
               key={p.id}
               to={`/projects/${p.id}`}
               className={`group ${GRID} border-b border-line py-[0.6rem] transition-colors duration-150 hover:bg-surface`}
+              onClick={blurOnPointerClick}
               onMouseEnter={(e) => followCursor(e, p)}
               onMouseMove={(e) => followCursor(e, p)}
             >
