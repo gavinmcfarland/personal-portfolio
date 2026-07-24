@@ -2582,6 +2582,12 @@
   -webkit-tap-highlight-color: transparent;
   transition: 0.15s;
 }
+.cv-edit-fab button:focus-visible {
+  /* No focus ring on the toggle: pressing `E` flips the browser to keyboard
+     modality and would light up the (still-focused) button after a prior click.
+     Its state is already clear from data-on + the Edit/Done label. */
+  outline: none;
+}
 .cv-edit-fab button:hover {
   color: var(--cv-fab-fg-strong, #141417);
   background: var(
