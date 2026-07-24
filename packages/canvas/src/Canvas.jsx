@@ -1008,6 +1008,26 @@ export default function Canvas() {
       if (t === document || t === document.documentElement || t === document.body) setEngaged(false);
     };
 
+    /* Suppress the browser's NATIVE pinch gesture for two-finger gestures that
+       start on this board. The board drives its own pinch through Pointer Events
+       (onTouchMove → pinchBy), but on iOS Safari a pointer-event preventDefault
+       does NOT stop the system pinch — it zooms/pans the whole PAGE's visual
+       viewport regardless (touch-action:none isn't honoured for it either). With
+       the home playground still mounted behind an open project, that page-level
+       zoom drags the home board along with everything else — the cross-canvas
+       "the other canvas moved" bug. Only the underlying touch/gesture event's
+       preventDefault suppresses it, so bind those here, non-passive and scoped to
+       gestures that began on this canvas (touch/gesture events retarget to the
+       start element for the gesture's life, so e.target is that origin). Single
+       finger is left alone so one-finger page scroll (cooperative view mode) and
+       taps still work. */
+    const onNativeTouchMove = (e) => {
+      if (e.touches && e.touches.length >= 2 && rootRef.current && rootRef.current.contains(e.target)) e.preventDefault();
+    };
+    const onGestureStart = (e) => {
+      if (rootRef.current && rootRef.current.contains(e.target)) e.preventDefault();
+    };
+
     const vp = rootRef.current;
     window.addEventListener('pointerdown', onDocDown, true);
     window.addEventListener('scroll', onDocScroll, true);
@@ -1021,6 +1041,8 @@ export default function Canvas() {
     window.addEventListener('pointermove', onTouchMove, { passive: false });
     window.addEventListener('pointerup', onTouchUp);
     window.addEventListener('pointercancel', onTouchUp);
+    window.addEventListener('touchmove', onNativeTouchMove, { passive: false });
+    window.addEventListener('gesturestart', onGestureStart, { passive: false });
     (vp || window).addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
@@ -1035,6 +1057,8 @@ export default function Canvas() {
       window.removeEventListener('pointermove', onTouchMove);
       window.removeEventListener('pointerup', onTouchUp);
       window.removeEventListener('pointercancel', onTouchUp);
+      window.removeEventListener('touchmove', onNativeTouchMove);
+      window.removeEventListener('gesturestart', onGestureStart);
       (vp || window).removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);

@@ -30,7 +30,7 @@ Three embed modes, one component:
 - **Fullscreen** — `<Canvas fit="fullscreen" />` covers the browser viewport.
 - **Component** — it *is* a component; drop it anywhere, render several on one page (scoped classes, no shared globals).
 
-A live section-embed example lives at `packages/portfolio/embed-demo.html` (served at `/embed-demo.html` during `pnpm dev`).
+A live, fully re-skinned embed example lives in [`demo/`](demo/) — run it with `npm run demo` (see [Styling](#worked-example--a-completely-bespoke-skin)).
 
 `<Canvas>` wraps `<CanvasProvider>` around the canvas surface. For custom layouts
 you can compose them yourself:
@@ -91,8 +91,8 @@ narrows, each object holds its authored position until it would overlap or leave
 view, then only the overflow flows downward. Frames are treated as section/background
 regions — they neither push nor get pushed.
 
-Built-in node types: `sticky`, `tblock` (text), `md` (markdown), `frame`, `image`,
-`video`, `sound`, plus freehand `shape`s.
+Built-in node types: `sticky`, `tblock` (text), `md` (markdown), `code`, `frame`,
+`image`, `video`, `sound`, `link`, `html`, plus freehand `shape`s.
 
 In edit mode the top bar shows a background-colour picker (presets or a custom
 colour) that recolours the whole board; the choice is stored on the snapshot as
@@ -257,7 +257,7 @@ colour-fills, no curves or shadows, mono type) — using **only** this contract:
 scope, with **zero** changes to the package. It follows the system colour scheme,
 serving two surfaces (dark graphite / light steel) off the canvas's own `.dark`
 ancestor mechanism. The whole look lives in one stylesheet,
-[`demo/enamel.css`](demo/enamel.css); the board itself is an editable
+[`src/enamel.css`](src/enamel.css); the board itself is an editable
 `<Canvas base={…} classNames={{ root: 'enamel' }} />`. Run it with:
 
 ```bash
@@ -278,8 +278,7 @@ source, from which `npm run split-css` generates `core.css` (structure) +
 
 Inside this monorepo the portfolio consumes the package **as source** through a
 Vite alias (see `packages/portfolio/vite.config.js`) for instant HMR across
-packages; set `CANVAS_FROM_DIST=1` to build against the compiled `dist` instead
-(the path external npm consumers take).
+packages; external npm consumers take the compiled `dist` path instead.
 
 ## Status
 
