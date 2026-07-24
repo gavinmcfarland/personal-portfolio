@@ -61,7 +61,7 @@ export default function NowPlayingBar() {
   const shown = isHost && !!key;
 
   // Drive the progress fill outside React while a bar is shown. The track is
-  // vertical, filling from the top down, so we write `height`.
+  // horizontal, filling from the left, so we write `width`.
   useEffect(() => {
     if (!shown) return undefined;
     let raf = 0;
@@ -69,7 +69,7 @@ export default function NowPlayingBar() {
       const a = element(), fill = fillRef.current;
       if (a && fill) {
         const f = isFinite(a.duration) && a.duration > 0 ? a.currentTime / a.duration : 0;
-        fill.style.height = f * 100 + "%";
+        fill.style.width = f * 100 + "%";
       }
       raf = requestAnimationFrame(tick);
     };
@@ -130,9 +130,6 @@ export default function NowPlayingBar() {
 
   return createPortal(
     <div className="cv-nowplaying" data-cv-part="nowplaying">
-      <div className="cv-np-track">
-        <div className="cv-np-fill" ref={fillRef} />
-      </div>
       <button
         type="button"
         className="cv-np-btn"
@@ -142,6 +139,9 @@ export default function NowPlayingBar() {
       >
         {playing ? PAUSE_ICON : PLAY_ICON}
       </button>
+      <div className="cv-np-track">
+        <div className="cv-np-fill" ref={fillRef} />
+      </div>
     </div>,
     document.body,
   );
