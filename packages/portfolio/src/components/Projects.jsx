@@ -52,7 +52,7 @@ const Projects = () => (
           className="group block border-b border-line py-6 transition-colors duration-150 hover:bg-surface"
           onClick={blurOnPointerClick}
         >
-          <div className="flex items-baseline gap-3 px-3">
+          <div className="flex items-baseline gap-3">
             <span className="font-mono text-[0.75rem] font-bold tabular-nums text-accent">
               {pad2(i + 1)}
             </span>
@@ -64,14 +64,14 @@ const Projects = () => (
             </span>
           </div>
 
-          <p className="mt-2 max-w-2xl px-3 font-sans text-[0.9375rem] leading-relaxed text-muted">
+          <p className="mt-2 max-w-2xl font-sans text-[0.9375rem] leading-relaxed text-muted">
             {p.summary}
           </p>
         </Link>
       ))}
     </div>
 
-    <p className="mt-3 px-3 font-mono text-[0.75rem] text-faint">
+    <p className="mt-3 font-mono text-[0.75rem] text-faint">
       {pad2(projects.length)} items · tools, plugins and libraries
     </p>
   </Section>
