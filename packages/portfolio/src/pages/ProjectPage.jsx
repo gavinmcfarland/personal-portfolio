@@ -38,7 +38,7 @@ export default function ProjectPage({ project }) {
         to={`/projects/${target.id}`}
         aria-label={`${isPrev ? "Previous" : "Next"} project: ${target.title}`}
         title={`${isPrev ? "Previous" : "Next"}: ${target.title}`}
-        className={`flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-[0.875rem] font-medium text-muted transition-colors duration-150 hover:bg-hover hover:text-ink lg:w-[calc(50%-0.25rem)] lg:px-3 ${
+        className={`flex min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-[0.875rem] font-medium text-muted transition-colors duration-150 hover:bg-hover hover:text-ink h-[38px] lg:w-[calc(50%-0.25rem)] lg:px-3 ${
           isPrev ? "lg:mr-auto lg:justify-start" : "lg:ml-auto lg:justify-end"
         }`}
       >
@@ -53,7 +53,7 @@ export default function ProjectPage({ project }) {
     <div className="absolute inset-0 flex flex-col bg-base lg:flex-row">
       {/* ── Header (top bar below lg, left sidebar from lg up) ───────── */}
       <header className="order-last shrink-0 border-t border-line bg-base lg:order-0 lg:w-80 lg:overflow-y-auto lg:border-t-0 lg:border-r xl:w-96">
-        <div className="flex flex-col px-5 pb-10 pt-4 sm:px-8 sm:pt-6 lg:min-h-full lg:py-8">
+        <div className="flex flex-col px-5 pb-10 pt-4 sm:px-8 sm:pt-6 lg:min-h-full lg:pb-[22px] lg:pt-8">
           <div className="flex items-center justify-between gap-4">
             <Link
               to="/"

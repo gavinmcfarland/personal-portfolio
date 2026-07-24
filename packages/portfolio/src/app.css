@@ -8,8 +8,7 @@
      resolve to Chivo rather than a browser default. */
   --font-sans: "Chivo", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Chivo", ui-sans-serif, system-ui, sans-serif;
-  --font-mono:
-    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Registered so `bg-surface` (and its `hover:` variant) are real Tailwind
      utilities. Points at the token var, so it still flips in dark mode. */
@@ -75,11 +74,15 @@
   --muted: var(--steel-600); /* secondary prose (--mid) */
   --faint: var(--steel-500); /* meta / captions */
   --line: var(--steel-300); /* hairline edge */
-  --line-strong: var(--steel-500); /* stronger hairline (link underline at rest) */
+  --line-strong: var(
+    --steel-500
+  ); /* stronger hairline (link underline at rest) */
   --rule: var(--steel-950); /* the drawn line — section header rule */
   --accent: var(--vermilion-500); /* vermilion */
   --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
-  --on-accent: var(--white); /* text/fill on an --accent fill (selection, etc.) */
+  --on-accent: var(
+    --white
+  ); /* text/fill on an --accent fill (selection, etc.) */
 
   /* Scrim that dims Home behind the route panel. Light mode dims with a light
      grey; dark mode (overridden in .dark) dims with a darker grey. */
@@ -355,6 +358,36 @@ a.row:hover {
    (see CanvasMaximizeToggle). Nudge it left to sit beside the toggle. */
 .canvas-root[data-cv-fullbleed] [data-cv-part="zoom"] {
   right: 72px;
+}
+
+/* Reposition the two body-portaled canvas controls along the bottom edge:
+   the now-playing pill to the left, and the edit button + tools bar (.cv-dock,
+   default bottom-left) centred. Doubled class beats the package's single-class
+   rules (core.css, imported after this file) without !important. */
+.cv-nowplaying.cv-nowplaying {
+  right: auto;
+  left: 22px;
+}
+.cv-dock.cv-dock {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+}
+
+/* Below the project page's `lg` reflow, its header (with the prev/next buttons)
+   docks along the bottom. The canvas edit button + tools bar (.cv-dock) and the
+   now-playing pill (.cv-nowplaying) portal to <body> at bottom: 22px; sit them at
+   the same distance from the bottom as the header's own bottom padding so they
+   line up with the prev/next row on every breakpoint. That padding is Tailwind's
+   `pb-10` on the header inner wrapper (ProjectPage) — constant below `lg` — so we
+   mirror its exact value: calc(var(--spacing) * 10). The doubled class beats the
+   package's own single-class rule (core.css, imported after this file in
+   main.jsx) without needing !important. */
+@media (max-width: 1023px) {
+  .cv-dock.cv-dock,
+  .cv-nowplaying.cv-nowplaying {
+    bottom: calc(var(--spacing) * 10);
+  }
 }
 
 /* ── Canvas hover preview (Projects list) ────────────────────── */
