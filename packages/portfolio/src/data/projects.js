@@ -9,6 +9,28 @@
    (below) anywhere you want only the published set. */
 export const projects = [
 	{
+		id: 'figlet',
+		title: 'Figlet',
+		kind: 'tool',
+		summary: 'A browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup. Like CodePen for Figma.',
+		tagline: 'A browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup.',
+		tech: ['JavaScript', 'Figma API', 'Svelte', 'Supabase'],
+		role: 'Creator',
+		year: '2023',
+		link: 'https://www.figma.com/community/plugin/1215620774867583125/figlet',
+		linkLabel: 'Figma Community',
+		description: [
+			'Getting started with Figma plugin development normally means a local toolchain before you can write a single line. Figlet collapses that barrier: an in-browser editor where you write plugin code and run it against the live document immediately.',
+			'Think of it as CodePen for Figma — an instant, low-commitment place to prototype ideas, learn the plugin API, or share a working snippet.',
+		],
+		highlights: [
+			'Write and run plugin code directly in the browser',
+			'No local environment or build step to get started',
+			'Instant feedback against the live Figma document',
+			'Great for prototyping, learning and sharing snippets',
+		],
+	},
+	{
 		id: 'plugma',
 		title: 'Plugma',
 		kind: 'tool',
@@ -55,28 +77,6 @@ export const projects = [
 		],
 	},
 	{
-		id: 'figlet',
-		title: 'Figlet',
-		kind: 'tool',
-		summary: 'A browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup. Like CodePen for Figma.',
-		tagline: 'A browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup.',
-		tech: ['JavaScript', 'Figma API', 'Svelte', 'Supabase'],
-		role: 'Creator',
-		year: '2023',
-		link: 'https://www.figma.com/community/plugin/1215620774867583125/figlet',
-		linkLabel: 'Figma Community',
-		description: [
-			'Getting started with Figma plugin development normally means a local toolchain before you can write a single line. Figlet collapses that barrier: an in-browser editor where you write plugin code and run it against the live document immediately.',
-			'Think of it as CodePen for Figma — an instant, low-commitment place to prototype ideas, learn the plugin API, or share a working snippet.',
-		],
-		highlights: [
-			'Write and run plugin code directly in the browser',
-			'No local environment or build step to get started',
-			'Instant feedback against the live Figma document',
-			'Great for prototyping, learning and sharing snippets',
-		],
-	},
-	{
 		id: 'table-creator',
 		title: 'Table Creator',
 		kind: 'plugin',
@@ -119,6 +119,28 @@ export const projects = [
 			'Preset sizes for web, iOS and Android in one view',
 			'Detects the icon you are working on automatically',
 			'Supports artwork up to 256px',
+		],
+	},
+	{
+		id: 'layer-styles',
+		title: 'Layer Styles',
+		kind: 'plugin',
+		summary: 'A Figma plugin for saving and applying style presets, strokes, fills, corner radius, effects, padding, grids, opacity and blend modes.',
+		tagline: 'Save any combination of layer properties as a preset and reapply it across your design.',
+		tech: ['JavaScript', 'Figma API'],
+		role: 'Creator',
+		year: '2020',
+		link: 'https://www.figma.com/community/plugin/908303483495091267/layer-styles',
+		linkLabel: 'Figma Community',
+		description: [
+			"Figma's native styles cover fills, strokes, effects and text, but they stop short of everything else that makes a component feel finished, corner radius, padding, layout grids, opacity and blend modes all have to be reset by hand every time. Layer Styles closes that gap: it saves any combination of those properties as a reusable preset you can apply to any layer.",
+			'Build a style from an existing frame or shape, then apply it to multiple selections at once. Update a preset and refresh it to push the change across everything it touches, or detach a layer when it needs to go its own way, all from the Properties panel where you already work.',
+		],
+		highlights: [
+			'Save presets spanning strokes, fills, corner radius, effects, padding, grids, opacity and blend modes',
+			'Apply a saved style to multiple selected layers at once',
+			'Refresh a preset to propagate updates across every layer using it',
+			'Detach layers from a style, and work directly from the Properties panel',
 		],
 	},
 ];
