@@ -13,6 +13,7 @@ import DefaultRecorder from './ui/Recorder';
 import DefaultLightbox from './ui/Lightbox';
 import DefaultBottomDock from './ui/BottomDock';
 import DefaultNowPlayingBar from './ui/NowPlayingBar';
+import DefaultMinimap from './ui/Minimap';
 
 /* Recolour the custom edit caret (the inline-SVG cursor) to a given accent, with
    a contrasting outline so it stays legible over the board — white on light
@@ -51,7 +52,7 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames, components, fullscreenButton, fullBleed, maximized, maximizedRef, SCROLLBARS, scrollEls } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames, components, fullscreenButton, fullBleed, maximized, maximizedRef, SCROLLBARS, scrollEls, minimap } = ctx;
   // Chrome slots: a consumer's `components` entry replaces the built-in piece;
   // an explicit `null` hides it. Each piece reads state via useCanvas(), so a
   // replacement needs no props. `key in obj` (not truthiness) so `null` hides.
@@ -66,6 +67,7 @@ export default function Canvas() {
   const Lightbox = slot('Lightbox', DefaultLightbox);
   const BottomDock = slot('BottomDock', DefaultBottomDock);
   const NowPlaying = slot('NowPlaying', DefaultNowPlayingBar);
+  const Minimap = slot('Minimap', DefaultMinimap);
   // Cooperative gestures only apply in view mode; while editing the board keeps
   // full gesture control. `readOnly` (reactive) drives the CSS attribute/render;
   // the imperative handlers read the live `S.readOnly` instead. Suspended while
@@ -1135,6 +1137,7 @@ export default function Canvas() {
           {EDITABLE && Toolbar && <Toolbar />}
           {EDITABLE && Recorder && <Recorder />}
           {ZoomControls && <ZoomControls />}
+          {minimap && Minimap && <Minimap />}
           {ContextMenu && <ContextMenu />}
           {SaveStatus && <SaveStatus />}
         </>

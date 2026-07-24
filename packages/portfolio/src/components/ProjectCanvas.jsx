@@ -1,5 +1,10 @@
 import { Canvas } from "@gavinmcfarland/canvas";
-import { boardSaver, publishedBoard, uploadMedia, unfurlLink } from "../data/canvasBoards";
+import {
+  boardSaver,
+  publishedBoard,
+  uploadMedia,
+  unfurlLink,
+} from "../data/canvasBoards";
 import { ACCENT } from "../theme";
 
 /* Builds a small, self-contained board seeded from a project's own fields, so
@@ -70,6 +75,7 @@ export default function ProjectCanvas({ project }) {
       resizeAnchor="center"
       scaleWithContainer
       scrollbars="auto"
+      minimap={{ width: 80, height: 55 }}
       classNames={{ root: "enamel" }}
       accent={ACCENT}
       editable={import.meta.env.DEV}

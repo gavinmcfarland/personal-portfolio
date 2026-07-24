@@ -466,6 +466,7 @@ export function CanvasProvider({
   collideOrigin = 'content', // the band's left edge: 'content' (the left-most object) or an explicit world x.
   collideSeparate = false, // ('organic' strategy) also prise apart INTENTIONAL overlaps when reflowing. Default false: reflow still routes objects around collisions it would create, but overlaps present in the authored layout are kept. Set true to separate every overlap.
   scrollbars = false, // show a scrollbar on an axis only while content extends past the viewport on that axis (auto-hides when everything fits). false = never; 'auto' = both axes; 'x' or 'y' = that axis only. The board is a transform pan/zoom surface (not a native scroller), so each bar is a screen-space overlay whose thumb is draggable to pan that axis.
+  minimap = false, // show a low-fidelity overview of the current page (bottom-right) with a rectangle marking the current viewport. Click the map to recenter there; drag the rectangle to pan. false = hidden; true = show at the default size; or an object { width, height, padding } to size it — width/height accept any CSS length ('220px', '18%', '12em', '15vw', …) or a bare number (px), padding is the inner margin in px.
 }) {
   const EDITABLE = editable;
   const COOP = cooperativeGestures;
@@ -594,6 +595,32 @@ export function CanvasProvider({
   // callbacks); syncScrollbars writes geometry straight to these, off React's
   // render path like the rest of the chrome.
   const scrollEls = useRef({ trackX: null, thumbX: null, trackY: null, thumbY: null }).current;
+  // Minimap: opt-in overview panel (captured once, like the scrollbar config).
+  // Fixed panel size in CSS px; the low-fi content is drawn into a <canvas> and
+  // the viewport rectangle is a positioned div, both attached by the Minimap
+  // component via ref callbacks and written to imperatively (off React).
+  // The panel's size is applied as CSS (any unit — px, %, em, vw, …); a bare
+  // number is treated as px. The drawing/mapping reads the element's resolved
+  // pixel size back at paint time, so non-px units and container/font resizes
+  // Just Work (a ResizeObserver repaints on size change). `padding` is the inner
+  // margin (CSS px) around the low-fi content.
+  const cssSize = (v, dflt) => (v == null ? dflt : typeof v === 'number' ? v + 'px' : String(v));
+  const MINIMAP = useRef(
+    minimap
+      ? {
+          on: true,
+          width: cssSize(minimap.width, '164px'),
+          height: cssSize(minimap.height, '116px'),
+          pad: Number.isFinite(minimap.padding) ? minimap.padding : 8,
+        }
+      : { on: false }
+  ).current;
+  const minimapEls = useRef({ panel: null, canvas: null, view: null }).current;
+  // Cached mapping from the last content redraw: the padded world universe and
+  // the world→minimap-pixel scale `k`. syncMinimap reads this to place the
+  // viewport rectangle without recomputing bounds on every pan/zoom.
+  const minimapRef = useRef(null); // { uMinX, uMinY, k, boxW, boxH } or null when empty
+  const minimapRAF = useRef(0); // debounces content redraws to one run per frame
   const reflowRAF = useRef(0); // debounces reflowObjects to one run per frame
   const lastVpSize = useRef(null); // latest measured container size {w,h}
   const reframing = useRef(false); // true while reframeOnResize applies, so applyView doesn't re-capture the reference
@@ -690,6 +717,7 @@ export function CanvasProvider({
       lastHoverScale.current = viewRef.scale;
       syncChrome();
       syncScrollbars();
+      syncMinimap();
       // View-mode pan/zoom is transient (snapshotActive keeps the saved view),
       // so only edit-mode view changes need to hit the autosave. Also commit the
       // new framing to the published snapshot in the background — but not on the
@@ -1098,6 +1126,126 @@ export function CanvasProvider({
       const span = uMax - uMin || 1;
       const world = (deltaPx / trackPx) * span; // world units to shift the window
       if (axis === 'x') panBy(-world * s, 0); else panBy(0, -world * s);
+    }
+
+    /* ── Minimap ──────────────────────────────────────────────────
+       A low-fidelity overview of the active page. The heavy paint (one filled
+       box per node/shape) runs only when content changes (redrawMinimap); the
+       per-pan/zoom work is just repositioning the viewport rectangle
+       (syncMinimap), reading the mapping cached by the last redraw. The universe
+       is the content bounds plus a world-space margin so the picture stays put
+       while panning — only the rectangle moves. */
+
+    function redrawMinimap() {
+      if (!MINIMAP.on) return;
+      const cv = minimapEls.canvas; if (!cv) return;
+      const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+      const pad = MINIMAP.pad;
+      // Draw into the canvas's ACTUAL displayed size (its content box) rather than
+      // the panel's border-box, so the low-fi content and the viewport rectangle
+      // share one coordinate space that lines up with the visible (overflow-
+      // clipped) area — the panel's own border would otherwise offset them.
+      // clientWidth/Height is the canvas's resolved pixel size, whatever unit the
+      // panel was sized in; the small fallbacks only apply before first layout.
+      const cssW = cv.clientWidth || 160, cssH = cv.clientHeight || 112;
+      const boxW = cssW - pad * 2, boxH = cssH - pad * 2;
+      cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
+      const ctx = cv.getContext('2d'); if (!ctx) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      const b = bounds();
+      if (!b) { minimapRef.current = null; syncMinimap(); return; }
+      // World margin ~ 6% of the larger content extent, so tight pages still
+      // breathe and the rectangle has somewhere to go at the edges.
+      const margin = Math.max(b.maxX - b.minX, b.maxY - b.minY) * 0.06 + 1;
+      const uMinX = b.minX - margin, uMinY = b.minY - margin;
+      const uW = (b.maxX - b.minX) + margin * 2, uH = (b.maxY - b.minY) + margin * 2;
+      const k = Math.min(boxW / uW, boxH / uH); // world→minimap px, uniform
+      // Centre the mapped content in the box.
+      const offX = pad + (boxW - uW * k) / 2, offY = pad + (boxH - uH * k) / 2;
+      minimapRef.current = { uMinX, uMinY, k, offX, offY, cssW, cssH };
+      const toX = (wx) => offX + (wx - uMinX) * k, toY = (wy) => offY + (wy - uMinY) * k;
+      // Low-fi content: filled boxes for nodes (frames outlined), thin strokes
+      // for shapes. Colours come from CSS vars on the canvas element so they
+      // adapt to light/dark.
+      const cs = getComputedStyle(cv);
+      const fill = cs.getPropertyValue('--cv-minimap-node').trim() || 'rgba(120,120,130,.45)';
+      const frame = cs.getPropertyValue('--cv-minimap-frame').trim() || 'rgba(120,120,130,.7)';
+      nodeEls.forEach((n) => {
+        const sc = nodeScale(n);
+        const x = toX(+n.dataset.x), y = toY(+n.dataset.y);
+        const w = Math.max(1, n.offsetWidth * sc * k), h = Math.max(1, n.offsetHeight * sc * k);
+        if (n.dataset.type === 'frame') { ctx.strokeStyle = frame; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1); }
+        else { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); }
+      });
+      ctx.strokeStyle = frame; ctx.lineWidth = 1;
+      S.shapes.forEach((s) => {
+        if (s.type === 'pen') {
+          if (!s.points || s.points.length < 2) return;
+          ctx.beginPath();
+          s.points.forEach((p, i) => { const px = toX(p[0]), py = toY(p[1]); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+          ctx.stroke();
+        } else {
+          const bb = shapeBBox(s); if (!bb) return;
+          ctx.strokeRect(toX(bb.x) + 0.5, toY(bb.y) + 0.5, Math.max(1, bb.w * k), Math.max(1, bb.h * k));
+        }
+      });
+      syncMinimap();
+    }
+    // Queue a redraw for next frame (coalesced) — used after content/layout
+    // changes so auto-height nodes have been measured before we read them.
+    function scheduleMinimap() {
+      if (!MINIMAP.on) return;
+      if (minimapRAF.current) return;
+      minimapRAF.current = requestAnimationFrame(() => { minimapRAF.current = 0; redrawMinimap(); });
+    }
+    // Reposition the viewport rectangle from the cached mapping. Cheap; called
+    // on every view change from applyView.
+    function syncMinimap() {
+      if (!MINIMAP.on) return;
+      const el = minimapEls.view; if (!el) return;
+      const m = minimapRef.current;
+      if (!m) { el.style.display = 'none'; return; }
+      const s = viewRef.scale || 1;
+      // Visible world rect (viewport mapped back into world), same expression the
+      // scrollbars use.
+      const vx = -viewRef.x / s, vy = -viewRef.y / s;
+      const vw = vpW() / s, vh = vpH() / s;
+      const rawL = m.offX + (vx - m.uMinX) * m.k, rawT = m.offY + (vy - m.uMinY) * m.k;
+      const rawR = rawL + Math.max(2, vw * m.k), rawB = rawT + Math.max(2, vh * m.k);
+      // Clamp the rectangle to the panel so it never overflows an edge — the
+      // panel's overflow:hidden would clip whichever side ran past, dropping that
+      // border. Instead it pins to the edge (keeping a MIN-px sliver), so the
+      // full outline is always visible. MIN leaves room for the two borders.
+      const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+      const MIN = 6, W = m.cssW, H = m.cssH;
+      const l = clamp(rawL, 0, W - MIN), r = clamp(rawR, l + MIN, W);
+      const t = clamp(rawT, 0, H - MIN), b = clamp(rawB, t + MIN, H);
+      el.style.display = 'block';
+      el.style.left = l + 'px';
+      el.style.top = t + 'px';
+      el.style.width = (r - l) + 'px';
+      el.style.height = (b - t) + 'px';
+    }
+    // Convert a point in minimap-CSS-px (relative to the panel) to a world point.
+    function minimapToWorld(px, py) {
+      const m = minimapRef.current; if (!m) return null;
+      return { x: m.uMinX + (px - m.offX) / m.k, y: m.uMinY + (py - m.offY) / m.k };
+    }
+    // Centre the viewport on the world point under a minimap click (scale kept).
+    function minimapCenterAt(px, py, animate = true) {
+      const w = minimapToWorld(px, py); if (!w) return;
+      const s = viewRef.scale;
+      targetRef.scale = s; targetRef.x = vpW() / 2 - w.x * s; targetRef.y = vpH() / 2 - w.y * s;
+      if (animate) startZoomLoop(); else snapView();
+    }
+    // Drag the viewport rectangle by a minimap-px delta → pan the board 1:1.
+    function minimapDrag(dxPx, dyPx) {
+      const m = minimapRef.current; if (!m) return;
+      const s = viewRef.scale;
+      // minimap px → world units (/k) → screen px (*scale); rectangle moves with
+      // the pointer, so the board pans the opposite way (matches scrollDrag).
+      panBy(-(dxPx / m.k) * s, -(dyPx / m.k) * s);
     }
 
     /* ── Marquee (rubber-band) selection ──────────────────────── */
@@ -2714,7 +2862,7 @@ export function CanvasProvider({
 
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
-      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, syncScrollbars, scrollDrag, reframeOnResize, reflowObjects, scheduleReflow, hideSelChrome, placeSel, setHover, setGridEditGeom,
+      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, syncScrollbars, scrollDrag, redrawMinimap, scheduleMinimap, syncMinimap, minimapCenterAt, minimapDrag, reframeOnResize, reflowObjects, scheduleReflow, hideSelChrome, placeSel, setHover, setGridEditGeom,
       selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, snapResize, setSnapGuides,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
@@ -2873,6 +3021,15 @@ export function CanvasProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, shapes, reflow]);
 
+  /* Repaint the minimap's low-fi content when the page's content model changes
+     or the active page switches. Deferred one frame (scheduleMinimap) so
+     auto-height nodes are measured before we read their box. No-op unless the
+     minimap is on. */
+  useEffect(() => {
+    if (MINIMAP.on) eng.scheduleMinimap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodes, shapes, reflow, activePageId]);
+
   /* Reframe (per `resizeAnchor`) and re-sync chrome whenever the container
      resizes (section reflow, window resize, sidebar toggles, …) — measured on
      the viewport, not the window. */
@@ -2980,7 +3137,7 @@ export function CanvasProvider({
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     isPrimaryCanvas,
     publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
-    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls,
+    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls, minimap: MINIMAP.on, MINIMAP, minimapEls,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
     // refs

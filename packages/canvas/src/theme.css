@@ -35,6 +35,9 @@
      skin can retint the bars without dragging every hairline with it. */
   --cv-scrollbar: rgba(20, 20, 23, 0.28);
   --cv-scrollbar-hover: rgba(20, 20, 23, 0.5);
+  /* Minimap low-fi content: filled node boxes + outlined frames/shapes. */
+  --cv-minimap-node: rgba(20, 20, 23, 0.28);
+  --cv-minimap-frame: rgba(20, 20, 23, 0.45);
   --cv-accent: #7c2d91;
   /* Derived from --accent so overriding the accent alone (e.g. the `accent`
      prop) re-tints every accent-soft surface with no extra tokens to set. */
@@ -104,6 +107,8 @@
   --cv-line-strong: rgba(242, 242, 239, 0.32);
   --cv-scrollbar: rgba(242, 242, 239, 0.28);
   --cv-scrollbar-hover: rgba(242, 242, 239, 0.5);
+  --cv-minimap-node: rgba(242, 242, 239, 0.3);
+  --cv-minimap-frame: rgba(242, 242, 239, 0.5);
   --cv-accent: #c88be8;
   --cv-accent-soft: color-mix(in srgb, var(--cv-accent) 16%, transparent);
   --cv-snap-guide: #ff6ba3;
@@ -1762,6 +1767,19 @@
 .canvas-root [data-cv-part="zoom"] .cv-zoom-sep {
   margin: 4px 3px;
   background: var(--cv-line);
+}
+/* ── Minimap ─────────────────────────────────────────────────────
+   Bottom-right overview panel. Sits inboard of the edge so it clears the
+   synthetic scrollbars when both are enabled. The low-fi content is a <canvas>
+   filling the panel; the viewport rectangle is an absolutely-positioned outline
+   that the engine moves imperatively. */
+.canvas-root [data-cv-part="minimap"] {
+  padding: 0;
+  border-radius: 10px;
+}
+.canvas-root .cv-minimap-view {
+  border: 1px solid var(--cv-accent);
+  border-radius: 2px;
 }
 .canvas-root .cv-zoomval {
   text-align: center;
