@@ -12,6 +12,7 @@ import CanvasMaximizeToggle from "./components/CanvasMaximizeToggle";
 import Home from "./pages/Home";
 import ProjectPage from "./pages/ProjectPage";
 import CollisionDemoPage from "./pages/CollisionDemoPage";
+// import CV from "./pages/CV"; // CV page disabled — not public yet
 import PrivatePage from "./pages/PrivatePage";
 import NotFound from "./pages/NotFound";
 import { visibleProjects } from "./data/projects";
@@ -151,6 +152,9 @@ function App() {
               <Routes location={overlayLoc}>
                 <Route path="/projects/:id" element={<ProjectRoute />} />
                 <Route path="/responsive" element={<CollisionDemoPage />} />
+                {/* CV page disabled — not public yet. Re-enable by restoring
+                    the import above and this route. */}
+                {/* <Route path="/cv" element={<CV />} /> */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
