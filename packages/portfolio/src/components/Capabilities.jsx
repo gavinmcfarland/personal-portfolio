@@ -1,33 +1,32 @@
 import { skills } from "../data/skills";
 import { Section } from "./ui";
 
-/* Hanging notes (design-mockups/11-galley, §3): a reading measure on the left
-   says what the work is; the disciplines are hung as annotations out in the
-   open field beside it, each held off a vermilion rule. Reuses skills.js. */
-const Capabilities = () => (
-  <Section id="capabilities" label="What I do">
-    <div className="hang">
-      <div className="max-w-[34em] space-y-4 text-pretty text-[1.0625rem] leading-relaxed text-muted">
-        <p>
-          Most of my work sits where design and front-end meet — design systems,
-          the tooling that holds them together, and the product work around them.
-        </p>
-        <p className="text-faint">
-          When the tool doesn&rsquo;t exist yet, I build it. Most of what I&rsquo;ve
-          made started as a recurring problem rather than an idea.
-        </p>
-      </div>
+/* CAPABILITIES — the disciplines set as a manual's nested outline: each group is
+   a numbered top-level entry (1, 2, 3) and its terms hang beneath as a lettered
+   sub-list (a, b, c). The hierarchy is the content; order and depth carry it.
+   Driven by the shared skills data so it never drifts from the CV. */
 
-      <div className="hang__notes">
-        {skills.map((group) => (
-          <div key={group.id}>
-            <span className="micro block mb-1 text-accent">{group.label}</span>
-            <span className="text-[0.9375rem] leading-relaxed text-muted">
-              {group.items.join(", ")}
+const LETTERS = "abcdefghijklmnopqrstuvwxyz";
+
+const Capabilities = () => (
+  <Section id="capabilities" label="Capabilities">
+    <div className="man-outline max-w-[62ch]">
+      {skills.map((group, gi) => (
+        <div key={group.id}>
+          <div className="man-outline__row">
+            <span className="man-outline__mk">{gi + 1}</span>
+            <span>
+              <b>{group.label}</b>
             </span>
           </div>
-        ))}
-      </div>
+          {group.items.map((item, ii) => (
+            <div key={item} className="man-outline__row man-outline--2">
+              <span className="man-outline__mk">{LETTERS[ii]}</span>
+              <span>{item}</span>
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   </Section>
 );

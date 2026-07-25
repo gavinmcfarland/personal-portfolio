@@ -15,6 +15,36 @@ const KIND_FLAG = {
   plugin: "--plugin",
 };
 
+/* Kind chip — the four enamels as flat square swatches beside an uppercase
+   label. `tone` points at a --tone-* token, so the colour flips with the
+   theme (see app.css). */
+const KINDS = {
+  tool: { label: "Tool", tone: "blue" },
+  library: { label: "Library", tone: "lime" },
+  plugin: { label: "Plugin", tone: "teal" },
+};
+
+const TONE_VAR = {
+  vermilion: "var(--tone-vermilion)",
+  blue: "var(--tone-blue)",
+  lime: "var(--tone-lime)",
+  teal: "var(--tone-teal)",
+};
+
+function KindTag({ kind }) {
+  const k = KINDS[kind] || { label: kind, tone: "teal" };
+  return (
+    <span className="inline-flex items-center gap-[0.4rem] border border-line px-[0.45rem] py-[0.1rem] text-[0.6875rem] uppercase tracking-[0.08em] text-muted">
+      <span
+        className="h-2 w-2 flex-none"
+        style={{ background: TONE_VAR[k.tone] }}
+        aria-hidden="true"
+      />
+      {k.label}
+    </span>
+  );
+}
+
 const Projects = () => (
   <Section id="examples" label="Examples">
     <p className="mb-8 max-w-[64ch] text-muted">
@@ -22,12 +52,12 @@ const Projects = () => (
       recurring problem rather than an idea &mdash; run one to read the full case.
     </p>
 
-    <div className="space-y-7">
+    <div className="space-y-1">
       {projects.map((p) => (
         <Link
           key={p.id}
           to={`/projects/${p.id}`}
-          className="group block"
+          className="group -mx-4 block px-4 py-3 transition-colors duration-150 hover:bg-surface"
           onClick={blurOnPointerClick}
         >
           <p className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
@@ -38,9 +68,7 @@ const Projects = () => (
               </span>{" "}
               {p.id}
             </span>
-            <span className="text-[0.8rem] tabular-nums text-faint">
-              {p.year}
-            </span>
+            <KindTag kind={p.kind} />
           </p>
           <p className="mt-1.5 max-w-[62ch] pl-4 text-muted">{p.summary}</p>
           {p.linkLabel ? (

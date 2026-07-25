@@ -7,11 +7,12 @@ import {
 } from "../data/canvasBoards";
 import { ACCENT } from "../theme";
 import Seo from "../components/Seo";
-import Masthead from "../components/Masthead";
-import Contents from "../components/Contents";
 import Intro from "../components/Intro";
+import Contents from "../components/Contents";
 import Projects from "../components/Projects";
+import Capabilities from "../components/Capabilities";
 import PastExperience from "../components/PastExperience";
+import PageIndex from "../components/PageIndex";
 import Connect from "../components/Connect";
 import { Section } from "../components/ui";
 
@@ -71,16 +72,12 @@ const Home = () => (
       title=""
       description="Designer and full-stack engineer building tools and web applications. Currently freelancing and building Awenate."
     />
-    {/* The running head of the manual — full-bleed, above everything. */}
-    <Masthead />
-
-    {/* The man-page section index, pinned in the left gutter (lg+). */}
-    <Contents />
-
     {/* All page content lives in <main>, one <section> per group. */}
     <main className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24">
       <Intro />
+      <Contents />
       <Projects />
+      <Capabilities />
 
       <Section id="playground" label="Scratch">
         <p className="max-w-[64ch] text-muted">
@@ -117,18 +114,11 @@ const Home = () => (
 
       <PastExperience />
 
+      <PageIndex />
+
       <Connect />
     </main>
 
-    {/* The roff running footer: origin, date, command(section) — the classic
-        three-part man-page foot, full-bleed like the head. */}
-    <footer className="mt-20 w-full border-t border-line px-8 py-3 sm:px-14 lg:px-24">
-      <div className="man-strip flex items-baseline justify-between gap-4">
-        <b>London</b>
-        <span className="hidden sm:inline">July 2026</span>
-        <b>GAVIN(1)</b>
-      </div>
-    </footer>
   </>
 );
 

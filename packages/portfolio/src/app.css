@@ -334,30 +334,143 @@ body :not(.canvas-root, .canvas-root *, .route-panel) {
   color: var(--faint);
 }
 
-/* ── Contents rail ─────────────────────────────────────────────
-   The man page's sticky section index, moved into the left margin. Terse
-   monospace tokens; the section nearest the top of the viewport carries a
-   vermilion tick. Shown on lg+ only — below that the gutter is too narrow and
-   the page is short enough to simply scroll. */
-.toc-link {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--faint);
-  border-left: 2px solid transparent;
-  padding-left: 0.6rem;
-  transition:
-    color 0.2s ease,
-    border-color 0.2s ease;
+/* ── Footnotes ─────────────────────────────────────────────────
+   Superscript markers in the running text (roff's .FS/.FE), with the notes set
+   small beneath a short rule at the foot of the section. */
+.fn-ref {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.62em;
+  vertical-align: super;
+  line-height: 0;
+  padding-left: 0.15em;
 }
-.toc-link:hover {
+.footnotes {
+  font-size: 0.78rem;
+  color: var(--faint);
+}
+.footnotes__rule {
+  width: 3rem;
+  height: 1px;
+  background: var(--line-strong);
+  margin-bottom: 0.55rem;
+}
+.footnote {
+  margin: 0;
+}
+.footnote + .footnote {
+  margin-top: 0.15rem;
+}
+.footnote sup {
+  color: var(--accent);
+  font-weight: 700;
+  padding-right: 0.25em;
+}
+
+/* ── Dotted leader lines (Contents) ────────────────────────────
+   A contents list: the entry title, a run of dotted leaders, and the section
+   locator aligned to the right margin. */
+.leaders {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.leader {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.leader__dots {
+  flex: 1 1 auto;
+  min-width: 1.5rem;
+  transform: translateY(-0.28em);
+  border-bottom: 1px dotted var(--line-strong);
+}
+.leader__pg {
+  flex: none;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.leader__pg .sec {
+  color: var(--faint);
+}
+
+/* ── Hierarchical outline (Capabilities) ───────────────────────
+   Nested 1 / a / i markers, each level stepped in; the marker sits in a fixed
+   column so the terms align, the way a manual sets its contents outline.
+   Named `man-outline` (not `outline`) to avoid Tailwind's `.outline` utility. */
+.man-outline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.man-outline__row {
+  display: grid;
+  grid-template-columns: 1.7rem 1fr;
+  gap: 0.1rem 0.55rem;
+  align-items: baseline;
   color: var(--muted);
 }
-.toc-link[aria-current="true"] {
-  color: var(--ink);
-  border-left-color: var(--accent);
+.man-outline__mk {
+  text-align: right;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
 }
+.man-outline__row b {
+  color: var(--ink);
+}
+.man-outline--2 {
+  padding-left: 1.7rem;
+}
+.man-outline--2 .man-outline__mk {
+  color: var(--muted);
+}
+.man-outline--3 {
+  padding-left: 3.4rem;
+}
+.man-outline--3 .man-outline__mk {
+  color: var(--faint);
+}
+
+/* ── Back-of-book index ────────────────────────────────────────
+   Alphabetical entries flowed into columns, each letter heading its run, with
+   sub-entries stepped in and a faint locator. Groups avoid breaking so a letter
+   stays with its entries across a column boundary. */
+.index-cols {
+  column-count: 2;
+  column-gap: 2rem;
+}
+@media (min-width: 640px) {
+  .index-cols {
+    column-count: 3;
+  }
+}
+.index-group {
+  break-inside: avoid;
+  margin-bottom: 0.7rem;
+}
+.index-letter {
+  margin: 0 0 0.15rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+.index-entry {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+.index-entry .loc {
+  color: var(--faint);
+}
+.index-entry .sub {
+  display: block;
+  padding-left: 1rem;
+}
+
 
 /* The near-black section rule from the CV */
 .section-rule {

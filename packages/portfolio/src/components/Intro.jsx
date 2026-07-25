@@ -60,7 +60,7 @@ const Intro = () => (
           >
             awenate
           </a>
-          . Previously at{" "}
+          <sup className="fn-ref">1</sup>. Previously at{" "}
           <a
             href="https://lovable.dev"
             target="_blank"
@@ -69,12 +69,26 @@ const Intro = () => (
           >
             lovable
           </a>
-          . When the tool doesn&rsquo;t exist yet, it gets built &mdash; see{" "}
+          <sup className="fn-ref">2</sup>. When the tool doesn&rsquo;t exist yet,
+          it gets built &mdash; see{" "}
           <a href="#examples" className="xref">
             EXAMPLES
           </a>
           .
         </p>
+
+        <div className="footnotes">
+          <div className="footnotes__rule" aria-hidden="true" />
+          <p className="footnote">
+            <sup>1</sup> <span className="text-ink">awenate</span> &mdash; a tool
+            for turning scattered research notes into living documentation;
+            currently in private beta.
+          </p>
+          <p className="footnote">
+            <sup>2</sup> <span className="text-ink">lovable</span> &mdash; AI app
+            builder; design systems and front-end, 2024.
+          </p>
+        </div>
       </div>
     </section>
   </header>
