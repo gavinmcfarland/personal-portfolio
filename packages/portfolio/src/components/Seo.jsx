@@ -22,6 +22,7 @@ export default function Seo({
   description = DEFAULT_DESCRIPTION,
   image,
   type = "website",
+  noindex = false,
 }) {
   // A bare page title (e.g. "Figlet") gets the site name appended for the tab;
   // the home page passes no title and shows the site name alone.
@@ -53,6 +54,8 @@ export default function Seo({
       { name: "twitter:title", content: fullTitle },
       { name: "twitter:description", content: description },
       { name: "twitter:image", content: imageUrl },
+      // Keep private/utility pages out of search indexes.
+      ...(noindex ? [{ name: "robots", content: "noindex, nofollow" }] : []),
     ];
 
     // Upsert one <meta> per tag, keying on name/property so we update in place
@@ -81,7 +84,7 @@ export default function Seo({
         else el.setAttribute("content", previous);
       }
     };
-  }, [fullTitle, description, ogPath, type]);
+  }, [fullTitle, description, ogPath, type, noindex]);
 
   return null;
 }

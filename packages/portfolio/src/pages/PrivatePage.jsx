@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Canvas } from "@gavinmcfarland/canvas";
 import ThemeToggle from "../components/ThemeToggle";
+import Seo from "../components/Seo";
 import { uploadMedia, unfurlLink } from "../data/canvasBoards";
 import { ACCENT } from "../theme";
 import { decryptBoard, encryptBoard } from "../lib/privateCrypto";
@@ -94,6 +95,7 @@ export default function PrivatePage() {
   if (status === STATUS.unlocked) {
     return (
       <div className="private-canvas fixed inset-0 bg-base">
+        <Seo title="Private page" noindex />
         <ThemeToggle />
         <Canvas
           fit="contain"
@@ -121,6 +123,7 @@ export default function PrivatePage() {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-base px-6">
+      <Seo title="Private page" noindex />
       <ThemeToggle />
       {status === STATUS.loading && (
         <p className="text-sm text-faint">Loading…</p>

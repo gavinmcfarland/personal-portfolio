@@ -11,7 +11,10 @@
 export const SITE_URL = "https://gavinmcfarland.co.uk";
 
 export const SITE_NAME = "Gavin McFarland";
-export const DEFAULT_TITLE = "Gavin McFarland";
+// The home page / static-fallback <title>. Descriptive so the tab and search
+// result read as more than just the name. Per-page titles become
+// "<page> — Gavin McFarland" via <Seo>.
+export const DEFAULT_TITLE = "Gavin McFarland — Designer & full-stack engineer";
 export const DEFAULT_DESCRIPTION =
   "Gavin McFarland — freelance developer building tools that take the friction out of building things. Currently working on Awenate.";
 
