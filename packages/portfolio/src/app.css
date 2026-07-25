@@ -471,6 +471,91 @@ body :not(.canvas-root, .canvas-root *, .route-panel) {
   padding-left: 1rem;
 }
 
+/* ── Example document pages (case study / changelog / colophon) ──────
+   Furniture shared by the /examples/* prototype pages. */
+
+/* Usage / shell transcript set in a hairline panel; each child is one line. */
+.usage {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 0.85rem 1rem;
+  font-size: 0.84rem;
+  line-height: 1.85;
+  overflow-x: auto;
+}
+.usage .c {
+  color: var(--faint);
+}
+.usage .prompt {
+  color: var(--accent);
+  user-select: none;
+}
+.usage__gap {
+  height: 0.55rem;
+}
+
+/* Changelog — versioned release blocks, each a heading row and a tagged list. */
+.rel + .rel {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+.rel__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.rel__v {
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.rel__t {
+  color: var(--ink);
+  font-weight: 700;
+}
+.rel__d {
+  margin-left: auto;
+  color: var(--faint);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+.rel__list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.rel__list li {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+  color: var(--muted);
+}
+.rel__tag {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-align: right;
+}
+.rel__tag.add {
+  color: var(--tone-teal);
+}
+.rel__tag.chg {
+  color: var(--tone-blue);
+}
+.rel__tag.fix {
+  color: var(--faint);
+}
+.rel__tag.brk {
+  color: var(--accent);
+}
+
 
 /* The near-black section rule from the CV */
 .section-rule {

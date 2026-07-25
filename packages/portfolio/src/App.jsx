@@ -14,6 +14,10 @@ import ProjectPage from "./pages/ProjectPage";
 import CollisionDemoPage from "./pages/CollisionDemoPage";
 // import CV from "./pages/CV"; // CV page disabled — not public yet
 import PrivatePage from "./pages/PrivatePage";
+import ExamplesIndex from "./pages/examples/ExamplesIndex";
+import CaseStudy from "./pages/examples/CaseStudy";
+import Changelog from "./pages/examples/Changelog";
+import Colophon from "./pages/examples/Colophon";
 import NotFound from "./pages/NotFound";
 import { visibleProjects } from "./data/projects";
 
@@ -152,6 +156,10 @@ function App() {
               <Routes location={overlayLoc}>
                 <Route path="/projects/:id" element={<ProjectRoute />} />
                 <Route path="/responsive" element={<CollisionDemoPage />} />
+                <Route path="/examples" element={<ExamplesIndex />} />
+                <Route path="/examples/plugma" element={<CaseStudy />} />
+                <Route path="/examples/changelog" element={<Changelog />} />
+                <Route path="/examples/colophon" element={<Colophon />} />
                 {/* CV page disabled — not public yet. Re-enable by restoring
                     the import above and this route. */}
                 {/* <Route path="/cv" element={<CV />} /> */}
