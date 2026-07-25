@@ -3,12 +3,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Enamel — Chivo for prose and structure, JetBrains Mono for tracked marks.
-     No serif; --font-serif is kept as a token so existing `font-serif` usages
-     resolve to Chivo rather than a browser default. */
-  --font-sans: "Chivo", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Chivo", ui-sans-serif, system-ui, sans-serif;
+  /* Manual — the whole document is set in one monospace, the way a man page is.
+     Chivo is retired from prose (kept only as a token alias so any stray
+     `font-sans`/`font-serif` still resolves to the mono face rather than a
+     browser default). JetBrains Mono carries everything now. */
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: var(--font-mono);
+  --font-serif: var(--font-mono);
 
   /* Registered so `bg-surface` (and its `hover:` variant) are real Tailwind
      utilities. Points at the token var, so it still flips in dark mode. */
@@ -135,9 +136,11 @@ html {
 
 body {
   margin: 0;
-  font-family: var(--font-sans);
-  font-size: 1rem;
-  line-height: 1.6;
+  font-family: var(--font-mono);
+  /* Man-page density: a slightly smaller body and a steady line so long mono
+     prose stays readable without sprawling. */
+  font-size: 0.9375rem;
+  line-height: 1.7;
   background: var(--bg);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
@@ -206,13 +209,154 @@ body :not(.canvas-root, .canvas-root *, .route-panel) {
   font-variant-numeric: tabular-nums;
 }
 
-/* Section label — bold sans, mirrors the CV's section headings */
+/* ── Man-page structure ────────────────────────────────────────
+   Unix documentation discipline borrowed into the Enamel system — the register
+   does the work, not new colour. A fixed indent stop hangs every section body
+   off its flush heading (roff's .SH → indented body), headings read as
+   monospace section names, and links carry the cross-reference look. */
+
+/* The fixed indent stop. Body content hangs at it beneath a flush heading, the
+   way a man page indents everything under a section head. Collapses to nothing
+   on the narrowest screens, where there's no width to spend. */
+:root {
+  --stop: 0rem;
+}
+@media (min-width: 640px) {
+  :root {
+    --stop: 2.25rem;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --stop: 3.25rem;
+  }
+}
+.indent {
+  padding-left: var(--stop);
+}
+
+/* Section heading — a man-page section name: uppercase, tracked, monospace, and
+   flush to the content column while its body hangs at the indent stop. */
 .section-label {
-  font-family: var(--font-sans);
-  font-size: 1.0625rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+/* The wordmark, set as a command name — heavy mono, tight, flush left. */
+.wordmark {
+  font-family: var(--font-mono);
   font-weight: 700;
   letter-spacing: -0.01em;
+  line-height: 1.05;
   color: var(--ink);
+}
+
+/* Shell prompt / sigil before an invocation. Vermilion, never selectable so a
+   copied command doesn't drag the $ along. */
+.prompt {
+  color: var(--accent);
+  user-select: none;
+}
+
+/* A command flag (--tool) — muted italic, the way roff sets .I arguments. */
+.flag {
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Optional-argument brackets in a SYNOPSIS — faint, so the flags read first. */
+.bracket {
+  color: var(--faint);
+}
+
+/* Running header / footer rows (three-part roff furniture): a full-width strip
+   with the command at both ends and the manual title centred. */
+.man-strip {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.man-strip b {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Hanging term/description pairs — roff's .TP macro. The term sits in a fixed
+   column and its description hangs beside it; both stack on narrow screens. */
+.tp {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.15rem 1.5rem;
+}
+@media (min-width: 640px) {
+  .tp {
+    grid-template-columns: 9rem 1fr;
+    align-items: baseline;
+  }
+}
+.tp dt,
+.tp .tp-term {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* NAME-line gloss under the wordmark — a whatis(1) one-liner. Monospace, so the
+   name reads as the command it describes. */
+.whatis {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+
+/* Cross-reference link (man SEE ALSO): underlined at a hairline, uncoloured
+   until pointed at, then vermilion. The (n) section suffix stays faint. */
+.xref {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--line-strong);
+  transition:
+    color 0.2s ease,
+    text-decoration-color 0.2s ease;
+}
+.xref:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+.xref__sec {
+  color: var(--faint);
+}
+
+/* ── Contents rail ─────────────────────────────────────────────
+   The man page's sticky section index, moved into the left margin. Terse
+   monospace tokens; the section nearest the top of the viewport carries a
+   vermilion tick. Shown on lg+ only — below that the gutter is too narrow and
+   the page is short enough to simply scroll. */
+.toc-link {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+  border-left: 2px solid transparent;
+  padding-left: 0.6rem;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.toc-link:hover {
+  color: var(--muted);
+}
+.toc-link[aria-current="true"] {
+  color: var(--ink);
+  border-left-color: var(--accent);
 }
 
 /* The near-black section rule from the CV */
