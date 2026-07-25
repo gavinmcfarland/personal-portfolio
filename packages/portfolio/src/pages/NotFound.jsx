@@ -1,8 +1,13 @@
 import { Link } from "react-router-dom";
+import Seo from "../components/Seo";
 import { ArrowLeft } from "../components/ui";
 
 const NotFound = () => (
   <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center px-5 sm:px-6">
+    <Seo
+      title="Page not found"
+      description="That page doesn't exist — it may have moved, or the link was mistyped."
+    />
     <p className="font-sans text-[0.8125rem] font-bold uppercase tracking-[0.09em] text-faint">
       404
     </p>

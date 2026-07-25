@@ -6,6 +6,7 @@ import {
   unfurlLink,
 } from "../data/canvasBoards";
 import { ACCENT } from "../theme";
+import Seo from "../components/Seo";
 import Intro from "../components/Intro";
 import Projects from "../components/Projects";
 import PastExperience from "../components/PastExperience";
@@ -63,6 +64,11 @@ const playgroundBoard = {
 
 const Home = () => (
   <>
+    {/* Home keeps the site defaults — a generic OG card with the site name. */}
+    <Seo
+      title=""
+      description="Designer and full-stack engineer building tools and web applications. Currently freelancing and building Awenate."
+    />
     {/* All page content lives in <main>, one <section> per group. */}
     <main className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24">
       <Intro />

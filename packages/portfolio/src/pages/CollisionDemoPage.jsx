@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Canvas } from "@gavinmcfarland/canvas";
 import { ACCENT } from "../theme";
+import Seo from "../components/Seo";
 import { ArrowLeft } from "../components/ui";
 
 /* Full-screen responsive-collision demo. A slim header carries the back link and
@@ -27,6 +28,10 @@ const demoBase = {
 export default function CollisionDemoPage() {
   return (
     <div className="absolute inset-0 flex flex-col bg-base">
+      <Seo
+        title="Responsive canvas"
+        description="A demo where canvas objects reflow to stay in view as the window resizes — routing around each other while keeping intentional overlaps."
+      />
       <header className="flex shrink-0 items-center gap-4 border-b border-line px-4 py-3 sm:px-6">
         <Link
           to="/"

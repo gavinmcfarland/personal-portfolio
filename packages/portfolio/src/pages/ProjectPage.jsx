@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Seo from "../components/Seo";
 import ProjectCanvas from "../components/ProjectCanvas";
 import { ArrowLeft, ArrowRight, ArrowUpRight, blurOnPointerClick } from "../components/ui";
 import { visibleProjects } from "../data/projects";
@@ -53,6 +54,13 @@ export default function ProjectPage({ project }) {
 
   return (
     <div className="absolute inset-0 flex flex-col bg-base lg:flex-row">
+      {/* Per-project OG card: the project name as the big line, its tagline as
+          the supporting text. */}
+      <Seo
+        title={project.title}
+        description={project.tagline || project.summary}
+        type="article"
+      />
       {/* ── Header (top bar below lg, left sidebar from lg up) ───────── */}
       <header className="order-last shrink-0 border-t border-line bg-base lg:order-0 lg:w-80 lg:overflow-y-auto lg:border-t-0 lg:border-r xl:w-96">
         <div className="flex flex-col px-5 pb-10 pt-4 sm:px-8 sm:pt-6 lg:min-h-full lg:pb-[22px] lg:pt-8">
