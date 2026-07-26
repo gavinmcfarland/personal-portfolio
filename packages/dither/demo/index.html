@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dither — canvas texture engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0E0F0D; --raise: #151613; --ink: #D9D7CB; --mid: #8C8A80;
+    --faint: #575650; --line: #24251F; --green: #7BD88F;
+  }
+  .light {
+    --bg: #E6E3D8; --raise: #DDDACE; --ink: #1A1B14; --mid: #5C5B52;
+    --faint: #8E8C82; --line: #C9C5B7; --green: #2C7A4B;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 400 14px/1.6 'Spline Sans Mono', ui-monospace, Menlo, monospace;
+    padding: clamp(1.25rem, 5vw, 4rem);
+  }
+  header { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: .5rem; }
+  h1 { font-size: 1rem; font-weight: 700; margin: 0; }
+  .sub { color: var(--mid); max-width: 60ch; }
+  .tools { margin-left: auto; display: flex; gap: .5rem; }
+  button {
+    font: inherit; color: var(--ink); background: transparent;
+    border: 1px solid var(--line); padding: .35rem 1.1rem; cursor: pointer;
+  }
+  button:hover { border-color: var(--faint); }
+  h2 { font-size: .875rem; font-weight: 700; margin: 2.5rem 0 .25rem; }
+  h2 .n { color: var(--faint); font-weight: 400; }
+  .note { color: var(--mid); margin: 0 0 1rem; max-width: 70ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
+  .cell { display: flex; flex-direction: column; gap: .4rem; }
+  .cell canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); image-rendering: pixelated; }
+  .cap { color: var(--faint); font-size: .75rem; margin: 0; }
+  .cap b { color: var(--ink); font-weight: 400; }
+  .cellbar { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+  .cellbar .cap { flex: 1; min-width: 0; }
+  .fam { color: var(--faint); }
+  .star { border: 0; background: none; color: var(--faint); font-size: 1rem; line-height: 1; padding: .1rem .35rem; cursor: pointer; }
+  .star:hover { color: var(--ink); }
+  .star.on { color: var(--green); }
+  .decals { display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-end; }
+  .decals .cell { align-items: flex-start; }
+  .decals canvas { width: auto; border: 0; }
+  .decal-box {
+    position: relative; border: 1px solid var(--line); padding: 1rem;
+    width: 200px; height: 96px; color: var(--mid); font-size: .75rem;
+  }
+  .decal-box canvas { position: absolute; border: 0; }
+  /* Reseedable tiles mount their visual in a stage that reseeds on click. */
+  .stage { cursor: pointer; }
+  .ground-preview { position: relative; border: 1px solid var(--line); min-height: 120px; padding: 1rem; overflow: hidden; }
+  .ground-preview .bg { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .ground-preview p { position: relative; margin: 0; color: var(--mid); font-size: .75rem; }
+  .stage .decal-box { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .stage .decal-box canvas { position: static; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>dither</h1>
+    <span class="sub">A canvas engine for 1-bit dither textures — square dots masked into ordered geometry.</span>
+    <div class="tools">
+      <button id="regen" type="button">regenerate</button>
+      <button id="surface" type="button">surface</button>
+    </div>
+  </header>
+
+  <h2>Bookmarked <span class="n">— saved in your browser, click ☆ on any generated tile</span></h2>
+  <p class="note" id="bookmarks-empty">No bookmarks yet. Click the ☆ under any generated, pixel, or retro tile to save its seed and algorithm here — they persist across reloads.</p>
+  <div class="grid" id="bookmarks"></div>
+
+  <h2>Fields <span class="n">— the six hand-tuned plates</span></h2>
+  <p class="note">Each is a base grid plus one or two coarser grids masked into repeating geometry, so it reads as something built on a grid rather than as noise.</p>
+  <div class="grid" id="fields"></div>
+
+  <h2>Auto-generated <span class="n">— same grammar, grown from a seed</span></h2>
+  <p class="note">The generator only ever varies the grid pitch, mask shape and mask scale. Same seed, same field. Click any tile to reseed just that one.</p>
+  <div class="grid" id="generated"></div>
+
+  <h2>Pixel patterns <span class="n">— a second algorithm: coarse blocks, not dots</span></h2>
+  <p class="note">A different generator. Instead of fine dots clumped into geometry, it fills a small tile with symmetry — mirrored ornaments, truchet weaves, woven bars — and repeats it. Click any tile to reseed just that one.</p>
+  <div class="grid" id="pixels"></div>
+
+  <h2>Retro patterns <span class="n">— four algorithms from computing history</span></h2>
+  <p class="note">A third family. Ordered (Bayer) dither ramps, XOR "munching squares", elementary cellular automata (Rule 90 draws a Sierpinski triangle), and 2×3 teletext block mosaics. Click any tile to reseed it.</p>
+  <div class="grid" id="retro"></div>
+
+  <h2>Grounds <span class="n">— a third of the ink, for behind text</span></h2>
+  <div class="grid" id="grounds"></div>
+
+  <h2>Generated grounds <span class="n">— auto varieties, shown behind a paragraph</span></h2>
+  <p class="note">Seeded quiet fields — even, ruled bands, hard-stopped patches, faint checkers, and density fades. Click a tile to reseed it, ☆ to bookmark it.</p>
+  <div class="grid" id="gen-grounds"></div>
+
+  <h2>Decals <span class="n">— small marks, placed half off an edge</span></h2>
+  <div class="decals" id="decals"></div>
+
+  <h2>Generated decals <span class="n">— auto varieties: rings, badges, tabs, bars…</span></h2>
+  <p class="note">Seeded marks in strict circle-and-rectangle geometry — seals, badges, reticles, tabs, chips, bars, stripes, blocks. Click a tile to reseed it, ☆ to bookmark it.</p>
+  <div class="grid" id="gen-decals"></div>
+
+  <h2>Retro decals <span class="n">— decal shapes filled with a retro pattern</span></h2>
+  <p class="note">A cross of the two ideas: a decal shape (badge, tab, block, stripe, chip) clipped over an XOR plaid, a cellular automaton, a teletext mosaic or a Bayer ramp. Click a tile to reseed it, ☆ to bookmark it.</p>
+  <div class="grid" id="retro-decals"></div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

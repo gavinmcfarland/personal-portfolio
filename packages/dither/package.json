@@ -1,0 +1,25 @@
+{
+  "name": "@gavinmcfarland/dither",
+  "version": "0.0.0",
+  "description": "Canvas engine for 1-bit dither textures — square dots masked into ordered geometry, with a seeded auto-generator",
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./src": "./src/index.js"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "demo": "vite --config vite.demo.config.js"
+  },
+  "devDependencies": {
+    "vite": "^5.4.21"
+  }
+}
