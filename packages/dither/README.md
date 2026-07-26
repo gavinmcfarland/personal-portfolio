@@ -198,6 +198,12 @@ each a distinct look:
   rule; Rule 90 draws a Sierpinski triangle, others draw fractal bands.
 - `teletext` — **2×3 sixel mosaics**, optionally with the gutters of "separated
   graphics" mode. The 80s broadcast Ceefax look.
+- `maze` — a **recursive-backtracker maze**, the solvable single-path kind.
+- `life` — **Conway's Game of Life** run a few generations from a random soup.
+- `invaders` — a sheet of **mirror-symmetric arcade sprites**.
+- `plasma` — **summed sine waves** (demoscene plasma) broken up by a 4×4 Bayer
+  dither. Tiles.
+- `chevron` — **zigzag op-art stripes**. Tiles.
 
 ```js
 retro('gavin').render(canvas);                          // seed picks the algorithm

@@ -15,7 +15,7 @@
    its own natural size. */
 
 import { makeRng } from './rng.js';
-import { xorGrid, caGrid, teletextGrid, bayerMaskSpec } from './retro.js';
+import { xorGrid, caGrid, teletextGrid, bayerMaskSpec, mazeGrid, plasmaGrid, chevronGrid } from './retro.js';
 
 /* Round a box dimension to a whole number of `unit` squares (at least two),
    so a rectangular decal never clips a dot mid-square at its far edge. */
@@ -221,7 +221,7 @@ const retroShapes = {
   },
 };
 const RETRO_SHAPE_BAG = ['badge', 'badge', 'block', 'tab', 'stripe', 'chip'];
-const RETRO_FILL_BAG = ['xor', 'automata', 'teletext', 'bayer'];
+const RETRO_FILL_BAG = ['xor', 'automata', 'teletext', 'bayer', 'maze', 'plasma', 'chevron'];
 
 /* The fill layer for a retro decal — a dense small crop of one retro
    algorithm, inked bold. CA uses `full` so a small shape is never bare. */
@@ -229,6 +229,9 @@ function retroFillLayer(fillName, r) {
   if (fillName === 'xor') return { grid: xorGrid(r), cell: r.pick([2, 3]), ink: 'tx-solid' };
   if (fillName === 'automata') return { grid: caGrid(r, { full: true }), cell: r.pick([2, 3]), ink: 'tx-solid' };
   if (fillName === 'teletext') return { grid: teletextGrid(r), cell: r.pick([2, 3]), ink: 'tx-solid' };
+  if (fillName === 'maze') return { grid: mazeGrid(r), cell: r.pick([2, 3]), ink: 'tx-solid' };
+  if (fillName === 'plasma') return { grid: plasmaGrid(r), cell: r.pick([2, 3]), ink: 'tx-solid' };
+  if (fillName === 'chevron') return { grid: chevronGrid(r), cell: r.pick([2, 3]), ink: 'tx-solid' };
   const mask = bayerMaskSpec(r); // bayer — tile = cell so shape clips whole cells
   return { mark: 'solid', tile: mask.cell, ink: 'tx-solid', mask };
 }
