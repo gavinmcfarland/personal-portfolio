@@ -1,5 +1,3 @@
-import { Section } from "./ui";
-
 /* The tail of the manual: SEE ALSO cross-references. Section numbers follow the
    man tradition — (1) is where the commands live, (7) is conventions and
    everything social. AUTHOR (the address to report issues to) used to close the
@@ -12,12 +10,15 @@ const socials = [
 ];
 
 const Connect = () => (
-  <Section id="connect" label="See also">
-    <p className="mb-5 max-w-[62ch] text-muted">
+  <>
+    <h2 id="connect" className="section-label reveal">
+      See also
+    </h2>
+    <p className="lede indent reveal max-w-measure text-muted">
       Looking for the next interesting thing to build.
     </p>
 
-    <p className="leading-relaxed">
+    <p className="indent reveal">
       {socials.map((s, i) => (
         <span key={s.label}>
           <a
@@ -33,7 +34,7 @@ const Connect = () => (
         </span>
       ))}
     </p>
-  </Section>
+  </>
 );
 
 export default Connect;

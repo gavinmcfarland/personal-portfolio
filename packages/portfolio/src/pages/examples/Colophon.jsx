@@ -1,6 +1,5 @@
 import Seo from "../../components/Seo";
 import DocShell from "../../components/DocShell";
-import { Section } from "../../components/ui";
 
 /* Example: a colophon / "uses" page — the one page where an index over a small
    set still reads as intentional, because a colophon is a reference list. The
@@ -37,74 +36,76 @@ export default function Colophon() {
         description="How this site is built, set out as a manual's colophon."
       />
 
-      <header className="pt-10">
-        <h2 className="section-label mb-4">NAME</h2>
-        <div className="indent">
-          <p className="wordmark text-[1.75rem] sm:text-[2.25rem]">Colophon</p>
-          <p className="max-w-[62ch] text-muted">
-            What this site is made of. The whole thing is set as a manual: one
-            monospace face, flat fills, hairline rules, and a single working
-            accent. The system is called <span className="text-ink">Enamel</span>
-            <sup className="fn-ref">3</sup> &mdash; vitreous enamel on steel.
-          </p>
-        </div>
+      <header className="pt-(--sp-8)">
+        <h2 className="section-label">NAME</h2>
+        <p className="indent wordmark">Colophon</p>
+        <p className="indent max-w-measure text-muted">
+          What this site is made of. The whole thing is set as a manual: one
+          monospace face, flat fills, hairline rules, and a single working
+          accent. The system is called <span className="text-ink">Enamel</span>
+          <sup className="fn-ref">3</sup> &mdash; vitreous enamel on steel.
+        </p>
       </header>
 
-      <Section id="build" label="Built with">
-        <div className="man-outline max-w-[62ch]">
-          {BUILD.map((r, i) => (
-            <div key={i} className={`man-outline__row ${LEVEL_CLASS[r.level]}`}>
-              <span className="man-outline__mk">{r.mark}</span>
-              <span>{r.term ? <b>{r.term}</b> : r.body}</span>
-            </div>
-          ))}
-        </div>
-      </Section>
+      <h2 id="build" className="section-label reveal">
+        Built with
+      </h2>
+      <div className="indent reveal man-outline max-w-measure">
+        {BUILD.map((r, i) => (
+          <div key={i} className={`man-outline__row ${LEVEL_CLASS[r.level]}`}>
+            <span className="man-outline__mk">{r.mark}</span>
+            <span>{r.term ? <b>{r.term}</b> : r.body}</span>
+          </div>
+        ))}
+      </div>
 
-      <Section id="typography" label="Typography & colour">
-        <dl className="max-w-[64ch] space-y-3">
-          {SPEC.map((s) => (
-            <div key={s.t} className="tp">
-              <dt>{s.t}</dt>
-              <dd className="text-muted">{s.d}</dd>
-            </div>
-          ))}
-        </dl>
-      </Section>
+      <h2 id="typography" className="section-label reveal">
+        Typography &amp; colour
+      </h2>
+      <dl className="indent reveal max-w-measure space-y-(--sp-2)">
+        {SPEC.map((s) => (
+          <div key={s.t} className="tp">
+            <dt>{s.t}</dt>
+            <dd className="text-muted">{s.d}</dd>
+          </div>
+        ))}
+      </dl>
 
-      <Section id="credits" label="Credits">
-        <div className="footnotes max-w-[64ch]">
-          <div className="footnotes__rule" aria-hidden="true" />
-          <p className="footnote">
-            <sup>1</sup> <span className="text-ink">Spline Sans Mono</span> — SIL
-            Open Font License.
-          </p>
-          <p className="footnote">
-            <sup>2</sup> <span className="text-ink">Canvas engine</span> — the
-            same component published as{" "}
-            <span className="text-ink">@gavinmcfarland/canvas</span>.
-          </p>
-          <p className="footnote">
-            <sup>3</sup> <span className="text-ink">Enamel</span> — the design
-            system for this site: flat fills, hairline edges, a graphite ground
-            and vermilion as the single accent.
-          </p>
-        </div>
-      </Section>
-
-      <Section id="seealso" label="See also">
-        <p className="leading-relaxed">
-          <a
-            href="https://github.com/gavinmcfarland"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="xref"
-          >
-            source
-          </a>
-          <span className="xref__sec">(1)</span>
+      <h2 id="credits" className="section-label reveal">
+        Credits
+      </h2>
+      <div className="indent reveal footnotes max-w-measure">
+        <div className="footnotes__rule" aria-hidden="true" />
+        <p className="footnote">
+          <sup>1</sup> <span className="text-ink">Spline Sans Mono</span> — SIL
+          Open Font License.
         </p>
-      </Section>
+        <p className="footnote">
+          <sup>2</sup> <span className="text-ink">Canvas engine</span> — the same
+          component published as{" "}
+          <span className="text-ink">@gavinmcfarland/canvas</span>.
+        </p>
+        <p className="footnote">
+          <sup>3</sup> <span className="text-ink">Enamel</span> — the design
+          system for this site: flat fills, hairline edges, a graphite ground and
+          vermilion as the single accent.
+        </p>
+      </div>
+
+      <h2 id="seealso" className="section-label reveal">
+        See also
+      </h2>
+      <p className="indent reveal">
+        <a
+          href="https://github.com/gavinmcfarland"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="xref"
+        >
+          source
+        </a>
+        <span className="xref__sec">(1)</span>
+      </p>
     </DocShell>
   );
 }

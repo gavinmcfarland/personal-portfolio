@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { useReveal } from '../hooks/useReveal';
 
 /* onClick handler for navigation links/buttons: after a *mouse* activation, drop
    focus from the element. Without this, a clicked link keeps DOM focus with no
@@ -12,23 +11,11 @@ export const blurOnPointerClick = (e) => {
   if (e.detail) e.currentTarget.blur();
 };
 
-/* Section demarcated by a full-bleed hairline above its label. The <section>
-   breaks out of the parent <main>'s width cap (w-screen + a negative margin that
-   matches main's left gutter) so the rule spans the whole viewport, while an inner
-   wrapper re-establishes the same content column so the label and content stay
-   aligned with the rest of the page. Assumes a `pl-8 sm:pl-14 lg:pl-24` parent. */
-export function Section({ label, children, id }) {
-  const ref = useReveal();
-  return (
-    <section id={id} ref={ref} className="reveal scroll-mt-24 mt-16 sm:mt-24">
-      {/* Man-page shape: no rule between sections — the bold heading sits flush
-          to the column and its body hangs at the fixed indent stop, separated
-          from what precedes it by whitespace alone. */}
-      <h2 className="section-label mb-4">{label}</h2>
-      <div className="indent">{children}</div>
-    </section>
-  );
-}
+/* NOTE: <Section> is gone. A group is now just a flush `.section-label` heading
+   followed by its body elements, each hung at the stop with `.indent` — no
+   wrapper element between them. The spacing that the wrapper used to hold lives
+   on `.section-label` in app.css, and the reveal-on-scroll observer that used to
+   sit on each section now runs once per page (Home, DocShell, CV). */
 
 /* A two-column list row: bold sans index token on the left, serif content on
    the right. Renders an internal router link when `to` is set, an external
@@ -40,7 +27,7 @@ export function ListRow({ index, href, to, external, children }) {
   const linkCls = `${cls} transition-colors duration-200 hover:bg-surface`;
   const body = (
     <>
-      <div className="font-sans tnum text-[0.9375rem] font-bold text-ink">{index}</div>
+      <div className="font-sans tnum text-5 font-bold text-ink">{index}</div>
       <div className="min-w-0">{children}</div>
     </>
   );
@@ -67,13 +54,16 @@ export function ListRow({ index, href, to, external, children }) {
   return <div className={cls}>{body}</div>;
 }
 
-/* Purple sub-heading within a section (e.g. "Freelance" / "Perm"). Bold sans,
-   accent-coloured, lightly tracked — mirrors the CV's group labels. */
+/* Sub-heading within a section (e.g. "Freelance" / "Perm"). The type and
+   the two margins live on `.sub-label` in app.css, so this and the Specimen's
+   group heads can no longer drift apart the way they had (mt-8 here, mt-10
+   there, for the same relationship). */
 export function SubLabel({ children }) {
   return (
-    <h3 className="mb-1 mt-8 px-3 font-sans text-[0.8125rem] font-bold tracking-[0.02em] text-accent first:mt-0">
-      {children}
-    </h3>
+    // `indent` is baked in: a sub-label only ever appears inside a section body,
+    // which since the sections were flattened means hanging at the stop itself.
+    // `px-3` lines it up with <ListRow>'s inset.
+    <h3 className="sub-label indent px-3">{children}</h3>
   );
 }
 

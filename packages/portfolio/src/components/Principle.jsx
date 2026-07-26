@@ -22,7 +22,7 @@ const Principle = () => {
               The best tools disappear. The craft is in making something{" "}
               <em>feel effortless to use.</em>
             </p>
-            <p className="mt-7 font-mono text-[0.75rem]">
+            <p className="mt-7 font-mono text-2">
               <a href="#projects" className="ulink">
                 See the work &rarr;
               </a>

@@ -1,5 +1,3 @@
-import { Section } from "./ui";
-
 /* INDEX — a back-of-book index: alphabetical entries with sub-entries, flowed
    into columns, each pointing at the section (§n) where the term appears. The
    locators match CONTENTS. The entries are illustrative rather than exhaustive —
@@ -96,8 +94,11 @@ const Entry = ({ t, href, loc, subs }) => (
 );
 
 const PageIndex = () => (
-  <Section id="index" label="Index">
-    <div className="index-cols max-w-[62ch]">
+  <>
+    <h2 id="index" className="section-label reveal">
+      Index
+    </h2>
+    <div className="indent reveal index-cols max-w-measure">
       {GROUPS.map((g) => (
         <div key={g.letter} className="index-group">
           <p className="index-letter">{g.letter}</p>
@@ -107,7 +108,7 @@ const PageIndex = () => (
         </div>
       ))}
     </div>
-  </Section>
+  </>
 );
 
 export default PageIndex;

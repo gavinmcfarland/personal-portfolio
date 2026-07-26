@@ -19,7 +19,7 @@ export default function ProjectPage({ project }) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={blurOnPointerClick}
-        className={`group shrink-0 items-center gap-1 font-sans text-[0.8125rem] font-medium text-muted transition-colors duration-200 hover:text-ink sm:text-[0.875rem] ${visibility}`}
+        className={`group shrink-0 items-center gap-1 font-sans text-3 font-medium text-muted transition-colors duration-200 hover:text-ink sm:text-4 ${visibility}`}
       >
         {label}
         <ArrowUpRight className="h-3.5 w-3.5 text-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
@@ -41,7 +41,7 @@ export default function ProjectPage({ project }) {
         aria-label={`${isPrev ? "Previous" : "Next"} project: ${target.title}`}
         title={`${isPrev ? "Previous" : "Next"}: ${target.title}`}
         onClick={blurOnPointerClick}
-        className={`flex min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-[0.875rem] font-medium text-muted transition-colors duration-150 hover:bg-hover hover:text-ink h-[38px] lg:w-[calc(50%-0.25rem)] lg:px-3 ${
+        className={`flex min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-4 font-medium text-muted transition-colors duration-150 hover:bg-hover hover:text-ink h-[38px] lg:w-[calc(50%-0.25rem)] lg:px-3 ${
           isPrev ? "lg:mr-auto lg:justify-start" : "lg:ml-auto lg:justify-end"
         }`}
       >
@@ -68,7 +68,7 @@ export default function ProjectPage({ project }) {
             <Link
               to="/"
               onClick={blurOnPointerClick}
-              className="group inline-flex items-center gap-2 font-sans text-[0.875rem] font-medium text-muted transition-colors duration-200 hover:text-ink"
+              className="group inline-flex items-center gap-2 font-sans text-4 font-medium text-muted transition-colors duration-200 hover:text-ink"
             >
               <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
               Back
@@ -76,17 +76,24 @@ export default function ProjectPage({ project }) {
             {visitPill("inline-flex", "Visit")}
           </div>
 
-          <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 lg:mt-8 lg:flex-col lg:items-start lg:gap-y-2">
-            <h1 className="text-[1.375rem] font-bold leading-tight tracking-[-0.01em] text-ink sm:text-[1.75rem]">
-              {project.title}
-            </h1>
-            <span className="tnum font-sans text-[0.8125rem] text-faint">
+          {/* The project title is the wordmark too, in its narrow-column cut —
+              the sidebar is ~256px of content, so it stays at --text-6 rather
+              than stepping up at `sm`.
+
+              The title keeps `.wordmark`'s own bottom margin: because it is a
+              flex item that margin cannot collapse with the tagline's, so the
+              two add to 1½ lines. (A `mb-0` here would be dead code — app.css is
+              unlayered, so it outranks any Tailwind margin utility, which live
+              in @layer utilities.) */}
+          <div className="mt-(--sp-2) flex flex-wrap items-baseline gap-x-3 lg:mt-(--sp-8) lg:flex-col lg:items-start">
+            <h1 className="wordmark wordmark--narrow">{project.title}</h1>
+            <span className="tnum font-sans text-3 text-faint">
               {project.tech.join(" · ")}
             </span>
           </div>
 
           {project.tagline && (
-            <p className="mt-1.5 max-w-[68ch] text-pretty text-[0.875rem] leading-relaxed text-muted lg:mt-3">
+            <p className="mt-(--sp-2) max-w-measure text-pretty text-4 text-muted">
               {project.tagline}
             </p>
           )}
@@ -96,7 +103,7 @@ export default function ProjectPage({ project }) {
           {(prev || next) && (
             <nav
               aria-label="Project navigation"
-              className="mt-8 flex items-center justify-end gap-2 lg:mt-auto lg:justify-between"
+              className="mt-(--sp-8) flex items-center justify-end gap-2 lg:mt-auto lg:justify-between"
             >
               {prev && navLink(prev, "prev")}
               {next && navLink(next, "next")}

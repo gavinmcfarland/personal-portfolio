@@ -126,13 +126,13 @@ export default function PrivatePage() {
       <Seo title="Private page" noindex />
       <ThemeToggle />
       {status === STATUS.loading && (
-        <p className="text-sm text-faint">Loading…</p>
+        <p className="text-4 text-faint">Loading…</p>
       )}
 
       {status === STATUS.missing && (
         <div className="text-center">
-          <h1 className="font-sans text-lg font-bold text-ink">Link not found</h1>
-          <p className="mt-2 text-sm text-muted">
+          <h1 className="font-sans text-5 font-bold text-ink">Link not found</h1>
+          <p className="mt-(--sp-1) text-4 text-muted">
             This private page doesn’t exist or has been removed.
           </p>
         </div>
@@ -143,8 +143,8 @@ export default function PrivatePage() {
           onSubmit={onSubmit}
           className="w-full max-w-xs rounded-[12px] border border-line bg-surface p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
         >
-          <h1 className="font-sans text-base font-bold text-ink">Private page</h1>
-          <p className="mt-1 text-sm text-muted">Enter the password to view.</p>
+          <h1 className="font-sans text-4 font-bold text-ink">Private page</h1>
+          <p className="mt-(--sp-1) text-4 text-muted">Enter the password to view.</p>
           <input
             type="password"
             autoFocus
@@ -153,13 +153,13 @@ export default function PrivatePage() {
             aria-label="Password"
             aria-invalid={error ? "true" : undefined}
             placeholder="Password"
-            className="mt-4 w-full rounded-[8px] border border-line bg-base px-3 py-2 text-sm text-ink outline-none focus:border-[var(--accent)]"
+            className="mt-(--sp-2) w-full rounded-[8px] border border-line bg-base px-3 py-2 text-4 text-ink outline-none focus:border-[var(--accent)]"
           />
-          {error && <p className="mt-2 text-sm text-[var(--accent)]">{error}</p>}
+          {error && <p className="mt-(--sp-1) text-4 text-[var(--accent)]">{error}</p>}
           <button
             type="submit"
             disabled={checking || !password}
-            className="mt-4 w-full rounded-[8px] bg-[var(--accent)] px-3 py-2 text-sm font-medium text-[var(--on-accent)] transition-opacity disabled:opacity-50"
+            className="mt-(--sp-2) w-full rounded-[8px] bg-[var(--accent)] px-3 py-2 text-4 font-medium text-[var(--on-accent)] transition-opacity disabled:opacity-50"
           >
             {checking ? "Unlocking…" : "Unlock"}
           </button>

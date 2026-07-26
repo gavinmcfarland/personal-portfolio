@@ -10,7 +10,7 @@ import Seo from "../components/Seo";
 import Intro from "../components/Intro";
 import Projects from "../components/Projects";
 import Connect from "../components/Connect";
-import { Section } from "../components/ui";
+import { useReveal } from "../hooks/useReveal";
 
 /* A self-contained board for the canvas playground. It sticks to the canvas's
    built-in nodes (markdown, sticky, arrow) and follows the page's light/dark mode
@@ -61,57 +61,66 @@ const playgroundBoard = {
   ],
 };
 
-const Home = () => (
+const Home = () => {
+  // One observer for the whole page. It used to live on each <section>; with the
+  // sections flattened away, <main> is the only root left that spans them all.
+  const ref = useReveal();
+  return (
   <>
     {/* Home keeps the site defaults — a generic OG card with the site name. */}
     <Seo
       title=""
       description="Designer and full-stack engineer building tools and web applications. Currently freelancing and building Awenate."
     />
-    {/* All page content lives in <main>, one <section> per group. */}
-    <main className="mr-auto w-full max-w-5xl pb-16 pl-8 pr-5 sm:pb-20 sm:pl-14 sm:pr-6 lg:pl-24">
+    {/* All page content lives in <main>: a flush heading per group, its body
+        hung at the indent stop beside it — no wrapper between them. */}
+    <main
+      ref={ref}
+      className="mr-auto w-full max-w-5xl pb-(--sp-16) pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24"
+    >
       {/* CONTENTS, CAPABILITIES, ENVIRONMENT and INDEX were removed from Home;
           copies of all four live on the unlisted /backup page. */}
       <Intro />
       <Projects />
 
-      <Section id="playground" label="Scratch">
-        <p className="max-w-[64ch] text-muted">
-          <span className="prompt">$</span> gavin{" "}
-          <span className="flag not-italic text-muted">--scratch</span> &mdash; an
-          interactive board of what has my attention right now: ideas,
-          experiments and features, often here long before they become finished
-          work. Pan, zoom, and leave a note.
-        </p>
-        <div
-          className="mt-8 overflow-hidden rounded-2xl border border-line"
-          style={{ height: "min(70vh, 520px)" }}
-        >
-          <Canvas
-            fit="contain"
-            initialView="fit"
-            fullscreenButton="document"
-            classNames={{ root: "enamel" }}
-            accent={ACCENT}
-            editable={import.meta.env.DEV}
-            cooperativeGestures
-            base={playgroundBoard}
-            storageKey="footer-canvas-demo"
-            initialState={publishedBoard("footer-canvas-demo")}
-            onPublish={boardSaver("footer-canvas-demo")}
-            onUploadImage={uploadMedia}
-            onUploadVideo={uploadMedia}
-            onUploadAudio={uploadMedia}
-            onUploadHtml={uploadMedia}
-            onUnfurl={unfurlLink}
-          />
-        </div>
-      </Section>
+      <h2 id="playground" className="section-label reveal">
+        Scratch
+      </h2>
+      <p className="lede indent reveal max-w-measure text-muted">
+        <span className="prompt">$</span> gavin{" "}
+        <span className="flag not-italic text-muted">--scratch</span> &mdash; an
+        interactive board of what has my attention right now: ideas, experiments
+        and features, often here long before they become finished work. Pan,
+        zoom, and leave a note.
+      </p>
+      <div
+        className="indent reveal overflow-hidden rounded-2xl border border-line"
+        style={{ height: "min(70vh, 520px)" }}
+      >
+        <Canvas
+          fit="contain"
+          initialView="fit"
+          fullscreenButton="document"
+          classNames={{ root: "enamel" }}
+          accent={ACCENT}
+          editable={import.meta.env.DEV}
+          cooperativeGestures
+          base={playgroundBoard}
+          storageKey="footer-canvas-demo"
+          initialState={publishedBoard("footer-canvas-demo")}
+          onPublish={boardSaver("footer-canvas-demo")}
+          onUploadImage={uploadMedia}
+          onUploadVideo={uploadMedia}
+          onUploadAudio={uploadMedia}
+          onUploadHtml={uploadMedia}
+          onUnfurl={unfurlLink}
+        />
+      </div>
 
       <Connect />
     </main>
-
   </>
-);
+  );
+};
 
 export default Home;

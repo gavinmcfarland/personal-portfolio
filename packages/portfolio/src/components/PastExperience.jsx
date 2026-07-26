@@ -1,5 +1,3 @@
-import { Section } from "./ui";
-
 /* The operating context, set as a man page's ENVIRONMENT: the variables the
    `gavin` command runs under — stack, location, the years and the names behind
    them — as roff .TP hanging pairs. The full history lives one cross-reference
@@ -17,8 +15,11 @@ const ENV = [
 ];
 
 const PastExperience = () => (
-  <Section id="environment" label="Environment">
-    <dl className="space-y-3">
+  <>
+    <h2 id="environment" className="section-label reveal">
+      Environment
+    </h2>
+    <dl className="indent reveal space-y-(--sp-2)">
       {ENV.map((e) => (
         <div key={e.name} className="tp">
           <dt>{e.name}</dt>
@@ -27,7 +28,7 @@ const PastExperience = () => (
       ))}
     </dl>
 
-    <p className="mt-6 text-[0.85rem] text-muted">
+    <p className="note indent reveal">
       Full professional history:{" "}
       <a
         href="https://www.linkedin.com/in/gavinmcfarland"
@@ -39,7 +40,7 @@ const PastExperience = () => (
       </a>
       <span className="xref__sec">(7)</span>
     </p>
-  </Section>
+  </>
 );
 
 export default PastExperience;

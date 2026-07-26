@@ -1,5 +1,3 @@
-import { Section } from "./ui";
-
 /* CONTENTS — a printed manual's table of contents borrowed into the man-page
    set: each section title with dotted leaders running out to its locator. Real
    man pages carry no TOC; the device is a printed-book one. The §n locators are
@@ -19,8 +17,11 @@ const ENTRIES = [
 ];
 
 const Contents = () => (
-  <Section id="contents" label="Contents">
-    <ul className="leaders max-w-[52ch]">
+  <>
+    <h2 id="contents" className="section-label reveal">
+      Contents
+    </h2>
+    <ul className="indent reveal leaders max-w-measure-narrow">
       {ENTRIES.map((e) => (
         <li key={e.href} className="leader">
           <a href={e.href} className="xref">
@@ -34,7 +35,7 @@ const Contents = () => (
         </li>
       ))}
     </ul>
-  </Section>
+  </>
 );
 
 export default Contents;

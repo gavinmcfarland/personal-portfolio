@@ -1,5 +1,4 @@
 import { skills } from "../data/skills";
-import { Section } from "./ui";
 
 /* CAPABILITIES — the disciplines set as a manual's nested outline: each group is
    a numbered top-level entry (1, 2, 3) and its terms hang beneath as a lettered
@@ -9,8 +8,11 @@ import { Section } from "./ui";
 const LETTERS = "abcdefghijklmnopqrstuvwxyz";
 
 const Capabilities = () => (
-  <Section id="capabilities" label="Capabilities">
-    <div className="man-outline max-w-[62ch]">
+  <>
+    <h2 id="capabilities" className="section-label reveal">
+      Capabilities
+    </h2>
+    <div className="indent reveal man-outline max-w-measure">
       {skills.map((group, gi) => (
         <div key={group.id}>
           <div className="man-outline__row">
@@ -28,7 +30,7 @@ const Capabilities = () => (
         </div>
       ))}
     </div>
-  </Section>
+  </>
 );
 
 export default Capabilities;

@@ -35,16 +35,16 @@ export default function CollisionDemoPage() {
       <header className="flex shrink-0 items-center gap-4 border-b border-line px-4 py-3 sm:px-6">
         <Link
           to="/"
-          className="group inline-flex shrink-0 items-center gap-2 font-sans text-[0.875rem] font-medium text-muted transition-colors duration-200 hover:text-ink"
+          className="group inline-flex shrink-0 items-center gap-2 font-sans text-4 font-medium text-muted transition-colors duration-200 hover:text-ink"
         >
           <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
           Back
         </Link>
         <div className="min-w-0">
-          <h1 className="truncate font-sans text-[0.9375rem] font-bold leading-tight text-ink">
+          <h1 className="truncate font-sans text-5 font-bold text-ink">
             Responsive collisions
           </h1>
-          <p className="truncate text-[0.8125rem] text-faint">
+          <p className="truncate text-3 text-faint">
             Resize the window — objects reflow to stay in view, never overlapping unless you mean them to
           </p>
         </div>

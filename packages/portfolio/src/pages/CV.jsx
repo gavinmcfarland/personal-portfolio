@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Section, Sep } from "../components/ui";
+import { ArrowLeft, Sep } from "../components/ui";
+import { useReveal } from "../hooks/useReveal";
 
 /* The career in two eras — the whole shape of it, dated, in two lines. The range
    sits in a tabular token column so the two rows read as a mini timeline. */
@@ -37,90 +38,102 @@ const Row = ({ token, tokenClass, children }) => (
 /* CV — a deliberately lean résumé. A one-breath summary, the career as two dated
    eras, then freelance clients grouped by field. Detail lives on LinkedIn; this
    page is the shape of the career, not the log of it. Rendered in the route panel. */
-const CV = () => (
+const CV = () => {
+  // The page's single reveal observer — one per page shell since the sections
+  // that used to own one each were flattened away.
+  const ref = useReveal();
+  return (
   <>
-    <main className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24">
-      <header className="pt-24 sm:pt-28">
+    <main
+      ref={ref}
+      className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24"
+    >
+      {/* The same top rail as every other page in the route panel (DocShell's),
+          so the Back link sits level with the theme toggle instead of 96px down. */}
+      <header className="pt-(--sp-4)">
         <Link
           to="/"
-          className="group inline-flex w-fit items-center gap-2 font-sans text-[0.875rem] font-medium text-muted transition-colors duration-200 hover:text-ink"
+          className="group inline-flex w-fit items-center gap-2 font-sans text-4 font-medium text-muted transition-colors duration-200 hover:text-ink"
         >
           <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
           Back
         </Link>
 
-        <h1 className="mt-8 text-[1.75rem] font-bold leading-[1.1] tracking-[-0.01em] text-ink sm:text-[2rem]">
-          Gavin McFarland
-        </h1>
-        <p className="mt-2 font-sans text-[1rem] text-faint">
+        {/* The page title is the wordmark, like every other page title on the
+            site — it used to be a one-off 1.75/2rem heading at its own leading. */}
+        <h1 className="wordmark mt-(--sp-8)">Gavin McFarland</h1>
+        <p className="font-sans text-4 text-faint">
           Designer &amp; full-stack engineer
           <Sep />
           London, UK
         </p>
 
-        <p className="mt-7 max-w-[48ch] text-pretty text-[1.0625rem] leading-relaxed text-muted">
+        <p className="mt-(--para) max-w-measure-narrow text-pretty text-4 text-muted">
           Freelance since 2014, building tools, products and web applications for
           teams across finance, government and e-commerce. Four years full-time in
           frontend design before that.
         </p>
       </header>
 
-      <Section id="career" label="Career">
-        <div className="space-y-8 sm:space-y-9">
-          {eras.map((e) => (
-            <Row
-              key={e.range}
-              token={e.range}
-              tokenClass="font-sans tnum text-[0.9375rem] font-bold text-ink sm:pt-0.5"
-            >
-              <div className="font-sans text-[1.0625rem] font-bold text-ink">{e.title}</div>
-              <p className="mt-1 max-w-[44ch] text-pretty text-[1rem] leading-relaxed text-muted">
-                {e.note}
-              </p>
-            </Row>
-          ))}
-        </div>
-      </Section>
-
-      <Section id="clients" label="Selected clients">
-        <div className="space-y-6">
-          {clients.map((c) => (
-            <Row
-              key={c.field}
-              token={c.field}
-              tokenClass="font-sans text-[0.8125rem] font-bold tracking-[0.02em] text-accent sm:pt-1"
-            >
-              <p className="text-pretty text-[1rem] leading-relaxed text-muted">
-                {c.names.map((n, i) => (
-                  <span key={n}>
-                    {i > 0 && <Sep />}
-                    {n}
-                  </span>
-                ))}
-              </p>
-            </Row>
-          ))}
-        </div>
-
-        <p className="mt-10 text-[0.9375rem] text-faint">
-          Full work history on{" "}
-          <a
-            href="https://www.linkedin.com/in/gavinmcfarland"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ulink font-medium"
+      <h2 id="career" className="section-label reveal">
+        Career
+      </h2>
+      <div className="indent reveal space-y-(--sp-6)">
+        {eras.map((e) => (
+          <Row
+            key={e.range}
+            token={e.range}
+            tokenClass="font-sans tnum text-5 font-bold text-ink sm:pt-0.5"
           >
-            LinkedIn
-          </a>
-          .
-        </p>
-      </Section>
+            <div className="font-sans text-4 font-bold text-ink">{e.title}</div>
+            <p className="mt-(--sp-1) max-w-measure-narrow text-pretty text-4 text-muted">
+              {e.note}
+            </p>
+          </Row>
+        ))}
+      </div>
+
+      <h2 id="clients" className="section-label reveal">
+        Selected clients
+      </h2>
+      <div className="indent reveal space-y-(--sp-4)">
+        {clients.map((c) => (
+          <Row
+            key={c.field}
+            token={c.field}
+            tokenClass="font-sans text-3 font-bold tracking-sub text-accent sm:pt-1"
+          >
+            <p className="text-pretty text-4 text-muted">
+              {c.names.map((n, i) => (
+                <span key={n}>
+                  {i > 0 && <Sep />}
+                  {n}
+                </span>
+              ))}
+            </p>
+          </Row>
+        ))}
+      </div>
+
+      <p className="note indent reveal">
+        Full work history on{" "}
+        <a
+          href="https://www.linkedin.com/in/gavinmcfarland"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ulink font-medium"
+        >
+          LinkedIn
+        </a>
+        .
+      </p>
     </main>
 
-    <footer className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24 pt-16 pb-16">
-      <p className="text-[0.8125rem] text-faint">© 2026 Gavin McFarland</p>
+    <footer className="mr-auto w-full max-w-5xl pb-(--sp-16) pl-8 pr-5 pt-(--sp-16) sm:pl-14 sm:pr-6 lg:pl-24">
+      <p className="text-2 text-faint">© 2026 Gavin McFarland</p>
     </footer>
   </>
-);
+  );
+};
 
 export default CV;

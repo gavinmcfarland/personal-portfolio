@@ -1,18 +1,21 @@
 import { education } from '../data/education';
-import { Section, ListRow, Sep } from './ui';
+import { ListRow, Sep } from './ui';
 
 const Education = () => (
-  <Section id="education" label="Education">
-    <div className="-my-1">
+  <>
+    <h2 id="education" className="section-label reveal">
+      Education
+    </h2>
+    <div className="indent reveal -my-(--sp-1)">
       {education.map((e) => (
         <ListRow key={e.id} index={e.year}>
-          <span className="font-sans text-[0.9375rem] font-bold text-ink">{e.title}</span>
+          <span className="font-sans text-5 font-bold text-ink">{e.title}</span>
           <Sep />
-          <span className="text-[1rem] text-muted">{e.place}</span>
+          <span className="text-4 text-muted">{e.place}</span>
         </ListRow>
       ))}
     </div>
-  </Section>
+  </>
 );
 
 export default Education;

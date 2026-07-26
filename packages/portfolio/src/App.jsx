@@ -19,6 +19,7 @@ import CaseStudy from "./pages/examples/CaseStudy";
 import Changelog from "./pages/examples/Changelog";
 import Colophon from "./pages/examples/Colophon";
 import Backup from "./pages/Backup";
+import Specimen from "./pages/Specimen";
 import NotFound from "./pages/NotFound";
 import { visibleProjects } from "./data/projects";
 
@@ -164,6 +165,9 @@ function App() {
                 {/* Unlisted archive of seven Home sections — nothing links
                     here, and the page is noindex. */}
                 <Route path="/backup" element={<Backup />} />
+                {/* Unlisted reference sheet for the Enamel system — also
+                    noindex. Nothing links here either. */}
+                <Route path="/specimen" element={<Specimen />} />
                 {/* CV page disabled — not public yet. Re-enable by restoring
                     the import above and this route. */}
                 {/* <Route path="/cv" element={<CV />} /> */}
