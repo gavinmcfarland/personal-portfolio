@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>specimen(7) — 13 · Dither</title>
+<meta name="description" content="Type, colour and component specimen for the 13 · Dither design system.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230E0F0D'/%3E%3Cg fill='%23D9D7CB'%3E%3Crect x='3' y='3' width='1' height='1'/%3E%3Crect x='5' y='4' width='1' height='1'/%3E%3Crect x='7' y='3' width='1' height='1'/%3E%3Crect x='4' y='6' width='1' height='1'/%3E%3Crect x='6' y='7' width='1' height='1'/%3E%3Crect x='9' y='6' width='1' height='1'/%3E%3Crect x='8' y='9' width='1' height='1'/%3E%3Crect x='11' y='8' width='1' height='1'/%3E%3Crect x='10' y='11' width='1' height='1'/%3E%3Crect x='12' y='12' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<!-- A terminal is dark. Bone is opt-in rather than inferred. -->
+<script>(()=>{document.documentElement.classList.toggle('light',localStorage.getItem('gm-surface-13')==='bone');})();</script>
+
+<link rel="stylesheet" href="system.css">
+
+<style>
+  /* ── Specimen-only additions. Same tokens, same doctrine — no
+     curves, no shadows, no gradients that grade — just a few layout
+     helpers this page needs that no other page did. ─────────────── */
+  .spec-swatch { border: 1px solid var(--line); }
+  .spec-swatch__fill { height: 4.5rem; border-bottom: 1px solid var(--line); }
+  .spec-swatch__meta { padding: .55rem .7rem; }
+  .spec-swatch__name { font-weight: 700; letter-spacing: .06em; }
+  .spec-grid { padding-left: var(--indent); display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 1rem; }
+  .spec-row { padding-left: var(--indent); display: grid; grid-template-columns: minmax(10rem, 16rem) 1fr; gap: 1.5rem; align-items: baseline; border-top: 1px solid var(--line); padding-top: 1rem; padding-bottom: 1rem; }
+  .spec-row:first-of-type { border-top: 0; }
+  .spec-row__label { color: var(--faint); font-size: var(--t-sm); text-transform: uppercase; letter-spacing: .1em; }
+  .spec-row__sample { color: var(--ink); }
+  .spec-scale-row { padding-left: var(--indent); display: flex; align-items: baseline; gap: 1.5rem; border-top: 1px solid var(--line); padding-top: 1.25rem; padding-bottom: 1.25rem; flex-wrap: wrap; }
+  .spec-scale-row:first-of-type { border-top: 0; }
+  .spec-scale-row__tag { min-width: 16ch; color: var(--faint); font-size: var(--t-sm); }
+  .spec-scale-row__val { color: var(--mid); font-size: var(--t-sm); margin-left: auto; }
+  .spec-block { padding-left: var(--indent); }
+  .spec-plates { padding-left: var(--indent); display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 1.25rem; }
+  .spec-plates .plate { height: 7rem; }
+  @media (max-width: 699px) { .spec-row { grid-template-columns: 1fr; gap: .25rem; } }
+</style>
+</head>
+
+<body data-page="specimen">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="bar__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── a · NAME ─────────────────────────────────────────────────── -->
+  <section class="sec ground ground--patch">
+    <div class="sheet" style="position:relative">
+      <span class="decal decal--crop" style="top:-4px;left:calc(var(--pad) - 30px)" aria-hidden="true"></span>
+      <h1 class="man__h">Specimen</h1>
+      <div class="man__b">
+        <p class="ink"><span class="b">13 · Dither</span> — a manual page set in one monospaced family
+        at one size; no curves, no shadows, no gradient that grades. What interest there is goes into
+        §3 — a dither engine that builds its own texture out of square dots rather than borrowing a
+        photograph.</p>
+        <p style="margin-top:.9rem">
+          <a class="ln" href="index.html">&larr; back to gavin(1)</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── b · COLOUR ───────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Colour</h2>
+      <div class="man__b" style="margin-bottom:1.25rem">
+        <p>Seven named tokens, plus the three alpha values §3 draws its dots with. Dark is the
+        default surface — <span class="ink">a terminal is dark</span> — and Bone is the opt-in light
+        theme, toggled with the <span class="ink">surface</span> button above and remembered in
+        <code style="font:inherit">localStorage['gm-surface-13']</code>.</p>
+      </div>
+
+      <p class="spec-row__label spec-block" style="margin-bottom:.6rem">Dark (default)</p>
+      <div class="spec-grid" style="margin-bottom:1.75rem">
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#0E0F0D"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--bg</div><div class="faint sm">#0E0F0D</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#151613"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--raise</div><div class="faint sm">#151613</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#D9D7CB"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--ink</div><div class="faint sm">#D9D7CB</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#8C8A80"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--mid</div><div class="faint sm">#8C8A80</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#575650"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--faint</div><div class="faint sm">#575650</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#24251F"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--line</div><div class="faint sm">#24251F</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#7BD88F"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--green</div><div class="faint sm">#7BD88F — the one accent: prompt, live item, focus ring</div></div>
+        </div>
+      </div>
+
+      <p class="spec-row__label spec-block" style="margin-bottom:.6rem">Dither ink (dark)</p>
+      <div class="spec-grid" style="margin-bottom:1.75rem">
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#0E0F0D;background-image:var(--sq);background-size:6px 6px"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--tx</div><div class="faint sm">rgba(217,215,203,.22)</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#0E0F0D;background-image:var(--check-strong);background-size:8px 8px"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--tx-strong</div><div class="faint sm">rgba(217,215,203,.40)</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#0E0F0D;background-image:var(--sq-ground);background-size:5px 5px"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--tx-ground</div><div class="faint sm">rgba(217,215,203,.085)</div></div>
+        </div>
+      </div>
+
+      <p class="spec-row__label spec-block" style="margin-bottom:.6rem">Bone (.light)</p>
+      <div class="spec-grid">
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#E6E3D8"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--bg</div><div class="faint sm">#E6E3D8</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#DDDACE"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--raise</div><div class="faint sm">#DDDACE</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#1A1B14"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--ink</div><div class="faint sm">#1A1B14</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#5C5B52"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--mid</div><div class="faint sm">#5C5B52</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#8E8C82"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--faint</div><div class="faint sm">#8E8C82</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#C9C5B7"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--line</div><div class="faint sm">#C9C5B7</div></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__fill" style="background:#2C7A4B"></div>
+          <div class="spec-swatch__meta"><div class="spec-swatch__name">--green</div><div class="faint sm">#2C7A4B</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="sheet"><div class="stripe" aria-hidden="true"></div></div>
+
+  <!-- ── c · TYPOGRAPHY ───────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Typography</h2>
+      <div class="man__b" style="margin-bottom:1.25rem">
+        <p>One family carries the entire set — <span class="ink">Spline Sans Mono</span>, loaded at
+        four cuts. There is no serif, no grotesque, nothing decorative sitting beside it.</p>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-row__label">300 · light</div>
+        <div class="spec-row__sample" style="font-weight:300;font-size:1.0625rem">The quick brown fox jumps over the lazy dog — 0123456789</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-row__label">400 · regular</div>
+        <div class="spec-row__sample" style="font-weight:400;font-size:1.0625rem">The quick brown fox jumps over the lazy dog — 0123456789</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-row__label">400 · italic</div>
+        <div class="spec-row__sample" style="font-weight:400;font-style:italic;font-size:1.0625rem">The quick brown fox jumps over the lazy dog — 0123456789</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-row__label">700 · bold</div>
+        <div class="spec-row__sample" style="font-weight:700;font-size:1.0625rem">The quick brown fox jumps over the lazy dog — 0123456789</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── d · TYPE SCALE ───────────────────────────────────────────── -->
+  <section class="sec ground ground--band">
+    <div class="sheet">
+      <h2 class="man__h">Type scale</h2>
+      <div class="man__b" style="margin-bottom:1.25rem">
+        <p><span class="ink">Flat type.</span> Two sizes, plus one step for command lines — headings
+        get weight and letter-spacing, never a bigger number.</p>
+      </div>
+
+      <div class="spec-scale-row">
+        <span class="spec-scale-row__tag">--t-sm · micro/meta</span>
+        <span class="sm">Captions, plate numbers, footer, dt/dd labels</span>
+        <span class="spec-scale-row__val">12px / .75rem</span>
+      </div>
+      <div class="spec-scale-row">
+        <span class="spec-scale-row__tag">--t · body &amp; headers</span>
+        <span style="font-size:.875rem">Running text, and h1–h6 at 700 weight, uppercase, tracked</span>
+        <span class="spec-scale-row__val">14px / .875rem</span>
+      </div>
+      <div class="spec-scale-row">
+        <span class="spec-scale-row__tag">--t-cmd · command line</span>
+        <span style="font-size:1.0625rem">$ gavin --design-systems</span>
+        <span class="spec-scale-row__val">17px / 1.0625rem</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── e · COMPONENTS ───────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Components</h2>
+    </div>
+  </section>
+
+  <!-- Synopsis-style command lines -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h" style="font-size:var(--t-sm);color:var(--faint)">Synopsis line</h2>
+      <div class="man__b">
+        <p class="ink" style="margin-bottom:.5rem">
+          <span class="green">$</span> specimen
+          <span class="dim">[--colour] [--type] [--components]</span>
+        </p>
+        <p class="ink">
+          <span class="green">$</span> specimen
+          <span class="dim">--compare</span> <span class="faint">[--all-mockups]</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Links, inline marks -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h" style="font-size:var(--t-sm);color:var(--faint)">Links &amp; inline marks</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          Underlined <a class="ln" href="#">.ln</a> for prose, bare
+          <a class="ln--bare" href="#">.ln--bare</a> where the underline would crowd a list, and
+          cross-references like <a href="#">plugma</a><span class="n">(1)</span>,
+          <a href="#">work</a><span class="n">(1)</span>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- The command entry — realistic project listing -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h" style="font-size:var(--t-sm);color:var(--faint);margin-bottom:1rem">Entries — .cmd / .entry / .plate</h2>
+      <div id="spec-entries"></div>
+    </div>
+  </section>
+
+  <!-- man__dl — the tab-stop list -->
+  <section class="sec ground ground--band">
+    <div class="sheet">
+      <h2 class="man__h">Environment</h2>
+      <div class="man__dl">
+        <div><dt>ROLE</dt><dd>Design engineer, contract</dd></div>
+        <div><dt>YEAR</dt><dd>2023 — present</dd></div>
+        <div><dt>STACK</dt><dd>TypeScript, Svelte, Node.js, Figma API</dd></div>
+        <div><dt>STATUS</dt><dd>Maintained</dd></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fold / disclosure -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h" style="font-size:var(--t-sm);color:var(--faint);margin-bottom:.5rem">History — .fold</h2>
+      <div style="padding-left:var(--indent);max-width:70ch">
+        <details class="fold" open>
+          <summary>2024-02 — token pipeline rebuilt on style-dictionary</summary>
+          <p class="fold__body">Every alias resolves to a single primitive layer, so a rename only ever
+          happens in one file.</p>
+        </details>
+        <details class="fold">
+          <summary>2024-08 — component API frozen at v1</summary>
+          <p class="fold__body">Breaking changes now land behind a codemod rather than a major-version
+          announcement nobody reads.</p>
+        </details>
+        <details class="fold">
+          <summary>2025-03 — Figma plugin bridge shipped</summary>
+          <p class="fold__body">Design tokens edited in Figma now round-trip to the repository without a
+          manual export step.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Code block -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h" style="font-size:var(--t-sm);color:var(--faint);margin-bottom:.5rem">Code — .pre</h2>
+      <div class="spec-block">
+        <div class="pre" style="max-width:48rem"><span class="c">// token resolved at build time</span>
+export const color = {
+  ink: 'var(--ink)',
+  accent: 'var(--green)',
+}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form fields -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h" style="font-size:var(--t-sm);color:var(--faint);margin-bottom:.75rem">Form — .field / .input / .btn</h2>
+      <div class="spec-block" style="max-width:32rem">
+        <div class="field">
+          <label for="spec-name">name</label>
+          <input class="input" id="spec-name" type="text" placeholder="Ada Lovelace">
+        </div>
+        <div class="field" data-invalid="true">
+          <label for="spec-email">email</label>
+          <input class="input" id="spec-email" type="text" value="not-an-address">
+          <p class="err">invalid: not an address</p>
+        </div>
+        <button class="btn" type="button">send</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Copy button -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h" style="font-size:var(--t-sm);color:var(--faint);margin-bottom:.5rem">Copy mark — .copy</h2>
+      <div class="man__b">
+        <p class="ink">gavin@limitlessloop.com
+          <button class="copy" type="button" data-copy="gavin@limitlessloop.com" aria-label="Copy address">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="M5 5V3h8v8h-2M3 5h8v8H3z"/>
+            </svg><span class="copy__label sm">copy</span>
+          </button>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Decals -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h" style="font-size:var(--t-sm);color:var(--faint);margin-bottom:1rem">Decals — .decal</h2>
+      <div style="padding-left:var(--indent);display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:2rem">
+        <div>
+          <div style="position:relative;border:1px solid var(--line);padding:1rem;min-height:6rem">
+            <span class="decal decal--seal decal--tr" aria-hidden="true"></span>
+            <p class="sm dim">seal — approved, current, finished.</p>
+          </div>
+        </div>
+        <div>
+          <div style="position:relative;border:1px solid var(--line);padding:1rem;min-height:6rem">
+            <span class="decal decal--crop" style="top:-11px;left:-11px" aria-hidden="true"></span>
+            <span class="decal decal--crop" style="bottom:-11px;right:-11px" aria-hidden="true"></span>
+            <p class="sm dim">crop — register marks, a proof.</p>
+          </div>
+        </div>
+        <div>
+          <div style="position:relative;border:1px solid var(--line);padding:1rem;min-height:6rem">
+            <span class="decal decal--tab" style="top:-9px;left:1.5rem" aria-hidden="true"></span>
+            <p class="sm dim">tab — hangs off the top edge.</p>
+          </div>
+        </div>
+        <div>
+          <div style="position:relative;border:1px solid var(--line);padding:1rem;min-height:6rem">
+            <span class="decal decal--chip" style="bottom:-24px;right:-30px" aria-hidden="true"></span>
+            <p class="sm dim">chip — rectangle plus a true circle.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── f · TEXTURES / DITHER FIELDS ─────────────────────────────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Dither fields</h2>
+      <div class="man__b" style="margin-bottom:1.25rem">
+        <p>Six 1-bit plates, each a square-dot base with two coarser grids masked into repeating
+        geometry. No dot is round; where a circle appears it is a true circle cut with an explicit
+        pixel radius.</p>
+      </div>
+      <div class="spec-plates">
+        <div><span class="plate" data-plate="a" aria-hidden="true"></span><p class="plate-cap">a — grid</p></div>
+        <div><span class="plate" data-plate="b" aria-hidden="true"></span><p class="plate-cap">b — band</p></div>
+        <div><span class="plate" data-plate="c" aria-hidden="true"></span><p class="plate-cap">c — fine</p></div>
+        <div><span class="plate" data-plate="d" aria-hidden="true"></span><p class="plate-cap">d — disc</p></div>
+        <div><span class="plate" data-plate="e" aria-hidden="true"></span><p class="plate-cap">e — moiré</p></div>
+        <div><span class="plate" data-plate="f" aria-hidden="true"></span><p class="plate-cap">f — block</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Grounds -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">Grounds</h2>
+      <div class="man__b" style="margin-bottom:1rem">
+        <p>The same dots at roughly a third the ink, poured behind a whole section so the sheet reads
+        as printed matter rather than a flat background colour.</p>
+      </div>
+    </div>
+    <div class="sec ground ground--patch" style="border-top:1px solid var(--line)">
+      <div class="sheet">
+        <p class="man__h" style="margin-bottom:.4rem;font-size:var(--t-sm)">ground--patch</p>
+      </div>
+    </div>
+    <div class="sec ground ground--band" style="border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+      <div class="sheet">
+        <p class="man__h" style="margin-bottom:.4rem;font-size:var(--t-sm)">ground--band</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SEE ALSO ─────────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="sheet">
+      <h2 class="man__h">See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="index.html">gavin</a><span class="n">(1)</span>,
+          <a href="textures.html">dither</a><span class="n">(7)</span>,
+          <a href="work.html">work</a><span class="n">(1)</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <p>specimen(7) &nbsp;·&nbsp; 13 · Dither &nbsp;·&nbsp; London, United Kingdom</p>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    // Guarded: renders live only if data.js/system.js loaded correctly.
+    if (!window.DATA || !window.renderEntries) return;
+    const sample = [
+      { name: 'plugma', href: 'project.html', flag: '--toolchain', plate: 'a', year: '2024',
+        desc: 'Build Figma plugins with a single command and the hot reloading the platform never shipped.',
+        link: 'plugma.dev' },
+      { name: 'askeroo', href: 'https://github.com/gavinmcfarland/askeroo', flag: '--prompts', plate: 'b', year: '2024',
+        desc: 'Command-line prompts that remember the question before them, so ⌃C is not the only way back.',
+        link: 'github.com' },
+    ];
+    renderEntries(document.getElementById('spec-entries'), sample);
+  })();
+</script>
+</body>
+</html>

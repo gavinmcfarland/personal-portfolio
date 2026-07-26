@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — Technical Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:opsz,wght@14..32,400;14..32,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────────────────────────────────────
+   GAVIN McFARLAND · Technical studio direction — SPECIMEN
+   Tokens, faces, scale and live components copied verbatim from
+   index.html so this page renders in the mockup's own language.
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --bg:#FCFCFB;
+  --panel:#F1F1EF;
+  --ink:#121316;
+  --muted:#43454B;
+  --faint:#8C8E96;
+  --line:rgba(18,19,22,.12);
+  --line-strong:rgba(18,19,22,.28);
+  --rule:rgba(18,19,22,.82);
+  --accent:#1E7A4D;
+  --accent-soft:rgba(30,122,77,.10);
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --display:'Space Grotesk',var(--sans);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --margin:clamp(20px,5vw,72px);
+  --gutter:clamp(16px,2vw,32px);
+  --maxw:1300px;
+}
+html.dark{
+  --bg:#0A0B0C;
+  --panel:#141618;
+  --ink:#EDEEF0;
+  --muted:#A9ABB2;
+  --faint:#63656C;
+  --line:rgba(237,238,240,.12);
+  --line-strong:rgba(237,238,240,.26);
+  --rule:rgba(237,238,240,.70);
+  --accent:#56D49B;
+  --accent-soft:rgba(86,212,155,.14);
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;
+  transition:background-color .4s ease,color .4s ease;}
+::selection{background:var(--accent);color:#fff;}
+a{color:inherit;text-decoration:none;}
+.page{max-width:var(--maxw);margin:0 auto;padding:0 var(--margin) 6rem;}
+.g12{display:grid;grid-template-columns:repeat(12,1fr);column-gap:var(--gutter);}
+.tnum{font-variant-numeric:tabular-nums;}
+.mono{font-family:var(--mono);}
+.pretty{text-wrap:pretty;}.balance{text-wrap:balance;}
+.label{font-family:var(--mono);font-size:.6875rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);}
+
+/* ── running header (copied chrome) ── */
+.folio{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.4rem 0 1rem;}
+.folio .fl{display:flex;gap:clamp(1rem,4vw,2.8rem);align-items:center;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);display:inline-block;margin-right:.55em;vertical-align:middle;}
+.toggle{font-family:var(--mono);font-size:.6875rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);
+  background:none;border:1px solid var(--line);border-radius:8px;padding:.42rem .8rem;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.5em;transition:border-color .2s,color .2s;}
+.toggle:hover{border-color:var(--line-strong);color:var(--ink);}
+.rule-strong{height:1px;background:var(--rule);border:0;margin:0;}
+.rule-hair{height:1px;background:var(--line);border:0;margin:0;}
+
+/* ── masthead (reduced, for specimen intro) ── */
+.masthead{padding:clamp(2.4rem,6vw,4.5rem) 0 clamp(1.2rem,2.4vw,1.8rem);}
+.eyebrow{display:flex;gap:1.4rem;flex-wrap:wrap;margin-bottom:clamp(1.2rem,2.6vw,1.9rem);}
+.name{font-family:var(--display);font-weight:600;font-size:clamp(2.4rem,8vw,6rem);line-height:.96;
+  letter-spacing:-.03em;margin:0;color:var(--ink);}
+.name .g{color:var(--accent);}
+.mast-lead{margin-top:clamp(1.4rem,2.6vw,2rem);max-width:60ch;}
+.mast-lead .lead{font-family:var(--display);font-weight:400;font-size:clamp(1.25rem,2.2vw,1.7rem);line-height:1.35;letter-spacing:-.015em;color:var(--ink);margin:0;}
+
+.ulink{color:var(--ink);background-image:linear-gradient(var(--line-strong),var(--line-strong));
+  background-size:100% 1px;background-position:0 100%;background-repeat:no-repeat;
+  transition:background-size .2s,color .2s,background-image .2s;padding-bottom:.03em;}
+.ulink:hover{color:var(--accent);background-image:linear-gradient(var(--accent),var(--accent));}
+
+/* ── section head ── */
+section{margin-top:clamp(3.2rem,5.5vw,5rem);}
+.sec-head{display:flex;align-items:center;gap:1.1rem;padding-bottom:1.1rem;}
+.sec-num{font-family:var(--mono);font-size:.75rem;font-weight:500;color:var(--accent);flex:none;}
+.sec-title{font-family:var(--mono);font-weight:500;font-size:.8125rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);flex:none;margin:0;}
+.sec-line{flex:1;height:1px;background:var(--rule);opacity:.85;}
+.sec-count{font-family:var(--mono);font-size:.75rem;color:var(--faint);flex:none;letter-spacing:.03em;}
+
+/* ── work list ── */
+.work-row{align-items:baseline;padding:clamp(1.4rem,2.2vw,2rem) 0;border-top:1px solid var(--line);position:relative;transition:background-color .25s,padding-left .25s;}
+.work-list .work-row:last-child{border-bottom:1px solid var(--line);}
+.work-row:hover{background:var(--panel);padding-left:.9rem;}
+.work-idx{grid-column:1 / span 1;font-family:var(--mono);font-size:.8125rem;font-weight:500;color:var(--faint);transition:color .25s;}
+.work-title{grid-column:2 / span 3;font-family:var(--display);font-weight:600;font-size:clamp(1.4rem,2.3vw,1.9rem);line-height:1.05;color:var(--ink);letter-spacing:-.02em;}
+.work-desc{grid-column:5 / span 4;font-size:1.0625rem;line-height:1.5;color:var(--muted);}
+.work-tech{grid-column:9 / span 3;display:flex;flex-wrap:wrap;gap:.35rem;padding-top:.4rem;}
+.work-tech span{font-family:var(--mono);font-size:.6875rem;font-weight:400;color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:.12em .5em;}
+.work-arrow{grid-column:12 / span 1;justify-self:end;align-self:start;}
+.work-arrow svg{width:17px;height:17px;stroke:var(--faint);transition:transform .25s,stroke .25s;}
+.work-row:hover .work-arrow svg{stroke:var(--accent);transform:translate(3px,-3px);}
+.work-row:hover .work-idx{color:var(--accent);}
+
+/* ── canvas hero (texture sample) ── */
+.canvas-hero{margin-top:clamp(1.6rem,3vw,2.4rem);}
+.canvas-frame{position:relative;height:clamp(220px,32vw,320px);border-radius:12px;overflow:hidden;
+  background:var(--panel);border:1px solid var(--line);
+  background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:20px 20px;}
+.cv-bar{position:absolute;top:14px;left:14px;display:flex;gap:8px;align-items:center;z-index:3;}
+.cv-pill{font-family:var(--mono);font-size:.6875rem;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:.35em .7em;display:inline-flex;gap:.5em;align-items:center;}
+.cv-pill.edit{background:var(--accent);color:#fff;border-color:transparent;}
+.cv-zoom{position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:.6875rem;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:.35em .7em;z-index:3;}
+.cv-md{position:absolute;left:6%;top:24%;width:min(280px,44%);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:1rem 1.1rem;box-shadow:0 18px 40px -24px rgba(0,0,0,.4);}
+.cv-md h4{font-family:var(--display);font-weight:600;font-size:1.1rem;margin:0 0 .4rem;letter-spacing:-.01em;}
+.cv-md p{font-size:.8125rem;line-height:1.5;color:var(--muted);margin:0;}
+.cv-md code{font-family:var(--mono);background:var(--panel);border-radius:5px;padding:.05em .4em;font-size:.82em;}
+.cv-code{position:absolute;right:6%;bottom:12%;width:min(260px,40%);background:#101317;border:1px solid var(--line);border-radius:10px;padding:.85rem .95rem;box-shadow:0 18px 40px -24px rgba(0,0,0,.5);font-family:var(--mono);font-size:.7rem;line-height:1.7;transform:rotate(-1.2deg);}
+.cv-code .ln{display:block;white-space:nowrap;color:#8b93a1;}
+.cv-code .k{color:#c98be8;}.cv-code .s{color:#7fd39b;}.cv-code .f{color:#7db7f5;}
+.cv-cap{margin-top:.85rem;font-family:var(--mono);font-size:.75rem;color:var(--faint);}
+
+/* ── recognition rows ── */
+.idx-row{align-items:baseline;padding:1.05rem 0;border-top:1px solid var(--line);}
+.idx-list .idx-row:last-child{border-bottom:1px solid var(--line);}
+.idx-year{grid-column:1 / span 1;font-family:var(--mono);font-size:.8125rem;font-weight:500;color:var(--faint);}
+.idx-title{grid-column:3 / span 6;font-family:var(--display);font-weight:500;font-size:1.2rem;color:var(--ink);letter-spacing:-.01em;}
+.idx-place{grid-column:9 / span 4;font-family:var(--mono);font-size:.75rem;color:var(--faint);text-align:right;text-transform:uppercase;letter-spacing:.03em;align-self:baseline;}
+
+.colophon{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;padding:1.2rem 0 1rem;margin-top:clamp(3.5rem,6vw,5rem);}
+.colophon span{font-family:var(--mono);font-size:.6875rem;letter-spacing:.03em;color:var(--faint);text-transform:uppercase;}
+
+/* ── specimen-only scaffolding (still native tokens/type) ── */
+.swatch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--gutter);margin-top:1.6rem;}
+.swatch{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg);}
+.swatch .chip{height:74px;border-bottom:1px solid var(--line);}
+.swatch .meta{padding:.7rem .85rem .85rem;}
+.swatch .meta .name{display:block;font-family:var(--sans);font-size:.8125rem;font-weight:500;color:var(--ink);margin-bottom:.15rem;}
+.swatch .meta .val{display:block;font-family:var(--mono);font-size:.6875rem;color:var(--faint);word-break:break-all;}
+.theme-block{margin-top:2.4rem;}
+.theme-block .theme-label{margin-bottom:.4rem;}
+.type-row{display:flex;align-items:baseline;justify-content:space-between;gap:1.5rem;padding:1.5rem 0;border-top:1px solid var(--line);flex-wrap:wrap;}
+.type-list .type-row:last-child{border-bottom:1px solid var(--line);}
+.type-row .sample{flex:1;min-width:280px;color:var(--ink);}
+.type-row .meta{font-family:var(--mono);font-size:.6875rem;color:var(--faint);text-align:right;white-space:nowrap;letter-spacing:.02em;}
+.face-card{border-top:1px solid var(--line);padding:1.8rem 0;}
+.face-list .face-card:last-child{border-bottom:1px solid var(--line);}
+.face-card .face-head{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:.9rem;flex-wrap:wrap;}
+.face-card .face-name{font-family:var(--mono);font-size:.75rem;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);}
+.face-card .face-weights{font-family:var(--mono);font-size:.6875rem;color:var(--faint);}
+.face-card .pangram{font-size:clamp(1.3rem,2.6vw,1.9rem);line-height:1.25;color:var(--ink);margin:0;letter-spacing:-.01em;}
+.wt-400{font-weight:400;}.wt-500{font-weight:500;}.wt-600{font-weight:600;}.wt-700{font-weight:700;}
+.card-demo{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:1.1rem 1.25rem;max-width:420px;margin-top:1.6rem;}
+.card-demo h4{font-family:var(--display);font-weight:600;font-size:1.1rem;margin:0 0 .5rem;color:var(--ink);}
+.card-demo p{margin:0;font-size:.875rem;line-height:1.55;color:var(--muted);}
+.card-demo code{font-family:var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:.05em .4em;font-size:.82em;}
+.chip-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.2rem;}
+.texture-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--gutter);margin-top:1.6rem;}
+.texture-box{height:150px;border:1px solid var(--line);border-radius:10px;background:var(--panel);
+  background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:20px 20px;
+  display:flex;align-items:flex-end;padding:.7rem .9rem;}
+.texture-box span{font-family:var(--mono);font-size:.6875rem;color:var(--faint);}
+
+@media(max-width:900px){
+  .work-idx{grid-column:1 / span 2;}
+  .work-title{grid-column:3 / span 10;margin-bottom:.6rem;}
+  .work-desc{grid-column:3 / span 10;margin-bottom:.6rem;}
+  .work-tech{grid-column:3 / span 10;}
+  .idx-title{grid-column:3 / span 10;}
+  .idx-place{grid-column:1 / -1;text-align:left;margin-top:.3rem;}
+  .cv-md{width:56%;}
+}
+@media(max-width:560px){
+  .work-title,.work-desc,.work-tech{grid-column:1 / -1;}
+  .idx-year{grid-column:1 / span 2;}
+  .cv-code{display:none;}
+  .cv-md{left:5%;top:auto;bottom:16%;width:64%;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="folio">
+    <div class="fl label">
+      <span><span class="dot"></span>Design specimen</span>
+      <span><a class="ulink" href="index.html">← Back to mockup</a></span>
+    </div>
+    <button class="toggle" id="themeToggle"><span id="themeLabel">Dark</span></button>
+  </header>
+  <hr class="rule-strong" />
+
+  <section class="masthead" style="margin-top:0">
+    <div class="eyebrow label"><span>Technical Studio</span><span>Direction B</span></div>
+    <h1 class="name">Specimen<span class="g">.</span></h1>
+    <div class="mast-lead">
+      <p class="lead pretty">Cool monochrome and surgical green, engineered on a strict grid — Space Grotesk for display, JetBrains Mono for system labels, Inter for reading text.</p>
+    </div>
+  </section>
+
+  <!-- A. COLOUR PALETTE -->
+  <section id="colour">
+    <div class="sec-head">
+      <span class="sec-num tnum">A</span><h2 class="sec-title">Colour Palette</h2>
+      <span class="sec-line"></span><span class="sec-count tnum">10 tokens</span>
+    </div>
+
+    <div class="theme-block">
+      <span class="label theme-label">Light — :root</span>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="chip" style="background:#FCFCFB"></div><div class="meta"><span class="name">bg</span><span class="val">#FCFCFB</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#F1F1EF"></div><div class="meta"><span class="name">panel</span><span class="val">#F1F1EF</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#121316"></div><div class="meta"><span class="name">ink</span><span class="val">#121316</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#43454B"></div><div class="meta"><span class="name">muted</span><span class="val">#43454B</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#8C8E96"></div><div class="meta"><span class="name">faint</span><span class="val">#8C8E96</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#FCFCFB;position:relative"><div style="position:absolute;inset:0;background:rgba(18,19,22,.12)"></div></div><div class="meta"><span class="name">line</span><span class="val">rgba(18,19,22,.12)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#FCFCFB;position:relative"><div style="position:absolute;inset:0;background:rgba(18,19,22,.28)"></div></div><div class="meta"><span class="name">line-strong</span><span class="val">rgba(18,19,22,.28)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#FCFCFB;position:relative"><div style="position:absolute;inset:0;background:rgba(18,19,22,.82)"></div></div><div class="meta"><span class="name">rule</span><span class="val">rgba(18,19,22,.82)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#1E7A4D"></div><div class="meta"><span class="name">accent</span><span class="val">#1E7A4D</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#FCFCFB;position:relative"><div style="position:absolute;inset:0;background:rgba(30,122,77,.10)"></div></div><div class="meta"><span class="name">accent-soft</span><span class="val">rgba(30,122,77,.10)</span></div></div>
+      </div>
+    </div>
+
+    <div class="theme-block">
+      <span class="label theme-label">Dark — html.dark</span>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="chip" style="background:#0A0B0C"></div><div class="meta"><span class="name">bg</span><span class="val">#0A0B0C</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#141618"></div><div class="meta"><span class="name">panel</span><span class="val">#141618</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#EDEEF0"></div><div class="meta"><span class="name">ink</span><span class="val">#EDEEF0</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#A9ABB2"></div><div class="meta"><span class="name">muted</span><span class="val">#A9ABB2</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#63656C"></div><div class="meta"><span class="name">faint</span><span class="val">#63656C</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#0A0B0C;position:relative"><div style="position:absolute;inset:0;background:rgba(237,238,240,.12)"></div></div><div class="meta"><span class="name">line</span><span class="val">rgba(237,238,240,.12)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#0A0B0C;position:relative"><div style="position:absolute;inset:0;background:rgba(237,238,240,.26)"></div></div><div class="meta"><span class="name">line-strong</span><span class="val">rgba(237,238,240,.26)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#0A0B0C;position:relative"><div style="position:absolute;inset:0;background:rgba(237,238,240,.70)"></div></div><div class="meta"><span class="name">rule</span><span class="val">rgba(237,238,240,.70)</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#56D49B"></div><div class="meta"><span class="name">accent</span><span class="val">#56D49B</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#0A0B0C;position:relative"><div style="position:absolute;inset:0;background:rgba(86,212,155,.14)"></div></div><div class="meta"><span class="name">accent-soft</span><span class="val">rgba(86,212,155,.14)</span></div></div>
+      </div>
+    </div>
+
+    <div class="theme-block">
+      <span class="label theme-label">Canvas hero accents (fixed, not themed)</span>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="chip" style="background:#FCE18A"></div><div class="meta"><span class="name">sticky · yellow</span><span class="val">#FCE18A / text #3a2f0a</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#AFD4F5"></div><div class="meta"><span class="name">sticky · blue</span><span class="val">#AFD4F5 / text #12324f</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#101317"></div><div class="meta"><span class="name">code panel</span><span class="val">#101317</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#c98be8"></div><div class="meta"><span class="name">code · keyword</span><span class="val">#c98be8</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#7fd39b"></div><div class="meta"><span class="name">code · string</span><span class="val">#7fd39b</span></div></div>
+        <div class="swatch"><div class="chip" style="background:#7db7f5"></div><div class="meta"><span class="name">code · function</span><span class="val">#7db7f5</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- B. TYPOGRAPHY -->
+  <section id="typography">
+    <div class="sec-head">
+      <span class="sec-num tnum">B</span><h2 class="sec-title">Typography</h2>
+      <span class="sec-line"></span><span class="sec-count tnum">3 families</span>
+    </div>
+    <div class="face-list">
+      <div class="face-card">
+        <div class="face-head"><span class="face-name">Space Grotesk — display</span><span class="face-weights">400 · 500 · 600 · 700</span></div>
+        <p class="pangram" style="font-family:var(--display);" class="wt-600">Sphinx of black quartz, judge my vow.</p>
+        <p class="pangram" style="font-family:var(--display);font-weight:400;margin-top:.3rem">Sphinx of black quartz, judge my vow.</p>
+      </div>
+      <div class="face-card">
+        <div class="face-head"><span class="face-name">Inter — body</span><span class="face-weights">400 · 500 (opsz 14–32)</span></div>
+        <p class="pangram" style="font-family:var(--sans);font-weight:400;font-size:1.25rem">The quick brown fox jumps over the lazy dog.</p>
+      </div>
+      <div class="face-card">
+        <div class="face-head"><span class="face-name">JetBrains Mono — system labels &amp; code</span><span class="face-weights">400 · 500 · 600</span></div>
+        <p class="pangram" style="font-family:var(--mono);font-size:1.1rem;font-weight:400">const fox = () =&gt; jump(lazyDog);</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- C. TYPE SCALE -->
+  <section id="scale">
+    <div class="sec-head">
+      <span class="sec-num tnum">C</span><h2 class="sec-title">Type Scale</h2>
+      <span class="sec-line"></span><span class="sec-count tnum">9 roles</span>
+    </div>
+    <div class="type-list">
+      <div class="type-row">
+        <span class="sample" style="font-family:var(--display);font-weight:600;font-size:clamp(2.4rem,8vw,6rem);line-height:.96;letter-spacing:-.03em">Aa</span>
+        <span class="meta">.name — display · 600 · clamp(3–9.5rem / 48–152px)</span>
+      </div>
+      <div class="type-row">
+        <span class="sample" style="font-family:var(--display);font-weight:500;font-size:clamp(1.8rem,4vw,2.9rem);line-height:1.15;letter-spacing:-.02em">Say hello.</span>
+        <span class="meta">.connect-lede p — display · 500 · clamp(1.8–2.9rem / 29–46px)</span>
+      </div>
+      <div class="type-row">
+        <span class="sample" style="font-family:var(--display);font-weight:600;font-size:clamp(1.4rem,2.3vw,1.9rem);letter-spacing:-.02em">Plugma</span>
+        <span class="meta">.work-title — display · 600 · clamp(1.4–1.9rem / 22–30px)</span>
+      </div>
+      <div class="type-row">
+        <span class="sample" style="font-family:var(--display);font-weight:400;font-size:clamp(1.25rem,2.2vw,1.7rem);line-height:1.35">Lead statement</span>
+        <span class="meta">.lead — display · 400 · clamp(1.35–2rem / 22–32px)</span>
+      </div>
+      <div class="type-row">
+        <span class="sample" style="font-family:var(--display);font-weight:500;font-size:1.2rem">Card / index heading</span>
+        <span class="meta">.cv-md h4 / .idx-title — display · 500–600 · 1.2rem / 19.2px</span>
+      </div>
+      <div class="type-row">
+        <span class="sample" style="font-family:var(--sans);font-size:1.0625rem;line-height:1.5;color:var(--muted)">Body copy sits here, set in Inter for long-form reading comfort.</span>
+        <span class="meta">.sub / .work-desc — body · 400 · 1.0625rem / 17px</span>
+      </div>
+      <div class="type-row">
+        <span class="sample" style="font-family:var(--sans);font-size:.875rem;color:var(--muted)">Secondary body / meta text</span>
+        <span class="meta">.mast-side dd — body · 400 · .875rem / 14px</span>
+      </div>
+      <div class="type-row">
+        <span class="sample" style="font-family:var(--mono);font-weight:500;font-size:.8125rem;letter-spacing:.06em;text-transform:uppercase">Section Label</span>
+        <span class="meta">.sec-title — mono · 500 · .8125rem / 13px, uppercase</span>
+      </div>
+      <div class="type-row">
+        <span class="sample" style="font-family:var(--mono);font-weight:500;font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)">Micro Label / Eyebrow</span>
+        <span class="meta">.label — mono · 500 · .6875rem / 11px, uppercase</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- D. COMPONENTS -->
+  <section id="components">
+    <div class="sec-head">
+      <span class="sec-num tnum">D</span><h2 class="sec-title">Components</h2>
+      <span class="sec-line"></span><span class="sec-count">Live</span>
+    </div>
+
+    <span class="label" style="display:block;margin-bottom:.8rem">Buttons &amp; pills</span>
+    <div class="chip-row">
+      <button class="toggle">Dark</button>
+      <span class="cv-pill" style="position:static">Home ▾</span>
+      <span class="cv-pill edit" style="position:static">✎ Edit</span>
+      <span class="work-tech" style="padding-top:0"><span>TypeScript</span><span>Node.js</span><span>Vite</span></span>
+    </div>
+
+    <span class="label" style="display:block;margin:2.2rem 0 .3rem">Links</span>
+    <p style="margin:0 0 1.6rem"><a class="ulink" href="#">Underline-reveal link style</a> — used inline within body copy.</p>
+
+    <span class="label" style="display:block;margin-bottom:.3rem">Work rows</span>
+    <div class="work-list">
+      <a class="work-row g12" href="#">
+        <span class="work-idx tnum">01</span><span class="work-title">Plugma</span>
+        <span class="work-desc pretty">A zero-config CLI for building Figma plugins with true hot-module reloading.</span>
+        <span class="work-tech"><span>Node.js</span><span>TypeScript</span><span>Vite</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+      <a class="work-row g12" href="#">
+        <span class="work-idx tnum">02</span><span class="work-title">Askeroo</span>
+        <span class="work-desc pretty">A modern CLI prompt library with stateful back-navigation and task runners.</span>
+        <span class="work-tech"><span>TypeScript</span><span>React</span><span>Ink</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+    </div>
+
+    <span class="label" style="display:block;margin:2.2rem 0 .3rem">Index rows</span>
+    <div class="idx-list">
+      <div class="idx-row g12"><span class="idx-year tnum">2023</span><span class="idx-title">Plugin Exhibition booth</span><span class="idx-place">Figma · Moscone Center</span></div>
+      <div class="idx-row g12"><span class="idx-year tnum">21—22</span><span class="idx-title">Freelancer Award finalist</span><span class="idx-place">YunoJuno</span></div>
+    </div>
+
+    <span class="label" style="display:block;margin:2.2rem 0 .3rem">Rules</span>
+    <hr class="rule-strong" style="margin-bottom:.6rem" />
+    <hr class="rule-hair" />
+
+    <span class="label" style="display:block;margin:2.2rem 0 .3rem">Card &amp; inline code</span>
+    <div class="card-demo">
+      <h4>This is a canvas</h4>
+      <p>An <strong>embeddable</strong> React component — pan, zoom and drop <code>markdown</code> notes onto the board.</p>
+    </div>
+
+    <span class="label" style="display:block;margin:2.2rem 0 .3rem">Syntax block</span>
+    <div style="max-width:340px">
+      <div class="cv-code" style="position:static;transform:none">
+        <span class="ln"><span class="k">import</span> { defineConfig } <span class="k">from</span> <span class="s">'plugma'</span></span>
+        <span class="ln">&nbsp;</span>
+        <span class="ln"><span class="k">export default</span> <span class="f">defineConfig</span>({</span>
+        <span class="ln">&nbsp;&nbsp;framework: <span class="s">'react'</span>,</span>
+        <span class="ln">&nbsp;&nbsp;hmr: <span class="k">true</span>,</span>
+        <span class="ln">})</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- E. CANVAS HERO (composite component) -->
+  <section id="canvas">
+    <div class="sec-head">
+      <span class="sec-num tnum">E</span><h2 class="sec-title">Canvas Hero</h2>
+      <span class="sec-line"></span><span class="sec-count">Composite</span>
+    </div>
+    <div class="canvas-hero">
+      <div class="canvas-frame">
+        <div class="cv-bar"><span class="cv-pill">Home ▾</span><span class="cv-pill edit">✎ Edit</span></div>
+        <div class="cv-zoom">86%</div>
+        <div class="cv-md">
+          <h4>This is a canvas</h4>
+          <p>An <strong>embeddable</strong> React component with pan &amp; zoom.</p>
+        </div>
+        <div class="cv-code">
+          <span class="ln"><span class="k">import</span> { defineConfig } <span class="k">from</span> <span class="s">'plugma'</span></span>
+          <span class="ln">&nbsp;</span>
+          <span class="ln"><span class="k">export default</span> <span class="f">defineConfig</span>({ hmr: <span class="k">true</span> })</span>
+        </div>
+      </div>
+      <p class="cv-cap">// dot-grid frame background, floating markdown card and syntax-highlighted code chip</p>
+    </div>
+  </section>
+
+  <!-- F. TEXTURE -->
+  <section id="texture">
+    <div class="sec-head">
+      <span class="sec-num tnum">F</span><h2 class="sec-title">Texture</h2>
+      <span class="sec-line"></span><span class="sec-count">Grid overlay</span>
+    </div>
+    <div class="texture-row">
+      <div class="texture-box"><span>radial-gradient dot grid · 20px · var(--line)</span></div>
+    </div>
+  </section>
+
+  <hr class="rule-hair" style="margin-top:clamp(3.5rem,6vw,5rem)" />
+  <footer class="colophon">
+    <span>Specimen</span>
+    <span>Set in Space Grotesk &amp; JetBrains Mono</span>
+    <span><a class="ulink" href="index.html">Back to mockup ↗</a></span>
+  </footer>
+</div>
+
+<script>
+try{
+  const root=document.documentElement,tLabel=document.getElementById('themeLabel');
+  const saved=localStorage.getItem('theme');
+  if(saved==='dark'||(!saved&&matchMedia('(prefers-color-scheme:dark)').matches)){root.classList.add('dark');}
+  function syncLabel(){if(tLabel)tLabel.textContent=root.classList.contains('dark')?'Light':'Dark';}
+  syncLabel();
+  const btn=document.getElementById('themeToggle');
+  if(btn){btn.addEventListener('click',()=>{
+    root.classList.toggle('dark');localStorage.setItem('theme',root.classList.contains('dark')?'dark':'light');syncLabel();
+  });}
+}catch(e){/* no-op: specimen still renders without JS */}
+</script>
+</body>
+</html>

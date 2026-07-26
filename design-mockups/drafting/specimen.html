@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — Drafting</title>
+<meta name="description" content="Design specimen sheet for the Drafting mockup: fonts, colour, type scale, components." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Set theme before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Archivo', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     Base tokens + components copied verbatim from index.html so
+     this specimen renders in the exact same visual language.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --ink:      #14181D;   /* graphite, not black */
+    --plane:    #F4F2ED;   /* vellum */
+    --raise:    #FBFAF7;
+    --sunken:   #EAE7E0;
+    --muted:    #5C636C;
+    --faint:    #9AA0A8;
+    --blue:     #1B54C8;   /* drafting blue */
+    --blue-ink: #1B54C8;
+    --wash:     rgba(27,84,200,.07);
+    --hair:     rgba(20,24,29,.16);
+    --hair-2:   rgba(20,24,29,.30);
+    --grid:     rgba(20,24,29,.055);
+    --grid-10:  rgba(20,24,29,.085);
+
+    --margin: clamp(1.1rem, 4.5vw, 4.5rem);
+    --gutter: clamp(1rem, 2vw, 2rem);
+    --maxw:   1440px;
+    --ease:   cubic-bezier(.2, .7, .3, 1);
+  }
+
+  html.dark {
+    --ink:      #DDE3EA;
+    --plane:    #0D1117;   /* board under low light */
+    --raise:    #131A22;
+    --sunken:   #0A0E13;
+    --muted:    #98A1AC;
+    --faint:    #5E6874;
+    --blue:     #64A0FF;
+    --blue-ink: #8FBAFF;
+    --wash:     rgba(100,160,255,.10);
+    --hair:     rgba(221,227,234,.16);
+    --hair-2:   rgba(221,227,234,.32);
+    --grid:     rgba(221,227,234,.055);
+    --grid-10:  rgba(221,227,234,.09);
+  }
+
+  html { background: var(--plane); -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--plane);
+    color: var(--ink);
+    font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  .board {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(to right,  var(--grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid) 1px, transparent 1px),
+      linear-gradient(to right,  var(--grid-10) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-10) 1px, transparent 1px);
+    background-size: 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 62%, transparent 96%);
+            mask-image: linear-gradient(to bottom, #000 0%, #000 62%, transparent 96%);
+  }
+
+  .sheet { position: relative; z-index: 1; max-width: var(--maxw); margin: 0 auto; }
+
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+  .tag {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10.5px; font-weight: 500;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--faint);
+  }
+  .tag-ink { color: var(--muted); }
+  .tag-blue { color: var(--blue-ink); }
+
+  h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -.022em; line-height: 1.05; }
+
+  .lede { font-size: clamp(1.02rem, 1.5vw, 1.2rem); line-height: 1.6; color: var(--muted); }
+  .body-copy { color: var(--muted); }
+  .body-copy strong { color: var(--ink); font-weight: 600; }
+
+  .dim {
+    position: relative; height: 1px; background: var(--hair-2);
+    transform-origin: left center;
+  }
+  .dim::before, .dim::after {
+    content: ''; position: absolute; top: -4px; width: 1px; height: 9px;
+    background: var(--hair-2);
+  }
+  .dim::before { left: 0; }
+  .dim::after  { right: 0; }
+  .dim-label {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--plane); padding: 0 .55rem; white-space: nowrap;
+  }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--plane) 88%, transparent);
+    backdrop-filter: blur(10px) saturate(1.1);
+    -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    border-bottom: 1px solid var(--hair);
+  }
+  .topbar-inner {
+    max-width: var(--maxw); margin: 0 auto;
+    padding: .8rem var(--margin);
+    display: flex; align-items: center; gap: var(--gutter);
+  }
+  .navlink {
+    position: relative; color: var(--muted); text-decoration: none;
+    padding-bottom: 2px;
+  }
+  .navlink::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+    height: 1px; background: var(--blue);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .32s var(--ease);
+  }
+  .navlink:hover { color: var(--ink); }
+  .navlink:hover::after { transform: scaleX(1); }
+
+  .iconbtn {
+    display: grid; place-items: center;
+    width: 34px; height: 34px;
+    border: 1px solid var(--hair); background: transparent; color: var(--muted);
+    cursor: pointer;
+    transition: border-color .2s var(--ease), color .2s var(--ease), background .2s var(--ease);
+  }
+  .iconbtn:hover { color: var(--ink); border-color: var(--hair-2); background: var(--raise); }
+  .iconbtn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  section { padding-inline: var(--margin); }
+
+  .sec-head {
+    position: relative;
+    display: grid; grid-template-columns: 1fr; gap: .9rem;
+    padding-block: clamp(3rem, 7vw, 5.5rem) clamp(1.6rem, 3vw, 2.6rem);
+  }
+  .sec-head .rule { height: 1px; background: var(--hair-2); }
+
+  .hero {
+    position: relative;
+    padding-block: clamp(3.5rem, 11vw, 8.5rem) clamp(3rem, 7vw, 6rem);
+  }
+  .hero::before {
+    content: ''; position: absolute; z-index: -1;
+    top: -32%; right: -18%; width: 78vw; height: 78vw;
+    max-width: 1000px; max-height: 1000px;
+    background:
+      radial-gradient(closest-side, var(--wash), transparent 72%),
+      radial-gradient(closest-side at 62% 38%, color-mix(in srgb, var(--blue) 9%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: clamp(2.9rem, 9.5vw, 7.5rem);
+    letter-spacing: -.04em;
+    line-height: .92;
+  }
+
+  .plates {
+    display: grid; gap: 1px;
+    background: var(--hair);
+    border: 1px solid var(--hair);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 700px)  { .plates { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1180px) { .plates { grid-template-columns: repeat(3, 1fr); } }
+
+  .plate {
+    position: relative;
+    background: var(--plane);
+    padding: 1.5rem 1.4rem 1.35rem;
+    display: flex; flex-direction: column; gap: .85rem;
+    min-height: 240px;
+    transition: background .28s var(--ease);
+  }
+  .plate:hover { background: var(--raise); }
+  .plate .reg {
+    position: absolute; width: 11px; height: 11px;
+    border: 0 solid var(--blue); opacity: 0;
+    transition: opacity .28s var(--ease);
+  }
+  .plate:hover .reg, .plate:focus-within .reg { opacity: 1; }
+  .plate .reg.tl { top: 8px;  left: 8px;  border-top-width: 1px; border-left-width: 1px; }
+  .plate .reg.tr { top: 8px;  right: 8px; border-top-width: 1px; border-right-width: 1px; }
+  .plate .reg.bl { bottom: 8px; left: 8px;  border-bottom-width: 1px; border-left-width: 1px; }
+  .plate .reg.br { bottom: 8px; right: 8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  .plate h3 { font-size: 1.32rem; letter-spacing: -.025em; }
+  .plate .desc { font-size: .93rem; color: var(--muted); margin: 0; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: .32rem; margin-top: auto; }
+  .chip {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--hair);
+    padding: .22rem .42rem;
+    white-space: nowrap;
+    transition: border-color .22s var(--ease), color .22s var(--ease);
+  }
+  .plate:hover .chip { border-color: var(--hair-2); color: var(--ink); }
+
+  .plate-links {
+    display: flex; align-items: center; gap: 1.1rem;
+    padding-top: .85rem; border-top: 1px solid var(--hair);
+  }
+  .plink {
+    position: relative;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none;
+    display: inline-flex; align-items: center; gap: .35rem;
+    transition: color .2s var(--ease);
+  }
+  .plink::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px;
+    background: var(--blue); transform: scaleX(0); transform-origin: left;
+    transition: transform .3s var(--ease);
+  }
+  .plink:hover { color: var(--blue-ink); }
+  .plink:hover::after { transform: scaleX(1); }
+  .plink:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+  .plink svg { transition: transform .3s var(--ease); }
+  .plink:hover svg { transform: translate(2px, -2px); }
+
+  .revtable { width: 100%; border-collapse: collapse; }
+  .revtable th, .revtable td {
+    text-align: left; padding: .72rem .5rem;
+    border-bottom: 1px solid var(--hair);
+    vertical-align: baseline;
+  }
+  .revtable th {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--faint); font-weight: 500;
+    border-bottom-color: var(--hair-2);
+  }
+  .revtable td:first-child, .revtable th:first-child { padding-left: 0; width: 3.4rem; }
+  .revtable td:nth-child(2) { width: 5rem; }
+  .revtable tbody td:first-child,
+  .revtable tbody td:nth-child(2) {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px; color: var(--faint);
+  }
+  .revtable tbody tr:last-child td { border-bottom: 0; }
+  .revtable tbody tr { transition: background .2s var(--ease); }
+  .revtable tbody tr:hover { background: var(--wash); }
+
+  .drawer-toggle {
+    width: 100%; text-align: left; cursor: pointer;
+    background: transparent; border: 1px solid var(--hair); border-left-width: 2px;
+    border-left-color: var(--blue);
+    padding: clamp(1.4rem, 3vw, 2.1rem) clamp(1.2rem, 3vw, 2rem);
+    display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+    color: inherit; font: inherit;
+    transition: background .28s var(--ease), border-color .28s var(--ease);
+  }
+  .drawer-toggle:hover { background: var(--raise); border-color: var(--hair-2); border-left-color: var(--blue); }
+  .drawer-toggle:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .drawer-toggle .headline {
+    font-size: clamp(1.35rem, 3.4vw, 2.15rem); font-weight: 600; letter-spacing: -.03em;
+  }
+  .drawer-toggle .chev { flex: none; transition: transform .4s var(--ease); color: var(--muted); }
+  .drawer-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
+  .drawer {
+    display: grid; grid-template-rows: 0fr;
+    border: 1px solid var(--hair); border-top: 0; border-left-width: 2px; border-left-color: var(--blue);
+    transition: grid-template-rows .48s var(--ease);
+  }
+  .drawer[data-open="true"] { grid-template-rows: 1fr; }
+  .drawer > .drawer-inner { overflow: hidden; }
+  .drawer-pad { padding: clamp(1.4rem, 3vw, 2.2rem); }
+
+  .field label {
+    display: block; margin-bottom: .42rem;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint);
+  }
+  .field input, .field textarea {
+    width: 100%; background: transparent; color: var(--ink);
+    border: 0; border-bottom: 1px solid var(--hair);
+    border-radius: 0;
+    padding: .55rem 0; font: inherit; font-size: .95rem;
+    transition: border-color .24s var(--ease);
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--faint); }
+  .field input:focus, .field textarea:focus {
+    outline: none; border-bottom-color: var(--blue); box-shadow: 0 1px 0 0 var(--blue);
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: .6rem;
+    background: var(--ink); color: var(--plane);
+    border: 1px solid var(--ink);
+    padding: .72rem 1.4rem; cursor: pointer;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    transition: background .22s var(--ease), color .22s var(--ease), border-color .22s var(--ease);
+  }
+  .btn:hover { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+  .btn-outline {
+    display: inline-flex; align-items: center; gap: .6rem;
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--hair-2);
+    padding: .72rem 1.4rem; cursor: pointer;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    transition: background .22s var(--ease), color .22s var(--ease), border-color .22s var(--ease);
+  }
+  .btn-outline:hover { border-color: var(--blue); color: var(--blue-ink); background: var(--wash); }
+
+  .social {
+    color: var(--muted); text-decoration: none;
+    display: inline-flex; align-items: center; gap: .5rem;
+    transition: color .2s var(--ease);
+  }
+  .social:hover { color: var(--blue-ink); }
+  .social:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+  .titleblock {
+    border: 1px solid var(--hair-2);
+    display: grid; grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 640px)  { .titleblock { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1000px) { .titleblock { grid-template-columns: 1.8fr repeat(4, 1fr); } }
+  .tb-cell {
+    padding: .85rem 1rem;
+    border-right: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+    min-height: 76px;
+    display: flex; flex-direction: column; justify-content: space-between; gap: .5rem;
+  }
+  .tb-cell .val { font-size: .92rem; font-weight: 500; }
+
+  ::selection { background: var(--blue); color: #fff; }
+
+  /* ── Specimen-only additions (same tokens, new component: swatches
+       and scale rows — nothing here departs from the drafting language) ── */
+
+  .specsec { padding-block: clamp(1.6rem, 3vw, 2.4rem) clamp(3rem, 6vw, 4.5rem); }
+
+  .swatchgrid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1px; background: var(--hair); border: 1px solid var(--hair);
+  }
+  .swatch { background: var(--plane); padding: 1rem 1.1rem 1.1rem; }
+  .swatch-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--hair); border: 1px solid var(--hair); margin-top: .7rem; }
+  .swatch-block { height: 58px; position: relative; }
+  .swatch-block .lbl {
+    position: absolute; left: 6px; bottom: 5px;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+    padding: 1px 4px; background: rgba(255,255,255,.82); color: #14181D;
+  }
+  .swatch .name { font-size: .95rem; font-weight: 600; letter-spacing: -.01em; }
+  .swatch .val { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; color: var(--faint); display: block; margin-top: 2px; }
+
+  .family-block { border: 1px solid var(--hair); padding: clamp(1.2rem, 3vw, 2rem); margin-top: 1.2rem; }
+  .fam-name { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; margin-bottom: .9rem; }
+  .weight-row { display: flex; align-items: baseline; gap: 1rem; padding: .55rem 0; border-top: 1px solid var(--hair); }
+  .weight-row:first-of-type { border-top: 0; }
+  .weight-row .wlabel { flex: none; width: 6.5rem; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; color: var(--faint); }
+
+  .scale-row { display: grid; grid-template-columns: 1fr; gap: .5rem; padding: 1.4rem 0; border-top: 1px solid var(--hair); }
+  .scale-row:first-of-type { border-top: 0; }
+  @media (min-width: 780px) { .scale-row { grid-template-columns: 8.5rem 1fr 12rem; align-items: baseline; gap: 1rem; } }
+  .scale-meta { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; color: var(--faint); letter-spacing: .06em; }
+  .scale-sample { color: var(--ink); overflow-wrap: anywhere; }
+  .scale-px { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: var(--muted); text-align: left; }
+  @media (min-width: 780px) { .scale-px { text-align: right; } }
+
+  .texture-tile {
+    border: 1px solid var(--hair); height: 220px; position: relative; overflow: hidden;
+    background-image:
+      linear-gradient(to right,  var(--grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid) 1px, transparent 1px),
+      linear-gradient(to right,  var(--grid-10) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-10) 1px, transparent 1px);
+    background-size: 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+    background-color: var(--plane);
+  }
+</style>
+</head>
+
+<body>
+<div class="board" aria-hidden="true"></div>
+
+<!-- ── Top bar ─────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html" class="mono text-[12px] tracking-[.16em] uppercase no-underline text-[var(--ink)] font-medium">
+      G. McFarland
+    </a>
+    <span class="tag hidden sm:inline">Sheet 00 / Specimen</span>
+
+    <nav class="ml-auto hidden md:flex items-center gap-6 text-[13px]">
+      <a href="#palette"    class="navlink">Colour</a>
+      <a href="#type"       class="navlink">Type</a>
+      <a href="#scale"      class="navlink">Scale</a>
+      <a href="#components" class="navlink">Components</a>
+      <a href="#texture"    class="navlink">Texture</a>
+    </nav>
+
+    <a href="index.html" class="tag ml-auto md:ml-3 no-underline hover:text-[var(--ink)]" style="transition:color .2s var(--ease)">← Index</a>
+
+    <button id="theme" class="iconbtn ml-3" type="button" aria-label="Toggle dark mode">
+      <svg class="sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 2.2v2.4M12 19.4v2.4M2.2 12h2.4M19.4 12h2.4M5.1 5.1l1.7 1.7M17.2 17.2l1.7 1.7M18.9 5.1l-1.7 1.7M6.8 17.2l-1.7 1.7"/>
+      </svg>
+      <svg class="moon hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main class="sheet" id="top">
+
+  <!-- ── a. Title / intro ──────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="flex items-center gap-3 mb-7">
+      <span class="tag tag-blue">Rev. C</span>
+      <span class="w-8 h-px bg-[var(--hair-2)]"></span>
+      <span class="tag">Design system reference · Drafting mockup</span>
+    </div>
+
+    <h1>Specimen</h1>
+
+    <div class="relative mt-8 mb-8 max-w-[620px]">
+      <div class="dim"></div>
+      <span class="tag dim-label">Fonts, colour, scale &amp; components</span>
+    </div>
+
+    <p class="lede md:col-span-6 lg:col-span-5 max-w-[62ch]">
+      The page as a drawing sheet — vellum, a 5mm grid, dimension lines that
+      actually measure the layout, and a single drafting blue. This sheet
+      shows every token and component that direction is built from, so it
+      can be compared against the other mockups' own specimens.
+    </p>
+  </section>
+
+  <!-- ── b. Colour palette ─────────────────────────────────────────── -->
+  <section id="palette" class="specsec">
+    <div class="sec-head">
+      <div class="flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <span class="tag tag-blue">Sheet A</span>
+          <h2 class="text-[clamp(1.7rem,4vw,2.9rem)] mt-2">Colour palette</h2>
+        </div>
+        <span class="tag">13 tokens · light + dark</span>
+      </div>
+      <div class="rule"></div>
+    </div>
+
+    <div class="swatchgrid">
+
+      <div class="swatch">
+        <span class="name">Ink</span>
+        <span class="val">--ink</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#14181D"><span class="lbl">Light #14181D</span></div>
+          <div class="swatch-block" style="background:#DDE3EA"><span class="lbl">Dark #DDE3EA</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Plane</span>
+        <span class="val">--plane</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#F4F2ED"><span class="lbl">Light #F4F2ED</span></div>
+          <div class="swatch-block" style="background:#0D1117"><span class="lbl">Dark #0D1117</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Raise</span>
+        <span class="val">--raise</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#FBFAF7"><span class="lbl">Light #FBFAF7</span></div>
+          <div class="swatch-block" style="background:#131A22"><span class="lbl">Dark #131A22</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Sunken</span>
+        <span class="val">--sunken</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#EAE7E0"><span class="lbl">Light #EAE7E0</span></div>
+          <div class="swatch-block" style="background:#0A0E13"><span class="lbl">Dark #0A0E13</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Muted</span>
+        <span class="val">--muted</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#5C636C"><span class="lbl" style="background:rgba(255,255,255,.82);color:#14181D">Light #5C636C</span></div>
+          <div class="swatch-block" style="background:#98A1AC"><span class="lbl">Dark #98A1AC</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Faint</span>
+        <span class="val">--faint</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#9AA0A8"><span class="lbl">Light #9AA0A8</span></div>
+          <div class="swatch-block" style="background:#5E6874"><span class="lbl">Dark #5E6874</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Blue (accent)</span>
+        <span class="val">--blue</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#1B54C8"><span class="lbl">Light #1B54C8</span></div>
+          <div class="swatch-block" style="background:#64A0FF"><span class="lbl">Dark #64A0FF</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Blue ink (link text)</span>
+        <span class="val">--blue-ink</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#1B54C8"><span class="lbl">Light #1B54C8</span></div>
+          <div class="swatch-block" style="background:#8FBAFF"><span class="lbl">Dark #8FBAFF</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Wash</span>
+        <span class="val">--wash</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#F4F2ED"><div style="position:absolute;inset:0;background:rgba(27,84,200,.07)"></div><span class="lbl">Light rgba(27,84,200,.07)</span></div>
+          <div class="swatch-block" style="background:#0D1117"><div style="position:absolute;inset:0;background:rgba(100,160,255,.10)"></div><span class="lbl">Dark rgba(100,160,255,.10)</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Hair (rule 1)</span>
+        <span class="val">--hair</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#F4F2ED"><div style="position:absolute;inset:0;background:rgba(20,24,29,.16)"></div><span class="lbl">Light rgba(20,24,29,.16)</span></div>
+          <div class="swatch-block" style="background:#0D1117"><div style="position:absolute;inset:0;background:rgba(221,227,234,.16)"></div><span class="lbl">Dark rgba(221,227,234,.16)</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Hair 2 (rule, heavier)</span>
+        <span class="val">--hair-2</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#F4F2ED"><div style="position:absolute;inset:0;background:rgba(20,24,29,.30)"></div><span class="lbl">Light rgba(20,24,29,.30)</span></div>
+          <div class="swatch-block" style="background:#0D1117"><div style="position:absolute;inset:0;background:rgba(221,227,234,.32)"></div><span class="lbl">Dark rgba(221,227,234,.32)</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Grid (5mm)</span>
+        <span class="val">--grid</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#F4F2ED"><div style="position:absolute;inset:0;background:rgba(20,24,29,.055)"></div><span class="lbl">Light rgba(20,24,29,.055)</span></div>
+          <div class="swatch-block" style="background:#0D1117"><div style="position:absolute;inset:0;background:rgba(221,227,234,.055)"></div><span class="lbl">Dark rgba(221,227,234,.055)</span></div>
+        </div>
+      </div>
+
+      <div class="swatch">
+        <span class="name">Grid (10th, heavier)</span>
+        <span class="val">--grid-10</span>
+        <div class="swatch-pair">
+          <div class="swatch-block" style="background:#F4F2ED"><div style="position:absolute;inset:0;background:rgba(20,24,29,.085)"></div><span class="lbl">Light rgba(20,24,29,.085)</span></div>
+          <div class="swatch-block" style="background:#0D1117"><div style="position:absolute;inset:0;background:rgba(221,227,234,.09)"></div><span class="lbl">Dark rgba(221,227,234,.09)</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── c. Typography ─────────────────────────────────────────────── -->
+  <section id="type" class="specsec">
+    <div class="sec-head">
+      <div class="flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <span class="tag tag-blue">Sheet B</span>
+          <h2 class="text-[clamp(1.7rem,4vw,2.9rem)] mt-2">Typography</h2>
+        </div>
+        <span class="tag">2 families · Google Fonts</span>
+      </div>
+      <div class="rule"></div>
+    </div>
+
+    <div class="fam-name">
+      <span class="tag tag-blue">Sans</span>
+      <span class="text-lg font-semibold">Archivo</span>
+      <span class="tag">Set for body copy, headings, UI labels</span>
+    </div>
+    <div class="family-block" style="font-family:'Archivo', sans-serif;">
+      <p style="font-size:1.4rem; line-height:1.3; margin:0 0 1.2rem; letter-spacing:-.01em;">
+        Sphinx of black quartz, judge my vow — 0123456789
+      </p>
+      <div class="weight-row"><span class="wlabel">400 Regular</span><span style="font-weight:400; font-size:1.05rem;">Design engineering for product teams</span></div>
+      <div class="weight-row"><span class="wlabel">500 Medium</span><span style="font-weight:500; font-size:1.05rem;">Design engineering for product teams</span></div>
+      <div class="weight-row"><span class="wlabel">600 Semibold</span><span style="font-weight:600; font-size:1.05rem;">Design engineering for product teams</span></div>
+      <div class="weight-row"><span class="wlabel">700 Bold</span><span style="font-weight:700; font-size:1.05rem;">Design engineering for product teams</span></div>
+    </div>
+
+    <div class="fam-name" style="margin-top:2.4rem;">
+      <span class="tag tag-blue">Mono</span>
+      <span class="text-lg font-semibold mono">IBM Plex Mono</span>
+      <span class="tag">Set for tags, specs, tables, buttons, plate numbers</span>
+    </div>
+    <div class="family-block" style="font-family:'IBM Plex Mono', monospace;">
+      <p style="font-size:1.1rem; line-height:1.3; margin:0 0 1.2rem;">
+        Sphinx of black quartz, judge my vow — 0123456789
+      </p>
+      <div class="weight-row"><span class="wlabel">400 Regular</span><span style="font-weight:400; font-size:.95rem;">A—03 · Atlas design system · 2024</span></div>
+      <div class="weight-row"><span class="wlabel">500 Medium</span><span style="font-weight:500; font-size:.95rem; letter-spacing:.02em; text-transform:uppercase;">A—03 · Atlas design system · 2024</span></div>
+      <div class="weight-row"><span class="wlabel">600 Semibold</span><span style="font-weight:600; font-size:.95rem;">A—03 · Atlas design system · 2024</span></div>
+    </div>
+  </section>
+
+  <!-- ── d. Type scale ──────────────────────────────────────────────── -->
+  <section id="scale" class="specsec">
+    <div class="sec-head">
+      <div class="flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <span class="tag tag-blue">Sheet B·1</span>
+          <h2 class="text-[clamp(1.7rem,4vw,2.9rem)] mt-2">Type scale</h2>
+        </div>
+        <span class="tag">8 roles · fluid clamp() scale</span>
+      </div>
+      <div class="rule"></div>
+    </div>
+
+    <div>
+      <div class="scale-row">
+        <span class="scale-meta">Display / H1</span>
+        <span class="scale-sample" style="font-family:'Archivo',sans-serif; font-weight:600; letter-spacing:-.04em; line-height:.92; font-size:clamp(2.9rem,9.5vw,4.6rem);">Gavin</span>
+        <span class="scale-px">clamp(2.9rem, 9.5vw, 7.5rem)<br>46–120px</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-meta">Heading / H2</span>
+        <span class="scale-sample" style="font-family:'Archivo',sans-serif; font-weight:600; letter-spacing:-.022em; font-size:clamp(1.7rem,4vw,2.9rem);">Plates</span>
+        <span class="scale-px">clamp(1.7rem, 4vw, 2.9rem)<br>27.2–46.4px</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-meta">Headline / drawer</span>
+        <span class="scale-sample" style="font-family:'Archivo',sans-serif; font-weight:600; letter-spacing:-.03em; font-size:clamp(1.35rem,3.4vw,2.15rem);">Taking on work from March.</span>
+        <span class="scale-px">clamp(1.35rem, 3.4vw, 2.15rem)<br>21.6–34.4px</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-meta">Subheading / H3</span>
+        <span class="scale-sample" style="font-family:'Archivo',sans-serif; font-weight:600; letter-spacing:-.025em; font-size:1.32rem;">Token pipeline</span>
+        <span class="scale-px">1.32rem<br>21.12px fixed</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-meta">Lede / intro</span>
+        <span class="scale-sample" style="font-family:'Archivo',sans-serif; color:var(--muted); font-size:clamp(1.02rem,1.5vw,1.2rem);">I design interfaces and then build them properly.</span>
+        <span class="scale-px">clamp(1.02rem, 1.5vw, 1.2rem)<br>16.3–19.2px</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-meta">Body</span>
+        <span class="scale-sample" style="font-family:'Archivo',sans-serif; font-size:15px; line-height:1.55;">Design tokens flowing from Figma variables to shipped CSS.</span>
+        <span class="scale-px">15px<br>0.9375rem fixed</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-meta">Body small / desc</span>
+        <span class="scale-sample" style="font-family:'Archivo',sans-serif; color:var(--muted); font-size:.93rem;">Component library and documentation site for a 40-person org.</span>
+        <span class="scale-px">.93rem<br>14.88px fixed</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-meta">Mono label / tag</span>
+        <span class="scale-sample mono" style="letter-spacing:.14em; text-transform:uppercase; color:var(--faint); font-size:10.5px;">Sheet A · Plates</span>
+        <span class="scale-px">10.5px mono<br>0.656rem fixed</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── e. Components ─────────────────────────────────────────────── -->
+  <section id="components" class="specsec">
+    <div class="sec-head">
+      <div class="flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <span class="tag tag-blue">Sheet C</span>
+          <h2 class="text-[clamp(1.7rem,4vw,2.9rem)] mt-2">Components</h2>
+        </div>
+        <span class="tag">Live, in native markup</span>
+      </div>
+      <div class="rule"></div>
+    </div>
+
+    <!-- Plates -->
+    <div class="tag mb-3">Plates (project cards)</div>
+    <div class="plates mb-12">
+      <article class="plate">
+        <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+        <div class="flex items-baseline justify-between gap-3">
+          <span class="tag">A—01</span>
+          <span class="tag">2025</span>
+        </div>
+        <h3>Plugma</h3>
+        <p class="desc">A build tool for Figma plugins — hot reload, framework-agnostic, one command from empty folder to running plugin.</p>
+        <div class="chips">
+          <span class="chip">TypeScript</span><span class="chip">Vite</span><span class="chip">Figma API</span>
+        </div>
+        <div class="plate-links">
+          <a href="#" class="plink">Demo
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 7.5 7.5 2.5M3.6 2.5h3.9v3.9"/></svg>
+          </a>
+          <a href="#" class="plink">Case study</a>
+        </div>
+      </article>
+
+      <article class="plate">
+        <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+        <div class="flex items-baseline justify-between gap-3">
+          <span class="tag">A—03</span>
+          <span class="tag">2024</span>
+        </div>
+        <h3>Atlas design system</h3>
+        <p class="desc">Component library and documentation site for a 40-person product org. Ninety components, one accessibility budget.</p>
+        <div class="chips">
+          <span class="chip">Svelte</span><span class="chip">Storybook</span><span class="chip">A11y</span>
+        </div>
+        <div class="plate-links">
+          <a href="#" class="plink">Demo
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 7.5 7.5 2.5M3.6 2.5h3.9v3.9"/></svg>
+          </a>
+          <a href="#" class="plink">Case study</a>
+        </div>
+      </article>
+
+      <article class="plate">
+        <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+        <div class="flex items-baseline justify-between gap-3">
+          <span class="tag">A—05</span>
+          <span class="tag">2021</span>
+        </div>
+        <h3>Pulse dashboard</h3>
+        <p class="desc">Real-time analytics surface rebuilt for speed — sub-800ms first paint on a cold cache, on a mid-range Android.</p>
+        <div class="chips">
+          <span class="chip">Svelte</span><span class="chip">D3</span><span class="chip">WebSocket</span>
+        </div>
+        <div class="plate-links">
+          <a href="#" class="plink">Demo
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 7.5 7.5 2.5M3.6 2.5h3.9v3.9"/></svg>
+          </a>
+          <a href="#" class="plink">Case study</a>
+        </div>
+      </article>
+    </div>
+
+    <!-- Rules, tags, dimension line -->
+    <div class="tag mb-3">Rules &amp; annotation</div>
+    <div class="grid gap-8 md:grid-cols-2 mb-12">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <span class="tag">Plain tag</span>
+          <span class="tag tag-ink">Ink tag</span>
+          <span class="tag tag-blue">Blue tag</span>
+        </div>
+        <div class="rule mb-6" style="height:1px;background:var(--hair-2);"></div>
+        <div class="relative max-w-[420px]">
+          <div class="dim"></div>
+          <span class="tag dim-label">Dimension line, 420px</span>
+        </div>
+      </div>
+      <div>
+        <div class="tag mb-3">Revision history (table)</div>
+        <table class="revtable">
+          <thead>
+            <tr><th scope="col">Rev</th><th scope="col">Year</th><th scope="col">Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>C</td><td>2023—</td><td>Independent — design engineering for product teams</td></tr>
+            <tr><td>B</td><td>2021</td><td>Design systems lead, fintech platform</td></tr>
+            <tr><td>A</td><td>2018</td><td>Senior product designer, agency side</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Buttons, links, chips, drawer -->
+    <div class="tag mb-3">Buttons, links &amp; chips</div>
+    <div class="flex flex-wrap items-center gap-5 mb-6">
+      <button type="button" class="btn">Send enquiry
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.8 2.2 10.5 6l-3.7 3.8"/></svg>
+      </button>
+      <button type="button" class="btn-outline">Case study</button>
+      <a href="#" class="plink">Plink
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 7.5 7.5 2.5M3.6 2.5h3.9v3.9"/></svg>
+      </a>
+      <a href="#" class="social mono text-[13px]">hello@example.com</a>
+      <span class="chip">TypeScript</span>
+      <span class="chip">Figma API</span>
+    </div>
+
+    <div class="tag mb-3">Enquiry drawer</div>
+    <button type="button" id="drawer-toggle" class="drawer-toggle" aria-expanded="false" aria-controls="specimen-drawer">
+      <span>
+        <span class="headline block">Taking on work from March.</span>
+        <span class="tag block mt-3">Open the enquiry form</span>
+      </span>
+      <svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9l6 6 6-6"/>
+      </svg>
+    </button>
+    <div class="drawer" id="specimen-drawer" data-open="false">
+      <div class="drawer-inner">
+        <div class="drawer-pad">
+          <div class="field">
+            <label for="sp-name">Name</label>
+            <input id="sp-name" type="text" placeholder="Your name" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Title block cell -->
+    <div class="tag mb-3 mt-12">Title block cell</div>
+    <div class="titleblock max-w-[560px]">
+      <div class="tb-cell">
+        <span class="tag">Drawing title</span>
+        <span class="val">Portfolio — Drafting direction</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tag">Rev</span>
+        <span class="val mono">C</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tag">Sheet</span>
+        <span class="val mono">00 of 01</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── f. Texture ─────────────────────────────────────────────────── -->
+  <section id="texture" class="specsec">
+    <div class="sec-head">
+      <div class="flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <span class="tag tag-blue">Sheet D</span>
+          <h2 class="text-[clamp(1.7rem,4vw,2.9rem)] mt-2">Board texture</h2>
+        </div>
+        <span class="tag">5mm grid, 10th heavier</span>
+      </div>
+      <div class="rule"></div>
+    </div>
+
+    <p class="body-copy max-w-[62ch] mb-6">
+      A fixed 28px/140px graph-paper grid sits under every page in this
+      mockup, using <span class="mono">--grid</span> and
+      <span class="mono">--grid-10</span>. It reads as the drafting
+      surface, not as content, and fades out toward the foot of the page
+      so the title block sits on clean paper.
+    </p>
+    <div class="texture-tile"></div>
+  </section>
+
+  <!-- ── Title block footer ───────────────────────────────────────────── -->
+  <footer class="pb-[clamp(2.5rem,6vw,4.5rem)] pt-[clamp(3rem,7vw,5rem)]">
+    <div class="titleblock">
+      <div class="tb-cell">
+        <span class="tag">Drawing title</span>
+        <span class="val">Specimen — Drafting direction</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tag">Drawn by</span>
+        <span class="val">G. McFarland</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tag">Scale</span>
+        <span class="val mono">1:1</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tag">Rev</span>
+        <span class="val mono">C</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tag">Sheet</span>
+        <span class="val mono">00 of 01</span>
+      </div>
+    </div>
+    <p class="tag mt-5 mb-0">© <span id="year">2026</span> Gavin McFarland — specimen sheet, all dimensions in pixels unless noted · <a href="index.html" class="no-underline hover:text-[var(--ink)]" style="transition:color .2s var(--ease)">back to index</a></p>
+  </footer>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ── Theme ─────────────────────────────────────────────────────── */
+  const root = document.documentElement;
+  const btn  = document.getElementById('theme');
+  if (btn) {
+    const sun  = btn.querySelector('.sun');
+    const moon = btn.querySelector('.moon');
+
+    const syncIcon = () => {
+      const dark = root.classList.contains('dark');
+      if (sun) sun.classList.toggle('hidden', dark);
+      if (moon) moon.classList.toggle('hidden', !dark);
+      btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    };
+    syncIcon();
+
+    btn.addEventListener('click', () => {
+      const dark = !root.classList.contains('dark');
+      root.classList.toggle('dark', dark);
+      try { localStorage.setItem('gm-theme', dark ? 'dark' : 'light'); } catch (e) {}
+      syncIcon();
+    });
+  }
+
+  /* ── Enquiry drawer demo ──────────────────────────────────────── */
+  const toggle = document.getElementById('drawer-toggle');
+  const drawer = document.getElementById('specimen-drawer');
+  if (toggle && drawer) {
+    toggle.addEventListener('click', () => {
+      const open = drawer.dataset.open !== 'true';
+      drawer.dataset.open = String(open);
+      toggle.setAttribute('aria-expanded', String(open));
+    });
+  }
+
+  /* ── Footer year ───────────────────────────────────────────────── */
+  const year = document.getElementById('year');
+  if (year) year.textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>

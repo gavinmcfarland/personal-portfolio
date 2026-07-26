@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — Quiet</title>
+<meta name="description" content="Design specimen for the Quiet mockup: type, colour, and component reference." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<!-- Set theme before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Quiet — SPECIMEN
+     Same tokens, base styles and component classes as index.html.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+
+  :root {
+    --ink: #23211F;      /* never pure black — softer on paper white */
+    --plane: #FCFBF9;
+    --raise: #F6F4F1;
+    --muted: #8A837C;
+    --faint: #B5AEA6;
+    --hair: rgba(35,33,31,.13);
+
+    --pad: clamp(1.15rem, 3.2vw, 3.75rem);
+    --sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+
+  .dark {
+    --ink: #E8E4DF;
+    --plane: #121110;
+    --raise: #1A1918;
+    --muted: #8B857E;
+    --faint: #605B56;
+    --hair: rgba(232,228,223,.14);
+  }
+
+  html { font-family: var(--sans); }
+  body {
+    background: var(--plane); color: var(--ink);
+    font-size: 15px; font-weight: 400; line-height: 1.6;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
+
+  ::selection { background: var(--ink); color: var(--plane); }
+  :focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; }
+  a { color: inherit; text-decoration: none; }
+
+  /* The entire type system: three sizes and two weights. */
+  .micro { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+  .body  { font-size: .95rem; line-height: 1.7; color: var(--muted); font-weight: 300; }
+  .lead  { font-size: clamp(1.15rem, 2.1vw, 1.9rem); line-height: 1.35; letter-spacing: -.02em; font-weight: 400; }
+
+  /* ── Top bar ───────────────────────────────────────────────────── */
+
+  .bar {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+    padding: 1.1rem var(--pad);
+    background: color-mix(in srgb, var(--plane) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--hair);
+  }
+  .bar nav { display: flex; gap: clamp(1rem, 2vw, 2rem); }
+  .bar a { transition: color .25s; }
+  .bar nav a:hover, .bar nav a.active { color: var(--ink); }
+
+  .toggle {
+    padding: 0; border: 0; background: none; cursor: pointer; font: inherit;
+    color: var(--muted); transition: color .25s;
+  }
+  .toggle:hover { color: var(--ink); }
+
+  /* ── Specimen intro (styled like the hero, at reading scale) ─────── */
+
+  .hero { padding: clamp(3.5rem, 12vh, 7rem) var(--pad) clamp(2.5rem, 6vh, 4rem); }
+  .statement { margin: 0; max-width: 42ch; }
+
+  /* ── Sections ──────────────────────────────────────────────────── */
+
+  .sec { padding: clamp(3rem, 7vw, 6rem) 0 0; }
+  .sec-head { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; padding: 0 var(--pad) 1.25rem; align-items: baseline; }
+  .sec-head h2 { margin: 0; font-size: 1.05rem; font-weight: 500; letter-spacing: -.01em; }
+
+  /* ── Colour swatches ───────────────────────────────────────────── */
+
+  .swatches { border-top: 1px solid var(--hair); }
+  .swatch {
+    display: grid; gap: .35rem 2rem; align-items: center;
+    padding: clamp(1.1rem, 2vw, 1.6rem) var(--pad);
+    border-bottom: 1px solid var(--hair);
+    grid-template-columns: 3.5rem minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
+    gap: 1.5rem 2rem;
+  }
+  .swatch .chip { width: 3.5rem; height: 3.5rem; border-radius: 6px; border: 1px solid var(--hair); }
+  .swatch h3 { margin: 0; font-size: 1.05rem; font-weight: 500; letter-spacing: -.01em; }
+  .swatch .desc { font-size: .88rem; line-height: 1.6; color: var(--muted); font-weight: 300; }
+  .swatch .stack { font-size: .78rem; color: var(--faint); font-weight: 300; font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+
+  /* ── Typography ────────────────────────────────────────────────── */
+
+  .type-block { padding: clamp(1.5rem, 3vw, 2.4rem) var(--pad); border-bottom: 1px solid var(--hair); }
+  .type-block:first-child { border-top: 1px solid var(--hair); }
+  .weight-row { display: flex; flex-wrap: wrap; gap: clamp(1.5rem, 4vw, 3rem); margin-top: 1.5rem; }
+  .weight-sample { display: grid; gap: .5rem; }
+
+  /* ── Type scale rows ───────────────────────────────────────────── */
+
+  .scale-row {
+    display: grid; gap: .35rem 2rem; align-items: baseline;
+    padding: clamp(1.4rem, 2.4vw, 2rem) var(--pad);
+    border-bottom: 1px solid var(--hair);
+  }
+  .scale-row:first-of-type { border-top: 1px solid var(--hair); }
+  @media (min-width: 880px) {
+    .scale-row { grid-template-columns: minmax(0,2.2fr) 10rem; }
+  }
+  .scale-meta { display: flex; flex-direction: column; gap: .3rem; }
+
+  /* ── Full-width index table (reused from index.html) ─────────────── */
+
+  .table { border-top: 1px solid var(--hair); }
+
+  .tr {
+    display: grid; gap: .35rem 2rem; align-items: baseline;
+    padding: clamp(1.5rem, 2.6vw, 2.4rem) var(--pad);
+    border-bottom: 1px solid var(--hair);
+    transition: background-color .35s ease;
+  }
+  @media (min-width: 880px) {
+    .tr { grid-template-columns: 4rem minmax(0,1.5fr) minmax(0,1fr) minmax(0,1.2fr) auto; gap: 2.5rem; }
+  }
+  .tr:hover, .tr:focus-within { background: var(--raise); }
+
+  .tr h3 { margin: 0; font-size: 1.05rem; font-weight: 500; letter-spacing: -.01em; }
+  .tr .desc { font-size: .88rem; line-height: 1.6; color: var(--muted); font-weight: 300; }
+  .tr .stack { font-size: .78rem; color: var(--faint); font-weight: 300; }
+
+  .tr-links { display: flex; gap: 1.25rem; }
+  .tr-links a { position: relative; color: var(--muted); transition: color .25s; }
+  .tr-links a:hover { color: var(--ink); }
+  .tr-links a::after {
+    content: ''; position: absolute; left: 0; bottom: -3px; height: 1px; width: 100%;
+    background: currentColor; transform: scaleX(0); transform-origin: left;
+    transition: transform .3s cubic-bezier(.2,.7,.3,1);
+  }
+  .tr-links a:hover::after { transform: scaleX(1); }
+
+  /* ── Facts list ────────────────────────────────────────────────── */
+
+  .facts { list-style: none; margin: 0; padding: 0 var(--pad) clamp(3rem,6vw,5rem);
+    display: grid; gap: 0; }
+  @media (min-width: 760px) { .facts { grid-template-columns: repeat(4, 1fr); } }
+  .facts li { display: grid; gap: .35rem; padding: 1.1rem 0; border-bottom: 1px solid var(--hair); }
+  @media (min-width: 760px) { .facts li { border-bottom: 0; border-top: 1px solid var(--hair); padding: 1.25rem 1.5rem 1.25rem 0; } }
+
+  /* ── Component showcase block ─────────────────────────────────── */
+
+  .demo { padding: clamp(1.5rem, 3vw, 2.4rem) var(--pad); border-bottom: 1px solid var(--hair); display: grid; gap: 1.5rem; }
+  .demo:first-of-type { border-top: 1px solid var(--hair); }
+  .demo-row { display: flex; flex-wrap: wrap; align-items: center; gap: clamp(1.25rem, 3vw, 2.5rem); }
+
+  .form { display: grid; gap: clamp(1.5rem, 3vw, 2.5rem); }
+  @media (min-width: 880px) { .form { grid-template-columns: repeat(3, 1fr); align-items: start; } }
+  .wide { grid-column: 1 / -1; }
+  label { display: block; margin-bottom: .6rem; }
+  input, textarea {
+    width: 100%; padding: .7rem 0; font: inherit; font-size: .95rem; font-weight: 300;
+    color: var(--ink); background: transparent;
+    border: 0; border-bottom: 1px solid var(--hair); outline: none;
+    transition: border-color .3s;
+  }
+  input::placeholder, textarea::placeholder { color: var(--faint); }
+  input:focus, textarea:focus { border-bottom-color: var(--ink); }
+
+  .btn {
+    justify-self: start; padding: .7rem 1.5rem; cursor: pointer;
+    font: inherit; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink); background: none; border: 1px solid var(--hair); border-radius: 999px;
+    transition: border-color .3s, background-color .3s, color .3s;
+  }
+  .btn:hover { border-color: var(--ink); background: var(--ink); color: var(--plane); }
+
+  .chev { color: var(--muted); }
+
+  .socials { display: flex; flex-wrap: wrap; gap: 1.25rem; list-style: none; margin: 0; padding: 0; }
+  .socials a { color: var(--muted); transition: color .25s; }
+  .socials a:hover { color: var(--ink); }
+
+  /* ── Footer ────────────────────────────────────────────────────── */
+
+  footer { border-top: 1px solid var(--hair); }
+  .foot { display: grid; gap: 1.5rem; padding: clamp(2.5rem,5vw,4rem) var(--pad); }
+  @media (min-width: 760px) { .foot { grid-template-columns: repeat(4, 1fr); align-items: end; } }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+</style>
+</head>
+
+<body>
+
+<header class="bar micro">
+  <a href="index.html" style="color:var(--ink);">Gavin McFarland</a>
+  <nav aria-label="Specimen sections">
+    <a href="#colour">Colour</a>
+    <a href="#type">Type</a>
+    <a href="#scale">Scale</a>
+    <a href="#components">Components</a>
+  </nav>
+  <button class="toggle micro" id="theme-toggle" type="button" aria-pressed="false">
+    <span id="toggle-label">Dark</span>
+  </button>
+</header>
+
+<!-- ── a. Title / intro ────────────────────────────────────────────── -->
+<section class="hero">
+  <span class="micro">Specimen</span>
+  <p class="statement lead" style="margin-top:.9rem;">Quiet</p>
+  <p class="body" style="margin-top:1rem; max-width:52ch;">
+    Full-bleed but understated — one neutral grotesque at three sizes, hairline
+    rules, and a great deal of air. Everything that moves, moves in opacity only.
+  </p>
+  <p class="micro" style="margin-top:2rem;"><a href="index.html">← Back to mockup</a></p>
+</section>
+
+<!-- ── b. Colour palette ────────────────────────────────────────────── -->
+<section id="colour" class="sec">
+  <div class="sec-head">
+    <h2>Colour</h2>
+    <span class="micro">5 roles · light &amp; dark</span>
+  </div>
+
+  <div class="swatches">
+    <div class="swatch">
+      <span class="chip" style="background:#23211F;"></span>
+      <h3>Ink</h3>
+      <span class="desc">Primary text — never pure black, softer on paper white.</span>
+      <span class="stack">light #23211F · dark #E8E4DF</span>
+    </div>
+    <div class="swatch">
+      <span class="chip" style="background:#FCFBF9; border-color:var(--hair);"></span>
+      <h3>Plane</h3>
+      <span class="desc">Page background.</span>
+      <span class="stack">light #FCFBF9 · dark #121110</span>
+    </div>
+    <div class="swatch">
+      <span class="chip" style="background:#F6F4F1; border-color:var(--hair);"></span>
+      <h3>Raise</h3>
+      <span class="desc">Hover surface for table rows.</span>
+      <span class="stack">light #F6F4F1 · dark #1A1918</span>
+    </div>
+    <div class="swatch">
+      <span class="chip" style="background:#8A837C;"></span>
+      <h3>Muted</h3>
+      <span class="desc">Secondary text, nav links, body copy.</span>
+      <span class="stack">light #8A837C · dark #8B857E</span>
+    </div>
+    <div class="swatch">
+      <span class="chip" style="background:#B5AEA6;"></span>
+      <h3>Faint</h3>
+      <span class="desc">Tertiary text — stack lines, placeholders.</span>
+      <span class="stack">light #B5AEA6 · dark #605B56</span>
+    </div>
+    <div class="swatch">
+      <span class="chip" style="background:var(--hair); border-color:var(--hair);"></span>
+      <h3>Hair</h3>
+      <span class="desc">Hairline rules and borders — an alpha over ink.</span>
+      <span class="stack">light rgba(35,33,31,.13) · dark rgba(232,228,223,.14)</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── c. Typography ────────────────────────────────────────────────── -->
+<section id="type" class="sec">
+  <div class="sec-head">
+    <h2>Typography</h2>
+    <span class="micro">Geist · 300 400 500</span>
+  </div>
+
+  <div class="type-block">
+    <span class="micro">Geist — the entire family used on this page</span>
+    <p style="font-size:2rem; font-weight:400; letter-spacing:-.02em; margin:.75rem 0 0;">
+      Sphinx of black quartz, judge my vow.
+    </p>
+    <div class="weight-row">
+      <div class="weight-sample">
+        <span class="micro">300 · Light</span>
+        <span class="body" style="color:var(--ink); font-size:1.1rem;">Handsome figs like jazzy quartz vex bold nymph.</span>
+      </div>
+      <div class="weight-sample">
+        <span class="micro">400 · Regular</span>
+        <span style="color:var(--ink); font-size:1.1rem; font-weight:400;">Handsome figs like jazzy quartz vex bold nymph.</span>
+      </div>
+      <div class="weight-sample">
+        <span class="micro">500 · Medium</span>
+        <span style="color:var(--ink); font-size:1.1rem; font-weight:500;">Handsome figs like jazzy quartz vex bold nymph.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── d. Type scale ────────────────────────────────────────────────── -->
+<section id="scale" class="sec">
+  <div class="sec-head">
+    <h2>Type scale</h2>
+    <span class="micro">Three sizes, two weights — by design</span>
+  </div>
+
+  <div>
+    <div class="scale-row">
+      <p class="lead" style="margin:0;">Lead — the statement size</p>
+      <div class="scale-meta">
+        <span class="micro">.lead</span>
+        <span class="stack" style="font-family:ui-monospace, monospace; font-size:.78rem; color:var(--faint);">clamp(1.15rem, 2.1vw, 1.9rem) · 400 · −.02em</span>
+      </div>
+    </div>
+    <div class="scale-row">
+      <h3 style="margin:0; font-size:1.05rem; font-weight:500; letter-spacing:-.01em;">Row heading — project titles</h3>
+      <div class="scale-meta">
+        <span class="micro">.tr h3</span>
+        <span class="stack" style="font-family:ui-monospace, monospace; font-size:.78rem; color:var(--faint);">1.05rem / 16.8px · 500 · −.01em</span>
+      </div>
+    </div>
+    <div class="scale-row">
+      <p style="margin:0; font-size:.95rem; font-weight:400;">Base body — set at 15px root, 400 weight, 1.6 line-height</p>
+      <div class="scale-meta">
+        <span class="micro">body</span>
+        <span class="stack" style="font-family:ui-monospace, monospace; font-size:.78rem; color:var(--faint);">15px root · .95rem / 15.2px · 400</span>
+      </div>
+    </div>
+    <div class="scale-row">
+      <p class="body" style="margin:0; color:var(--muted);">Muted body — descriptions, prose columns, facts list</p>
+      <div class="scale-meta">
+        <span class="micro">.body</span>
+        <span class="stack" style="font-family:ui-monospace, monospace; font-size:.78rem; color:var(--faint);">.95rem / 15.2px · 300 · 1.7 line-height</span>
+      </div>
+    </div>
+    <div class="scale-row">
+      <p class="desc" style="margin:0; font-size:.88rem; color:var(--muted); font-weight:300;">Row description — the small descriptive line under a title</p>
+      <div class="scale-meta">
+        <span class="micro">.tr .desc</span>
+        <span class="stack" style="font-family:ui-monospace, monospace; font-size:.78rem; color:var(--faint);">.88rem / 14.1px · 300</span>
+      </div>
+    </div>
+    <div class="scale-row">
+      <p style="margin:0; font-size:.78rem; color:var(--faint); font-weight:300;">Stack line — tooling / metadata, quietest text on the page</p>
+      <div class="scale-meta">
+        <span class="micro">.tr .stack</span>
+        <span class="stack" style="font-family:ui-monospace, monospace; font-size:.78rem; color:var(--faint);">.78rem / 12.5px · 300</span>
+      </div>
+    </div>
+    <div class="scale-row">
+      <p class="micro" style="margin:0;">Micro — labels, nav, year markers, buttons</p>
+      <div class="scale-meta">
+        <span class="micro">.micro</span>
+        <span class="stack" style="font-family:ui-monospace, monospace; font-size:.78rem; color:var(--faint);">.68rem / 10.9px · 400 · .12em · uppercase</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── e. Components ────────────────────────────────────────────────── -->
+<section id="components" class="sec">
+  <div class="sec-head">
+    <h2>Components</h2>
+    <span class="micro">Live, using the mockup's real classes</span>
+  </div>
+
+  <!-- Work table row -->
+  <span class="micro" style="display:block; padding:0 var(--pad) .75rem;">Index row — .tr</span>
+  <div class="table" style="margin-bottom:2.5rem;">
+    <article class="tr">
+      <span class="micro">2025</span>
+      <h3>Quiet</h3>
+      <p class="desc" style="margin:0;">A restrained specimen of a portfolio design system — hairlines, air, one grotesque.</p>
+      <span class="stack">HTML · CSS · Vanilla JS</span>
+      <span class="tr-links micro">
+        <a href="#">Demo</a>
+        <a href="#">Case study</a>
+      </span>
+    </article>
+    <article class="tr">
+      <span class="micro">2023</span>
+      <h3>Archive index</h3>
+      <p class="desc" style="margin:0;">Editorial listing pattern — year, title, description, stack, links.</p>
+      <span class="stack">Design systems · Editorial</span>
+      <span class="tr-links micro">
+        <a href="#">Demo</a>
+        <a href="#">Case study</a>
+      </span>
+    </article>
+  </div>
+
+  <!-- Facts strip -->
+  <span class="micro" style="display:block; padding:0 var(--pad) .75rem;">Facts strip — .facts</span>
+  <ul class="facts" style="border-top:1px solid var(--hair); margin-bottom:2.5rem;">
+    <li><span class="micro">Now</span><span class="body">Independent — design engineering for product teams</span></li>
+    <li><span class="micro">2022</span><span class="body">Design systems lead, product org</span></li>
+    <li><span class="micro">2019</span><span class="body">Senior product designer, agency side</span></li>
+    <li><span class="micro">2014</span><span class="body">Graphic design, print and identity</span></li>
+  </ul>
+
+  <!-- Buttons, links, chevron -->
+  <span class="micro" style="display:block; padding:0 var(--pad) .75rem;">Buttons &amp; links — .btn / .tr-links / .chev</span>
+  <div class="demo">
+    <div class="demo-row">
+      <button class="btn" type="button">Send</button>
+      <span class="tr-links micro"><a href="#">Demo</a></span>
+      <span class="tr-links micro"><a href="#">Case study</a></span>
+      <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9l6 6 6-6"/>
+      </svg>
+      <ul class="socials body" style="margin:0;">
+        <li><a href="#">GitHub</a></li>
+        <li><a href="#">LinkedIn</a></li>
+        <li><a href="#">Bluesky</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Form fields -->
+  <span class="micro" style="display:block; padding:1.5rem var(--pad) .75rem;">Form fields — input / textarea / .btn</span>
+  <div class="demo" style="border-top:0;">
+    <form class="form" onsubmit="return false;">
+      <div>
+        <label for="spec-name" class="micro">Name</label>
+        <input id="spec-name" type="text" placeholder="Your name" />
+      </div>
+      <div>
+        <label for="spec-email" class="micro">Email</label>
+        <input id="spec-email" type="email" placeholder="you@company.com" />
+      </div>
+      <div>
+        <label for="spec-message" class="micro">What are you building?</label>
+        <textarea id="spec-message" rows="1" placeholder="A sentence or two is plenty."></textarea>
+      </div>
+      <div class="wide" style="display:flex; flex-wrap:wrap; align-items:center; gap:1.5rem;">
+        <button type="submit" class="btn">Send</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Hairline rule -->
+  <span class="micro" style="display:block; padding:1.5rem var(--pad) .75rem;">Hairline rule — var(--hair)</span>
+  <div style="padding:0 var(--pad) clamp(3rem,6vw,5rem);">
+    <div style="border-top:1px solid var(--hair); padding-top:1.5rem;">
+      <span class="body">A 1px rule at 13% (light) / 14% (dark) opacity over ink — the only divider this system uses.</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <div><span class="micro">Colophon</span><br /><span class="body">Set in Geist</span></div>
+    <div><span class="micro">Specimen for</span><br /><a href="index.html" class="body" style="color:var(--ink);">Quiet mockup</a></div>
+    <div><span class="micro">© 2026 Gavin McFarland</span></div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+  const root = document.documentElement;
+  const toggle = document.getElementById('theme-toggle');
+  const label  = document.getElementById('toggle-label');
+  if (!toggle || !label) return;
+  const paint = () => {
+    const dark = root.classList.contains('dark');
+    toggle.setAttribute('aria-pressed', String(dark));
+    toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    label.textContent = dark ? 'Light' : 'Dark';
+  };
+  paint();
+  toggle.addEventListener('click', () => {
+    const dark = root.classList.toggle('dark');
+    localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+    paint();
+  });
+})();
+</script>
+</body>
+</html>

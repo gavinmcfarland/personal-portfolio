@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — Console — Gavin McFarland</title>
+<meta name="description" content="Console: tokens, type ramp and components — the Win95 palette rebuilt as flat rules and fills, no bevels, no webfont." />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+<style>
+  /* Specimen-only layout scaffolding. No new colours, fonts or sizes —
+     everything below still reads exclusively from system.css tokens. */
+  .swgrid { display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule); grid-template-columns:repeat(2,minmax(0,1fr)); }
+  @media (min-width:640px) { .swgrid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+  @media (min-width:900px) { .swgrid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+  .swcell { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--paper); }
+  .swcell__meta { min-width:0; }
+  .swcell__name { display:block; font-size:var(--t-ui); font-weight:700; }
+  .swcell__val { display:block; font-size:var(--t-micro); color:var(--dim); }
+  .fam { border:1px solid var(--rule-strong); padding:var(--bl) 12px; margin-bottom:var(--bl); }
+  .fam:last-child { margin-bottom:0; }
+  .fam__label { display:flex; align-items:baseline; justify-content:space-between; gap:var(--gutter); margin-bottom:8px; font-size:var(--t-micro); letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
+  .board-row { display:flex; flex-wrap:wrap; align-items:flex-start; gap:var(--gutter); }
+  .mini-grid { position:relative; height:calc(var(--bl) * 4); border:1px solid var(--rule-strong); overflow:hidden; }
+  .mini-grid__in { position:absolute; inset:0; padding:0 12px; display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:8px; }
+  .mini-grid__in i { background:var(--c-red); opacity:.10; }
+</style>
+</head>
+
+<body data-page="specimen">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<header class="bar">
+  <div class="bar__in">
+    <a class="brand" href="index.html"><span id="brand-ico"></span>Gavin McFarland</a>
+    <nav id="nav" aria-label="Main"></nav>
+    <button id="grid-toggle" class="btn" type="button" aria-pressed="false" style="min-width:0;padding:3px 8px" title="Layout grid (G)">Grid</button>
+    <button id="theme-toggle" class="btn" type="button" aria-pressed="false" style="min-width:0;padding:3px 8px">Theme</button>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <nav class="rail" aria-label="Contents">
+    <a href="#intro">Overview</a>
+    <a href="#colours">Colour</a>
+    <a href="#type">Type</a>
+    <a href="#scale">Scale</a>
+    <a href="#components">Components</a>
+    <a href="#textures">Texture</a>
+  </nav>
+
+  <main class="main">
+
+    <!-- a · intro ---------------------------------------------------- -->
+    <section id="intro" class="sec">
+      <div class="grid10">
+        <div style="grid-column:1 / -1; margin-bottom:var(--bl); display:flex; align-items:flex-start; justify-content:space-between; gap:var(--gutter); flex-wrap:wrap">
+          <div>
+            <p class="display" style="max-width:34ch">Console — specimen</p>
+            <p class="lead" style="margin-top:6px; color:var(--dim)">
+              The Win95 palette and type, built the way you would build an interface now: flat
+              1px rules, one navy for every interactive state, no bevels, no shadows, no webfont.
+            </p>
+          </div>
+          <a class="btn" href="index.html">← Index</a>
+        </div>
+
+        <div class="prose" style="grid-column:1 / -1">
+          <p>
+            This sheet is every token and component this mockup uses, rendered in its own
+            classes — not a description of them. Toggle <span class="mono">Theme</span> in the
+            bar above to see it in dark, or <span class="mono">Grid</span> (or press
+            <span class="mono">G</span>) to see the 12-column overlay this page sits on.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- b · colour ----------------------------------------------------- -->
+    <section id="colours" class="sec">
+      <h2 class="sec__head"><span class="sec__n">01</span> Colour</h2>
+
+      <div class="grid10">
+        <div class="prose" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+          <p>
+            Eleven system tokens carry structure and state; a fixed sixteen-colour palette
+            colour-codes categories. The swatch shows the value active right now — flip
+            <span class="mono">Theme</span> to see the eleven that redefine.
+          </p>
+        </div>
+
+        <div class="list grid10" id="tok-list" style="grid-column:1 / -1; margin-bottom:calc(var(--bl) * 1.5)">
+          <div class="list__head">
+            <span class="c-name">Token</span>
+            <span class="c-desc">Role</span>
+            <span class="c-meta">Light → Dark</span>
+          </div>
+        </div>
+
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">
+          Category palette — 12 colours, unthemed
+        </p>
+        <div class="swgrid" id="cat-list" style="grid-column:1 / -1"></div>
+      </div>
+    </section>
+
+    <!-- c · typography --------------------------------------------------- -->
+    <section id="type" class="sec">
+      <h2 class="sec__head"><span class="sec__n">02</span> Typography</h2>
+
+      <div class="grid10">
+        <div class="prose" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+          <p>
+            No webfont. Two system stacks: the OS's own UI face, and its monospace, so a page
+            asks the network for nothing but HTML, CSS and a handful of tiny bitmap icons.
+          </p>
+        </div>
+
+        <div style="grid-column:1 / -1">
+          <div class="fam">
+            <div class="fam__label"><span>--f-ui</span><span>Tahoma, Verdana, Geneva, 'DejaVu Sans', sans-serif</span></div>
+            <p style="margin:0 0 4px; font-family:var(--f-ui); font-weight:400; font-size:var(--t-display)">Sphinx of black quartz, judge my vow.</p>
+            <p style="margin:0; font-family:var(--f-ui); font-weight:700; font-size:var(--t-display)">Sphinx of black quartz, judge my vow.</p>
+          </div>
+          <div class="fam">
+            <div class="fam__label"><span>--f-mono</span><span>'Lucida Console', 'Courier New', ui-monospace, monospace</span></div>
+            <p style="margin:0 0 4px; font-family:var(--f-mono); font-weight:400; font-size:var(--t-lead)">Sphinx of black quartz, judge my vow.</p>
+            <p style="margin:0; font-family:var(--f-mono); font-weight:700; font-size:var(--t-lead)">Sphinx of black quartz, judge my vow.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- d · type scale --------------------------------------------------- -->
+    <section id="scale" class="sec">
+      <h2 class="sec__head"><span class="sec__n">03</span> Type scale</h2>
+      <div class="grid10">
+        <div class="prose" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+          <p>Five flat steps on a 20px baseline — 11 / 12 / 13 / 15 / 20px — plus the mono face at body size.</p>
+        </div>
+        <div class="list grid10" style="grid-column:1 / -1">
+          <div class="list__row">
+            <span class="c-term">Display<br /><span class="dim mono" style="font-size:var(--t-micro)">--t-display · 20px</span></span>
+            <span class="c-body display" style="font-size:var(--t-display)">Most teams are slowed by something nobody owns.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">Lead<br /><span class="dim mono" style="font-size:var(--t-micro)">--t-lead · 15px</span></span>
+            <span class="c-body lead">I build that thing, then write down how it works.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">Body<br /><span class="dim mono" style="font-size:var(--t-micro)">--t-body · 13px</span></span>
+            <span class="c-body" style="font-size:var(--t-body)">Fifteen years between design and engineering — finance, government and retail.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">UI<br /><span class="dim mono" style="font-size:var(--t-micro)">--t-ui · 12px</span></span>
+            <span class="c-body" style="font-size:var(--t-ui)">Nav links, buttons, chips, footer meta — interface chrome, not prose.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">Micro / label<br /><span class="dim mono" style="font-size:var(--t-micro)">--t-micro · 11px</span></span>
+            <span class="c-body" style="font-size:var(--t-micro); letter-spacing:.08em; text-transform:uppercase; color:var(--dim)">List heads, section numbers, hints, footer keys</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">Mono / code<br /><span class="dim mono" style="font-size:var(--t-micro)">--f-mono · 13px</span></span>
+            <span class="c-body mono" style="font-size:var(--t-body)">figma.ui.onmessage = (msg) =&gt; { … }</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- e · components --------------------------------------------------- -->
+    <section id="components" class="sec">
+      <h2 class="sec__head"><span class="sec__n">04</span> Components</h2>
+
+      <div class="grid10">
+
+        <!-- buttons -->
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">Buttons</p>
+        <p style="grid-column:1 / -1; margin:0 0 var(--bl); display:flex; gap:8px; flex-wrap:wrap">
+          <button class="btn btn--primary" type="button">Send message</button>
+          <button class="btn" type="button">Reset</button>
+          <a class="btn" href="index.html">Cancel</a>
+          <button class="btn" type="button" disabled>Disabled</button>
+        </p>
+
+        <!-- chips -->
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">Chips</p>
+        <div class="chips" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+          <span class="chip">Node</span>
+          <span class="chip">TypeScript</span>
+          <span class="chip">Vite</span>
+        </div>
+
+        <!-- tiles -->
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">Project tiles</p>
+        <div class="tiles" id="spec-tiles" style="grid-column:1 / -1; margin-bottom:calc(var(--bl) * 1.5)"></div>
+
+        <!-- list / rows -->
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">List rows</p>
+        <div class="list grid10" id="spec-rows" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+          <div class="list__head">
+            <span class="c-name">Name</span>
+            <span class="c-desc">Description</span>
+            <span class="c-meta">Type</span>
+          </div>
+        </div>
+        <div class="list grid10" style="grid-column:1 / -1; margin-bottom:calc(var(--bl) * 1.5)">
+          <div class="list__row">
+            <span class="c-term">Design systems</span>
+            <span class="c-body">Tokens, components and the governance that keeps them honest.</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">Role</span>
+            <span class="c-body">Creator, maintainer — Plugma, 2024–ongoing</span>
+          </div>
+        </div>
+
+        <!-- board nodes -->
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">Board nodes (cards)</p>
+        <div class="board-row" style="grid-column:1 / -1; margin-bottom:calc(var(--bl) * 1.5)">
+
+          <div class="card n-doc">
+            <div class="card__head"><span id="ico-doc"></span><span>Brief</span></div>
+            <div class="card__body">
+              <p>A zero-config toolchain for Figma plugins. Scaffold it, develop it with real hot reloading, ship it.</p>
+              <div class="chips" style="margin-top:10px">
+                <span class="chip">Node</span><span class="chip">TypeScript</span><span class="chip">Vite</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="n-callout">What it does</div>
+
+          <div class="n-note" style="background:var(--c-yellow); color:#0A0A0A">
+            <span class="n-note__n">01</span>Zero config
+          </div>
+          <div class="n-note" style="background:var(--c-aqua); color:#0A0A0A">
+            <span class="n-note__n">02</span>Real HMR,
+state kept
+          </div>
+          <div class="n-note" style="background:var(--c-navy); color:#FFFFFF">
+            <span class="n-note__n">04</span>One command
+to ship
+          </div>
+
+          <div class="card n-code">
+            <div class="card__head"><span id="ico-term"></span><span>main.ts</span></div>
+            <pre><span class="cm">// sandbox half — document, no DOM</span>
+<span class="kw">figma</span>.ui.onmessage = (msg) =&gt; {
+  <span class="kw">if</span> (msg.type === <span class="cm">'resize'</span>) {
+    <span class="kw">figma</span>.ui.resize(msg.w, msg.h)
+  }
+}</pre>
+          </div>
+
+          <a class="card n-link" href="https://www.plugma.dev/" target="_blank" rel="noopener noreferrer">
+            <div class="card__head"><span id="ico-net"></span><span>Reference</span></div>
+            <div class="card__body">
+              <span class="n-link__title">Plugma — getting started</span>
+              <span class="n-link__desc">Scaffold a plugin and run it with hot reloading, in one command.</span>
+              <span class="n-link__host">plugma.dev ↗</span>
+            </div>
+          </a>
+
+        </div>
+
+        <!-- notices -->
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">Notices</p>
+        <div class="notice notice--warn" data-open="true" style="grid-column:1 / -1">
+          <span id="ico-warn"></span>
+          <div>
+            <p><strong>This message is not ready to send.</strong></p>
+            <ul><li>Enter your name.</li><li>Write at least a sentence.</li></ul>
+          </div>
+        </div>
+        <div class="notice notice--ok" data-open="true" style="grid-column:1 / -1; margin-bottom:calc(var(--bl) * 1.5)">
+          <span id="ico-ok"></span>
+          <div>
+            <p><strong>Validated — but not sent.</strong></p>
+            <p class="dim" style="margin-top:4px">This is a design mockup with no mail server behind it.</p>
+          </div>
+        </div>
+
+        <!-- form -->
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">Form fields</p>
+        <div style="grid-column:1 / -1; max-width:46rem; margin-bottom:calc(var(--bl) * 1.5)">
+          <div class="formrow">
+            <label for="spec-name">Name</label>
+            <div>
+              <input class="field" id="spec-name" type="text" aria-invalid="true" />
+              <span class="errmsg">Enter your name.</span>
+            </div>
+          </div>
+          <div class="formrow">
+            <label for="spec-email">E-mail</label>
+            <div>
+              <input class="field" id="spec-email" type="email" />
+              <span class="hint">I reply to everything that is not a recruiter mailshot.</span>
+            </div>
+          </div>
+          <div class="formrow">
+            <span></span>
+            <label class="check">
+              <input type="checkbox" checked />
+              <span>Send me a copy of this message</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- rule -->
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">Rule</p>
+        <hr class="rule" style="grid-column:1 / -1; background:var(--rule-strong)" />
+
+      </div>
+    </section>
+
+    <!-- f · textures --------------------------------------------------- -->
+    <section id="textures" class="sec">
+      <h2 class="sec__head"><span class="sec__n">05</span> Texture</h2>
+
+      <div class="grid10">
+        <div class="prose" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+          <p>
+            Two references, both honest rather than decorative: the 50% stipple as a divider, and
+            a dotted ground under the board. Structure never fakes depth — no bevel, no shadow,
+            anywhere in this file.
+          </p>
+        </div>
+
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">Stipple divider</p>
+        <hr class="rule stipple" style="grid-column:1 / -1; margin-bottom:calc(var(--bl) * 1.5)" />
+
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">Board ground (dot grid)</p>
+        <figure class="figure" style="grid-column:1 / -1; margin-bottom:calc(var(--bl) * 1.5)">
+          <div class="figure__stage board">
+            <div class="vp" style="cursor:default" aria-hidden="true"></div>
+          </div>
+          <figcaption class="figure__cap">
+            <span>8px dots, board background — see the live version on <a href="project-canvas.html">project-canvas.html</a></span>
+          </figcaption>
+        </figure>
+
+        <p class="lead" style="grid-column:1 / -1; margin:0 0 8px; font-size:var(--t-ui); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dim)">12-column overlay</p>
+        <div class="mini-grid" style="grid-column:1 / -1">
+          <div class="mini-grid__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <p class="dim" style="grid-column:1 / -1; margin-top:6px; font-size:var(--t-micro)">
+          The real thing is a fixed overlay across the whole viewport, toggled by the
+          <span class="mono">Grid</span> button (or <span class="mono">G</span>) in the header above.
+        </p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="foot">
+  <div class="foot__in">
+    <span><span class="k">Index</span> <span id="counts">—</span></span>
+    <span><span class="k">Sheet</span> Specimen</span>
+    <span><span class="k">Mail</span> <a href="mailto:gavin@limitlessloop.com">gavin@limitlessloop.com</a></span>
+  </div>
+</footer>
+
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  /* Guarded throughout: this sheet must render even if a shared
+     script fails to load — it is the one page meant to survive that. */
+
+  if (window.icon) {
+    const brand = document.getElementById('brand-ico');
+    if (brand) brand.innerHTML = icon('floppy');
+    const d = document.getElementById('ico-doc'); if (d) d.innerHTML = icon('doc');
+    const t = document.getElementById('ico-term'); if (t) t.innerHTML = icon('term');
+    const n = document.getElementById('ico-net'); if (n) n.innerHTML = icon('net');
+    const w = document.getElementById('ico-warn'); if (w) w.innerHTML = icon('doc').replace('class="ico"','class="ico ico--lg"');
+    const o = document.getElementById('ico-ok'); if (o) o.innerHTML = icon('mail').replace('class="ico"','class="ico ico--lg"');
+  }
+
+  if (window.DATA && window.render) {
+    const sample = DATA.projects.slice(0, 3);
+    render.into('spec-tiles', sample, render.projectTile);
+    render.into('spec-rows', sample, render.projectRow);
+  }
+
+  /* Token tables — read live from :root / .dark so the values shown
+     can never drift from system.css. */
+  const cs = getComputedStyle(document.documentElement);
+  const wasDark = document.documentElement.classList.contains('dark');
+
+  function readBoth(name) {
+    const now = cs.getPropertyValue(name).trim();
+    document.documentElement.classList.toggle('dark', !wasDark);
+    const flipped = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    document.documentElement.classList.toggle('dark', wasDark);
+    const light = wasDark ? flipped : now;
+    const dark = wasDark ? now : flipped;
+    return { light, dark, current: now };
+  }
+
+  const TOKENS = [
+    ['--paper',        'Paper — page background'],
+    ['--chrome',       'Chrome — structural silver (bars, buttons)'],
+    ['--chrome-2',     'Chrome 2 — secondary silver (current page, board ground)'],
+    ['--ink',          'Ink — primary text'],
+    ['--dim',          'Dim — secondary text, meta, hints'],
+    ['--rule',         'Rule — hairline divider (rows, tile gaps)'],
+    ['--rule-strong',  'Rule strong — structural border (bar, cards, buttons)'],
+    ['--accent',       'Accent — the one interactive colour (navy)'],
+    ['--accent-2',     'Accent 2 — secondary, non-interactive (teal)'],
+    ['--on-accent',    'On-accent — text/icon atop an accent fill'],
+    ['--link',         'Link — inline link colour'],
+  ];
+
+  const tokList = document.getElementById('tok-list');
+  if (tokList) {
+    tokList.insertAdjacentHTML('beforeend', TOKENS.map(([name, role]) => {
+      const v = readBoth(name);
+      return `
+        <div class="list__row">
+          <span class="c-name"><span class="swatch" style="width:14px;height:14px;background:${v.current}"></span>${name}</span>
+          <span class="c-desc">${role}</span>
+          <span class="c-meta mono">${v.light} → ${v.dark}</span>
+        </div>`;
+    }).join(''));
+  }
+
+  const CATS = [
+    ['--c-navy','navy'], ['--c-teal','teal'], ['--c-maroon','maroon'], ['--c-olive','olive'],
+    ['--c-purple','purple'], ['--c-green','green'], ['--c-red','red'], ['--c-blue','blue'],
+    ['--c-silver','silver'], ['--c-gray','gray'], ['--c-yellow','yellow'], ['--c-aqua','aqua'],
+  ];
+  const catList = document.getElementById('cat-list');
+  if (catList) {
+    catList.innerHTML = CATS.map(([name, label]) => {
+      const val = cs.getPropertyValue(name).trim();
+      return `
+        <div class="swcell">
+          <span class="swatch" style="width:22px;height:22px;background:${val}"></span>
+          <span class="swcell__meta">
+            <span class="swcell__name">${label}</span>
+            <span class="swcell__val mono">${name} · ${val}</span>
+          </span>
+        </div>`;
+    }).join('');
+  }
+})();
+</script>
+
+</body>
+</html>

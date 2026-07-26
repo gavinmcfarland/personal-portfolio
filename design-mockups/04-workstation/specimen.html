@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — Workstation</title>
+<meta name="description" content="Design specimen for the Workstation mockup — tokens, type scale and components, rendered live." />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+<style>
+  /* ── SPECIMEN-ONLY · presentational scaffolding ───────────────────
+     No new tokens, no new colours: this just lays the real system's
+     swatches, type rows and component samples out on the page. Every
+     value shown still comes from system.css. */
+
+  .spec-swatch { display:flex; flex-direction:column; gap:6px; padding:6px;
+    color:var(--text); text-align:left; }
+  .spec-swatch__chip { width:100%; aspect-ratio:2/1; display:block;
+    box-shadow:
+      inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+      inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest); }
+  .spec-swatch__name { font-size:var(--t-ui); font-weight:700; }
+  .spec-swatch__val  { font-size:var(--t-micro); font-family:var(--f-mono); color:var(--text-dim); }
+  .spec-swatches { display:grid; gap:var(--gutter); grid-template-columns:repeat(auto-fill, minmax(9rem, 1fr)); }
+
+  .spec-type-row { display:flex; align-items:baseline; gap:var(--gutter); padding:4px 0;
+    border-bottom:1px solid var(--bev-dark); }
+  .spec-type-row:last-child { border-bottom:0; }
+  .spec-type-row .role { flex:none; width:6.5rem; font-size:var(--t-ui); color:var(--text-dim); }
+  .spec-type-row .val  { flex:none; width:6.5rem; font-size:var(--t-micro); font-family:var(--f-mono); color:var(--text-dim); }
+  .spec-type-row .sample { flex:1; min-width:0; }
+
+  .spec-board-row { display:flex; flex-wrap:wrap; gap:var(--gutter); align-items:flex-start; }
+  .spec-dither { width:160px; height:120px; box-shadow:
+      inset -1px -1px var(--bev-lightest), inset  1px  1px var(--bev-dark),
+      inset -2px -2px var(--bev-light),    inset  2px  2px var(--bev-darkest); }
+</style>
+</head>
+
+<body data-page="specimen">
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<div class="win">
+
+  <div class="win__title">
+    <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M3 1h7l3 3v11H3z" fill="#FFFFFF" stroke="#0A0A0A"/><path d="M5 6h6M5 8h6M5 10h4" stroke="#000080"/></svg>
+    <span class="name">Specimen — Workstation</span>
+    <span class="win__ctrls">
+      <button class="win__ctrl" type="button" aria-label="Minimise" title="Decorative">_</button>
+      <button class="win__ctrl" type="button" aria-label="Maximise" title="Decorative">□</button>
+      <button class="win__ctrl" type="button" aria-label="Close" title="Decorative">✕</button>
+    </span>
+  </div>
+
+  <nav class="menubar" aria-label="Main">
+    <a href="index.html"><u>F</u>ile</a>
+    <button type="button" id="viewbtn" aria-haspopup="true" aria-expanded="false" aria-controls="viewmenu"><u>V</u>iew</button>
+    <a href="gallery.html"><u>G</u>o</a>
+    <a href="contact.html"><u>H</u>elp</a>
+
+    <div class="menu" id="viewmenu" role="menu">
+      <ul>
+        <li><button type="button" role="menuitem" onclick="toggleGrid()"><span class="tick" data-tick="grid"></span>Layout grid</button></li>
+        <li><button type="button" role="menuitem" onclick="toggleTheme()"><span class="tick" data-tick="dark"></span>High contrast</button></li>
+        <li><hr /></li>
+        <li><a role="menuitem" href="index.html">Back to Portfolio…</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="explorer">
+
+    <div class="pane-tree">
+      <nav class="tree" aria-label="Contents">
+        <ul>
+          <li>
+            <a href="index.html">
+              <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M1 3h5l1 2h8v8H1z" fill="#FFD24A" stroke="#0A0A0A"/></svg>
+              ← Portfolio
+            </a>
+          </li>
+          <li>
+            <a href="#intro" aria-current="true">
+              <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M3 1h7l3 3v11H3z" fill="#FFFFFF" stroke="#0A0A0A"/><path d="M5 6h6M5 8h6M5 10h4" stroke="#000080"/></svg>
+              Specimen
+            </a>
+            <ul>
+              <li><a href="#colour">Colour</a></li>
+              <li><a href="#type">Typography</a></li>
+              <li><a href="#scale">Type scale</a></li>
+              <li><a href="#components">Components</a></li>
+              <li><a href="#texture">Texture</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="pane-main">
+      <div class="client">
+        <div class="grid12">
+          <div style="grid-column:1 / -1">
+
+            <!-- a. intro ------------------------------------------ -->
+            <section id="intro" class="sec">
+              <h2 class="sec__head"><span class="n">0.</span> Specimen</h2>
+
+              <div class="grid12">
+                <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <p class="display">Windows 95, taken at its word.</p>
+                  <p class="lead" style="margin-top:calc(var(--bl) * .5)">System chrome, VGA colour and MS Sans Serif — flat bevels standing in for depth, square corners, nothing blurred and nothing floating.</p>
+                </div>
+
+                <div class="prose" style="grid-column:1 / -1; max-width:64ch">
+                  <p>
+                    This is the specimen sheet for the <strong>Workstation</strong> mockup — every
+                    colour token, type size and control below is drawn live from this mockup's own
+                    <span class="mono">system.css</span>, so it can be flipped against the other
+                    portfolio directions and compared like for like.
+                  </p>
+                  <p>
+                    Open <span class="mono">View → High contrast</span> in the menu above to see the
+                    whole sheet re-theme — that toggle is the real one, backed by the same
+                    <span class="mono">localStorage['gm-theme']</span> key the rest of the site uses.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <!-- b. colour ------------------------------------------ -->
+            <section id="colour" class="sec">
+              <h2 class="sec__head"><span class="n">1.</span> Colour palette <span class="sec__note">29 tokens · 15 themed</span></h2>
+
+              <div class="grid12">
+                <div class="prose" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <p>The literal values below are fixed to the page so both themes can sit side by
+                  side — toggling <span class="mono">High contrast</span> above changes the live
+                  chrome around this sheet, not these reference chips.</p>
+                </div>
+
+                <div style="grid-column:1 / -1; margin-bottom:calc(var(--bl) * .5)"><strong style="font-size:var(--t-ui)">Chrome &amp; text — light</strong></div>
+                <div class="spec-swatches" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#008080"></span><span class="spec-swatch__name">--desktop</span><span class="spec-swatch__val">#008080</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#C0C0C0"></span><span class="spec-swatch__name">--face</span><span class="spec-swatch__val">#C0C0C0</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#FFFFFF"></span><span class="spec-swatch__name">--field</span><span class="spec-swatch__val">#FFFFFF</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#0A0A0A"></span><span class="spec-swatch__name">--text</span><span class="spec-swatch__val">#0A0A0A</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#808080"></span><span class="spec-swatch__name">--text-dim</span><span class="spec-swatch__val">#808080</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#000080"></span><span class="spec-swatch__name">--title</span><span class="spec-swatch__val">#000080</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#FFFFFF"></span><span class="spec-swatch__name">--title-text</span><span class="spec-swatch__val">#FFFFFF</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#808080"></span><span class="spec-swatch__name">--title-off</span><span class="spec-swatch__val">#808080</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#000080"></span><span class="spec-swatch__name">--sel</span><span class="spec-swatch__val">#000080</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#FFFFFF"></span><span class="spec-swatch__name">--sel-text</span><span class="spec-swatch__val">#FFFFFF</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#0000EE"></span><span class="spec-swatch__name">--link</span><span class="spec-swatch__val">#0000EE</span></div>
+                </div>
+
+                <div style="grid-column:1 / -1; margin-bottom:calc(var(--bl) * .5)"><strong style="font-size:var(--t-ui)">Chrome &amp; text — high contrast (dark)</strong></div>
+                <div class="spec-swatches" style="grid-column:1 / -1; margin-bottom:var(--bl); background:#000; padding:8px">
+                  <div class="spec-swatch" style="color:#FFF"><span class="spec-swatch__chip" style="background:#000000"></span><span class="spec-swatch__name">--desktop</span><span class="spec-swatch__val" style="color:#A0A0A0">#000000</span></div>
+                  <div class="spec-swatch" style="color:#FFF"><span class="spec-swatch__chip" style="background:#000000"></span><span class="spec-swatch__name">--face</span><span class="spec-swatch__val" style="color:#A0A0A0">#000000</span></div>
+                  <div class="spec-swatch" style="color:#FFF"><span class="spec-swatch__chip" style="background:#000000"></span><span class="spec-swatch__name">--field</span><span class="spec-swatch__val" style="color:#A0A0A0">#000000</span></div>
+                  <div class="spec-swatch" style="color:#FFF"><span class="spec-swatch__chip" style="background:#FFFFFF"></span><span class="spec-swatch__name">--text</span><span class="spec-swatch__val" style="color:#A0A0A0">#FFFFFF</span></div>
+                  <div class="spec-swatch" style="color:#FFF"><span class="spec-swatch__chip" style="background:#A0A0A0"></span><span class="spec-swatch__name">--text-dim</span><span class="spec-swatch__val" style="color:#A0A0A0">#A0A0A0</span></div>
+                  <div class="spec-swatch" style="color:#FFF"><span class="spec-swatch__chip" style="background:#0000AA"></span><span class="spec-swatch__name">--title</span><span class="spec-swatch__val" style="color:#A0A0A0">#0000AA</span></div>
+                  <div class="spec-swatch" style="color:#FFF"><span class="spec-swatch__chip" style="background:#FFFFFF"></span><span class="spec-swatch__name">--title-text</span><span class="spec-swatch__val" style="color:#A0A0A0">#FFFFFF</span></div>
+                  <div class="spec-swatch" style="color:#FFF"><span class="spec-swatch__chip" style="background:#404040"></span><span class="spec-swatch__name">--title-off</span><span class="spec-swatch__val" style="color:#A0A0A0">#404040</span></div>
+                  <div class="spec-swatch" style="color:#FFF"><span class="spec-swatch__chip" style="background:#FFFFFF"></span><span class="spec-swatch__name">--sel</span><span class="spec-swatch__val" style="color:#A0A0A0">#FFFFFF</span></div>
+                  <div class="spec-swatch" style="color:#FFF"><span class="spec-swatch__chip" style="background:#000000"></span><span class="spec-swatch__name">--sel-text</span><span class="spec-swatch__val" style="color:#A0A0A0">#000000</span></div>
+                  <div class="spec-swatch" style="color:#FFF"><span class="spec-swatch__chip" style="background:#FFFF00"></span><span class="spec-swatch__name">--link</span><span class="spec-swatch__val" style="color:#A0A0A0">#FFFF00</span></div>
+                </div>
+
+                <div style="grid-column:1 / -1; margin-bottom:calc(var(--bl) * .5)"><strong style="font-size:var(--t-ui)">Bevel stops — the four values every raised, pressed and sunken edge is built from</strong></div>
+                <div class="spec-swatches" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#FFFFFF"></span><span class="spec-swatch__name">--bev-lightest</span><span class="spec-swatch__val">#FFFFFF</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#DFDFDF"></span><span class="spec-swatch__name">--bev-light</span><span class="spec-swatch__val">#DFDFDF</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#808080"></span><span class="spec-swatch__name">--bev-dark</span><span class="spec-swatch__val">#808080</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#0A0A0A"></span><span class="spec-swatch__name">--bev-darkest</span><span class="spec-swatch__val">#0A0A0A</span></div>
+                </div>
+
+                <div style="grid-column:1 / -1; margin-bottom:calc(var(--bl) * .5)"><strong style="font-size:var(--t-ui)">VGA palette — the 14 colours the cover art and board notes draw from</strong></div>
+                <div class="spec-swatches" style="grid-column:1 / -1">
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#000080"></span><span class="spec-swatch__name">--c-navy</span><span class="spec-swatch__val">#000080</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#008080"></span><span class="spec-swatch__name">--c-teal</span><span class="spec-swatch__val">#008080</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#800000"></span><span class="spec-swatch__name">--c-maroon</span><span class="spec-swatch__val">#800000</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#808000"></span><span class="spec-swatch__name">--c-olive</span><span class="spec-swatch__val">#808000</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#800080"></span><span class="spec-swatch__name">--c-purple</span><span class="spec-swatch__val">#800080</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#008000"></span><span class="spec-swatch__name">--c-green</span><span class="spec-swatch__val">#008000</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#C0C0C0"></span><span class="spec-swatch__name">--c-silver</span><span class="spec-swatch__val">#C0C0C0</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#808080"></span><span class="spec-swatch__name">--c-gray</span><span class="spec-swatch__val">#808080</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#FF0000"></span><span class="spec-swatch__name">--c-red</span><span class="spec-swatch__val">#FF0000</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#00FF00"></span><span class="spec-swatch__name">--c-lime</span><span class="spec-swatch__val">#00FF00</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#FFFF00"></span><span class="spec-swatch__name">--c-yellow</span><span class="spec-swatch__val">#FFFF00</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#0000FF"></span><span class="spec-swatch__name">--c-blue</span><span class="spec-swatch__val">#0000FF</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#FF00FF"></span><span class="spec-swatch__name">--c-fuchsia</span><span class="spec-swatch__val">#FF00FF</span></div>
+                  <div class="spec-swatch"><span class="spec-swatch__chip" style="background:#00FFFF"></span><span class="spec-swatch__name">--c-aqua</span><span class="spec-swatch__val">#00FFFF</span></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- c. typography ---------------------------------------- -->
+            <section id="type" class="sec">
+              <h2 class="sec__head"><span class="n">2.</span> Typography <span class="sec__note">no web font loaded</span></h2>
+
+              <div class="grid12">
+                <div class="prose" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <p>No <span class="mono">&lt;link&gt;</span> to Google Fonts anywhere in this
+                  mockup — the system UI face is the whole point of a Windows 95 idiom, so it loads
+                  nothing and paints instantly. Two stacks, both OS-native:</p>
+                </div>
+
+                <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <div class="spec-swatch__name" style="margin-bottom:2px">--f-ui</div>
+                  <div class="spec-swatch__val" style="margin-bottom:8px">Tahoma, Verdana, Geneva, 'DejaVu Sans', sans-serif — regular (400) and bold (700), no italic</div>
+                  <p style="margin:0; font-family:var(--f-ui); font-weight:400; font-size:var(--t-lead)">The quick brown fox jumps over a lazy dog — 0123456789</p>
+                  <p style="margin:2px 0 0; font-family:var(--f-ui); font-weight:700; font-size:var(--t-lead)">The quick brown fox jumps over a lazy dog — 0123456789</p>
+                </div>
+
+                <div style="grid-column:1 / -1">
+                  <div class="spec-swatch__name" style="margin-bottom:2px">--f-mono</div>
+                  <div class="spec-swatch__val" style="margin-bottom:8px">'Lucida Console', 'Courier New', ui-monospace, monospace — code windows, size and price figures</div>
+                  <p style="margin:0; font-family:var(--f-mono); font-size:var(--t-lead)">The quick brown fox jumps over a lazy dog — 0123456789</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- d. type scale ------------------------------------------ -->
+            <section id="scale" class="sec">
+              <h2 class="sec__head"><span class="n">3.</span> Type scale <span class="sec__note">5 steps, flattest ramp in the set</span></h2>
+
+              <div class="grid12">
+                <div style="grid-column:1 / -1">
+                  <div class="spec-type-row">
+                    <span class="role">display</span><span class="val">20px / 1.25rem</span>
+                    <span class="sample" style="font-size:var(--t-display); font-weight:700">Most teams are slowed</span>
+                  </div>
+                  <div class="spec-type-row">
+                    <span class="role">lead</span><span class="val">15px / .9375rem</span>
+                    <span class="sample" style="font-size:var(--t-lead)">by something nobody owns.</span>
+                  </div>
+                  <div class="spec-type-row">
+                    <span class="role">body</span><span class="val">13px / .8125rem</span>
+                    <span class="sample" style="font-size:var(--t-body)">Fifteen years between design and engineering.</span>
+                  </div>
+                  <div class="spec-type-row">
+                    <span class="role">ui / chrome</span><span class="val">11px / .6875rem</span>
+                    <span class="sample" style="font-size:var(--t-ui)">Menu bar, buttons, status bar, list headers</span>
+                  </div>
+                  <div class="spec-type-row">
+                    <span class="role">micro / label</span><span class="val">11px / .6875rem</span>
+                    <span class="sample" style="font-size:var(--t-micro); color:var(--text-dim)">Hints, chips, icon-view metadata</span>
+                  </div>
+                  <div class="spec-type-row">
+                    <span class="role">mono</span><span class="val">13px / .8125rem</span>
+                    <span class="sample" style="font-size:var(--t-body); font-family:var(--f-mono)">gavin@limitlessloop.com</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- e. components ------------------------------------------ -->
+            <section id="components" class="sec">
+              <h2 class="sec__head"><span class="n">4.</span> Components</h2>
+
+              <div class="grid12">
+
+                <!-- buttons -->
+                <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <div class="spec-swatch__name" style="margin-bottom:6px">Buttons &amp; links</div>
+                  <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px">
+                    <button class="btn" type="button">Cancel</button>
+                    <button class="btn" type="button" style="font-weight:700">Send</button>
+                    <button class="btn btn--sm" type="button">Small</button>
+                    <button class="btn" type="button" disabled>Disabled</button>
+                    <button class="btn" type="button" onclick="if(window.dialog){dialog({title:'Specimen', kind:'ok', message:'This is the same modal dialog the contact form uses.'})}">Show dialog…</button>
+                    <a class="a" href="#components">A text link, underlined</a>
+                  </div>
+                </div>
+
+                <!-- form controls -->
+                <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <fieldset class="group">
+                    <legend>Sample enquiry</legend>
+                    <div class="formrow">
+                      <label for="s-name">Name:</label>
+                      <div><input class="field" id="s-name" type="text" value="Jordan Ellis" /></div>
+                    </div>
+                    <div class="formrow">
+                      <label for="s-topic">Regarding:</label>
+                      <div>
+                        <select class="field" id="s-topic">
+                          <option>Design system work</option>
+                          <option>Front-end build</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="formrow">
+                      <label for="s-msg">Message:</label>
+                      <div><textarea class="field" id="s-msg" rows="3">Two lines is usually enough to say what fell between two teams.</textarea></div>
+                    </div>
+                    <label class="check" style="margin-top:6px">
+                      <input type="checkbox" checked /><span>Send a copy of this message</span>
+                    </label>
+                  </fieldset>
+                </div>
+
+                <!-- list view: projects -->
+                <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <div class="spec-swatch__name" style="margin-bottom:6px">List view — Details</div>
+                  <div class="grid10">
+                    <div class="lv grid10">
+                      <div class="lv__head">
+                        <span class="c-key">Name</span>
+                        <span class="c-desc">Description</span>
+                        <span class="c-meta">Type</span>
+                      </div>
+                      <a class="lv__row" href="#components">
+                        <span class="c-key">Nova Analytics</span>
+                        <span class="c-desc">Usage dashboards for a mid-market SaaS platform</span>
+                        <span class="c-meta">Application</span>
+                      </a>
+                      <a class="lv__row" href="#components">
+                        <span class="c-key">Litmus</span>
+                        <span class="c-desc">A design-QA browser extension</span>
+                        <span class="c-meta">Plug-in</span>
+                      </a>
+                      <a class="lv__row" href="#components">
+                        <span class="c-key">Fathom Kit</span>
+                        <span class="c-desc">Shared component library, tokens to code</span>
+                        <span class="c-meta">Library</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- list view: definition rows -->
+                <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <div class="spec-swatch__name" style="margin-bottom:6px">List view — Properties</div>
+                  <div class="grid10">
+                    <div class="lv grid10">
+                      <div class="lv__row">
+                        <span class="c-term">Role</span>
+                        <span class="c-body">Senior Product Designer, Nova Analytics</span>
+                      </div>
+                      <div class="lv__row">
+                        <span class="c-term">Year</span>
+                        <span class="c-body">2022 – 2024</span>
+                      </div>
+                      <div class="lv__row">
+                        <span class="c-term">Stack</span>
+                        <span class="c-body">Figma, TypeScript, React, Vite</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- icon view -->
+                <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <div class="spec-swatch__name" style="margin-bottom:6px">Icon view</div>
+                  <div class="icons" data-size="lg">
+                    <div class="icon-item">
+                      <span class="icon-item__art"><svg class="ico" style="width:100%;height:100%" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M1 3h5l1 2h8v8H1z" fill="#FFD24A" stroke="#0A0A0A"/></svg></span>
+                      <span class="icon-item__label">Nova Analytics</span>
+                      <span class="icon-item__meta">Product design · 2024</span>
+                    </div>
+                    <div class="icon-item">
+                      <span class="icon-item__art"><svg class="ico" style="width:100%;height:100%" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M3 1h7l3 3v11H3z" fill="#FFFFFF" stroke="#0A0A0A"/><path d="M5 6h6M5 8h6M5 10h4" stroke="#000080"/></svg></span>
+                      <span class="icon-item__label">Litmus</span>
+                      <span class="icon-item__meta">Front-end · 2023</span>
+                    </div>
+                    <div class="icon-item">
+                      <span class="icon-item__art"><svg class="ico" style="width:100%;height:100%" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10" fill="#FFFFFF" stroke="#0A0A0A"/><path d="M1 3l7 6 7-6" fill="none" stroke="#0A0A0A"/></svg></span>
+                      <span class="icon-item__label">Fathom Kit</span>
+                      <span class="icon-item__meta">Design system · 2021</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- chips -->
+                <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <div class="spec-swatch__name" style="margin-bottom:6px">Chips</div>
+                  <div class="chips" style="margin-top:0">
+                    <span class="chip">Node</span>
+                    <span class="chip">TypeScript</span>
+                    <span class="chip">Vite</span>
+                    <span class="chip">Figma API</span>
+                  </div>
+                </div>
+
+                <!-- menu / dividers -->
+                <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <div class="spec-swatch__name" style="margin-bottom:6px">Menu &amp; rule</div>
+                  <div class="menu" data-open="true" style="position:static; display:block; width:200px">
+                    <ul>
+                      <li><button type="button">✓ Layout grid</button></li>
+                      <li><button type="button">High contrast</button></li>
+                      <li><hr /></li>
+                      <li><a href="#components">Large Icons…</a></li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- board windows: doc, code, note, link, callout -->
+                <div style="grid-column:1 / -1">
+                  <div class="spec-swatch__name" style="margin-bottom:6px">Board windows</div>
+                  <div class="spec-board-row">
+
+                    <div class="nwin n-doc">
+                      <div class="nwin__title"><span>Brief</span><span class="x">✕</span></div>
+                      <div class="nwin__body field-bg">
+                        <p>A toolchain that scaffolds, develops with real hot reloading, and ships — without hand-assembling a bundler first.</p>
+                        <div class="chips">
+                          <span class="chip">Node</span>
+                          <span class="chip">TypeScript</span>
+                          <span class="chip">Vite</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="nwin n-code">
+                      <div class="nwin__title"><span>server.ts — Notepad</span><span class="x">✕</span></div>
+                      <div class="nwin__body field-bg" style="padding:0"><pre><span class="cm">// dev server entry</span>
+<span class="kw">export</span> <span class="kw">function</span> start(port = 3000) {
+  <span class="kw">return</span> createServer().listen(port)
+}</pre></div>
+                    </div>
+
+                    <div class="nwin n-note">
+                      <div class="nwin__title"><span>03</span><span class="x">✕</span></div>
+                      <div class="nwin__body">Ask about NDA before sending the deck</div>
+                    </div>
+
+                    <a class="nwin n-link" href="#components">
+                      <div class="nwin__title"><span>Shortcut</span><span class="x">✕</span></div>
+                      <div class="nwin__body field-bg">
+                        <div class="n-link__thumb">Preview not available</div>
+                        <span class="n-link__title" style="margin-top:6px">Nova Analytics — Case study</span>
+                        <span class="n-link__desc">Dashboards for a mid-market SaaS platform</span>
+                        <span class="n-link__host">example.com</span>
+                      </div>
+                    </a>
+
+                  </div>
+
+                  <div style="margin-top:var(--gutter); padding:20px; background:var(--c-teal)">
+                    <div class="n-callout">What it does</div>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+            <!-- f. texture ------------------------------------------ -->
+            <section id="texture" class="sec">
+              <h2 class="sec__head"><span class="n">5.</span> Texture &amp; grid</h2>
+
+              <div class="grid12">
+                <div class="prose" style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <p>Two textures live in this system, both built only from the palette above — no
+                  photographic or gradient noise.</p>
+                </div>
+
+                <div style="grid-column:1 / -1; margin-bottom:var(--bl)">
+                  <div class="spec-board-row">
+                    <div>
+                      <div class="spec-swatch__name" style="margin-bottom:6px">Board desktop dither</div>
+                      <div class="spec-dither" style="background-color:var(--desktop); background-image:
+                        linear-gradient(45deg, rgba(255,255,255,.10) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.10) 75%),
+                        linear-gradient(45deg, rgba(255,255,255,.10) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.10) 75%);
+                        background-size:4px 4px; background-position:0 0, 2px 2px;"></div>
+                      <div class="spec-swatch__val" style="margin-top:4px">45° 4px dither, 10% white over --desktop</div>
+                    </div>
+
+                    <div>
+                      <div class="spec-swatch__name" style="margin-bottom:6px">Cover-art dither (art.js)</div>
+                      <svg class="spec-dither" viewBox="0 0 160 120" shape-rendering="crispEdges">
+                        <defs>
+                          <pattern id="specDither" width="4" height="4" patternUnits="userSpaceOnUse">
+                            <rect width="4" height="4" fill="#00FFFF" />
+                            <rect width="2" height="2" fill="#C0C0C0" />
+                            <rect x="2" y="2" width="2" height="2" fill="#C0C0C0" />
+                          </pattern>
+                        </defs>
+                        <rect width="160" height="120" fill="#000080" />
+                        <rect x="20" y="20" width="80" height="60" fill="url(#specDither)" />
+                      </svg>
+                      <div class="spec-swatch__val" style="margin-top:4px">2×2 checkerboard, two VGA colours, seeded per project slug</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="grid-column:1 / -1">
+                  <div class="spec-swatch__name" style="margin-bottom:6px">Layout grid overlay</div>
+                  <p class="prose" style="margin:0 0 8px; font-size:var(--t-body)">The same 12-column overlay is on this page — toggle it live, or press <span class="mono">G</span>.</p>
+                  <button class="btn" type="button" onclick="if(window.toggleGrid){toggleGrid()}">Toggle layout grid</button>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="status status--grow" id="status">Ready</div>
+    <div class="status">Specimen sheet</div>
+    <div class="status">London, UK</div>
+  </div>
+</div>
+
+<!-- taskbar -->
+<div class="taskbar">
+  <button class="start" type="button" id="startbtn" aria-haspopup="true" aria-expanded="false" aria-controls="startmenu">
+    <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges">
+      <rect x="1" y="2" width="6" height="6" fill="#FF0000"/><rect x="8" y="2" width="6" height="6" fill="#00FF00"/>
+      <rect x="1" y="9" width="6" height="6" fill="#0000FF"/><rect x="8" y="9" width="6" height="6" fill="#FFFF00"/>
+    </svg>
+    Start
+  </button>
+  <div class="tasks" id="tasks"></div>
+  <div class="tray"><span id="clock">11:40</span></div>
+</div>
+
+<div class="startmenu" id="startmenu">
+  <div class="startmenu__banner"><span>Portfolio 95</span></div>
+  <ul id="startlist"></ul>
+</div>
+
+<div class="modal" id="modal" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+
+</body>
+</html>

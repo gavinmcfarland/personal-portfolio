@@ -12,7 +12,10 @@ import { spawn } from "node:child_process";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..", "design-mockups");
 const EXCLUDE = new Set(["screenshots", "node_modules"]);
-const START_PORT = Number(process.env.PORT) || 4321;
+// NB: keep this off 4321 — that's the portfolio (Astro/Vite) dev port. If both
+// bind 4321, Astro's specific [::1] bind wins over our wildcard one and the
+// browser shows the portfolio instead of the gallery.
+const START_PORT = Number(process.env.PORT) || 4400;
 
 const CONTENT_TYPES = {
 	".html": "text/html; charset=utf-8",

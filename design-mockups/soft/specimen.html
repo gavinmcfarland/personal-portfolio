@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Soft — Specimen</title>
+<meta name="description" content="Design-system specimen for the Soft mockup." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Theme resolved before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Soft — SPECIMEN
+     Token block, reset and component styles copied verbatim from
+     index.html so this page renders in the mockup's own language.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+
+  :root {
+    --ink:    #2A2320;
+    --plane:  #FDF8F4;   /* warm paper, not white */
+    --raise:  #FFFFFF;   /* cards sit above the plane */
+    --sunken: #F5EDE6;
+    --muted:  #857971;
+    --faint:  #B9ABA1;
+    --edge:   rgba(42,35,32,.08);
+
+    --accent:  #E2724A;  /* terracotta */
+    --accent2: #C05C86;  /* rose, second gradient stop */
+    --accent3: #6B7FD0;  /* periwinkle, third stop */
+    --on-accent: #FFFFFF;
+
+    --lift-1: 0 1px 2px rgba(42,35,32,.04), 0 4px 12px rgba(42,35,32,.05);
+    --lift-2: 0 2px 4px rgba(42,35,32,.05), 0 12px 28px rgba(42,35,32,.09), 0 1px 0 rgba(255,255,255,.7) inset;
+    --lift-3: 0 4px 8px rgba(42,35,32,.06), 0 24px 56px rgba(226,114,74,.16);
+
+    --r-sm: 12px;
+    --r-md: 20px;
+    --r-lg: 28px;
+    --r-xl: 40px;
+
+    --pad: clamp(1.15rem, 4vw, 3rem);
+    --sans:  'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --serif: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
+
+    --spring: cubic-bezier(.22, 1, .36, 1);
+  }
+
+  .dark {
+    --ink:    #F0E9E4;
+    --plane:  #16120F;
+    --raise:  #221C18;
+    --sunken: #1B1613;
+    --muted:  #A2958C;
+    --faint:  #6B5F58;
+    --edge:   rgba(240,233,228,.10);
+
+    --accent:  #F2895D;
+    --accent2: #DE7BA4;
+    --accent3: #8B9CE8;
+    --on-accent: #1A1310;
+
+    --lift-1: 0 1px 2px rgba(0,0,0,.30), 0 4px 12px rgba(0,0,0,.24);
+    --lift-2: 0 2px 4px rgba(0,0,0,.32), 0 12px 28px rgba(0,0,0,.34), 0 1px 0 rgba(255,255,255,.05) inset;
+    --lift-3: 0 4px 8px rgba(0,0,0,.34), 0 24px 56px rgba(242,137,93,.20);
+  }
+
+  html { font-family: var(--sans); }
+  body {
+    background: var(--plane); color: var(--ink);
+    font-size: 16px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: background-color .5s var(--spring), color .5s var(--spring);
+  }
+
+  ::selection { background: var(--accent); color: var(--on-accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+
+  .wrap { width: 100%; max-width: 1180px; margin-inline: auto; padding-inline: var(--pad); }
+
+  /* ── Type ───────────────────────────────────────────────────────── */
+
+  .display {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-variation-settings: 'opsz' 100;
+    letter-spacing: -.025em;
+    line-height: 1.02;
+    margin: 0;
+  }
+  .eyebrow {
+    font-size: .72rem; font-weight: 600; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .lede { font-size: clamp(1.02rem, 1.5vw, 1.2rem); color: var(--muted); line-height: 1.65; }
+  .sec-title { font-family: var(--serif); font-weight: 600; font-size: clamp(1.8rem, 4vw, 2.6rem); letter-spacing: -.02em; margin: .35rem 0 0; }
+
+  /* ── Gradient mesh backdrop ─────────────────────────────────────── */
+
+  .mesh { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(90px); opacity: .55;
+    will-change: transform;
+  }
+  .dark .blob { opacity: .38; }
+  .blob-a { width: 46vw; height: 46vw; min-width: 340px; min-height: 340px; top: -12vh;  left: -8vw;   background: var(--accent);  animation: drift-a 26s var(--spring) infinite alternate; }
+  .blob-b { width: 38vw; height: 38vw; min-width: 300px; min-height: 300px; top: 24vh;   right: -10vw; background: var(--accent2); animation: drift-b 32s var(--spring) infinite alternate; }
+  .blob-c { width: 34vw; height: 34vw; min-width: 260px; min-height: 260px; top: 62vh;   left: 18vw;   background: var(--accent3); animation: drift-c 38s var(--spring) infinite alternate; }
+
+  @keyframes drift-a { to { transform: translate3d(9vw, 7vh, 0) scale(1.16); } }
+  @keyframes drift-b { to { transform: translate3d(-11vw, 10vh, 0) scale(.86); } }
+  @keyframes drift-c { to { transform: translate3d(13vw, -9vh, 0) scale(1.1); } }
+
+  /* ── Nav ────────────────────────────────────────────────────────── */
+
+  .nav-shell { position: sticky; top: 0; z-index: 60; padding: .85rem var(--pad); }
+  .nav {
+    max-width: 1180px; margin-inline: auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: .55rem .6rem .55rem 1.15rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--raise) 78%, transparent);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border: 1px solid var(--edge);
+    box-shadow: var(--lift-1);
+  }
+  .brand { font-family: var(--serif); font-weight: 600; font-size: 1.02rem; letter-spacing: -.015em; white-space: nowrap; }
+  .nav-links { display: none; gap: .25rem; }
+  @media (min-width: 720px) { .nav-links { display: flex; } }
+  .nav-links a {
+    padding: .45rem .85rem; border-radius: 999px;
+    font-size: .875rem; font-weight: 500; color: var(--muted);
+    transition: color .3s var(--spring), background-color .3s var(--spring);
+  }
+  .nav-links a:hover { color: var(--ink); background: var(--sunken); }
+
+  .icon-btn {
+    display: grid; place-items: center;
+    width: 38px; height: 38px; flex: none;
+    border: 1px solid var(--edge); border-radius: 999px;
+    background: var(--raise); color: var(--ink);
+    cursor: pointer; font: inherit;
+    box-shadow: var(--lift-1);
+    transition: transform .35s var(--spring), box-shadow .35s var(--spring);
+  }
+  .icon-btn:hover { transform: translateY(-2px); box-shadow: var(--lift-2); }
+  .icon-btn:active { transform: translateY(0) scale(.94); }
+  .icon-btn svg { width: 17px; height: 17px; }
+  .icon-moon { display: none; }
+  .dark .icon-sun  { display: none; }
+  .dark .icon-moon { display: block; }
+
+  /* ── Buttons ────────────────────────────────────────────────────── */
+
+  .btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .8rem 1.4rem; border-radius: 999px;
+    font-size: .9rem; font-weight: 600; font-family: inherit;
+    border: 1px solid transparent; cursor: pointer;
+    transition: transform .35s var(--spring), box-shadow .35s var(--spring), background-color .3s var(--spring);
+  }
+  .btn-primary {
+    color: var(--on-accent);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: var(--lift-2);
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: var(--lift-3); }
+  .btn-primary:active { transform: translateY(-1px); }
+  .btn-ghost {
+    color: var(--ink); background: var(--raise);
+    border-color: var(--edge); box-shadow: var(--lift-1);
+  }
+  .btn-ghost:hover { transform: translateY(-3px); box-shadow: var(--lift-2); }
+  .btn svg { width: 15px; height: 15px; }
+
+  /* ── Sections ───────────────────────────────────────────────────── */
+
+  .sec { padding: clamp(2.5rem, 7vw, 5rem) 0; }
+  .sec-head { max-width: 60ch; margin-bottom: clamp(1.75rem, 3.5vw, 2.75rem); }
+
+  /* ── Projects (cards) ───────────────────────────────────────────── */
+
+  .grid {
+    display: grid; gap: clamp(1rem, 2vw, 1.5rem);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+
+  .card {
+    position: relative; isolation: isolate;
+    display: flex; flex-direction: column;
+    padding: 1.6rem;
+    border-radius: var(--r-lg);
+    background: var(--raise);
+    border: 1px solid var(--edge);
+    box-shadow: var(--lift-1);
+    transition: transform .45s var(--spring), box-shadow .45s var(--spring);
+  }
+  .card:hover { transform: translateY(-6px); box-shadow: var(--lift-2); }
+
+  .card::before {
+    content: ''; position: absolute; inset: -1px; z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    opacity: 0; transition: opacity .45s var(--spring);
+  }
+  .card:hover::before { opacity: .9; }
+
+  .card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+  .card-year { font-size: .74rem; font-weight: 600; letter-spacing: .1em; color: var(--faint); }
+  .card-num { font-family: var(--serif); font-size: .82rem; color: var(--faint); }
+  .card-title { font-family: var(--serif); font-weight: 600; font-size: 1.4rem; letter-spacing: -.02em; margin: .9rem 0 0; }
+  .card-desc { font-size: .92rem; color: var(--muted); margin: .6rem 0 0; }
+
+  .badges { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1.2rem 0 0; }
+  .badge {
+    font-size: .72rem; font-weight: 500; color: var(--muted);
+    padding: .3rem .65rem; border-radius: 999px;
+    background: var(--sunken); border: 1px solid var(--edge);
+  }
+
+  .card-links { display: flex; gap: 1.1rem; margin-top: auto; padding-top: 1.4rem; }
+  .card-link {
+    display: inline-flex; align-items: center; gap: .35rem;
+    font-size: .84rem; font-weight: 600; color: var(--accent);
+    transition: gap .3s var(--spring), opacity .3s var(--spring);
+  }
+  .card-link:hover { gap: .6rem; }
+  .card-link svg { width: 13px; height: 13px; }
+
+  /* ── Panels / timeline / pull-quote ─────────────────────────────── */
+
+  .about {
+    display: grid; gap: clamp(1rem, 2vw, 1.5rem);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .panel {
+    padding: clamp(1.5rem, 3vw, 2.2rem);
+    border-radius: var(--r-lg);
+    background: var(--raise);
+    border: 1px solid var(--edge);
+    box-shadow: var(--lift-1);
+  }
+  .panel-wide { grid-column: 1 / -1; }
+  @media (min-width: 860px) { .panel-wide { grid-column: span 2; } }
+  .panel h3 { font-family: var(--serif); font-weight: 600; font-size: 1.15rem; margin: 0 0 .7rem; letter-spacing: -.015em; }
+  .panel p { margin: 0 0 .9rem; color: var(--muted); font-size: .95rem; }
+  .panel p:last-child { margin-bottom: 0; }
+  .panel .pull { font-family: var(--serif); font-size: 1.28rem; line-height: 1.4; color: var(--ink); letter-spacing: -.015em; }
+
+  .timeline { margin: 0; padding: 0; display: grid; gap: 1rem; }
+  .timeline > div { display: grid; grid-template-columns: 4.2rem 1fr; gap: 1rem; align-items: baseline; }
+  .timeline dt { font-size: .78rem; font-weight: 600; color: var(--accent); letter-spacing: .04em; }
+  .timeline dd { margin: 0; font-size: .9rem; color: var(--muted); }
+
+  /* ── Contact-style expander (static demo) ───────────────────────── */
+
+  .contact-card {
+    border-radius: var(--r-xl);
+    background: var(--raise);
+    border: 1px solid var(--edge);
+    box-shadow: var(--lift-2);
+    overflow: hidden;
+  }
+  .contact-head {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 1.25rem; padding: clamp(1.4rem, 3.5vw, 2.25rem);
+  }
+  .contact-head h3 { margin: .2rem 0 0; }
+  .contact-head p { margin: .5rem 0 0; max-width: 42ch; }
+
+  .expander { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .6s var(--spring); }
+  .expander > div { overflow: hidden; }
+  .expander-inner {
+    padding: 0 clamp(1.4rem, 3.5vw, 2.25rem) clamp(1.4rem, 3.5vw, 2.25rem);
+    border-top: 1px solid var(--edge);
+    margin-top: .25rem; padding-top: 1.5rem;
+  }
+
+  .form-row { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+  .field { display: grid; gap: .45rem; }
+  .field label { font-size: .78rem; font-weight: 600; letter-spacing: .04em; color: var(--muted); }
+  .field input, .field textarea {
+    font: inherit; font-size: .93rem; color: var(--ink);
+    padding: .8rem 1rem; border-radius: var(--r-sm);
+    background: var(--sunken); border: 1px solid var(--edge);
+    transition: border-color .3s var(--spring), box-shadow .3s var(--spring), background-color .3s var(--spring);
+  }
+  .field input::placeholder { color: var(--faint); }
+  .field input:focus {
+    outline: none; background: var(--raise);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+
+  /* ── Socials + footer ───────────────────────────────────────────── */
+
+  .socials { display: flex; flex-wrap: wrap; gap: .55rem; }
+  .social {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .6rem 1rem; border-radius: 999px;
+    font-size: .84rem; font-weight: 500;
+    background: var(--sunken); border: 1px solid var(--edge);
+    transition: transform .35s var(--spring), box-shadow .35s var(--spring), color .3s var(--spring);
+  }
+  .social:hover { transform: translateY(-2px); box-shadow: var(--lift-1); color: var(--accent); }
+  .social svg { width: 15px; height: 15px; }
+
+  footer { padding: 2.5rem 0 3.5rem; }
+  .foot-inner {
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    align-items: center; justify-content: space-between;
+    padding-top: 2rem; border-top: 1px solid var(--edge);
+    font-size: .84rem; color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     Specimen-only additions below — same tokens, new arrangements.
+     ═══════════════════════════════════════════════════════════════ */
+
+  .spec-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+  .spec-back {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-size: .84rem; font-weight: 600; color: var(--muted);
+    padding: .45rem .85rem; border-radius: 999px;
+    transition: color .3s var(--spring), background-color .3s var(--spring);
+  }
+  .spec-back:hover { color: var(--ink); background: var(--sunken); }
+  .spec-back svg { width: 14px; height: 14px; }
+
+  .swatch-grid {
+    display: grid; gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  }
+  .swatch {
+    border-radius: var(--r-lg);
+    background: var(--raise);
+    border: 1px solid var(--edge);
+    box-shadow: var(--lift-1);
+    overflow: hidden;
+  }
+  .swatch-fill { height: 84px; }
+  .swatch-meta { padding: .9rem 1.1rem 1.1rem; }
+  .swatch-name { font-size: .85rem; font-weight: 600; }
+  .swatch-role { font-size: .74rem; color: var(--muted); margin-top: .15rem; }
+  .swatch-val {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: .74rem; color: var(--faint); margin-top: .5rem;
+    word-break: break-all;
+  }
+
+  .theme-block { padding: 1.5rem; border-radius: var(--r-lg); border: 1px solid var(--edge); box-shadow: var(--lift-1); margin-bottom: 1.5rem; }
+  .theme-block-light { background: #FDF8F4; }
+  .theme-block-dark  { background: #16120F; }
+  .theme-block h4 { font-family: var(--serif); font-weight: 600; margin: 0 0 1rem; letter-spacing: -.01em; }
+  .theme-block-light h4 { color: #2A2320; }
+  .theme-block-dark  h4 { color: #F0E9E4; }
+
+  .font-card {
+    padding: clamp(1.5rem, 3vw, 2.2rem);
+    border-radius: var(--r-lg);
+    background: var(--raise);
+    border: 1px solid var(--edge);
+    box-shadow: var(--lift-1);
+    margin-bottom: 1.25rem;
+  }
+  .font-name { font-size: .8rem; font-weight: 600; color: var(--accent); letter-spacing: .04em; text-transform: uppercase; }
+  .font-role { font-size: .8rem; color: var(--muted); margin-left: .5rem; }
+  .font-pangram-serif { font-family: var(--serif); font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 600; letter-spacing: -.02em; margin: .6rem 0 .3rem; line-height: 1.15; }
+  .font-pangram-serif.regular { font-weight: 400; }
+  .font-pangram-sans { font-family: var(--sans); font-size: clamp(1.1rem, 2.4vw, 1.4rem); font-weight: 400; margin: .6rem 0 .3rem; line-height: 1.4; }
+  .font-weights { font-size: .8rem; color: var(--muted); margin-top: .5rem; }
+
+  .scale-row {
+    display: flex; align-items: baseline; gap: 1.5rem;
+    padding: 1.1rem 0; border-bottom: 1px solid var(--edge);
+    flex-wrap: wrap;
+  }
+  .scale-row:last-child { border-bottom: none; }
+  .scale-label { flex: 0 0 11rem; font-size: .74rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .scale-meta { flex: 0 0 auto; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .74rem; color: var(--faint); margin-left: auto; white-space: nowrap; }
+  .scale-sample { flex: 1 1 260px; font-family: var(--serif); font-weight: 600; letter-spacing: -.015em; line-height: 1.15; }
+  .scale-sample.sans { font-family: var(--sans); font-weight: 400; letter-spacing: normal; }
+
+  .lift-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+  .lift-swatch {
+    padding: 1.5rem; border-radius: var(--r-lg); background: var(--raise);
+    border: 1px solid var(--edge); text-align: center;
+  }
+  .lift-swatch .lift-label { font-size: .78rem; font-weight: 600; margin-top: .5rem; }
+  .lift-swatch .lift-val { font-family: ui-monospace, monospace; font-size: .68rem; color: var(--faint); margin-top: .25rem; word-break: break-all; }
+  .l1 { box-shadow: var(--lift-1); }
+  .l2 { box-shadow: var(--lift-2); }
+  .l3 { box-shadow: var(--lift-3); }
+
+  .mesh-frame {
+    position: relative; height: 220px; border-radius: var(--r-lg);
+    overflow: hidden; border: 1px solid var(--edge); box-shadow: var(--lift-1);
+    background: var(--plane);
+  }
+  .mesh-frame .blob { position: absolute; }
+</style>
+</head>
+
+<body>
+
+<div class="mesh" aria-hidden="true">
+  <div class="blob blob-a"></div>
+  <div class="blob blob-b"></div>
+  <div class="blob blob-c"></div>
+</div>
+
+<div class="nav-shell">
+  <nav class="nav" aria-label="Primary">
+    <a href="index.html" class="brand">Soft — Specimen</a>
+    <div class="nav-links">
+      <a href="#palette">Palette</a>
+      <a href="#type">Type</a>
+      <a href="#components">Components</a>
+    </div>
+    <div style="display:flex; align-items:center; gap:.5rem;">
+      <a href="index.html" class="spec-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 6 5 12l6 6M5 12h14"/></svg>
+        Mockup
+      </a>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch to dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.4M12 19.2v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.4 12h2.4M19.2 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8Z"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<main id="top">
+
+  <!-- ── a. Title / intro ─────────────────────────────────────────── -->
+  <section class="hero wrap" style="padding: clamp(2.5rem, 8vh, 5rem) 0 clamp(2rem, 6vh, 3.5rem);">
+    <p class="eyebrow">Specimen</p>
+    <h1 class="display" style="margin-top:1.1rem; font-size: clamp(2.2rem, 6vw, 3.8rem); max-width: 20ch;">
+      Soft <span class="grad-text" style="background: linear-gradient(105deg, var(--accent), var(--accent2) 45%, var(--accent3)); -webkit-background-clip: text; background-clip: text; color: transparent;">design system</span>
+    </h1>
+    <p class="lede" style="margin-top:1.25rem; max-width: 60ch;">
+      Dimensional and warm — the one mockup in this set that isn&rsquo;t flat: large radii, layered
+      tinted shadows, a slow gradient mesh drifting behind everything, and cards that lift on hover,
+      all riding a single reused spring easing.
+    </p>
+  </section>
+
+  <!-- ── b. Colour palette ────────────────────────────────────────── -->
+  <section class="sec wrap" id="palette">
+    <header class="sec-head">
+      <p class="eyebrow">b — Palette</p>
+      <h2 class="sec-title">Colour tokens</h2>
+      <p class="lede" style="margin-top:.8rem">Eleven custom properties, redefined in full under <code>.dark</code>.</p>
+    </header>
+
+    <div class="theme-block theme-block-light">
+      <h4>Light — default</h4>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-fill" style="background:#2A2320"></div><div class="swatch-meta"><div class="swatch-name" style="color:#2A2320">Ink</div><div class="swatch-role">--ink · text</div><div class="swatch-val">#2A2320</div></div></div>
+        <div class="swatch"><div class="swatch-fill" style="background:#FDF8F4; border-bottom:1px solid rgba(42,35,32,.08)"></div><div class="swatch-meta"><div class="swatch-name" style="color:#2A2320">Plane</div><div class="swatch-role">--plane · warm paper</div><div class="swatch-val">#FDF8F4</div></div></div>
+        <div class="swatch"><div class="swatch-fill" style="background:#FFFFFF; border-bottom:1px solid rgba(42,35,32,.08)"></div><div class="swatch-meta"><div class="swatch-name" style="color:#2A2320">Raise</div><div class="swatch-role">--raise · card surface</div><div class="swatch-val">#FFFFFF</div></div></div>
+        <div class="swatch"><div class="swatch-fill" style="background:#F5EDE6"></div><div class="swatch-meta"><div class="swatch-name" style="color:#2A2320">Sunken</div><div class="swatch-role">--sunken · inset fields</div><div class="swatch-val">#F5EDE6</div></div></div>
+        <div class="swatch"><div class="swatch-fill" style="background:#857971"></div><div class="swatch-meta"><div class="swatch-name" style="color:#2A2320">Muted</div><div class="swatch-role">--muted · secondary text</div><div class="swatch-val">#857971</div></div></div>
+        <div class="swatch"><div class="swatch-fill" style="background:#B9ABA1"></div><div class="swatch-meta"><div class="swatch-name" style="color:#2A2320">Faint</div><div class="swatch-role">--faint · meta / numerals</div><div class="swatch-val">#B9ABA1</div></div></div>
+        <div class="swatch"><div class="swatch-fill" style="background:#FDF8F4; position:relative;"><div style="position:absolute; inset:8px; border:2px solid rgba(42,35,32,.08); border-radius:8px"></div></div><div class="swatch-meta"><div class="swatch-name" style="color:#2A2320">Edge</div><div class="swatch-role">--edge · hairline border</div><div class="swatch-val">rgba(42,35,32,.08)</div></div></div>
+        <div class="swatch"><div class="swatch-fill" style="background:#E2724A"></div><div class="swatch-meta"><div class="swatch-name" style="color:#2A2320">Accent — terracotta</div><div class="swatch-role">--accent</div><div class="swatch-val">#E2724A</div></div></div>
+        <div class="swatch"><div class="swatch-fill" style="background:#C05C86"></div><div class="swatch-meta"><div class="swatch-name" style="color:#2A2320">Accent 2 — rose</div><div class="swatch-role">--accent2</div><div class="swatch-val">#C05C86</div></div></div>
+        <div class="swatch"><div class="swatch-fill" style="background:#6B7FD0"></div><div class="swatch-meta"><div class="swatch-name" style="color:#2A2320">Accent 3 — periwinkle</div><div class="swatch-role">--accent3</div><div class="swatch-val">#6B7FD0</div></div></div>
+        <div class="swatch"><div class="swatch-fill" style="background:#FFFFFF; border:1px dashed rgba(42,35,32,.2)"></div><div class="swatch-meta"><div class="swatch-name" style="color:#2A2320">On-accent</div><div class="swatch-role">--on-accent · text on accent</div><div class="swatch-val">#FFFFFF</div></div></div>
+      </div>
+    </div>
+
+    <div class="theme-block theme-block-dark">
+      <h4>Dark — <code style="color:#A2958C">.dark</code></h4>
+      <div class="swatch-grid">
+        <div class="swatch" style="background:#221C18; border-color:rgba(240,233,228,.10)"><div class="swatch-fill" style="background:#F0E9E4"></div><div class="swatch-meta"><div class="swatch-name" style="color:#F0E9E4">Ink</div><div class="swatch-role" style="color:#A2958C">--ink · text</div><div class="swatch-val">#F0E9E4</div></div></div>
+        <div class="swatch" style="background:#221C18; border-color:rgba(240,233,228,.10)"><div class="swatch-fill" style="background:#16120F; border-bottom:1px solid rgba(240,233,228,.10)"></div><div class="swatch-meta"><div class="swatch-name" style="color:#F0E9E4">Plane</div><div class="swatch-role" style="color:#A2958C">--plane</div><div class="swatch-val">#16120F</div></div></div>
+        <div class="swatch" style="background:#221C18; border-color:rgba(240,233,228,.10)"><div class="swatch-fill" style="background:#221C18; border-bottom:1px solid rgba(240,233,228,.10)"></div><div class="swatch-meta"><div class="swatch-name" style="color:#F0E9E4">Raise</div><div class="swatch-role" style="color:#A2958C">--raise</div><div class="swatch-val">#221C18</div></div></div>
+        <div class="swatch" style="background:#221C18; border-color:rgba(240,233,228,.10)"><div class="swatch-fill" style="background:#1B1613"></div><div class="swatch-meta"><div class="swatch-name" style="color:#F0E9E4">Sunken</div><div class="swatch-role" style="color:#A2958C">--sunken</div><div class="swatch-val">#1B1613</div></div></div>
+        <div class="swatch" style="background:#221C18; border-color:rgba(240,233,228,.10)"><div class="swatch-fill" style="background:#A2958C"></div><div class="swatch-meta"><div class="swatch-name" style="color:#F0E9E4">Muted</div><div class="swatch-role" style="color:#A2958C">--muted</div><div class="swatch-val">#A2958C</div></div></div>
+        <div class="swatch" style="background:#221C18; border-color:rgba(240,233,228,.10)"><div class="swatch-fill" style="background:#6B5F58"></div><div class="swatch-meta"><div class="swatch-name" style="color:#F0E9E4">Faint</div><div class="swatch-role" style="color:#A2958C">--faint</div><div class="swatch-val">#6B5F58</div></div></div>
+        <div class="swatch" style="background:#221C18; border-color:rgba(240,233,228,.10)"><div class="swatch-fill" style="background:#16120F; position:relative;"><div style="position:absolute; inset:8px; border:2px solid rgba(240,233,228,.10); border-radius:8px"></div></div><div class="swatch-meta"><div class="swatch-name" style="color:#F0E9E4">Edge</div><div class="swatch-role" style="color:#A2958C">--edge</div><div class="swatch-val">rgba(240,233,228,.10)</div></div></div>
+        <div class="swatch" style="background:#221C18; border-color:rgba(240,233,228,.10)"><div class="swatch-fill" style="background:#F2895D"></div><div class="swatch-meta"><div class="swatch-name" style="color:#F0E9E4">Accent — terracotta</div><div class="swatch-role" style="color:#A2958C">--accent</div><div class="swatch-val">#F2895D</div></div></div>
+        <div class="swatch" style="background:#221C18; border-color:rgba(240,233,228,.10)"><div class="swatch-fill" style="background:#DE7BA4"></div><div class="swatch-meta"><div class="swatch-name" style="color:#F0E9E4">Accent 2 — rose</div><div class="swatch-role" style="color:#A2958C">--accent2</div><div class="swatch-val">#DE7BA4</div></div></div>
+        <div class="swatch" style="background:#221C18; border-color:rgba(240,233,228,.10)"><div class="swatch-fill" style="background:#8B9CE8"></div><div class="swatch-meta"><div class="swatch-name" style="color:#F0E9E4">Accent 3 — periwinkle</div><div class="swatch-role" style="color:#A2958C">--accent3</div><div class="swatch-val">#8B9CE8</div></div></div>
+        <div class="swatch" style="background:#221C18; border-color:rgba(240,233,228,.10)"><div class="swatch-fill" style="background:#1A1310; border:1px dashed rgba(240,233,228,.2)"></div><div class="swatch-meta"><div class="swatch-name" style="color:#F0E9E4">On-accent</div><div class="swatch-role" style="color:#A2958C">--on-accent</div><div class="swatch-val">#1A1310</div></div></div>
+      </div>
+    </div>
+
+    <p class="lede" style="margin-top:.5rem">Toggle the theme button in the nav to see every swatch below (palette, type and components) recompute live through the same tokens.</p>
+  </section>
+
+  <!-- ── c. Typography ────────────────────────────────────────────── -->
+  <section class="sec wrap" id="type">
+    <header class="sec-head">
+      <p class="eyebrow">c — Typography</p>
+      <h2 class="sec-title">Two families</h2>
+      <p class="lede" style="margin-top:.8rem">Fraunces carries every headline at optical size 100; Inter runs the interface and body copy.</p>
+    </header>
+
+    <div class="font-card">
+      <span class="font-name">Fraunces</span><span class="font-role">Display / headings — variable optical sizing, weight 600</span>
+      <p class="font-pangram-serif">The quick brown fox jumps over the lazy dog.</p>
+      <p class="font-pangram-serif regular">The quick brown fox jumps over the lazy dog.</p>
+      <p class="font-weights">Weights in use: 400 (regular, body accents), 600 (display, section titles, card titles) · opsz 9–144, pinned to 100</p>
+    </div>
+
+    <div class="font-card">
+      <span class="font-name">Inter</span><span class="font-role">UI / body — weights 400, 500, 600</span>
+      <p class="font-pangram-sans" style="font-weight:400">The quick brown fox jumps over the lazy dog. 0123456789</p>
+      <p class="font-pangram-sans" style="font-weight:500">The quick brown fox jumps over the lazy dog. 0123456789</p>
+      <p class="font-pangram-sans" style="font-weight:600">The quick brown fox jumps over the lazy dog. 0123456789</p>
+      <p class="font-weights">Weights in use: 400 (body, lede), 500 (nav links, badges, socials), 600 (buttons, labels, eyebrows, stats)</p>
+    </div>
+  </section>
+
+  <!-- ── d. Type scale ─────────────────────────────────────────────── -->
+  <section class="sec wrap">
+    <header class="sec-head">
+      <p class="eyebrow">d — Scale</p>
+      <h2 class="sec-title">Type scale</h2>
+      <p class="lede" style="margin-top:.8rem">Every role as it actually appears on the mockup, largest to smallest.</p>
+    </header>
+
+    <div class="panel">
+      <div class="scale-row">
+        <div class="scale-label">Display</div>
+        <div class="scale-sample" style="font-size: clamp(2.7rem, 8.5vw, 5.6rem); line-height:1.02;">Aa</div>
+        <div class="scale-meta">clamp(2.7rem,8.5vw,5.6rem) · Fraunces 600</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">Section title</div>
+        <div class="scale-sample" style="font-size: clamp(1.8rem, 4vw, 2.6rem);">Aa</div>
+        <div class="scale-meta">clamp(1.8rem,4vw,2.6rem) · Fraunces 600</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">Pull-quote</div>
+        <div class="scale-sample" style="font-size: 1.28rem; font-weight:400;">Aa</div>
+        <div class="scale-meta">1.28rem / 20.5px · Fraunces 400</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">Card title</div>
+        <div class="scale-sample" style="font-size: 1.4rem;">Aa</div>
+        <div class="scale-meta">1.4rem / 22.4px · Fraunces 600</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">Stat number</div>
+        <div class="scale-sample" style="font-size: 1.9rem;">Aa</div>
+        <div class="scale-meta">1.9rem / 30.4px · Fraunces 600</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">Panel heading</div>
+        <div class="scale-sample" style="font-size: 1.15rem;">Aa</div>
+        <div class="scale-meta">1.15rem / 18.4px · Fraunces 600</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">Lede / intro</div>
+        <div class="scale-sample sans" style="font-size: clamp(1.02rem, 1.5vw, 1.2rem); color: var(--muted);">Aa</div>
+        <div class="scale-meta">clamp(1.02rem,1.5vw,1.2rem) · Inter 400</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">Body</div>
+        <div class="scale-sample sans" style="font-size: 1rem;">Aa</div>
+        <div class="scale-meta">1rem / 16px · Inter 400 · line-height 1.6</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">Card desc / meta</div>
+        <div class="scale-sample sans" style="font-size: .92rem; color: var(--muted);">Aa</div>
+        <div class="scale-meta">.92rem / 14.7px · Inter 400</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">Eyebrow / label</div>
+        <div class="scale-sample sans" style="font-size: .72rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);">Label</div>
+        <div class="scale-meta">.72rem / 11.5px · Inter 600 · tracking .14em</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">Micro / badge</div>
+        <div class="scale-sample sans" style="font-size: .72rem; font-weight:500; color:var(--muted);">Badge label</div>
+        <div class="scale-meta">.72rem / 11.5px · Inter 500</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── e. Components ────────────────────────────────────────────── -->
+  <section class="sec wrap" id="components">
+    <header class="sec-head">
+      <p class="eyebrow">e — Components</p>
+      <h2 class="sec-title">Live UI elements</h2>
+      <p class="lede" style="margin-top:.8rem">Every characteristic piece from the mockup, rendered with its real classes.</p>
+    </header>
+
+    <h3 style="font-family:var(--serif); font-weight:600; font-size:1.15rem; margin: 0 0 1rem;">Buttons</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:.9rem; margin-bottom:2.5rem;">
+      <button class="btn btn-primary" type="button">
+        See the work
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+      <button class="btn btn-ghost" type="button">Start a conversation</button>
+      <span class="icon-btn" style="display:inline-grid" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.4M12 19.2v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.4 12h2.4M19.2 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
+      </span>
+    </div>
+
+    <h3 style="font-family:var(--serif); font-weight:600; font-size:1.15rem; margin: 0 0 1rem;">Badges &amp; social pills</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom: 1rem;">
+      <span class="badge">Svelte</span><span class="badge">TypeScript</span><span class="badge">Vite</span><span class="badge">Design systems</span>
+    </div>
+    <div class="socials" style="margin-bottom:2.5rem;">
+      <a class="social" href="#">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
+        GitHub
+      </a>
+      <a class="social" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3.5 6.5 8.5 6 8.5-6"/></svg>
+        Email
+      </a>
+    </div>
+
+    <h3 style="font-family:var(--serif); font-weight:600; font-size:1.15rem; margin: 0 0 1rem;">Project cards</h3>
+    <div class="grid" style="margin-bottom:2.5rem;">
+      <article class="card">
+        <div class="card-top"><span class="card-year">2024</span><span class="card-num">01</span></div>
+        <h3 class="card-title">Plugma</h3>
+        <p class="card-desc">A build tool that makes developing Figma plugins feel like modern web work.</p>
+        <div class="badges"><span class="badge">Svelte</span><span class="badge">TypeScript</span><span class="badge">Vite</span></div>
+        <div class="card-links">
+          <a class="card-link" href="#">Live demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
+          <a class="card-link" href="#">Case study <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+      <article class="card">
+        <div class="card-top"><span class="card-year">2022</span><span class="card-num">03</span></div>
+        <h3 class="card-title">Atlas design system</h3>
+        <p class="card-desc">Component library and documentation site for a 40-person product org.</p>
+        <div class="badges"><span class="badge">Svelte</span><span class="badge">Storybook</span><span class="badge">A11y</span></div>
+        <div class="card-links">
+          <a class="card-link" href="#">Live demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
+          <a class="card-link" href="#">Case study <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+      <article class="card">
+        <div class="card-top"><span class="card-year">2019</span><span class="card-num">06</span></div>
+        <h3 class="card-title">Field notes</h3>
+        <p class="card-desc">Identity and editorial system for a research publication.</p>
+        <div class="badges"><span class="badge">Identity</span><span class="badge">Editorial</span><span class="badge">Print</span></div>
+        <div class="card-links">
+          <a class="card-link" href="#">Live demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
+          <a class="card-link" href="#">Case study <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+    </div>
+
+    <h3 style="font-family:var(--serif); font-weight:600; font-size:1.15rem; margin: 0 0 1rem;">Panels, pull-quote &amp; timeline</h3>
+    <div class="about" style="margin-bottom:2.5rem;">
+      <div class="panel panel-wide">
+        <p class="pull">I started in graphic design and ended up writing the code too — mostly out of impatience.</p>
+      </div>
+      <div class="panel">
+        <h3>What I actually do</h3>
+        <p>Design systems and the tooling around them — component libraries, token pipelines, and documentation nobody wanted to write.</p>
+      </div>
+      <div class="panel">
+        <h3>Where I&rsquo;ve been</h3>
+        <dl class="timeline">
+          <div><dt>Now</dt><dd>Independent — design engineering for product teams</dd></div>
+          <div><dt>2021</dt><dd>Design systems lead, fintech platform</dd></div>
+          <div><dt>2018</dt><dd>Senior product designer, agency side</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--serif); font-weight:600; font-size:1.15rem; margin: 0 0 1rem;">Expander card &amp; form fields</h3>
+    <div class="contact-card" style="margin-bottom:2.5rem;">
+      <div class="contact-head">
+        <div>
+          <p class="eyebrow">Contact</p>
+          <h3 class="sec-title" style="font-size: 1.7rem;">Got something worth building?</h3>
+        </div>
+        <button class="btn btn-primary" type="button">
+          Write a message
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>
+        </button>
+      </div>
+      <div class="expander">
+        <div>
+          <div class="expander-inner">
+            <div class="form-row">
+              <div class="field">
+                <label for="spec-name">Name</label>
+                <input id="spec-name" type="text" placeholder="Your name" disabled />
+              </div>
+              <div class="field">
+                <label for="spec-email">Email</label>
+                <input id="spec-email" type="email" placeholder="you@example.com" disabled />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--serif); font-weight:600; font-size:1.15rem; margin: 0 0 1rem;">Elevation — layered lift shadows</h3>
+    <p class="lede" style="margin-bottom:1.25rem;">Three tinted, multi-layer shadows reused everywhere instead of one hard drop shadow — the core of this direction.</p>
+    <div class="lift-grid" style="margin-bottom:2.5rem;">
+      <div class="lift-swatch l1"><div class="lift-label">--lift-1</div><div class="lift-val">Resting cards, nav, badges</div></div>
+      <div class="lift-swatch l2"><div class="lift-label">--lift-2</div><div class="lift-val">Hover state, primary buttons</div></div>
+      <div class="lift-swatch l3"><div class="lift-label">--lift-3</div><div class="lift-val">Primary button hover, accent-tinted</div></div>
+    </div>
+  </section>
+
+  <!-- ── f. Texture — gradient mesh backdrop ──────────────────────── -->
+  <section class="sec wrap">
+    <header class="sec-head">
+      <p class="eyebrow">f — Texture</p>
+      <h2 class="sec-title">Gradient mesh</h2>
+      <p class="lede" style="margin-top:.8rem">Three blurred, drifting radial blobs in the accent colours sit fixed behind the whole page at low opacity — visible framed here at full strength.</p>
+    </header>
+    <div class="mesh-frame">
+      <div class="blob" style="width:220px; height:220px; top:-60px; left:-40px; background:var(--accent); animation:none; opacity:.6;"></div>
+      <div class="blob" style="width:180px; height:180px; top:40px; right:-50px; background:var(--accent2); animation:none; opacity:.6;"></div>
+      <div class="blob" style="width:170px; height:170px; bottom:-70px; left:90px; background:var(--accent3); animation:none; opacity:.6;"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <div class="foot-inner">
+    <span>&copy; 2026 Gavin McFarland</span>
+    <span>Specimen — Soft mockup</span>
+  </div>
+</footer>
+
+<script>
+  const root = document.documentElement;
+  const toggle = document.getElementById('theme-toggle');
+
+  if (toggle) {
+    const syncToggleLabel = () => {
+      const dark = root.classList.contains('dark');
+      toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    };
+    syncToggleLabel();
+
+    toggle.addEventListener('click', () => {
+      const dark = root.classList.toggle('dark');
+      try { localStorage.setItem('gm-theme', dark ? 'dark' : 'light'); } catch (e) {}
+      syncToggleLabel();
+    });
+  }
+</script>
+
+</body>
+</html>

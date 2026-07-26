@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — System Folio — Gavin McFarland</title>
+<meta name="description" content="Design specimen for the System Folio mockup: tokens, type scale and components." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+
+<!-- Theme resolved before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          paper: 'var(--paper)', sunk: 'var(--sunk)', surface: 'var(--surface)',
+          ink: 'var(--ink)', muted: 'var(--muted)', faint: 'var(--faint)',
+          accent: 'var(--accent)', rule: 'var(--rule)',
+        },
+        fontFamily: {
+          sans: ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        },
+        maxWidth: { page: 'var(--page)', measure: 'var(--measure)' },
+      },
+    },
+  };
+</script>
+
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   FOLIO SYSTEM — shared layer, copied verbatim from index.html so
+   this specimen renders in the mockup's own visual language.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── §1 · TOKENS ────────────────────────────────────────────────── */
+:root {
+  --paper:#FBFAF7;
+  --sunk:#F3F1EC;
+  --surface:#FFFFFF;
+  --ink:#16171A;
+  --muted:#55575E;
+  --faint:#8B8D95;
+  --accent:#17685A;
+  --accent-soft:rgba(23,104,90,.10);
+  --rule:rgba(22,23,26,.13);
+  --dot:rgba(22,23,26,.30);
+  --grid:rgba(22,23,26,.075);
+  --shadow:0 1px 2px rgba(22,23,26,.06), 0 10px 28px rgba(22,23,26,.08);
+  --lift:0 2px 4px rgba(22,23,26,.10), 0 16px 34px rgba(22,23,26,.12);
+  --panel:rgba(255,255,255,.82);
+
+  --note-a:#F0DCA2; --note-a-ink:#463708;
+  --note-b:#C2D7E9; --note-b-ink:#11344C;
+  --note-c:#C6DCBE; --note-c-ink:#1D3918;
+  --note-d:#EFCCA6; --note-d-ink:#4A2C0B;
+
+  --term:#0A0B0C; --term-ink:#E8E8E5; --term-dim:#B9BDC2;
+  --term-faint:#5F6469; --term-prompt:#5BE59A;
+
+  --gutter:clamp(1.25rem,4vw,2.5rem);
+  --page:64rem;
+  --measure:62ch;
+  --rail:9rem;
+  --gap-xl:5rem;
+
+  --t-micro:.72rem;
+  --t-label:.8rem;
+  --t-mono:.86rem;
+  --t-body:1rem;
+  --t-display:clamp(1.5rem,3.4vw,2rem);
+
+  --radius:10px; --radius-sm:6px;
+  --dur:.2s; --ease:cubic-bezier(.2,.7,.3,1);
+
+  --f-sans:'DM Sans',ui-sans-serif,system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --f-hand:'Caveat',cursive;
+}
+
+.dark {
+  --paper:#0E0F10;
+  --sunk:#0A0B0C;
+  --surface:#17181A;
+  --ink:#E8E8E5;
+  --muted:#9B9C9C;
+  --faint:#6A6C6E;
+  --accent:#63C2A9;
+  --accent-soft:rgba(99,194,169,.12);
+  --rule:rgba(232,232,229,.15);
+  --dot:rgba(232,232,229,.26);
+  --grid:rgba(232,232,229,.07);
+  --shadow:0 1px 2px rgba(0,0,0,.40), 0 10px 28px rgba(0,0,0,.45);
+  --lift:0 2px 4px rgba(0,0,0,.45), 0 16px 34px rgba(0,0,0,.50);
+  --panel:rgba(23,24,26,.82);
+
+  --note-a:#8A7735; --note-a-ink:#FBF3D8;
+  --note-b:#3D5A72; --note-b-ink:#E2EEF7;
+  --note-c:#47653F; --note-c-ink:#E4F1DE;
+  --note-d:#8A5F33; --note-d-ink:#FBEBD8;
+}
+
+/* ── §2 · PRIMITIVES ───────────────────────────────────────────── */
+
+*,*::before,*::after { box-sizing:border-box; }
+body {
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--f-sans); -webkit-font-smoothing:antialiased;
+}
+::selection { background:var(--accent); color:var(--paper); }
+:focus-visible { outline:2px solid var(--accent); outline-offset:3px; border-radius:2px; }
+
+.bar {
+  border-bottom:1px solid var(--rule); padding:.7rem var(--gutter);
+  font-family:var(--f-mono); font-size:var(--t-micro);
+  letter-spacing:.04em; color:var(--muted);
+}
+.bar__in {
+  margin-inline:auto; max-width:var(--page);
+  display:flex; align-items:baseline; justify-content:space-between; gap:1rem;
+}
+.bar--foot { border-bottom:0; border-top:1px solid var(--rule); color:var(--faint); }
+.bar strong { font-weight:500; color:var(--ink); }
+
+.spread {
+  margin-inline:auto; max-width:var(--page);
+  padding:clamp(2.5rem,6vw,4.5rem) var(--gutter);
+  display:flex; gap:3rem;
+}
+.main { min-width:0; flex:1; }
+
+.rail { display:none; }
+@media (min-width:1024px) {
+  .rail {
+    display:block; position:sticky; top:2rem;
+    width:var(--rail); flex:none; height:max-content;
+    font-family:var(--f-mono); font-size:var(--t-label); color:var(--faint);
+  }
+}
+.rail a {
+  display:block; padding:.2rem 0 .2rem .75rem;
+  border-left:2px solid transparent; font-style:italic;
+  transition:color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.rail a:hover { color:var(--muted); }
+.rail a[aria-current='true'] { border-left-color:var(--accent); color:var(--ink); }
+
+.module { scroll-margin-top:4rem; }
+.module + .module { margin-top:var(--gap-xl); }
+.label {
+  margin:0 0 1.25rem; font-family:var(--f-mono); font-size:var(--t-label);
+  font-style:italic; font-weight:400; color:var(--faint);
+}
+@media (min-width:1024px) {
+  .label--rail { position:absolute; width:1px; height:1px; overflow:hidden;
+                 clip:rect(0 0 0 0); white-space:nowrap; }
+}
+
+.display { margin:0; max-width:34ch; font-size:var(--t-display);
+           font-weight:500; line-height:1.25; letter-spacing:-.02em; color:var(--ink); }
+.prose { max-width:var(--measure); color:var(--muted);
+         font-size:var(--t-body); line-height:1.72; }
+.prose p { margin:0; }
+.prose p + p { margin-top:1rem; }
+
+.rows { border-top:1px solid var(--rule); }
+.row {
+  display:flex; flex-wrap:wrap; align-items:baseline; gap:.25rem .75rem;
+  padding:.9rem .75rem; border-bottom:1px solid var(--rule);
+  color:inherit; text-decoration:none;
+  transition:background-color var(--dur) var(--ease);
+}
+a.row:hover { background:var(--accent-soft); }
+.row__key { font-family:var(--f-mono); font-size:var(--t-mono); color:var(--ink); }
+.row__key--dim { color:var(--faint); }
+.row__val { font-size:var(--t-mono); color:var(--muted); }
+.row__meta { font-family:var(--f-mono); font-size:var(--t-micro); color:var(--faint); }
+.leader {
+  flex:1 1 auto; min-width:1.5rem;
+  border-bottom:1px dotted var(--dot); transform:translateY(-.24em);
+}
+.row__mk {
+  font-family:var(--f-mono); font-size:var(--t-micro); color:var(--accent);
+  opacity:0; transform:translateX(-.25rem);
+  transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+a.row:hover .row__mk, a.row:focus-visible .row__mk { opacity:1; transform:none; }
+
+@media (max-width:640px) {
+  .row--index { row-gap:.15rem; }
+  .row--index .leader { display:none; }
+  .row--index .row__meta { margin-left:auto; }
+  .row--index .row__val { order:3; flex:1 1 100%; }
+}
+
+.pairs { display:grid; gap:1.75rem; margin:0; }
+.pair { display:grid; gap:.35rem; }
+@media (min-width:820px) {
+  .pair { grid-template-columns:12rem minmax(0,1fr); gap:.5rem 1.75rem; align-items:baseline; }
+}
+.pair dt { font-family:var(--f-mono); font-size:var(--t-mono); color:var(--ink); }
+.pair dd { margin:0; max-width:54ch; color:var(--muted); line-height:1.72; }
+
+.card {
+  background:var(--surface); border:1px solid var(--rule);
+  border-radius:var(--radius); box-shadow:var(--shadow);
+}
+.tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+.tag {
+  font-size:.62rem; font-weight:600; letter-spacing:.07em; text-transform:uppercase;
+  color:var(--faint); border:1px solid var(--rule);
+  border-radius:100px; padding:.22rem .6rem;
+}
+
+.lnk {
+  color:var(--accent); text-decoration:underline; text-decoration-thickness:1px;
+  text-underline-offset:.18em;
+  text-decoration-color:color-mix(in srgb, var(--accent) 35%, transparent);
+  transition:text-decoration-color var(--dur) var(--ease);
+}
+.lnk:hover { text-decoration-color:currentColor; }
+
+.iconbtn {
+  display:grid; place-items:center; height:1.6rem; width:1.6rem; margin:-.25rem;
+  border:0; background:transparent; border-radius:var(--radius-sm);
+  color:var(--faint); cursor:pointer;
+  transition:color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.iconbtn:hover { color:var(--ink); background:var(--accent-soft); }
+
+@keyframes rise { from { opacity:0; transform:translateY(.5rem); } to { opacity:1; transform:none; } }
+.rise { opacity:0; animation:rise .6s var(--ease) forwards; animation-delay:calc(var(--i,0) * 70ms); }
+@media (prefers-reduced-motion:reduce) {
+  .rise { animation:none; opacity:1; }
+  html { scroll-behavior:auto; }
+  .row__mk { opacity:1; transform:none; }
+}
+
+/* ── §3 · BOARD primitives — sampled for the components section ─── */
+.n-doc { width:100%; max-width:340px; padding:18px 20px; font-size:.95rem; line-height:1.6; color:var(--muted); }
+.n-doc h3 {
+  margin:0 0 .55rem; font-family:var(--f-mono); font-size:1.15rem;
+  font-weight:500; letter-spacing:-.02em; color:var(--ink);
+}
+.n-doc p { margin:0 0 .6rem; }
+.n-doc p:last-child { margin-bottom:0; }
+.n-doc code {
+  font-family:var(--f-mono); font-size:.84em; color:var(--ink);
+  background:var(--accent-soft); padding:.1em .35em; border-radius:5px;
+}
+
+.n-note {
+  width:100%; max-width:206px; min-height:176px; padding:18px;
+  font-family:var(--f-hand); font-size:1.5rem; line-height:1.25;
+  white-space:pre-wrap; border-radius:var(--radius-sm);
+  box-shadow:var(--lift); background:var(--note-a); color:var(--note-a-ink);
+}
+.n-note[data-tint='b'] { background:var(--note-b); color:var(--note-b-ink); }
+.n-note[data-tint='c'] { background:var(--note-c); color:var(--note-c-ink); }
+.n-note[data-tint='d'] { background:var(--note-d); color:var(--note-d-ink); }
+
+.n-code { width:100%; max-width:420px; overflow:hidden; }
+.n-code__bar {
+  padding:9px 14px; border-bottom:1px solid var(--rule);
+  font-family:var(--f-mono); font-size:var(--t-micro); color:var(--faint);
+}
+.n-code pre {
+  margin:0; padding:14px 16px; font-family:var(--f-mono);
+  font-size:.78rem; line-height:1.65; color:var(--ink);
+  white-space:pre; overflow-x:auto;
+}
+.n-code .cm { color:var(--faint); }
+.n-code .kw { color:var(--accent); }
+
+.n-link { width:100%; max-width:280px; overflow:hidden; display:block; text-decoration:none; color:inherit; }
+.n-link__thumb {
+  aspect-ratio:1.91/1; border-bottom:1px solid var(--rule);
+  background-image:repeating-linear-gradient(135deg, var(--grid) 0 1px, transparent 1px 9px);
+  display:grid; place-items:center;
+  font-family:var(--f-mono); font-size:var(--t-micro); color:var(--faint);
+}
+.n-link__body { padding:12px 14px 13px; display:grid; gap:4px; }
+.n-link__title { font-size:14px; font-weight:600; color:var(--ink); }
+.n-link__desc { font-size:12px; line-height:1.45; color:var(--muted); }
+.n-link__host { font-family:var(--f-mono); font-size:11px; color:var(--faint); }
+
+.term { background:var(--term); color:var(--term-ink); padding:clamp(3rem,7vw,5rem) var(--gutter); }
+.term__in { margin-inline:auto; max-width:var(--page); }
+.term__prompt { margin:0; font-family:var(--f-mono); font-size:var(--t-mono); color:var(--term-prompt); }
+.term__list { margin:2rem 0 0; padding:0; list-style:none; font-family:var(--f-mono); font-size:var(--t-mono); }
+.term__list a {
+  display:flex; align-items:baseline; gap:1rem; padding:.6rem 0;
+  color:var(--term-dim); text-decoration:none; transition:color var(--dur) var(--ease);
+}
+.term__list a:hover { color:#fff; }
+.term__list a span:first-child { width:5rem; flex:none; color:var(--term-faint); }
+.term__list a span:last-child { border-bottom:1px solid transparent; transition:border-color var(--dur) var(--ease); }
+.term__list a:hover span:last-child { border-bottom-color:var(--term-prompt); }
+.term__foot {
+  margin:3.5rem 0 0; padding-top:1.25rem; border-top:1px solid rgba(255,255,255,.1);
+  font-family:var(--f-mono); font-size:var(--t-micro); color:var(--term-faint);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SPECIMEN-ONLY — swatches, scale rows, texture tiles. Built from the
+   same tokens and primitives above; nothing here introduces a new
+   visual language.
+   ══════════════════════════════════════════════════════════════════ */
+
+.swatchgrid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));
+  gap:1px; background:var(--rule); border:1px solid var(--rule);
+  border-radius:var(--radius); overflow:hidden;
+}
+.swatch { background:var(--surface); padding:1rem; display:grid; gap:.6rem; }
+.swatch__chip {
+  height:3rem; border-radius:var(--radius-sm); border:1px solid var(--rule);
+}
+.swatch__name { font-family:var(--f-mono); font-size:var(--t-mono); color:var(--ink); }
+.swatch__role { font-size:var(--t-micro); color:var(--faint); }
+.swatch__val { font-family:var(--f-mono); font-size:var(--t-micro); color:var(--muted);
+               word-break:break-all; }
+.swatch__pair { display:flex; gap:.5rem; }
+.swatch__pair .swatch__chip { flex:1; }
+
+.fam-block { border-top:1px solid var(--rule); padding:1.75rem 0; }
+.fam-block:first-child { border-top:0; padding-top:0; }
+.fam-name { font-family:var(--f-mono); font-size:var(--t-label); font-style:italic; color:var(--faint); margin:0 0 .75rem; }
+.fam-sample { font-size:1.9rem; line-height:1.3; color:var(--ink); margin:0 0 .75rem; }
+.fam-weights { display:flex; flex-wrap:wrap; gap:.4rem; }
+
+.scale-row { display:flex; align-items:baseline; gap:1.25rem; padding:1rem 0; border-top:1px solid var(--rule); }
+.scale-row:first-child { border-top:0; }
+.scale-row__meta { flex:none; width:9rem; font-family:var(--f-mono); font-size:var(--t-micro); color:var(--faint); }
+.scale-row__meta b { display:block; font-size:var(--t-mono); color:var(--ink); font-weight:500; }
+.scale-row__sample { flex:1; min-width:0; color:var(--ink); }
+
+.comp-block { border-top:1px solid var(--rule); padding:2rem 0; }
+.comp-block:first-child { border-top:0; padding-top:0; }
+.comp-title { font-family:var(--f-mono); font-size:var(--t-label); font-style:italic; color:var(--faint); margin:0 0 1rem; }
+.comp-row { display:flex; flex-wrap:wrap; gap:1.5rem; align-items:flex-start; }
+
+.tile {
+  border:1px solid var(--rule); border-radius:var(--radius); overflow:hidden;
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));
+}
+.tile__cell { height:6rem; display:grid; place-items:center;
+  font-family:var(--f-mono); font-size:var(--t-micro); color:var(--faint);
+  border-left:1px solid var(--rule);
+}
+.tile__cell:first-child { border-left:0; }
+.tile--dot { background-color:var(--sunk); background-image:radial-gradient(var(--grid) 1.4px, transparent 1.4px); background-size:22px 22px; }
+.tile--diag { background-color:var(--sunk); background-image:repeating-linear-gradient(135deg, var(--grid) 0 1px, transparent 1px 9px); }
+.tile--dotted-rule { background:var(--surface); }
+.tile--dotted-rule .leader-demo { border-bottom:1px dotted var(--dot); width:80%; }
+</style>
+</head>
+
+<body>
+
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-accent focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
+
+<!-- ── bar · head ──────────────────────────────────────────────── -->
+<div class="bar rise" style="--i:0">
+  <div class="bar__in">
+    <strong>gavin mcfarland</strong>
+    <span class="hidden sm:inline">specimen — system folio</span>
+    <span class="flex items-baseline gap-4">
+      <a class="lnk" href="index.html">index</a>
+      <button id="theme-toggle" type="button" class="iconbtn" aria-label="Toggle dark mode">
+        <svg class="h-3.5 w-3.5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <svg class="hidden h-3.5 w-3.5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+    </span>
+  </div>
+</div>
+
+<div class="spread">
+
+  <!-- ── rail ─────────────────────────────────────────────────── -->
+  <nav class="rail rise" style="--i:1" aria-label="Contents">
+    <a href="#intro">intro</a>
+    <a href="#palette">palette</a>
+    <a href="#typography">typography</a>
+    <a href="#scale">type scale</a>
+    <a href="#components">components</a>
+    <a href="#texture">texture</a>
+  </nav>
+
+  <main id="main" class="main">
+
+    <!-- a. intro ─────────────────────────────────────────────── -->
+    <section id="intro" class="module rise" style="--i:2">
+      <h2 class="label label--rail">intro</h2>
+      <p class="display">Specimen — System Folio</p>
+      <div class="prose" style="margin-top:1.25rem">
+        <p>
+          A warm-paper document system built from eight shared primitives — bar, spread, rail,
+          module, row, pair, card and lnk — where mono carries structure and sans carries
+          argument, and a fixed black terminal is the one deliberate break from the theme.
+        </p>
+      </div>
+    </section>
+
+    <!-- b. palette ───────────────────────────────────────────── -->
+    <section id="palette" class="module rise" style="--i:3">
+      <h2 class="label label--rail">palette</h2>
+
+      <p class="fam-name" style="margin-bottom:1rem">surface + ink — light value / dark value</p>
+      <div class="swatchgrid">
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:#FBFAF7"></div>
+            <div class="swatch__chip" style="background:#0E0F10"></div>
+          </div>
+          <div class="swatch__name">--paper</div>
+          <div class="swatch__role">page background</div>
+          <div class="swatch__val">#FBFAF7 / #0E0F10</div>
+        </div>
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:#F3F1EC"></div>
+            <div class="swatch__chip" style="background:#0A0B0C"></div>
+          </div>
+          <div class="swatch__name">--sunk</div>
+          <div class="swatch__role">recessed / board field</div>
+          <div class="swatch__val">#F3F1EC / #0A0B0C</div>
+        </div>
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:#FFFFFF"></div>
+            <div class="swatch__chip" style="background:#17181A"></div>
+          </div>
+          <div class="swatch__name">--surface</div>
+          <div class="swatch__role">card face</div>
+          <div class="swatch__val">#FFFFFF / #17181A</div>
+        </div>
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:#16171A"></div>
+            <div class="swatch__chip" style="background:#E8E8E5"></div>
+          </div>
+          <div class="swatch__name">--ink</div>
+          <div class="swatch__role">primary text</div>
+          <div class="swatch__val">#16171A / #E8E8E5</div>
+        </div>
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:#55575E"></div>
+            <div class="swatch__chip" style="background:#9B9C9C"></div>
+          </div>
+          <div class="swatch__name">--muted</div>
+          <div class="swatch__role">prose, values</div>
+          <div class="swatch__val">#55575E / #9B9C9C</div>
+        </div>
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:#8B8D95"></div>
+            <div class="swatch__chip" style="background:#6A6C6E"></div>
+          </div>
+          <div class="swatch__name">--faint</div>
+          <div class="swatch__role">labels, meta, rail</div>
+          <div class="swatch__val">#8B8D95 / #6A6C6E</div>
+        </div>
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:#17685A"></div>
+            <div class="swatch__chip" style="background:#63C2A9"></div>
+          </div>
+          <div class="swatch__name">--accent</div>
+          <div class="swatch__role">links, current, prompt marks</div>
+          <div class="swatch__val">#17685A / #63C2A9</div>
+        </div>
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:rgba(23,104,90,.10)"></div>
+            <div class="swatch__chip" style="background:rgba(99,194,169,.12)"></div>
+          </div>
+          <div class="swatch__name">--accent-soft</div>
+          <div class="swatch__role">row hover fill</div>
+          <div class="swatch__val">rgba(23,104,90,.10) / rgba(99,194,169,.12)</div>
+        </div>
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:rgba(22,23,26,.13)"></div>
+            <div class="swatch__chip" style="background:rgba(232,232,229,.15)"></div>
+          </div>
+          <div class="swatch__name">--rule</div>
+          <div class="swatch__role">hairline borders</div>
+          <div class="swatch__val">rgba(22,23,26,.13) / rgba(232,232,229,.15)</div>
+        </div>
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:rgba(22,23,26,.30)"></div>
+            <div class="swatch__chip" style="background:rgba(232,232,229,.26)"></div>
+          </div>
+          <div class="swatch__name">--dot</div>
+          <div class="swatch__role">leader-line dots</div>
+          <div class="swatch__val">rgba(22,23,26,.30) / rgba(232,232,229,.26)</div>
+        </div>
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:rgba(22,23,26,.075)"></div>
+            <div class="swatch__chip" style="background:rgba(232,232,229,.07)"></div>
+          </div>
+          <div class="swatch__name">--grid</div>
+          <div class="swatch__role">board dot-grid, thumbnails</div>
+          <div class="swatch__val">rgba(22,23,26,.075) / rgba(232,232,229,.07)</div>
+        </div>
+
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:rgba(255,255,255,.82); border:1px solid var(--rule)"></div>
+            <div class="swatch__chip" style="background:rgba(23,24,26,.82); border:1px solid var(--rule)"></div>
+          </div>
+          <div class="swatch__name">--panel</div>
+          <div class="swatch__role">translucent overlays</div>
+          <div class="swatch__val">rgba(255,255,255,.82) / rgba(23,24,26,.82)</div>
+        </div>
+      </div>
+
+      <p class="fam-name" style="margin:2rem 0 1rem">board note tints — light / dark</p>
+      <div class="swatchgrid">
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:#F0DCA2"></div>
+            <div class="swatch__chip" style="background:#8A7735"></div>
+          </div>
+          <div class="swatch__name">--note-a</div>
+          <div class="swatch__role">note tint a + ink #463708 / #FBF3D8</div>
+          <div class="swatch__val">#F0DCA2 / #8A7735</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:#C2D7E9"></div>
+            <div class="swatch__chip" style="background:#3D5A72"></div>
+          </div>
+          <div class="swatch__name">--note-b</div>
+          <div class="swatch__role">note tint b + ink #11344C / #E2EEF7</div>
+          <div class="swatch__val">#C2D7E9 / #3D5A72</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:#C6DCBE"></div>
+            <div class="swatch__chip" style="background:#47653F"></div>
+          </div>
+          <div class="swatch__name">--note-c</div>
+          <div class="swatch__role">note tint c + ink #1D3918 / #E4F1DE</div>
+          <div class="swatch__val">#C6DCBE / #47653F</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__pair">
+            <div class="swatch__chip" style="background:#EFCCA6"></div>
+            <div class="swatch__chip" style="background:#8A5F33"></div>
+          </div>
+          <div class="swatch__name">--note-d</div>
+          <div class="swatch__role">note tint d + ink #4A2C0B / #FBEBD8</div>
+          <div class="swatch__val">#EFCCA6 / #8A5F33</div>
+        </div>
+      </div>
+
+      <p class="fam-name" style="margin:2rem 0 1rem">terminal — fixed, same value in both modes</p>
+      <div class="swatchgrid">
+        <div class="swatch">
+          <div class="swatch__chip" style="background:#0A0B0C"></div>
+          <div class="swatch__name">--term</div>
+          <div class="swatch__role">contact footer background</div>
+          <div class="swatch__val">#0A0B0C</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__chip" style="background:#E8E8E5"></div>
+          <div class="swatch__name">--term-ink</div>
+          <div class="swatch__role">terminal text</div>
+          <div class="swatch__val">#E8E8E5</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__chip" style="background:#B9BDC2"></div>
+          <div class="swatch__name">--term-dim</div>
+          <div class="swatch__role">list rows, resting state</div>
+          <div class="swatch__val">#B9BDC2</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__chip" style="background:#5F6469"></div>
+          <div class="swatch__name">--term-faint</div>
+          <div class="swatch__role">keys, footer copy</div>
+          <div class="swatch__val">#5F6469</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__chip" style="background:#5BE59A"></div>
+          <div class="swatch__name">--term-prompt</div>
+          <div class="swatch__role">$ prompt, hover underline</div>
+          <div class="swatch__val">#5BE59A</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- c. typography ────────────────────────────────────────── -->
+    <section id="typography" class="module rise" style="--i:4">
+      <h2 class="label label--rail">typography</h2>
+
+      <div class="fam-block">
+        <p class="fam-name">DM Sans — argument (prose, display)</p>
+        <p class="fam-sample" style="font-family:var(--f-sans)">Sphinx of black quartz, judge my vow.</p>
+        <p class="fam-sample" style="font-family:var(--f-sans);font-style:italic;font-size:1.3rem;color:var(--muted)">Fifteen years in the gap between design and engineering.</p>
+        <div class="fam-weights">
+          <span class="tag" style="text-transform:none;font-family:var(--f-sans);font-weight:400">regular 400</span>
+          <span class="tag" style="text-transform:none;font-family:var(--f-sans);font-weight:500">medium 500</span>
+          <span class="tag" style="text-transform:none;font-family:var(--f-sans);font-style:italic;font-weight:400">italic 400</span>
+        </div>
+      </div>
+
+      <div class="fam-block">
+        <p class="fam-name">JetBrains Mono — structure (labels, keys, figures, paths)</p>
+        <p class="fam-sample" style="font-family:var(--f-mono);font-size:1.3rem">Sphinx of black quartz, judge my vow.</p>
+        <p class="fam-sample" style="font-family:var(--f-mono);font-size:1.1rem;font-style:italic;color:var(--faint)">summary · work · capabilities · environment</p>
+        <div class="fam-weights">
+          <span class="tag" style="text-transform:none;font-family:var(--f-mono);font-weight:400">regular 400</span>
+          <span class="tag" style="text-transform:none;font-family:var(--f-mono);font-weight:500">medium 500</span>
+          <span class="tag" style="text-transform:none;font-family:var(--f-mono);font-style:italic;font-weight:400">italic 400</span>
+        </div>
+      </div>
+
+      <div class="fam-block">
+        <p class="fam-name">Caveat — handwritten artefacts only (board notes)</p>
+        <p class="fam-sample" style="font-family:var(--f-hand);font-size:2.1rem;color:var(--ink)">Sphinx of black quartz, judge my vow.</p>
+        <p class="fam-sample" style="font-family:var(--f-hand);font-size:1.5rem;color:var(--muted)">ship the hot-reload demo before the call w/ Jess</p>
+        <div class="fam-weights">
+          <span class="tag" style="text-transform:none;font-family:var(--f-hand);font-size:.85rem;font-weight:400">regular 400</span>
+          <span class="tag" style="text-transform:none;font-family:var(--f-hand);font-size:.85rem;font-weight:600">semibold 600</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- d. type scale ────────────────────────────────────────── -->
+    <section id="scale" class="module rise" style="--i:5">
+      <h2 class="label label--rail">type scale</h2>
+      <p class="prose" style="margin-bottom:1.5rem">Five sizes total — weight, colour and italics do the work size usually does.</p>
+
+      <div class="rows" style="border-top:0">
+        <div class="scale-row">
+          <div class="scale-row__meta"><b>display</b>clamp(1.5rem,3.4vw,2rem) / 24–32px</div>
+          <div class="scale-row__sample" style="font-family:var(--f-sans);font-size:var(--t-display);font-weight:500;letter-spacing:-.02em;line-height:1.25">I build the small tools teams are missing.</div>
+        </div>
+        <div class="scale-row">
+          <div class="scale-row__meta"><b>body</b>var(--t-body) / 1rem · 16px</div>
+          <div class="scale-row__sample" style="font-family:var(--f-sans);font-size:var(--t-body);color:var(--muted);line-height:1.72">Fifteen years in the gap between design and engineering — finance, government and retail.</div>
+        </div>
+        <div class="scale-row">
+          <div class="scale-row__meta"><b>mono</b>var(--t-mono) / .86rem · 13.8px</div>
+          <div class="scale-row__sample" style="font-family:var(--f-mono);font-size:var(--t-mono);color:var(--ink)">plugma — Zero-config toolchain for Figma plugins</div>
+        </div>
+        <div class="scale-row">
+          <div class="scale-row__meta"><b>label</b>var(--t-label) / .8rem · 12.8px</div>
+          <div class="scale-row__sample" style="font-family:var(--f-mono);font-size:var(--t-label);font-style:italic;color:var(--faint)">work — capabilities — environment</div>
+        </div>
+        <div class="scale-row">
+          <div class="scale-row__meta"><b>micro</b>var(--t-micro) / .72rem · 11.5px</div>
+          <div class="scale-row__sample" style="font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:.04em;color:var(--faint)">GAVIN MCFARLAND · LONDON · JULY 2026</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- e. components ────────────────────────────────────────── -->
+    <section id="components" class="module rise" style="--i:6">
+      <h2 class="label label--rail">components</h2>
+
+      <div class="comp-block">
+        <p class="comp-title">row — index</p>
+        <div class="rows" id="specimen-work" style="margin-inline:-.75rem"></div>
+      </div>
+
+      <div class="comp-block">
+        <p class="comp-title">row — facts</p>
+        <dl class="rows" style="margin:0 -.75rem">
+          <div class="row">
+            <dt class="row__key row__key--dim">year</dt>
+            <dd class="leader"></dd>
+            <dd class="row__val" style="margin:0">2024</dd>
+          </div>
+          <div class="row">
+            <dt class="row__key row__key--dim">role</dt>
+            <dd class="leader"></dd>
+            <dd class="row__val" style="margin:0">creator, maintainer</dd>
+          </div>
+          <div class="row">
+            <dt class="row__key row__key--dim">status</dt>
+            <dd class="leader"></dd>
+            <dd class="row__val" style="margin:0">maintained</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="comp-block">
+        <p class="comp-title">pair — hanging-indent definition list</p>
+        <dl class="pairs">
+          <div class="pair">
+            <dt>design systems</dt>
+            <dd>Tokens, components, and the governance that keeps them honest — so the design file and the codebase describe the same thing.</dd>
+          </div>
+          <div class="pair">
+            <dt>developer tooling</dt>
+            <dd>CLIs, plugins and build steps — the small piece of infrastructure nobody owns.</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="comp-block">
+        <p class="comp-title">card + tag</p>
+        <div class="comp-row">
+          <div class="card" style="padding:1.25rem 1.4rem;max-width:22rem">
+            <p style="margin:0;font-family:var(--f-mono);font-weight:500;letter-spacing:-.02em;color:var(--ink)">askeroo</p>
+            <p style="margin:.4rem 0 0;color:var(--muted);font-size:var(--t-mono)">CLI prompts with back-navigation. 2024.</p>
+            <div class="tags">
+              <span class="tag">Node.js</span>
+              <span class="tag">TypeScript</span>
+              <span class="tag">CLI</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comp-block">
+        <p class="comp-title">lnk — inline link</p>
+        <p class="prose">
+          Right now that is <a class="lnk" href="#">Plugma</a>, a toolchain for building Figma
+          plugins. Most of it is <a class="lnk" href="#">on GitHub</a>.
+        </p>
+      </div>
+
+      <div class="comp-block">
+        <p class="comp-title">board nodes — n-doc · n-code · n-link · n-note</p>
+        <div class="comp-row">
+          <div class="card n-doc">
+            <h3>Plugma</h3>
+            <p>A zero-config toolchain for Figma plugins. Real hot reloading, then ship with <code>plugma build</code>.</p>
+          </div>
+
+          <div class="card n-code">
+            <div class="n-code__bar">terminal</div>
+            <pre><span class="cm">$</span> <span class="kw">plugma</span> dev
+<span class="cm">→</span> watching src/ for changes
+<span class="cm">→</span> hot reload ready on :4001</pre>
+          </div>
+
+          <a class="card n-link" href="#" onclick="return false">
+            <div class="n-link__thumb">preview</div>
+            <div class="n-link__body">
+              <div class="n-link__title">plugma.dev</div>
+              <div class="n-link__desc">Zero-config toolchain for Figma plugins, with real hot reloading.</div>
+              <div class="n-link__host">plugma.dev</div>
+            </div>
+          </a>
+
+          <div class="n-note" data-tint="b">ship the hot-reload demo before the call w/ Jess</div>
+        </div>
+      </div>
+
+      <div class="comp-block">
+        <p class="comp-title">iconbtn — theme toggle</p>
+        <div class="comp-row" style="align-items:center">
+          <button type="button" class="iconbtn" aria-label="Toggle dark mode" onclick="return false">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+              <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+            </svg>
+          </button>
+          <span style="font-family:var(--f-mono);font-size:var(--t-micro);color:var(--faint)">hover / focus states use --accent-soft</span>
+        </div>
+      </div>
+
+      <div class="comp-block">
+        <p class="comp-title">terminal — contact block</p>
+        <div class="term" style="border-radius:var(--radius)">
+          <div class="term__in">
+            <p class="term__prompt"><span class="select-none opacity-70">$</span> contact gavin</p>
+            <ul class="term__list">
+              <li><a href="#" onclick="return false"><span>email</span><span>gavin@limitlessloop.com</span></a></li>
+              <li><a href="#" onclick="return false"><span>github</span><span>gavinmcfarland</span></a></li>
+            </ul>
+            <p class="term__foot">© 2026 gavin mcfarland</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- f. texture ───────────────────────────────────────────── -->
+    <section id="texture" class="module rise" style="--i:7">
+      <h2 class="label label--rail">texture</h2>
+      <p class="prose" style="margin-bottom:1.25rem">The only patterned surfaces in this system: the board's dot-grid field, the diagonal-hatch link thumbnail, and the dotted leader rule used throughout the row primitive.</p>
+
+      <div class="tile" style="margin-bottom:1px">
+        <div class="tile__cell tile--dot">--grid dot-field, 22px</div>
+        <div class="tile__cell tile--diag">--grid diagonal hatch, 9px</div>
+        <div class="tile__cell tile--dotted-rule"><span class="leader-demo"></span></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── bar · foot ──────────────────────────────────────────────── -->
+<div class="bar bar--foot">
+  <div class="bar__in">
+    <span>london</span>
+    <span class="hidden sm:inline">specimen — system folio</span>
+    <a class="lnk" href="index.html" style="color:inherit">back to index.html</a>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const toggle = document.getElementById('theme-toggle');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const dark = document.documentElement.classList.toggle('dark');
+      try { localStorage.setItem('gm-theme', dark ? 'dark' : 'light'); } catch (e) {}
+    });
+  }
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+  const work = [
+    { year:'2024', name:'plugma',    desc:'Zero-config toolchain for Figma plugins', mk:'&rarr;' },
+    { year:'2024', name:'askeroo',   desc:'CLI prompts with back-navigation',        mk:'&#8599;' },
+    { year:'2023', name:'figlet',    desc:'Plugin IDE in the browser',               mk:'&#8599;' },
+  ];
+
+  const list = document.getElementById('specimen-work');
+  if (list) {
+    list.innerHTML = work.map((w) => `
+      <a class="row row--index" href="#" onclick="return false">
+        <span class="row__key">${esc(w.name)}</span>
+        <span class="row__mk">${w.mk}</span>
+        <span class="leader"></span>
+        <span class="row__val">${esc(w.desc)}</span>
+        <span class="row__meta">${esc(w.year)}</span>
+      </a>`).join('');
+  }
+
+  const links = new Map();
+  document.querySelectorAll('.rail a').forEach((a) => links.set(a.getAttribute('href').slice(1), a));
+
+  if ('IntersectionObserver' in window) {
+    const visible = new Set();
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => e.isIntersecting ? visible.add(e.target.id) : visible.delete(e.target.id));
+      const current = [...links.keys()].find((id) => visible.has(id));
+      links.forEach((a, id) => id === current ? a.setAttribute('aria-current','true') : a.removeAttribute('aria-current'));
+    }, { rootMargin:'-8% 0px -70% 0px' });
+    document.querySelectorAll('.module').forEach((s) => io.observe(s));
+  }
+})();
+</script>
+
+</body>
+</html>

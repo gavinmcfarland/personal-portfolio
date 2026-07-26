@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — Overprint — Gavin McFarland</title>
+<meta name="description" content="A specimen sheet for the Overprint design system — inks, type, and press furniture, set in its own two-ink language." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="system.css" />
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+<style>
+  /* ── specimen-only furniture ─────────────────────────────────────
+     Helpers scoped to this sheet. They borrow the system's tokens
+     (rule, stock, inks, mono, baseline) so nothing here invents a
+     colour or a size the rest of the mockup does not already own. */
+
+  /* colour swatches — a grid of ink cells, each labelled the way the
+     colophon labels things: pink micro key over a mono ink value. */
+  .sp-swatches { grid-column:1 / -1; display:grid; gap:var(--gutter);
+                 grid-template-columns:repeat(2,minmax(0,1fr)); }
+  @media (min-width:640px)  { .sp-swatches { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+  @media (min-width:1024px) { .sp-swatches { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+  .sp-swatch { border:2px solid var(--rule); background:var(--stock); }
+  .sp-swatch__ink { height:calc(var(--bl) * 3); border-bottom:2px solid var(--rule); }
+  .sp-swatch__meta { padding:.5rem .625rem; display:flex; flex-direction:column; gap:.15rem;
+                     font-family:var(--f-mono); }
+  .sp-swatch__role { font-size:var(--t-micro); letter-spacing:.08em; text-transform:uppercase; color:var(--b); }
+  .sp-swatch__var  { font-size:var(--t-mono); font-weight:700; color:var(--ink); }
+  .sp-swatch__val  { font-size:var(--t-micro); color:var(--muted); font-variant-numeric:tabular-nums; }
+  .sp-swatch__val i { color:var(--faint); font-style:normal; padding:0 .25em; }
+
+  /* type ramp — one row per step, sample left, spec right */
+  .sp-scale { grid-column:1 / -1; border-top:2px solid var(--rule); }
+  .sp-scale__row { display:grid; grid-template-columns:1fr auto; gap:1rem;
+                   align-items:baseline; padding-block:.75rem; border-bottom:1px solid var(--rule-soft); }
+  .sp-scale__spec { font-family:var(--f-mono); font-size:var(--t-micro); letter-spacing:.06em;
+                    text-transform:uppercase; color:var(--faint); text-align:right; white-space:nowrap; }
+  .sp-sample { min-width:0; color:var(--ink); }
+
+  /* typeface specimens */
+  .sp-faces { grid-column:1 / -1; border-top:2px solid var(--rule); }
+  .sp-face { padding-block:var(--bl); border-bottom:1px solid var(--rule-soft); }
+  .sp-face__name { display:flex; flex-wrap:wrap; align-items:baseline; gap:.75rem;
+                   font-family:var(--f-mono); font-size:var(--t-label); letter-spacing:.06em;
+                   text-transform:uppercase; color:var(--muted); margin-bottom:.5rem; }
+  .sp-face__name b { font-weight:700; color:var(--ink); }
+  .sp-face__weights { color:var(--faint); }
+  .sp-face__line { margin:0; color:var(--ink); line-height:1.15; letter-spacing:-.01em; }
+
+  /* a demo strip for components that need a canvas */
+  .sp-demo { grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center;
+             gap:.75rem 1rem; padding:var(--bl) 0; }
+  .sp-demo + .sp-demo { border-top:1px solid var(--rule-soft); }
+  .sp-demo__tag { flex:none; width:100%; font-family:var(--f-mono); font-size:var(--t-micro);
+                  letter-spacing:.1em; text-transform:uppercase; color:var(--b); }
+
+  /* inline code — the board's convention: mono, printed in ink B, knocked out */
+  .sp-code { font-family:var(--f-mono); font-size:.9em; background:var(--b); color:var(--knock); padding:0 .25em; }
+
+  /* ink blocks side by side, to show the two inks and their overlap */
+  .sp-inks { grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:var(--gutter); }
+
+  /* overprint demo — two ink discs that multiply where they cross,
+     the literal statement of the --over token */
+  .sp-overprint { position:relative; width:220px; height:calc(var(--bl) * 5); flex:none; }
+  .sp-overprint__disc { position:absolute; top:0; width:130px; height:130px; border-radius:50% !important; }
+  .sp-overprint__disc--a { left:0; background:var(--a); }
+  .sp-overprint__disc--b { right:0; background:var(--b); }
+
+  /* halftone screen — the board's ground */
+  .sp-halftone { flex:1; min-width:220px; min-height:calc(var(--bl) * 5); border:2px solid var(--rule);
+                 background-color:var(--stock-2);
+                 background-image:radial-gradient(var(--screen) .9px, transparent .9px);
+                 background-size:5px 5px; }
+
+  /* a static column-grid chip, in ink B, to picture the layout overlay */
+  .sp-gridfig { flex:1; min-width:220px; min-height:calc(var(--bl) * 5); border:2px solid var(--rule);
+                background:var(--stock); display:grid; grid-template-columns:repeat(12,1fr); gap:6px; padding:.75rem; }
+  .sp-gridfig > i { border-left:1px solid var(--b); border-right:1px solid var(--b); opacity:.4; }
+</style>
+</head>
+
+<body>
+
+<a href="#main" class="lnk" style="position:absolute;left:-9999px" onfocus="this.style.left='.5rem',this.style.top='.5rem',this.style.zIndex=200,this.style.background='var(--b)',this.style.color='var(--knock)',this.style.padding='.25rem .5rem'" onblur="this.style.left='-9999px'">Skip to content</a>
+
+<div class="gridlines" id="gridlines" aria-hidden="true">
+  <div class="gridlines__bl"></div>
+  <div class="gridlines__in"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<!-- ── masthead ────────────────────────────────────────────────── -->
+<header class="masthead">
+  <div class="masthead__in">
+    <span>
+      <a href="index.html">gavin mcfarland</a>
+      <span class="masthead__sep">/</span>
+      <strong>specimen</strong>
+    </span>
+    <span style="display:flex;align-items:center;gap:.75rem">
+      <span style="display:none" class="sm-show">overprint</span>
+      <button id="grid-toggle" type="button" class="btn" aria-pressed="false" aria-label="Show layout grid" title="Show layout grid (G)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M2 2h12v12H2z"/><path d="M6 2v12M10 2v12M2 6h12M2 10h12"/>
+        </svg>
+      </button>
+      <button id="theme-toggle" type="button" class="btn" aria-label="Toggle dark mode">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+      </button>
+    </span>
+  </div>
+</header>
+
+<div class="sheet grid12 spread">
+
+  <svg class="regmark regmark--tl" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+    <circle cx="7" cy="7" r="4"/><path d="M7 0v14M0 7h14"/>
+  </svg>
+  <svg class="regmark regmark--tr" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+    <circle cx="7" cy="7" r="4"/><path d="M7 0v14M0 7h14"/>
+  </svg>
+
+  <!-- ── rail ─────────────────────────────────────────────────── -->
+  <nav class="rail" aria-label="Contents">
+    <a href="#palette">01 palette</a>
+    <a href="#type">02 type</a>
+    <a href="#scale">03 scale</a>
+    <a href="#components">04 components</a>
+    <a href="#texture">05 texture</a>
+  </nav>
+
+  <main id="main" class="main">
+
+    <!-- a · intro — printed as a block of ink A, like every cover ── -->
+    <div class="grid10" style="margin-bottom:calc(var(--bl) * 3)">
+      <div class="lead" style="grid-column:1 / -1">
+        <p>Specimen — Overprint.</p>
+        <p class="sub">a two-ink press · blue × fluoro pink · square corners, heavy rules, no shadow</p>
+      </div>
+    </div>
+
+    <div class="grid10" style="margin-bottom:calc(var(--bl) * 3)">
+      <div class="prose" style="grid-column:1 / -1; max-width:62ch">
+        <p>
+          One sheet, set entirely in this system's own language, so it can be laid beside the
+          other variations and read at a glance. Every colour below is one of four things —
+          <span class="mark">the stock, ink A, ink B, or the multiply overlap</span> — and every
+          size is one of five steps. <a class="lnk" href="index.html">Back to the cover →</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- b · 01 palette ─────────────────────────────────────────── -->
+    <section id="palette" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">01</span>
+          <span class="sec__name">palette</span>
+          <span class="sec__note">light / night</span>
+        </h2>
+
+        <div class="sp-swatches">
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--stock)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">the stock</span><span class="sp-swatch__var">--stock</span><span class="sp-swatch__val">#F2EDE1<i>/</i>#101018</span></div>
+          </div>
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--stock-2)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">stock, tinted</span><span class="sp-swatch__var">--stock-2</span><span class="sp-swatch__val">#E7E0CF<i>/</i>#191922</span></div>
+          </div>
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--a)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">ink A · blue</span><span class="sp-swatch__var">--a</span><span class="sp-swatch__val">#1B31C8<i>/</i>#5B6BFF</span></div>
+          </div>
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--b)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">ink B · fluoro pink</span><span class="sp-swatch__var">--b</span><span class="sp-swatch__val">#FF4FA3<i>/</i>#FF7ABE</span></div>
+          </div>
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--over)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">A × B overprint</span><span class="sp-swatch__var">--over</span><span class="sp-swatch__val">#1B0F81<i>/</i>#8E6BFF</span></div>
+          </div>
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--ink)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">text ink</span><span class="sp-swatch__var">--ink</span><span class="sp-swatch__val">#14152B<i>/</i>#EDEAE0</span></div>
+          </div>
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--muted)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">muted text</span><span class="sp-swatch__var">--muted</span><span class="sp-swatch__val">#4A4C66<i>/</i>#A7A6BC</span></div>
+          </div>
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--faint)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">faint text</span><span class="sp-swatch__var">--faint</span><span class="sp-swatch__val">#8C8EA3<i>/</i>#6E6D85</span></div>
+          </div>
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--rule)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">rule · 2px edge</span><span class="sp-swatch__var">--rule</span><span class="sp-swatch__val">#14152B<i>/</i>#EDEAE0</span></div>
+          </div>
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--rule-soft)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">rule, soft · row line</span><span class="sp-swatch__var">--rule-soft</span><span class="sp-swatch__val">rgba(20,21,43,.22)<i>/</i>.24</span></div>
+          </div>
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--knock)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">knockout · text on ink</span><span class="sp-swatch__var">--knock</span><span class="sp-swatch__val">#F2EDE1<i>/</i>#101018</span></div>
+          </div>
+          <div class="sp-swatch">
+            <div class="sp-swatch__ink" style="background:var(--screen)"></div>
+            <div class="sp-swatch__meta"><span class="sp-swatch__role">halftone dot</span><span class="sp-swatch__var">--screen</span><span class="sp-swatch__val">rgba(20,21,43,.30)<i>/</i>.22</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- c · 02 type ────────────────────────────────────────────── -->
+    <section id="type" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">02</span>
+          <span class="sec__name">type</span>
+          <span class="sec__note">two families</span>
+        </h2>
+
+        <div class="sp-faces">
+          <div class="sp-face">
+            <div class="sp-face__name"><b>Space Grotesk</b> <span>--f-sans · display &amp; body</span> <span class="sp-face__weights">400 · 500 · 700</span></div>
+            <p class="sp-face__line" style="font-family:var(--f-sans);font-size:clamp(1.5rem,5vw,2.75rem);font-weight:700">Sphinx of black quartz, judge my vow.</p>
+            <p style="margin:.5rem 0 0;font-family:var(--f-sans);color:var(--muted)">
+              <span style="font-weight:400">Regular 400</span> ·
+              <span style="font-weight:500">Medium 500</span> ·
+              <span style="font-weight:700;color:var(--ink)">Bold 700</span>
+            </p>
+          </div>
+          <div class="sp-face">
+            <div class="sp-face__name"><b>Space Mono</b> <span>--f-mono · labels, meta, code</span> <span class="sp-face__weights">400 · 700 · 400 italic</span></div>
+            <p class="sp-face__line" style="font-family:var(--f-mono);font-size:clamp(1.125rem,3.5vw,1.75rem);font-weight:400">Pack my box with five dozen liquor jugs.</p>
+            <p style="margin:.5rem 0 0;font-family:var(--f-mono);color:var(--muted)">
+              <span style="font-weight:400">Regular 400</span> ·
+              <span style="font-weight:700;color:var(--ink)">Bold 700</span> ·
+              <span style="font-weight:400;font-style:italic">Italic 400</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- d · 03 scale ───────────────────────────────────────────── -->
+    <section id="scale" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">03</span>
+          <span class="sec__name">scale</span>
+          <span class="sec__note">five flat steps</span>
+        </h2>
+
+        <div class="sp-scale">
+          <div class="sp-scale__row">
+            <span class="sp-sample" style="font-family:var(--f-sans);font-size:var(--t-display);font-weight:700;line-height:1.1;letter-spacing:-.02em">Designer &amp; engineer</span>
+            <span class="sp-scale__spec">display · --t-display · 24–30px · grotesk 700</span>
+          </div>
+          <div class="sp-scale__row">
+            <span class="sp-sample" style="font-family:var(--f-sans);font-size:var(--t-body)">Builds the thing nobody owns, then writes it down.</span>
+            <span class="sp-scale__spec">body · --t-body · 15px · grotesk 400</span>
+          </div>
+          <div class="sp-scale__row">
+            <span class="sp-sample" style="font-family:var(--f-mono);font-size:var(--t-mono)">cli + dev server + build step</span>
+            <span class="sp-scale__spec">mono · --t-mono · 13px · space mono</span>
+          </div>
+          <div class="sp-scale__row">
+            <span class="sp-sample" style="font-family:var(--f-mono);font-size:var(--t-label);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Contents · London · Issue 04</span>
+            <span class="sp-scale__spec">label · --t-label · 12px · mono caps</span>
+          </div>
+          <div class="sp-scale__row">
+            <span class="sp-sample" style="font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)">Set in · Inks · Built with</span>
+            <span class="sp-scale__spec">micro · --t-micro · 11px · mono caps</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- e · 04 components ──────────────────────────────────────── -->
+    <section id="components" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">04</span>
+          <span class="sec__name">components</span>
+          <span class="sec__note">the press furniture</span>
+        </h2>
+
+        <!-- buttons, links, chips, marks, inline code -->
+        <div class="sp-demo">
+          <span class="sp-demo__tag">buttons · links · chips</span>
+          <button type="button" class="btn" aria-label="Sample">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 2h12v12H2z"/><path d="M6 2v12M10 2v12M2 6h12M2 10h12"/></svg>
+          </button>
+          <button type="button" class="btn" aria-pressed="true" aria-label="Sample pressed">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
+          <span>An <a class="lnk" href="index.html">inline link</a> carries an ink-B underline that sweeps on hover.</span>
+          <span class="chips" style="margin:0">
+            <span class="chip">figma</span><span class="chip">tooling</span><span class="chip">design systems</span>
+          </span>
+        </div>
+
+        <div class="sp-demo">
+          <span class="sp-demo__tag">highlight · inline code</span>
+          <span>Change a line, <span class="mark">see it</span> — no rebuild.</span>
+          <span>Serialised on the way out: <code class="sp-code">figma.ui.postMessage(msg)</code></span>
+        </div>
+
+        <!-- the schedule / table — real list rows, both column shapes -->
+        <div class="list grid10" style="margin-top:var(--bl)">
+          <div class="list__row">
+            <span class="c-idx">01</span>
+            <span class="c-key">plugma →</span>
+            <span class="c-desc">Zero-config toolchain for Figma plugins</span>
+            <span class="c-meta">2024</span>
+          </div>
+          <div class="list__row">
+            <span class="c-idx">02</span>
+            <span class="c-key">table-creator ↗</span>
+            <span class="c-desc">Real data tables on the canvas</span>
+            <span class="c-meta">2022</span>
+          </div>
+          <a class="list__row" href="index.html">
+            <span class="c-idx">03</span>
+            <span class="c-key">icon-preview →</span>
+            <span class="c-desc">Every icon at the size it ships at</span>
+            <span class="c-meta">2021</span>
+          </a>
+        </div>
+
+        <!-- term/body variant of the same list -->
+        <div class="list grid10" style="margin-top:var(--bl)">
+          <div class="list__row">
+            <span class="c-term">role</span>
+            <span class="c-body">Design systems &amp; tooling · creator, maintainer</span>
+          </div>
+          <div class="list__row">
+            <span class="c-term">shape</span>
+            <span class="c-body">A term/body row, ruled with the soft rule.</span>
+          </div>
+        </div>
+
+        <!-- cards — panels, both head inks -->
+        <div class="grid10" style="margin-top:calc(var(--bl) * 1.5); row-gap:var(--bl)">
+          <div class="panel" style="grid-column:span 5">
+            <div class="panel__head"><span>panel · ink A head</span><a href="index.html">open ↗</a></div>
+            <div class="panel__body" style="font-family:var(--f-mono);font-size:var(--t-mono);color:var(--muted)">
+              <div style="display:flex;justify-content:space-between;gap:1rem"><span style="color:var(--faint)">published</span><span>2026-07</span></div>
+              <div style="display:flex;justify-content:space-between;gap:1rem"><span style="color:var(--faint)">reading</span><span>4 min</span></div>
+              <div class="chips"><span class="chip">card</span><span class="chip">meta</span></div>
+            </div>
+          </div>
+          <div class="panel" style="grid-column:span 5">
+            <div class="panel__head panel__head--b"><span>panel · ink B head</span></div>
+            <div class="panel__body prose">
+              <p>A square of stock with a 2px ink edge and a knockout head band. No shadow, no radius.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- long-form furniture — blockquote, code block, list -->
+        <div class="grid10" style="margin-top:calc(var(--bl) * 1.5)">
+          <div class="article" style="grid-column:1 / -1">
+            <h2>Long-form furniture</h2>
+            <p>Body copy sits in the muted ink; <strong>strong pulls back to full ink</strong>. The measure is set by the grid, not by a guess.</p>
+            <blockquote>
+              <p>The sandbox knows what the user selected. The iframe knows what the user clicked. Neither knows both.</p>
+            </blockquote>
+            <pre><span style="opacity:.6">// sandbox half — document access, no DOM</span>
+figma.ui.onmessage = (msg) =&gt; {
+  if (msg.type === 'resize') {
+    figma.ui.resize(msg.w, msg.h)
+  }
+}</pre>
+            <ul>
+              <li>In development, the UI is served — so it can hot reload.</li>
+              <li>At build time, the same UI is inlined — so Figma accepts it.</li>
+              <li>Bullets are marked in ink B.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- f · 05 texture ─────────────────────────────────────────── -->
+    <section id="texture" class="sec">
+      <div class="grid10">
+        <h2 class="sec__head" style="grid-column:1 / -1">
+          <span class="sec__num">05</span>
+          <span class="sec__name">texture</span>
+          <span class="sec__note">screen · overprint · grid</span>
+        </h2>
+
+        <!-- ink blocks — the two inks and their multiplied overlap -->
+        <div class="sp-inks" style="margin-bottom:var(--bl)">
+          <div class="n-ink">
+            <span class="n-ink__idx">01 · --a</span>
+            ink A
+            blue, run dense
+          </div>
+          <div class="n-ink" data-ink="b">
+            <span class="n-ink__idx">02 · --b</span>
+            ink B
+            fluoro pink
+          </div>
+          <div class="n-ink" data-ink="over">
+            <span class="n-ink__idx">03 · --over</span>
+            A × B
+            multiplied
+          </div>
+        </div>
+
+        <div class="sp-inks">
+          <!-- overprint: two discs that multiply where they cross -->
+          <div class="sp-overprint" title="mix-blend-mode: multiply">
+            <div class="sp-overprint__disc sp-overprint__disc--a overprint"></div>
+            <div class="sp-overprint__disc sp-overprint__disc--b overprint"></div>
+          </div>
+          <!-- halftone screen — the board's ground -->
+          <div class="sp-halftone" title="radial-gradient screen · --screen"></div>
+          <!-- 12-column layout figure, in ink B (press G to see it live) -->
+          <div class="sp-gridfig" aria-hidden="true" title="12-column grid — press G">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+
+        <p style="grid-column:1 / -1; margin:var(--bl) 0 0; font-family:var(--f-mono); font-size:var(--t-micro); letter-spacing:.06em; text-transform:uppercase; color:var(--faint)">
+          ink blocks · overprint multiply · halftone screen · 12-col grid — press <span style="color:var(--b)">G</span> for the live overlay
+        </p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="colophon">
+  <div class="colophon__in" id="colophon"></div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  /* Fallback colophon so the footer is never empty if data.js/system.js
+     are missing. system.js fills #colophon from DATA when both load;
+     this only runs if that left the footer blank. */
+  (() => {
+    const el = document.getElementById('colophon');
+    if (!el || el.children.length) return;
+    const rows = [
+      { k:'set in', v:'Space Grotesk / Space Mono' },
+      { k:'inks', v:'blue · fluoro pink' },
+      { k:'sheet', v:'specimen · overprint' },
+      { k:'contact', v:'gavin@limitlessloop.com' },
+    ];
+    el.innerHTML = rows.map((c) => `
+      <div class="col-cell">
+        <span class="col-k">${c.k}</span>
+        <span class="col-v">${c.v}</span>
+      </div>`).join('');
+  })();
+</script>
+<style>@media (min-width:640px){ .sm-show{display:inline !important} }</style>
+
+</body>
+</html>

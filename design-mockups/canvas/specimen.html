@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — Canvas Portfolio</title>
+<script>
+/* Early theme init — same storage key & rule as index.html, to avoid a flash
+   and to stay in sync with whatever theme the canvas mockup last used. */
+(function(){
+  try{
+    var STORE="gm-canvas-portfolio-v1";
+    var t=localStorage.getItem(STORE+"-theme");
+    if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){
+      document.documentElement.classList.add("dark");
+    }
+  }catch(e){}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&family=Caveat:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────────────────────────────────────
+   Tokens copied verbatim from canvas/index.html — same brand DNA
+   (Inter · Tinos · Caveat · JetBrains Mono · CV purple · dark mode)
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --bg:#F6F5F3;
+  --grid:rgba(0,0,0,.055);
+  --grid-strong:rgba(0,0,0,.12);
+  --surface:#FFFFFF;
+  --ink:#141417;
+  --muted:#3C3C42;
+  --faint:#8B8B91;
+  --line:rgba(0,0,0,.11);
+  --line-strong:rgba(0,0,0,.30);
+  --accent:#7C2D91;
+  --accent-soft:rgba(124,45,145,.10);
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.09);
+  --ui-bg:rgba(255,255,255,.82);
+  --ui-border:rgba(0,0,0,.10);
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --serif:'Tinos','Times New Roman',Times,Georgia,serif;
+  --hand:'Caveat',cursive;
+  --mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+html.dark{
+  --bg:#0C0C0E;
+  --grid:rgba(255,255,255,.05);
+  --grid-strong:rgba(255,255,255,.10);
+  --surface:#161619;
+  --ink:#F2F2EF;
+  --muted:#B4B4B9;
+  --faint:#6C6C72;
+  --line:rgba(242,242,239,.12);
+  --line-strong:rgba(242,242,239,.32);
+  --accent:#C88BE8;
+  --accent-soft:rgba(200,139,232,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.5);
+  --ui-bg:rgba(22,22,25,.82);
+  --ui-border:rgba(255,255,255,.12);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;}
+body{
+  background-color:var(--bg);color:var(--ink);
+  font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  transition:background-color .4s ease,color .4s ease;
+  background-image:radial-gradient(var(--grid) 1.4px,transparent 1.4px);
+  background-size:26px 26px;
+}
+::selection{background:var(--accent);color:#fff;}
+a{color:inherit;text-decoration:none;}
+
+/* ── Chrome: topbar (same visual language as the canvas app's #topbar) ── */
+.ui{position:fixed;z-index:100;}
+.panel{
+  background:var(--ui-bg);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);
+  border:1px solid var(--ui-border);border-radius:16px;box-shadow:var(--shadow);
+}
+#topbar{left:22px;top:22px;right:22px;display:flex;align-items:center;gap:14px;padding:9px 9px 9px 16px;flex-wrap:wrap;}
+#topbar .brand{font-weight:700;font-size:.9rem;letter-spacing:-.01em;white-space:nowrap;}
+#topbar .brand small{color:var(--faint);font-weight:500;margin-left:.4rem;}
+#topbar .spacer{flex:1;}
+.chip{
+  border:1px solid var(--ui-border);background:transparent;color:var(--muted);
+  border-radius:10px;height:34px;padding:0 12px;font-size:.75rem;font-weight:600;
+  display:inline-flex;align-items:center;gap:.45rem;cursor:pointer;transition:.15s;
+  font-family:var(--sans);
+}
+.chip:hover{color:var(--ink);border-color:var(--line-strong);}
+.chip svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.chip.on:hover{color:#fff;border-color:var(--accent);}
+
+/* ── Page shell ───────────────────────────────────────────────── */
+main{max-width:980px;margin:0 auto;padding:118px 28px 100px;}
+.spec-section{margin-bottom:76px;}
+.spec-section:last-child{margin-bottom:0;}
+.spec-kicker{
+  font-size:.625rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.7rem;display:flex;align-items:center;gap:.55rem;
+}
+.spec-kicker::before{content:"";width:16px;height:2px;background:var(--accent);border-radius:2px;}
+.spec-h2{font-family:var(--serif);font-weight:700;font-size:1.75rem;line-height:1.1;margin:0 0 .4rem;letter-spacing:-.01em;}
+.spec-desc{font-family:var(--serif);font-size:1.02rem;line-height:1.55;color:var(--muted);margin:0 0 1.8rem;max-width:64ch;}
+hr.rule{border:0;border-top:1px solid var(--line);margin:2.4rem 0;}
+
+/* ── Title ────────────────────────────────────────────────────── */
+.title-block h1{
+  font-family:var(--sans);font-weight:600;font-size:clamp(2.4rem,3.6rem,3.6rem);
+  line-height:.95;letter-spacing:-.04em;margin:0 0 .9rem;
+}
+.title-block .role{font-family:var(--serif);font-size:1.16rem;line-height:1.5;color:var(--muted);margin:0 0 1.4rem;max-width:60ch;}
+.title-meta{display:flex;gap:1.6rem;flex-wrap:wrap;}
+.title-meta div{display:flex;flex-direction:column;gap:.15rem;}
+.title-meta dt{font-size:.58rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:0;}
+.title-meta dd{margin:0;font-size:.85rem;font-weight:500;}
+
+/* ── Colour palette ───────────────────────────────────────────── */
+.swatch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+.swatch{
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface);
+  box-shadow:var(--shadow);
+}
+.swatch .fill{height:64px;border-bottom:1px solid var(--line);}
+.swatch .meta{padding:10px 12px 12px;}
+.swatch .name{font-size:.78rem;font-weight:600;color:var(--ink);}
+.swatch .val{font-family:var(--mono);font-size:.68rem;color:var(--faint);word-break:break-all;margin-top:.2rem;}
+.theme-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:1.6rem 0 .8rem;}
+.theme-label:first-child{margin-top:0;}
+.effect-note{font-family:var(--mono);font-size:.72rem;color:var(--muted);background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:12px 14px;line-height:1.6;margin-top:1rem;}
+
+/* ── Typography ───────────────────────────────────────────────── */
+.font-card{border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:var(--shadow);padding:24px 26px;margin-bottom:16px;}
+.font-card .fname{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:.3rem;}
+.font-card .frole{font-size:.75rem;color:var(--faint);margin-bottom:1rem;}
+.font-card .pangram{font-size:1.6rem;line-height:1.3;margin:0 0 .3rem;}
+.font-card .weights{display:flex;flex-wrap:wrap;gap:.4rem .8rem;margin-top:.9rem;}
+.font-card .weights span{font-size:.85rem;border:1px solid var(--line);border-radius:100px;padding:.25rem .75rem;color:var(--muted);}
+
+/* ── Type scale ───────────────────────────────────────────────── */
+.scale-row{display:flex;align-items:baseline;gap:1.4rem;padding:1.1rem 0;border-top:1px solid var(--line);flex-wrap:wrap;}
+.scale-row:first-of-type{border-top:0;}
+.scale-tag{width:190px;flex:none;}
+.scale-tag .role{font-size:.72rem;font-weight:600;color:var(--accent);letter-spacing:.03em;}
+.scale-tag .spec{font-family:var(--mono);font-size:.66rem;color:var(--faint);margin-top:.2rem;}
+.scale-sample{flex:1;min-width:220px;color:var(--ink);}
+
+/* ── Component classes (verbatim from index.html) ───────────────── */
+.card{
+  width:100%;max-width:340px;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;box-shadow:var(--shadow);padding:22px 24px;
+}
+.card .kicker{
+  font-size:.625rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.7rem;display:flex;align-items:center;gap:.55rem;
+}
+.card .kicker::before{content:"";width:16px;height:2px;background:var(--accent);border-radius:2px;}
+.card h2{font-family:var(--serif);font-weight:700;font-size:1.55rem;line-height:1.05;margin:0 0 .5rem;letter-spacing:-.01em;}
+.card p{font-family:var(--serif);font-size:1.02rem;line-height:1.5;color:var(--muted);margin:0;}
+.card .tags{display:flex;flex-wrap:wrap;gap:.35rem .55rem;margin-top:.9rem;}
+.card .tags span{font-size:.625rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:100px;padding:.2rem .55rem;}
+.card .open{margin-top:1rem;display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:600;color:var(--accent);}
+.card .open svg{width:13px;height:13px;stroke:currentColor;}
+
+.card.hero{max-width:440px;padding:34px 34px 30px;}
+.card.hero h1{font-size:clamp(2.2rem,3.6rem,3.6rem);font-weight:600;line-height:.92;letter-spacing:-.04em;margin:0 0 1rem;}
+.card.hero .role{font-family:var(--serif);font-size:1.16rem;line-height:1.5;color:var(--muted);margin:0 0 1.2rem;}
+.card.hero .meta{display:flex;gap:1.6rem;flex-wrap:wrap;}
+.card.hero .meta div{display:flex;flex-direction:column;gap:.15rem;}
+.card.hero .meta dt{font-size:.58rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.card.hero .meta dd{margin:0;font-size:.85rem;font-weight:500;}
+
+.card.list h2{margin-bottom:.9rem;}
+.card.list .row{display:flex;gap:.9rem;align-items:baseline;padding:.55rem 0;border-top:1px solid var(--line);}
+.card.list .row:first-of-type{border-top:0;}
+.card.list .yr{font-variant-numeric:tabular-nums;font-size:.75rem;font-weight:700;color:var(--accent);flex:none;width:52px;}
+.card.list .rt{font-family:var(--serif);font-size:1rem;line-height:1.25;color:var(--ink);}
+.card.list .rp{font-size:.72rem;color:var(--faint);margin-top:.1rem;}
+
+.card.connect .em{font-family:var(--serif);font-size:1.2rem;color:var(--ink);border-bottom:1px solid var(--line-strong);padding-bottom:.05em;}
+.card.connect .em:hover{color:var(--accent);border-color:var(--accent);}
+.card.connect .social{display:flex;gap:1.3rem;margin-top:1.1rem;}
+.card.connect .social a{font-size:.85rem;font-weight:600;color:var(--accent);}
+
+.sticky{
+  width:210px;min-height:150px;padding:18px 18px 20px;
+  font-family:var(--hand);font-size:1.5rem;line-height:1.25;color:#3a2c00;
+  background:#FFE27A;box-shadow:0 2px 3px rgba(0,0,0,.14),0 14px 26px rgba(0,0,0,.16);
+  border-radius:3px 3px 5px 5px;display:inline-block;vertical-align:top;
+}
+.sticky[data-color="pink"]{background:#FFB4C6;color:#4a1024;}
+.sticky[data-color="blue"]{background:#A9D3FF;color:#0d2c4a;}
+.sticky[data-color="green"]{background:#B7E6A5;color:#173a10;}
+.sticky[data-color="purple"]{background:#D9B8FF;color:#2e1147;}
+.sticky[data-color="orange"]{background:#FFC98A;color:#4a2a05;}
+
+.tblock{
+  min-width:120px;max-width:520px;padding:6px 8px;border-radius:6px;
+  font-family:var(--serif);font-size:1.5rem;line-height:1.4;color:var(--ink);
+  display:inline-block;
+}
+
+.frame-demo{position:relative;width:220px;height:130px;}
+.frame-demo .frame-body{position:absolute;inset:0;border:1.6px dashed var(--accent);border-radius:9px;background:var(--accent-soft);}
+.frame-label{
+  display:inline-flex;align-items:center;gap:.15rem;position:absolute;top:-16px;left:0;
+  background:var(--accent);color:#fff;border-radius:8px 8px 8px 2px;
+  padding:.22rem .22rem .22rem .55rem;font-family:var(--sans);font-size:.72rem;font-weight:600;
+  box-shadow:var(--shadow);white-space:nowrap;
+}
+.frame-label .txt{overflow:hidden;text-overflow:ellipsis;max-width:210px;}
+.frame-go{
+  width:19px;height:19px;flex:none;border:0;border-radius:6px;
+  background:rgba(255,255,255,.22);color:#fff;font-size:12px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+
+.md{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;}
+.md-render{padding:16px 20px;font-family:var(--serif);color:var(--ink);font-size:1rem;line-height:1.55;}
+.md-render>*:first-child{margin-top:0;}
+.md-render>*:last-child{margin-bottom:0;}
+.md-render h1,.md-render h2,.md-render h3,.md-render h4{font-family:var(--sans);font-weight:700;line-height:1.2;margin:1em 0 .45em;letter-spacing:-.01em;}
+.md-render h1{font-size:1.55rem;} .md-render h2{font-size:1.28rem;} .md-render h3{font-size:1.08rem;} .md-render h4{font-size:.95rem;}
+.md-render p{margin:.55em 0;}
+.md-render a{color:var(--accent);text-decoration:underline;}
+.md-render strong{font-weight:700;} .md-render em{font-style:italic;}
+.md-render code{font-family:var(--mono);font-size:.84em;background:var(--accent-soft);padding:.1em .35em;border-radius:5px;}
+.md-render pre.cb{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow:auto;margin:.6em 0;}
+.md-render pre.cb code{background:none;padding:0;font-size:.82rem;line-height:1.5;}
+.md-render ul,.md-render ol{margin:.55em 0;padding-left:1.4em;}
+.md-render li{margin:.18em 0;}
+.md-render blockquote{margin:.6em 0;padding-left:.9em;border-left:3px solid var(--accent);color:var(--muted);}
+.md-render hr{border:0;border-top:1px solid var(--line);margin:1em 0;}
+.md-render .md-kicker{font-family:var(--sans);font-size:.62rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:.55rem;margin:1.1em 0 .5em;}
+.md-render .md-kicker::before{content:"";width:16px;height:2px;background:var(--accent);border-radius:2px;flex:none;}
+.md-render .md-kicker:first-child{margin-top:0;}
+.md-render .md-tags{display:flex;flex-wrap:wrap;gap:.4rem .5rem;margin:.55em 0;}
+.md-render .md-tags span{font-family:var(--sans);font-size:.62rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:100px;padding:.22rem .6rem;}
+html.dark .md-render code{color:#5ccfe6;}
+.md-render code.inline-light-note{color:#0a7ea4;}
+html.dark .md-render a{color:#7cb7ff;}
+
+.mini-toolbar{display:inline-flex;align-items:center;gap:3px;padding:6px;}
+.tool{
+  width:42px;height:42px;border:0;background:transparent;border-radius:11px;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.tool:hover{background:var(--accent-soft);color:var(--ink);}
+.tool.active{background:var(--accent);color:#fff;}
+.tool svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.sep{width:1px;height:26px;background:var(--ui-border);margin:0 4px;}
+
+.nav-demo{width:220px;padding:9px;}
+.nav-head{font-size:.6rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);
+  padding:3px 8px 9px;display:flex;align-items:center;gap:.5rem;}
+.nav-head svg{width:12px;height:12px;stroke:var(--accent);fill:none;stroke-width:1.8;}
+.nav-item{display:flex;align-items:center;gap:.55rem;width:100%;border:0;background:transparent;color:var(--ink);
+  font-family:var(--sans);font-size:.82rem;font-weight:500;text-align:left;padding:.45rem .55rem;border-radius:9px;cursor:pointer;}
+.nav-item:hover{background:var(--accent-soft);}
+.nav-item .ni-num{font-variant-numeric:tabular-nums;font-size:.68rem;font-weight:700;color:var(--accent);width:15px;flex:none;}
+
+/* ── Component showcase layout helpers ───────────────────────── */
+.showcase-row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;margin-bottom:20px;}
+.showcase-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:0 0 .7rem;}
+.grid-demo{
+  height:150px;border:1px solid var(--line);border-radius:14px;background-color:var(--bg);
+  background-image:radial-gradient(var(--grid-strong) 1.6px,transparent 1.6px);background-size:26px 26px;
+  display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:.75rem;font-family:var(--mono);
+}
+
+footer{max-width:980px;margin:0 auto;padding:0 28px 60px;color:var(--faint);font-size:.75rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+footer a{color:var(--accent);font-weight:600;}
+
+@media(max-width:640px){
+  #topbar{left:12px;top:12px;right:12px;}
+  main{padding-top:150px;}
+  .card,.card.hero,.md{max-width:100%;}
+}
+</style>
+</head>
+<body>
+
+<div class="ui panel" id="topbar">
+  <span class="brand">Canvas Portfolio<small>design specimen</small></span>
+  <span class="spacer"></span>
+  <a class="chip" href="index.html"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Back to canvas</a>
+  <button class="chip" id="themeBtn" title="Toggle light / dark"><svg viewBox="0 0 24 24" id="themeIcon"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span id="themeLbl">Dark</span></button>
+</div>
+
+<main>
+
+  <!-- a. Title / intro ─────────────────────────────────────────── -->
+  <section class="spec-section title-block">
+    <div class="spec-kicker">Specimen · Canvas Portfolio</div>
+    <h1>Design<br>Specimen</h1>
+    <p class="role">An infinite, pannable whiteboard mockup — Inter for UI &amp; structure, Tinos for reading, Caveat for handwritten notes, JetBrains Mono for source, all pinned to a soft dot-grid canvas with a CV-purple accent and full dark mode.</p>
+    <div class="title-meta">
+      <div><dt>Mockup</dt><dd>Canvas / whiteboard</dd></div>
+      <div><dt>Accent</dt><dd>#7C2D91 · CV purple</dd></div>
+      <div><dt>Modes</dt><dd>Light · Dark</dd></div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- b. Colour palette ────────────────────────────────────────── -->
+  <section class="spec-section">
+    <div class="spec-kicker">b — Colour Palette</div>
+    <h2 class="spec-h2">Tokens</h2>
+    <p class="spec-desc">Every CSS custom property defined in <code>:root</code> and <code>html.dark</code>, shown at its literal value. Toggle the theme chip above to see the swap live.</p>
+
+    <div class="theme-label">Light — :root</div>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="fill" style="background:#F6F5F3"></div><div class="meta"><div class="name">--bg · Canvas background</div><div class="val">#F6F5F3</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#FFFFFF"></div><div class="meta"><div class="name">--surface · Card / panel</div><div class="val">#FFFFFF</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#141417"></div><div class="meta"><div class="name">--ink · Primary text</div><div class="val">#141417</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#3C3C42"></div><div class="meta"><div class="name">--muted · Secondary text</div><div class="val">#3C3C42</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#8B8B91"></div><div class="meta"><div class="name">--faint · Tertiary / label</div><div class="val">#8B8B91</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#7C2D91"></div><div class="meta"><div class="name">--accent · CV purple</div><div class="val">#7C2D91</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(124,45,145,.10)"></div><div class="meta"><div class="name">--accent-soft · Accent wash</div><div class="val">rgba(124,45,145,.10)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(0,0,0,.11)"></div><div class="meta"><div class="name">--line · Hairline border</div><div class="val">rgba(0,0,0,.11)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(0,0,0,.30)"></div><div class="meta"><div class="name">--line-strong · Emphasis border</div><div class="val">rgba(0,0,0,.30)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(0,0,0,.055)"></div><div class="meta"><div class="name">--grid · Dot-grid</div><div class="val">rgba(0,0,0,.055)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(0,0,0,.12)"></div><div class="meta"><div class="name">--grid-strong · Dot-grid (zoomed)</div><div class="val">rgba(0,0,0,.12)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(255,255,255,.82);border-bottom:1px solid rgba(0,0,0,.1)"></div><div class="meta"><div class="name">--ui-bg · Chrome panel (blur)</div><div class="val">rgba(255,255,255,.82)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(0,0,0,.10)"></div><div class="meta"><div class="name">--ui-border · Chrome border</div><div class="val">rgba(0,0,0,.10)</div></div></div>
+    </div>
+
+    <div class="theme-label">Dark — html.dark</div>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="fill" style="background:#0C0C0E"></div><div class="meta"><div class="name">--bg · Canvas background</div><div class="val">#0C0C0E</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#161619"></div><div class="meta"><div class="name">--surface · Card / panel</div><div class="val">#161619</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#F2F2EF"></div><div class="meta"><div class="name">--ink · Primary text</div><div class="val">#F2F2EF</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#B4B4B9"></div><div class="meta"><div class="name">--muted · Secondary text</div><div class="val">#B4B4B9</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#6C6C72"></div><div class="meta"><div class="name">--faint · Tertiary / label</div><div class="val">#6C6C72</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#C88BE8"></div><div class="meta"><div class="name">--accent · CV purple (lifted)</div><div class="val">#C88BE8</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(200,139,232,.16);border-bottom:1px solid rgba(255,255,255,.12)"></div><div class="meta"><div class="name">--accent-soft · Accent wash</div><div class="val">rgba(200,139,232,.16)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(242,242,239,.12);border-bottom:1px solid rgba(255,255,255,.12)"></div><div class="meta"><div class="name">--line · Hairline border</div><div class="val">rgba(242,242,239,.12)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(242,242,239,.32);border-bottom:1px solid rgba(255,255,255,.12)"></div><div class="meta"><div class="name">--line-strong · Emphasis border</div><div class="val">rgba(242,242,239,.32)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.12)"></div><div class="meta"><div class="name">--grid · Dot-grid</div><div class="val">rgba(255,255,255,.05)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(255,255,255,.10);border-bottom:1px solid rgba(255,255,255,.12)"></div><div class="meta"><div class="name">--grid-strong · Dot-grid (zoomed)</div><div class="val">rgba(255,255,255,.10)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(22,22,25,.82);border-bottom:1px solid rgba(255,255,255,.12)"></div><div class="meta"><div class="name">--ui-bg · Chrome panel (blur)</div><div class="val">rgba(22,22,25,.82)</div></div></div>
+      <div class="swatch"><div class="fill" style="background:rgba(255,255,255,.12)"></div><div class="meta"><div class="name">--ui-border · Chrome border</div><div class="val">rgba(255,255,255,.12)</div></div></div>
+    </div>
+
+    <div class="theme-label">Sticky-note palette (data-color)</div>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="fill" style="background:#FFE27A"></div><div class="meta"><div class="name">yellow (default)</div><div class="val">#FFE27A</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#FFB4C6"></div><div class="meta"><div class="name">pink</div><div class="val">#FFB4C6</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#A9D3FF"></div><div class="meta"><div class="name">blue</div><div class="val">#A9D3FF</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#B7E6A5"></div><div class="meta"><div class="name">green</div><div class="val">#B7E6A5</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#D9B8FF"></div><div class="meta"><div class="name">purple</div><div class="val">#D9B8FF</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#FFC98A"></div><div class="meta"><div class="name">orange</div><div class="val">#FFC98A</div></div></div>
+    </div>
+
+    <div class="theme-label">Pen / drawing strokes</div>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="fill" style="background:#141417"></div><div class="meta"><div class="name">ink stroke</div><div class="val">#141417</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#7C2D91"></div><div class="meta"><div class="name">accent stroke</div><div class="val">#7C2D91</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#E5484D"></div><div class="meta"><div class="name">red stroke</div><div class="val">#E5484D</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#2E7D32"></div><div class="meta"><div class="name">green stroke</div><div class="val">#2E7D32</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#1565C0"></div><div class="meta"><div class="name">blue stroke</div><div class="val">#1565C0</div></div></div>
+      <div class="swatch"><div class="fill" style="background:#F5A524"></div><div class="meta"><div class="name">amber stroke</div><div class="val">#F5A524</div></div></div>
+    </div>
+
+    <div class="effect-note">--shadow (light): 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.09)<br>--shadow (dark): 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.5)</div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- c. Typography ────────────────────────────────────────────── -->
+  <section class="spec-section">
+    <div class="spec-kicker">c — Typography</div>
+    <h2 class="spec-h2">Type families</h2>
+    <p class="spec-desc">Four families carry the whole system: a sans for interface and structure, a serif for reading, a handwriting face for sticky notes, and a monospace for source code.</p>
+
+    <div class="font-card">
+      <div class="fname" style="font-family:var(--sans)">Inter</div>
+      <div class="frole">Sans · UI, headings, kickers, labels, hero name</div>
+      <p class="pangram" style="font-family:var(--sans);font-weight:600;">The quick brown fox jumps over the lazy dog</p>
+      <div class="weights" style="font-family:var(--sans)">
+        <span style="font-weight:400">400 Regular</span>
+        <span style="font-weight:500">500 Medium</span>
+        <span style="font-weight:600">600 Semibold</span>
+        <span style="font-weight:700">700 Bold</span>
+      </div>
+    </div>
+
+    <div class="font-card">
+      <div class="fname" style="font-family:var(--serif)">Tinos</div>
+      <div class="frole">Serif · card copy, project descriptions, markdown body</div>
+      <p class="pangram" style="font-family:var(--serif)">The quick brown fox jumps over the lazy dog</p>
+      <div class="weights" style="font-family:var(--serif)">
+        <span style="font-weight:400">400 Regular</span>
+        <span style="font-weight:700">700 Bold</span>
+        <span style="font-style:italic">400 Italic</span>
+        <span style="font-weight:700;font-style:italic">700 Bold Italic</span>
+      </div>
+    </div>
+
+    <div class="font-card">
+      <div class="fname" style="font-family:var(--hand)">Caveat</div>
+      <div class="frole">Handwriting · sticky-note text</div>
+      <p class="pangram" style="font-family:var(--hand);font-size:2rem;font-weight:600;">The quick brown fox jumps over the lazy dog</p>
+      <div class="weights" style="font-family:var(--hand)">
+        <span style="font-weight:500">500</span>
+        <span style="font-weight:600">600</span>
+        <span style="font-weight:700">700</span>
+      </div>
+    </div>
+
+    <div class="font-card">
+      <div class="fname" style="font-family:var(--mono)">JetBrains Mono</div>
+      <div class="frole">Mono · markdown source, inline &amp; block code</div>
+      <p class="pangram" style="font-family:var(--mono);font-size:1.1rem;">The quick brown fox jumps 0123456789</p>
+      <div class="weights" style="font-family:var(--mono)">
+        <span style="font-weight:400">400</span>
+        <span style="font-weight:500">500</span>
+        <span style="font-weight:700">700</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- d. Type scale ─────────────────────────────────────────────── -->
+  <section class="spec-section">
+    <div class="spec-kicker">d — Type Scale</div>
+    <h2 class="spec-h2">Sizes &amp; roles</h2>
+    <p class="spec-desc">Every distinct size/role pairing used across the cards, chrome and markdown renderer, at its real value.</p>
+
+    <div class="scale-row">
+      <div class="scale-tag"><div class="role">Display / hero name</div><div class="spec">Inter 600 · 3.6rem / 57.6px</div></div>
+      <div class="scale-sample" style="font-family:var(--sans);font-weight:600;font-size:3.6rem;line-height:.92;letter-spacing:-.04em;">Gavin</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-tag"><div class="role">Heading / card title</div><div class="spec">Tinos 700 · 1.55rem / 24.8px</div></div>
+      <div class="scale-sample" style="font-family:var(--serif);font-weight:700;font-size:1.55rem;letter-spacing:-.01em;">Plugma</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-tag"><div class="role">Subheading / role line</div><div class="spec">Tinos 400 · 1.16rem / 18.6px</div></div>
+      <div class="scale-sample" style="font-family:var(--serif);font-size:1.16rem;color:var(--muted);">Developer &amp; Product Designer</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-tag"><div class="role">Body / serif reading</div><div class="spec">Tinos 400 · 1.02rem / 16.3px</div></div>
+      <div class="scale-sample" style="font-family:var(--serif);font-size:1.02rem;color:var(--muted);">A zero-config CLI for building Figma plugins with true hot-module reloading.</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-tag"><div class="role">UI label / meta value</div><div class="spec">Inter 500 · .85rem / 13.6px</div></div>
+      <div class="scale-sample" style="font-family:var(--sans);font-weight:500;font-size:.85rem;">Freelance · Open</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-tag"><div class="role">Kicker / eyebrow</div><div class="spec">Inter 600 · .625rem / 10px · +.14em</div></div>
+      <div class="scale-sample" style="font-family:var(--sans);font-weight:600;font-size:.625rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);">Selected Experience</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-tag"><div class="role">Tag / chip label</div><div class="spec">Inter 600 · .625rem / 10px · +.07em</div></div>
+      <div class="scale-sample" style="font-family:var(--sans);font-weight:600;font-size:.625rem;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);">TypeScript</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-tag"><div class="role">Numeric / year</div><div class="spec">Inter 700 · .75rem / 12px · tabular</div></div>
+      <div class="scale-sample" style="font-family:var(--sans);font-weight:700;font-size:.75rem;color:var(--accent);font-variant-numeric:tabular-nums;">2024</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-tag"><div class="role">Caption / row meta</div><div class="spec">Inter 400 · .72rem / 11.5px</div></div>
+      <div class="scale-sample" style="font-family:var(--sans);font-size:.72rem;color:var(--faint);">Design Lead · Plugin Dev</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-tag"><div class="role">Mono / code</div><div class="spec">JetBrains Mono 400 · 13px</div></div>
+      <div class="scale-sample" style="font-family:var(--mono);font-size:13px;">npx plugma dev</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-tag"><div class="role">Hand / sticky note</div><div class="spec">Caveat 500 · 1.5rem / 24px</div></div>
+      <div class="scale-sample" style="font-family:var(--hand);font-size:1.5rem;color:#3a2c00;">follow up re: awards</div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- e. Components ─────────────────────────────────────────────── -->
+  <section class="spec-section">
+    <div class="spec-kicker">e — Components</div>
+    <h2 class="spec-h2">Live UI, real classes</h2>
+    <p class="spec-desc">The actual board objects and chrome, rendered with their real class names and real portfolio content.</p>
+
+    <div class="showcase-label">Hero card · .card.hero</div>
+    <div class="showcase-row">
+      <div class="card hero">
+        <div class="kicker">Portfolio · London · 2026</div>
+        <h1>Gavin<br>McFarland</h1>
+        <p class="role">Developer &amp; Product Designer building tools that take the friction out of building things.</p>
+        <div class="meta">
+          <div><dt>Discipline</dt><dd>Full-stack · Product</dd></div>
+          <div><dt>Based</dt><dd>London, UK</dd></div>
+          <div><dt>Status</dt><dd>Freelance</dd></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="showcase-label">Work card · .card</div>
+    <div class="showcase-row">
+      <div class="card">
+        <div class="kicker">Work 01</div>
+        <h2>Plugma</h2>
+        <p>A zero-config CLI for building Figma plugins with true hot-module reloading. Works with React, Svelte and Vue.</p>
+        <div class="tags"><span>Node.js</span><span>TypeScript</span><span>Vite</span></div>
+        <a class="open" href="#" onclick="return false">Visit <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+      </div>
+      <div class="card">
+        <div class="kicker">Work 03</div>
+        <h2>Figlet</h2>
+        <p>A browser-based IDE for Figma plugins — write and run plugin code instantly, no local setup.</p>
+        <div class="tags"><span>JavaScript</span><span>Figma API</span><span>Svelte</span></div>
+        <a class="open" href="#" onclick="return false">Visit <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+      </div>
+    </div>
+
+    <div class="showcase-label">List card · .card.list</div>
+    <div class="showcase-row">
+      <div class="card list">
+        <div class="kicker">Selected Experience</div>
+        <h2>Where I've worked</h2>
+        <div class="row"><span class="yr">2024</span><div><div class="rt">NatWest · AFME · FigMayo</div><div class="rp">Design Lead · Plugin Dev</div></div></div>
+        <div class="row"><span class="yr">2023</span><div><div class="rt">Ecologi · Lloyd's · Coutts</div><div class="rp">Product &amp; Visual Design</div></div></div>
+        <div class="row"><span class="yr">2022</span><div><div class="rt">WTW · Atos</div><div class="rp">User Research · UX</div></div></div>
+      </div>
+      <div class="card list">
+        <div class="kicker">Recognition</div>
+        <h2>Awards</h2>
+        <div class="row"><span class="yr">2023</span><div><div class="rt">Plugin Exhibition booth</div><div class="rp">Figma · Moscone Center</div></div></div>
+        <div class="row"><span class="yr">21–22</span><div><div class="rt">Freelancer Award finalist</div><div class="rp">YunoJuno</div></div></div>
+      </div>
+    </div>
+
+    <div class="showcase-label">Connect card · .card.connect</div>
+    <div class="showcase-row">
+      <div class="card connect">
+        <div class="kicker">Connect</div>
+        <h2>Say hello</h2>
+        <p style="margin-bottom:1rem">Open to freelance work and collaborations.</p>
+        <a class="em" href="#" onclick="return false">gavin@limitlessloop.com</a>
+        <div class="social">
+          <a href="#" onclick="return false">GitHub ↗</a>
+          <a href="#" onclick="return false">X ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="showcase-label">Sticky notes · .sticky[data-color]</div>
+    <div class="showcase-row">
+      <div class="sticky">call re: NatWest brief</div>
+      <div class="sticky" data-color="blue">ship Table Creator v2</div>
+      <div class="sticky" data-color="green">write up Askeroo case study</div>
+      <div class="sticky" data-color="purple">tidy up awards section</div>
+    </div>
+
+    <div class="showcase-label">Text block · .tblock</div>
+    <div class="showcase-row">
+      <div class="tblock">Freelance since 2022 — full-stack + product design.</div>
+    </div>
+
+    <div class="showcase-label">Anchor / section frame · .frame-label</div>
+    <div class="showcase-row">
+      <div class="frame-demo">
+        <div class="frame-body"></div>
+        <div class="frame-label"><span class="txt">Work</span><button class="frame-go">&#8594;</button></div>
+      </div>
+    </div>
+
+    <div class="showcase-label">Markdown card · .md .md-render</div>
+    <div class="showcase-row">
+      <div class="md">
+        <div class="md-render">
+          <div class="md-kicker">Work 05</div>
+          <h2>Case study notes</h2>
+          <p>Built for teams shipping <strong>Figma plugins</strong> at speed — with <em>true</em> hot-reload and zero config.</p>
+          <blockquote>"Cut our plugin build loop from minutes to seconds."</blockquote>
+          <pre class="cb"><code>npx plugma dev --port 3000</code></pre>
+          <p>Docs, templates and the CLI itself live at <a href="#" onclick="return false">plugma.dev</a>. Inline code looks like <code>plugma build</code>.</p>
+          <ul><li>React, Svelte &amp; Vue templates</li><li>Watch mode with true HMR</li><li>Zero-config bundling</li></ul>
+          <hr>
+          <div class="md-tags"><span>Node.js</span><span>TypeScript</span><span>Vite</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="showcase-label">Chrome chips · .chip</div>
+    <div class="showcase-row">
+      <div class="ui panel" style="position:static;display:inline-flex;gap:8px;padding:8px;">
+        <button class="chip on">Editing</button>
+        <button class="chip">Fit</button>
+        <button class="chip">Dark</button>
+        <button class="chip">Reset</button>
+      </div>
+    </div>
+
+    <div class="showcase-label">Floating toolbar · .tool</div>
+    <div class="showcase-row">
+      <div class="ui panel mini-toolbar" style="position:static;">
+        <button class="tool active" title="Select"><svg viewBox="0 0 24 24"><path d="M4 3l7 17 2.5-6.5L20 11 4 3z"/></svg></button>
+        <button class="tool" title="Pan"><svg viewBox="0 0 24 24"><path d="M8 13V6a1.5 1.5 0 0 1 3 0m0 0V5a1.5 1.5 0 0 1 3 0v1m0 0a1.5 1.5 0 0 1 3 0v5m0 0a1.5 1.5 0 0 1 3 0v3a7 7 0 0 1-7 7h-1a7 7 0 0 1-5.9-3.2L5 15.5a1.6 1.6 0 0 1 2.6-1.8L8 14"/></svg></button>
+        <span class="sep"></span>
+        <button class="tool" title="Sticky note"><svg viewBox="0 0 24 24"><path d="M4 4h16v10l-6 6H4V4z"/><path d="M20 14h-6v6"/></svg></button>
+        <button class="tool" title="Text"><svg viewBox="0 0 24 24"><path d="M5 5h14M12 5v14M9 19h6"/></svg></button>
+        <button class="tool" title="Markdown"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M6 15v-6l2.5 3L11 9v6M15 9v4m0 0l-1.6-1.6M15 13l1.6-1.6"/></svg></button>
+        <span class="sep"></span>
+        <button class="tool" title="Draw / Pen"><svg viewBox="0 0 24 24"><path d="M4 20c3-1 4-3 7-8s5-6 7-6 1 3-2 7-6 6-9 7z"/><path d="M4 20l1.5-3.5"/></svg></button>
+      </div>
+    </div>
+
+    <div class="showcase-label">Sections navigator · .nav-item</div>
+    <div class="showcase-row">
+      <div class="ui panel nav-demo" style="position:static;">
+        <div class="nav-head"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><path d="M12 7v13M5 12a7 7 0 0 0 14 0"/></svg>Sections</div>
+        <button class="nav-item"><span class="ni-num">01</span><span class="ni-name">Work</span></button>
+        <button class="nav-item"><span class="ni-num">02</span><span class="ni-name">Experience</span></button>
+        <button class="nav-item"><span class="ni-num">03</span><span class="ni-name">Connect</span></button>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- f. Textures ────────────────────────────────────────────────── -->
+  <section class="spec-section">
+    <div class="spec-kicker">f — Texture</div>
+    <h2 class="spec-h2">Canvas dot-grid</h2>
+    <p class="spec-desc">The board's background: a radial-gradient dot pattern at 26px, using <code>--grid</code> / <code>--grid-strong</code>. It's also applied faintly across this whole specimen page.</p>
+    <div class="showcase-row">
+      <div class="grid-demo" style="flex:1;min-width:260px;">26px dot grid · --grid-strong</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>Canvas Portfolio — design specimen</span>
+  <a href="index.html">Open the live board →</a>
+</footer>
+
+<script>
+"use strict";
+(function(){
+  try{
+    var STORE="gm-canvas-portfolio-v1";
+    var root=document.documentElement;
+    var btn=document.getElementById("themeBtn");
+    var lbl=document.getElementById("themeLbl");
+    if(!btn||!lbl) return;
+    function sync(){ lbl.textContent = root.classList.contains("dark") ? "Light" : "Dark"; }
+    sync();
+    btn.addEventListener("click",function(){
+      root.classList.toggle("dark");
+      var d = root.classList.contains("dark");
+      sync();
+      try{ localStorage.setItem(STORE+"-theme", d?"dark":"light"); }catch(e){}
+    });
+  }catch(e){ /* fail quiet — specimen still renders in default theme */ }
+})();
+</script>
+</body>
+</html>

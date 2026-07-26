@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>specimen(1) — General Commands Manual</title>
+<meta name="description" content="Design specimen for the gavin(1) manual-page mockup — type, colour and component reference." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+
+<!-- Set theme before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          paper: { DEFAULT: '#FBFAF6', dark: '#0E0F0D' },
+          ink:   { DEFAULT: '#1A1917', dark: '#E7E5DE' },
+          muted: { DEFAULT: '#56534C', dark: '#9A968C' },
+          faint: { DEFAULT: '#8B877E', dark: '#6A665E' },
+          leaf:  { DEFAULT: '#1F6B4A', dark: '#6DBE95' },
+          rule:  { DEFAULT: 'rgba(26,25,23,.14)', dark: 'rgba(231,229,222,.16)' },
+        },
+        fontFamily: {
+          mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     SPECIMEN · gavin(1) manual mockup
+     Same paper, ink and monospace grid as the mockup itself — this
+     page exists only to show the raw materials next to each other.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+
+  ::selection { background: #1F6B4A; color: #FBFAF6; }
+  .dark ::selection { background: #6DBE95; color: #0E0F0D; }
+
+  :focus-visible { outline: 2px solid #1F6B4A; outline-offset: 3px; }
+  .dark :focus-visible { outline-color: #6DBE95; }
+
+  :root { --stop: 2.2rem; }
+  @media (min-width: 640px) { :root { --stop: 3.5rem; } }
+  .indent { padding-left: var(--stop); }
+
+  .tp { display: grid; grid-template-columns: 1fr; gap: .35rem; }
+  @media (min-width: 780px) {
+    .tp { grid-template-columns: 14rem 1fr; gap: .5rem 1.5rem; align-items: baseline; }
+  }
+
+  .xref {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .2em;
+    text-decoration-color: rgba(26,25,23,.3);
+    transition: color .2s ease, text-decoration-color .2s ease;
+  }
+  .xref:hover { color: #1F6B4A; text-decoration-color: currentColor; }
+  .dark .xref { text-decoration-color: rgba(231,229,222,.3); }
+  .dark .xref:hover { color: #6DBE95; }
+
+  .toc a { border-left: 2px solid transparent; transition: color .2s, border-color .2s; }
+  .toc a[aria-current='true'] { border-left-color: #1F6B4A; color: #1A1917; }
+  .dark .toc a[aria-current='true'] { border-left-color: #6DBE95; color: #E7E5DE; }
+
+  .sec { scroll-margin-top: 5rem; }
+
+  /* Block illustrations — carried over from blocks.html. */
+  .fig { container-type: inline-size; }
+  .fig pre {
+    margin: 0;
+    font-size: 9px;
+    font-size: calc(100cqw / 26.4);
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: pre;
+    color: #1A1917;
+    opacity: .88;
+    user-select: none;
+  }
+  .dark .fig pre { color: #E7E5DE; opacity: .8; }
+
+  .banner pre { color: #56534C; opacity: .7; font-size: calc(100cqw / 17.4); }
+  .dark .banner pre { color: #9A968C; opacity: .65; }
+  @media (min-width: 480px) { .banner { max-width: 20rem; } }
+
+  /* Swatch chips for the palette section. */
+  .swatch {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: .25rem;
+    border: 1px solid rgba(26,25,23,.14);
+    flex: none;
+  }
+  .dark .swatch { border-color: rgba(231,229,222,.16); }
+
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .fade { opacity: 0; animation: fade .5s ease forwards; animation-delay: calc(var(--i,0) * 60ms); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade { animation: none; opacity: 1; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="bg-paper font-mono text-[.9rem] leading-[1.75] text-ink antialiased dark:bg-paper-dark dark:text-ink-dark">
+
+<a href="#name" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-leaf focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
+
+<!-- ── Invocation ─────────────────────────────────────────────── -->
+<div class="fade border-b border-rule px-5 py-3 dark:border-rule-dark sm:px-8" style="--i:0">
+  <div class="mx-auto flex max-w-5xl items-center justify-between gap-4">
+    <p class="text-[.8rem] text-faint dark:text-faint-dark">
+      <span class="select-none text-leaf dark:text-leaf-dark">$</span> man specimen
+    </p>
+
+    <div class="flex items-center gap-4">
+      <a href="index.html" class="xref text-[.8rem] text-muted dark:text-muted-dark">gavin(1)</a>
+      <a href="blocks.html" class="xref text-[.8rem] text-muted dark:text-muted-dark">gavin-illustrated(1)</a>
+      <button id="theme-toggle" type="button" aria-label="Toggle dark mode"
+        class="rounded p-1 text-faint transition hover:text-ink dark:text-faint-dark dark:hover:text-ink-dark">
+        <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <svg class="hidden h-4 w-4 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Page header ────────────────────────────────────────────── -->
+<div class="fade border-b border-rule px-5 py-2.5 text-[.78rem] tracking-[.06em] text-muted dark:border-rule-dark dark:text-muted-dark sm:px-8" style="--i:1">
+  <div class="mx-auto flex max-w-5xl items-baseline justify-between gap-4">
+    <span class="font-bold text-ink dark:text-ink-dark">SPECIMEN(1)</span>
+    <span class="hidden sm:inline">General Commands Manual</span>
+    <span class="font-bold text-ink dark:text-ink-dark">SPECIMEN(1)</span>
+  </div>
+</div>
+
+<div class="mx-auto flex max-w-5xl gap-12 px-5 py-12 sm:px-8 sm:py-16">
+
+  <!-- ── Section index ─────────────────────────────────────────── -->
+  <nav class="toc fade sticky top-8 hidden h-max w-40 shrink-0 lg:block" style="--i:2" aria-label="Sections">
+    <p class="mb-3 text-[.7rem] uppercase tracking-[.16em] text-faint dark:text-faint-dark">Contents</p>
+    <ul class="space-y-1 text-[.8rem]">
+      <li><a href="#name"       class="block py-0.5 pl-3 text-muted hover:text-ink dark:text-muted-dark dark:hover:text-ink-dark">NAME</a></li>
+      <li><a href="#palette"    class="block py-0.5 pl-3 text-muted hover:text-ink dark:text-muted-dark dark:hover:text-ink-dark">PALETTE</a></li>
+      <li><a href="#typeface"   class="block py-0.5 pl-3 text-muted hover:text-ink dark:text-muted-dark dark:hover:text-ink-dark">TYPEFACE</a></li>
+      <li><a href="#scale"      class="block py-0.5 pl-3 text-muted hover:text-ink dark:text-muted-dark dark:hover:text-ink-dark">TYPE SCALE</a></li>
+      <li><a href="#components" class="block py-0.5 pl-3 text-muted hover:text-ink dark:text-muted-dark dark:hover:text-ink-dark">COMPONENTS</a></li>
+      <li><a href="#textures"   class="block py-0.5 pl-3 text-muted hover:text-ink dark:text-muted-dark dark:hover:text-ink-dark">TEXTURES</a></li>
+      <li><a href="#seealso"    class="block py-0.5 pl-3 text-muted hover:text-ink dark:text-muted-dark dark:hover:text-ink-dark">SEE ALSO</a></li>
+    </ul>
+  </nav>
+
+  <main class="min-w-0 flex-1">
+
+    <!-- ── a. NAME ────────────────────────────────────────────── -->
+    <section id="name" class="sec fade" style="--i:3">
+      <h1 class="text-[.92rem] font-bold tracking-[.12em]">NAME</h1>
+      <p class="indent mt-2">
+        <span class="font-bold">specimen</span> — design specimen for
+        <a class="xref" href="index.html">gavin(1)</a>; paper, ink, monospace and a single
+        dark-green cursor, laid out for comparison rather than reading
+      </p>
+      <p class="indent mt-4 max-w-[68ch] text-muted dark:text-muted-dark">
+        Direction: the portfolio as a manual page, set entirely in one monospace face on
+        warm paper rather than a black terminal. This sheet is that mockup reduced to raw
+        material — every colour, size and component it is built from, so it can be held
+        next to the others.
+      </p>
+    </section>
+
+    <!-- ── b. PALETTE ─────────────────────────────────────────── -->
+    <section id="palette" class="sec fade mt-12" style="--i:4">
+      <h2 class="text-[.92rem] font-bold tracking-[.12em]">PALETTE</h2>
+      <p class="indent mt-2 max-w-[68ch] text-muted dark:text-muted-dark">
+        Six tokens, each with a light and dark value, toggled by one class on
+        <span class="font-bold text-ink dark:text-ink-dark">&lt;html&gt;</span>. Click the sun/moon in the
+        invocation bar to see them swap.
+      </p>
+
+      <dl class="indent mt-6 space-y-5">
+
+        <div class="tp">
+          <dt class="flex items-center gap-3">
+            <span class="swatch bg-paper dark:bg-paper-dark"></span>
+            <span class="font-bold">paper</span>
+          </dt>
+          <dd class="text-muted dark:text-muted-dark">
+            Page background —
+            <button class="copy-btn xref" data-copy="#FBFAF6" type="button">#FBFAF6</button> light,
+            <button class="copy-btn xref" data-copy="#0E0F0D" type="button">#0E0F0D</button> dark
+            <span class="copy-status ml-1 text-[.78rem] text-leaf dark:text-leaf-dark" role="status" aria-live="polite"></span>
+          </dd>
+        </div>
+
+        <div class="tp">
+          <dt class="flex items-center gap-3">
+            <span class="swatch bg-ink dark:bg-ink-dark"></span>
+            <span class="font-bold">ink</span>
+          </dt>
+          <dd class="text-muted dark:text-muted-dark">
+            Primary text —
+            <button class="copy-btn xref" data-copy="#1A1917" type="button">#1A1917</button> light,
+            <button class="copy-btn xref" data-copy="#E7E5DE" type="button">#E7E5DE</button> dark
+            <span class="copy-status ml-1 text-[.78rem] text-leaf dark:text-leaf-dark" role="status" aria-live="polite"></span>
+          </dd>
+        </div>
+
+        <div class="tp">
+          <dt class="flex items-center gap-3">
+            <span class="swatch bg-muted dark:bg-muted-dark"></span>
+            <span class="font-bold">muted</span>
+          </dt>
+          <dd class="text-muted dark:text-muted-dark">
+            Secondary text, body copy in DESCRIPTION-style prose —
+            <button class="copy-btn xref" data-copy="#56534C" type="button">#56534C</button> light,
+            <button class="copy-btn xref" data-copy="#9A968C" type="button">#9A968C</button> dark
+            <span class="copy-status ml-1 text-[.78rem] text-leaf dark:text-leaf-dark" role="status" aria-live="polite"></span>
+          </dd>
+        </div>
+
+        <div class="tp">
+          <dt class="flex items-center gap-3">
+            <span class="swatch bg-faint dark:bg-faint-dark"></span>
+            <span class="font-bold">faint</span>
+          </dt>
+          <dd class="text-muted dark:text-muted-dark">
+            Tertiary / meta text, captions, years —
+            <button class="copy-btn xref" data-copy="#8B877E" type="button">#8B877E</button> light,
+            <button class="copy-btn xref" data-copy="#6A665E" type="button">#6A665E</button> dark
+            <span class="copy-status ml-1 text-[.78rem] text-leaf dark:text-leaf-dark" role="status" aria-live="polite"></span>
+          </dd>
+        </div>
+
+        <div class="tp">
+          <dt class="flex items-center gap-3">
+            <span class="swatch bg-leaf dark:bg-leaf-dark"></span>
+            <span class="font-bold">leaf</span>
+          </dt>
+          <dd class="text-muted dark:text-muted-dark">
+            The one accent — prompt glyph, xref hover, focus ring, active TOC rail —
+            <button class="copy-btn xref" data-copy="#1F6B4A" type="button">#1F6B4A</button> light,
+            <button class="copy-btn xref" data-copy="#6DBE95" type="button">#6DBE95</button> dark
+            <span class="copy-status ml-1 text-[.78rem] text-leaf dark:text-leaf-dark" role="status" aria-live="polite"></span>
+          </dd>
+        </div>
+
+        <div class="tp">
+          <dt class="flex items-center gap-3">
+            <span class="swatch" style="background: rgba(26,25,23,.14)"></span>
+            <span class="font-bold">rule</span>
+          </dt>
+          <dd class="text-muted dark:text-muted-dark">
+            Hairline borders between chrome bands —
+            <button class="copy-btn xref" data-copy="rgba(26,25,23,.14)" type="button">rgba(26,25,23,.14)</button> light,
+            <button class="copy-btn xref" data-copy="rgba(231,229,222,.16)" type="button">rgba(231,229,222,.16)</button> dark
+            <span class="copy-status ml-1 text-[.78rem] text-leaf dark:text-leaf-dark" role="status" aria-live="polite"></span>
+          </dd>
+        </div>
+
+      </dl>
+    </section>
+
+    <!-- ── c. TYPEFACE ────────────────────────────────────────── -->
+    <section id="typeface" class="sec fade mt-12" style="--i:5">
+      <h2 class="text-[.92rem] font-bold tracking-[.12em]">TYPEFACE</h2>
+      <p class="indent mt-2 max-w-[68ch] text-muted dark:text-muted-dark">
+        One family, everywhere — headings, body and code all set in it. That is the
+        argument of the mockup: no proportional face pretending to be a terminal, an
+        actual monospace grid for prose.
+      </p>
+
+      <dl class="indent mt-6 space-y-5">
+        <div class="tp">
+          <dt class="font-bold">JetBrains Mono 400</dt>
+          <dd style="font-weight:400;" class="text-[1.05rem]">The quick brown fox jumps over the lazy dog — 0123456789</dd>
+        </div>
+        <div class="tp">
+          <dt class="font-bold">JetBrains Mono 500</dt>
+          <dd style="font-weight:500;" class="text-[1.05rem]">The quick brown fox jumps over the lazy dog — 0123456789</dd>
+        </div>
+        <div class="tp">
+          <dt class="font-bold">JetBrains Mono 700</dt>
+          <dd style="font-weight:700;" class="text-[1.05rem]">The quick brown fox jumps over the lazy dog — 0123456789</dd>
+        </div>
+        <div class="tp">
+          <dt class="font-bold">JetBrains Mono 400 italic</dt>
+          <dd style="font-weight:400; font-style:italic;" class="text-[1.05rem]">The quick brown fox jumps over the lazy dog — 0123456789</dd>
+        </div>
+        <div class="tp">
+          <dt class="font-bold">Character set</dt>
+          <dd class="text-muted dark:text-muted-dark">0O 1lI &#123; &#125; [ ] ( ) =&gt; !== $ # — fixed advance keeps flags, hex values and roff punctuation aligned</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- ── d. TYPE SCALE ──────────────────────────────────────── -->
+    <section id="scale" class="sec fade mt-12" style="--i:6">
+      <h2 class="text-[.92rem] font-bold tracking-[.12em]">TYPE SCALE</h2>
+      <p class="indent mt-2 max-w-[68ch] text-muted dark:text-muted-dark">
+        No display size — a man page never shouts. The scale is a narrow band of near-body
+        sizes, separated mostly by weight, tracking and colour rather than by height.
+      </p>
+
+      <dl class="indent mt-6 space-y-6">
+        <div class="tp">
+          <dt class="text-[.78rem] text-faint dark:text-faint-dark">Section heading<br>.92rem / 14.7px</dt>
+          <dd class="text-[.92rem] font-bold tracking-[.12em]">OPTIONS</dd>
+        </div>
+        <div class="tp">
+          <dt class="text-[.78rem] text-faint dark:text-faint-dark">Body copy<br>.9rem / 14.4px</dt>
+          <dd class="leading-[1.75]">gavin operates in the gap between a design file and a shipped product.</dd>
+        </div>
+        <div class="tp">
+          <dt class="text-[.78rem] text-faint dark:text-faint-dark">Synopsis / nav<br>.8rem / 12.8px</dt>
+          <dd><span class="font-bold">gavin</span> <span class="text-muted dark:text-muted-dark">[</span><span class="italic">--front-end</span><span class="text-muted dark:text-muted-dark">]</span></dd>
+        </div>
+        <div class="tp">
+          <dt class="text-[.78rem] text-faint dark:text-faint-dark">Header / footer meta<br>.78rem / 12.5px, tracking .06em</dt>
+          <dd class="tracking-[.06em] text-muted dark:text-muted-dark">GAVIN(1) — General Commands Manual</dd>
+        </div>
+        <div class="tp">
+          <dt class="text-[.78rem] text-faint dark:text-faint-dark">Caption<br>.75rem / 12px</dt>
+          <dd class="text-[.75rem] text-faint dark:text-faint-dark">Plate I — ornament, generated from the page title</dd>
+        </div>
+        <div class="tp">
+          <dt class="text-[.78rem] text-faint dark:text-faint-dark">Micro caption<br>.72rem / 11.5px</dt>
+          <dd class="text-[.72rem] text-faint dark:text-faint-dark">Plate 3 — ornament</dd>
+        </div>
+        <div class="tp">
+          <dt class="text-[.78rem] text-faint dark:text-faint-dark">TOC label<br>.7rem / 11.2px, uppercase, tracking .16em</dt>
+          <dd class="text-[.7rem] uppercase tracking-[.16em] text-faint dark:text-faint-dark">Contents</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- ── e. COMPONENTS ──────────────────────────────────────── -->
+    <section id="components" class="sec fade mt-12" style="--i:7">
+      <h2 class="text-[.92rem] font-bold tracking-[.12em]">COMPONENTS</h2>
+      <p class="indent mt-2 max-w-[68ch] text-muted dark:text-muted-dark">
+        The section index at left is itself a component — a scrollspied TOC where the
+        current entry gets a leaf-coloured rail. Everything below is likewise live, not a
+        screenshot.
+      </p>
+
+      <!-- Hanging-indent definition list, as OPTIONS / ENVIRONMENT use -->
+      <div class="indent mt-6">
+        <p class="text-[.78rem] uppercase tracking-[.16em] text-faint dark:text-faint-dark">Hanging-indent list (.tp)</p>
+        <dl class="mt-3 space-y-4">
+          <div class="tp">
+            <dt class="font-bold">--role</dt>
+            <dd class="max-w-[52ch] text-muted dark:text-muted-dark">Senior Product Designer, Atlas Studio — 2022–2025</dd>
+          </div>
+          <div class="tp">
+            <dt class="font-bold">--stack</dt>
+            <dd class="max-w-[52ch] text-muted dark:text-muted-dark">TypeScript, Svelte, Node.js, Figma API</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Prompt-style example rows, as SYNOPSIS / EXAMPLES use -->
+      <div class="indent mt-8">
+        <p class="text-[.78rem] uppercase tracking-[.16em] text-faint dark:text-faint-dark">Prompt rows (EXAMPLES)</p>
+        <div class="mt-3 space-y-6">
+          <article>
+            <p class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+              <span class="font-bold">
+                <span class="select-none text-leaf dark:text-leaf-dark">$</span> gavin --design-systems northwind-tokens
+              </span>
+              <span class="text-[.78rem] text-faint dark:text-faint-dark">2025</span>
+            </p>
+            <p class="mt-2 max-w-[62ch] pl-4 text-muted dark:text-muted-dark">
+              Unified a token library across three product teams so the design file and the codebase describe the same thing.
+            </p>
+            <p class="mt-2 pl-4 text-[.8rem]">
+              <a class="xref" href="#">case study</a>
+            </p>
+          </article>
+          <article>
+            <p class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+              <span class="font-bold">
+                <span class="select-none text-leaf dark:text-leaf-dark">$</span> gavin --front-end atlas-checkout
+              </span>
+              <span class="text-[.78rem] text-faint dark:text-faint-dark">2024</span>
+            </p>
+            <p class="mt-2 max-w-[62ch] pl-4 text-muted dark:text-muted-dark">
+              Rebuilt the checkout flow from Figma prototype to production React, cutting time-to-ship from six weeks to nine days.
+            </p>
+            <p class="mt-2 pl-4 text-[.8rem]">
+              <a class="xref" href="#">demo</a>
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <!-- Cross-reference links inline -->
+      <div class="indent mt-8">
+        <p class="text-[.78rem] uppercase tracking-[.16em] text-faint dark:text-faint-dark">Cross-references (.xref)</p>
+        <p class="mt-3 text-muted dark:text-muted-dark">
+          See also
+          <a class="xref" href="#">figma-community</a><span class="text-faint dark:text-faint-dark">(7)</span>,
+          <a class="xref" href="#">github</a><span class="text-faint dark:text-faint-dark">(7)</span>,
+          <a class="xref" href="#">plugma</a><span class="text-faint dark:text-faint-dark">(1)</span>
+        </p>
+      </div>
+
+      <!-- Copy-to-clipboard button, as AUTHOR uses -->
+      <div class="indent mt-8">
+        <p class="text-[.78rem] uppercase tracking-[.16em] text-faint dark:text-faint-dark">Copy button</p>
+        <p class="mt-3">
+          Report issues to
+          <button class="copy-btn xref inline-flex items-center gap-1.5 text-ink dark:text-ink-dark" data-copy="gavin@limitlessloop.com" type="button">
+            gavin@limitlessloop.com
+            <svg class="h-3 w-3 shrink-0 opacity-50" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4.5" y="4.5" width="7" height="7" rx="1"/><path d="M9.5 2.5h-7v7"/>
+            </svg>
+          </button>
+          <span class="copy-status ml-1 text-[.78rem] text-leaf dark:text-leaf-dark" role="status" aria-live="polite"></span>
+        </p>
+      </div>
+
+      <!-- Block-glyph figure, as blocks.html uses -->
+      <div class="indent mt-8">
+        <p class="text-[.78rem] uppercase tracking-[.16em] text-faint dark:text-faint-dark">Block-glyph figure (.fig)</p>
+        <figure class="mt-3 max-w-[26rem]">
+          <div class="fig border border-rule p-2 dark:border-rule-dark" data-plate="specimen-component" data-rows="10"></div>
+          <figcaption class="mt-2 text-[.75rem] text-faint dark:text-faint-dark">
+            Plate — ordered dither, generated from the string "specimen-component"
+          </figcaption>
+        </figure>
+      </div>
+
+      <!-- Hairline rule -->
+      <div class="indent mt-8">
+        <p class="text-[.78rem] uppercase tracking-[.16em] text-faint dark:text-faint-dark">Rule</p>
+        <hr class="mt-3 max-w-[30rem] border-t border-rule dark:border-rule-dark" />
+      </div>
+    </section>
+
+    <!-- ── f. TEXTURES ─────────────────────────────────────────── -->
+    <section id="textures" class="sec fade mt-12" style="--i:8">
+      <h2 class="text-[.92rem] font-bold tracking-[.12em]">TEXTURES</h2>
+      <p class="indent mt-2 max-w-[68ch] text-muted dark:text-muted-dark">
+        The illustrated variant (<a class="xref" href="blocks.html">gavin-illustrated(1)</a>) draws every
+        figure as block glyphs — ░▒▓█ — quantised through a 4×4 Bayer matrix so density
+        carries tone the way it does in a terminal image viewer. Nothing here is a raster;
+        it is text, seeded per project so a given plate never reshuffles.
+      </p>
+
+      <div class="indent mt-6">
+        <p class="text-[.78rem] uppercase tracking-[.16em] text-faint dark:text-faint-dark">Masthead banner</p>
+        <div class="mt-3 banner fig" aria-hidden="true">
+<pre>█████ █████ █   █ █████ █   █
+█     █   █ █   █   █   ██  █
+█ ███ █████ █   █   █   █ █ █
+█   █ █   █  █ █    █   █  ██
+█████ █   █   █   █████ █   █</pre>
+        </div>
+        <p class="mt-2 text-[.75rem] text-faint dark:text-faint-dark">figlet(6)-style masthead, hand-drawn in the same grid</p>
+      </div>
+
+      <div class="indent mt-8 grid gap-x-6 gap-y-6 sm:grid-cols-2">
+        <figure>
+          <div class="fig border border-rule p-1.5 dark:border-rule-dark" data-plate="northwind-tokens" data-rows="11"></div>
+          <figcaption class="mt-1.5 text-[.72rem] text-faint dark:text-faint-dark">Plate — seed "northwind-tokens"</figcaption>
+        </figure>
+        <figure>
+          <div class="fig border border-rule p-1.5 dark:border-rule-dark" data-plate="atlas-checkout" data-rows="11"></div>
+          <figcaption class="mt-1.5 text-[.72rem] text-faint dark:text-faint-dark">Plate — seed "atlas-checkout"</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ── SEE ALSO ────────────────────────────────────────────── -->
+    <section id="seealso" class="sec fade mt-12" style="--i:9">
+      <h2 class="text-[.92rem] font-bold tracking-[.12em]">SEE ALSO</h2>
+      <ul class="indent mt-3 space-y-2">
+        <li>
+          <a class="xref" href="index.html">gavin</a><span class="text-faint dark:text-faint-dark">(1)</span>,
+          <a class="xref" href="blocks.html">gavin-illustrated</a><span class="text-faint dark:text-faint-dark">(1)</span>
+        </li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── Page footer ────────────────────────────────────────────── -->
+<footer class="border-t border-rule px-5 py-3 text-[.78rem] tracking-[.06em] text-muted dark:border-rule-dark dark:text-muted-dark sm:px-8">
+  <div class="mx-auto flex max-w-5xl items-baseline justify-between gap-4">
+    <span>London</span>
+    <span class="hidden sm:inline">July 2026</span>
+    <span class="font-bold text-ink dark:text-ink-dark">SPECIMEN(1)</span>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  /* Theme — pre-paint script set the class; this persists changes. */
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const dark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+    });
+  }
+
+  /* ── Scrollspy ─────────────────────────────────────────────── */
+  const links = new Map();
+  document.querySelectorAll('.toc a').forEach((a) => links.set(a.getAttribute('href').slice(1), a));
+
+  if ('IntersectionObserver' in window) {
+    const visible = new Set();
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) visible.add(entry.target.id);
+        else visible.delete(entry.target.id);
+      });
+
+      const order = [...links.keys()];
+      const current = order.find((id) => visible.has(id));
+
+      links.forEach((a, id) => {
+        if (id === current) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+    }, { rootMargin: '-10% 0px -70% 0px' });
+
+    document.querySelectorAll('.sec').forEach((s) => io.observe(s));
+  }
+
+  /* ── Copy buttons ──────────────────────────────────────────
+     Generalised version of the AUTHOR-section pattern: any button
+     with data-copy writes that value to the clipboard and reports
+     the outcome in the adjacent .copy-status span. */
+  document.querySelectorAll('.copy-btn').forEach((btn) => {
+    const status = btn.closest('dd, p')?.querySelector('.copy-status');
+    let timer;
+    btn.addEventListener('click', async () => {
+      clearTimeout(timer);
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy || '');
+        if (status) status.textContent = '— copied';
+      } catch {
+        if (status) status.textContent = '— copy failed, select it manually';
+      }
+      if (status) timer = setTimeout(() => { status.textContent = ''; }, 2600);
+    });
+  });
+
+  /* ─────────────────────────────────────────────────────────────
+     BLOCK PLATES — carried over verbatim from the illustrated
+     variant (blocks.html), so the texture on show here is real.
+     ───────────────────────────────────────────────────────────── */
+
+  const RAMP = ' ░▒▓█';
+  const COLS = 44;
+
+  const BAYER = [
+    [0, 8, 2, 10],
+    [12, 4, 14, 6],
+    [3, 11, 1, 9],
+    [15, 7, 13, 5],
+  ];
+
+  const hash = (str) => {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  };
+
+  const rng = (seed) => () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+
+  function plate(seed, rows) {
+    const rand = rng(hash(seed));
+
+    const waves = Array.from({ length: 3 }, () => ({
+      fx: 0.06 + rand() * 0.30,
+      fy: 0.06 + rand() * 0.30,
+      ph: rand() * Math.PI * 2,
+      amp: 0.45 + rand() * 0.85,
+    }));
+
+    const weight = waves.reduce((sum, w) => sum + w.amp, 0);
+    const tilt = rand() * 0.5 - 0.25;
+    const out = [];
+
+    for (let y = 0; y < rows; y++) {
+      let line = '';
+      for (let x = 0; x < COLS; x++) {
+        let v = 0;
+        for (const w of waves) v += w.amp * Math.sin(w.fx * x + w.fy * y + w.ph);
+        v = v / weight;
+        v = (v + 1) / 2;
+        v += tilt * (x / COLS - 0.5);
+        v = (v - 0.5) * 1.5 + 0.5;
+
+        const dx = (x / COLS - 0.5) * 2;
+        const dy = (y / rows - 0.5) * 2;
+        v *= 1 - 0.42 * Math.min(1, Math.sqrt(dx * dx + dy * dy) / 1.4);
+
+        v += (BAYER[y & 3][x & 3] / 16 - 0.5) * (1 / RAMP.length);
+        const i = Math.max(0, Math.min(RAMP.length - 1, Math.round(v * (RAMP.length - 1))));
+        line += RAMP[i];
+      }
+      out.push(line);
+    }
+    return out.join('\n');
+  }
+
+  document.querySelectorAll('.fig[data-plate]').forEach((el) => {
+    const pre = document.createElement('pre');
+    pre.textContent = plate(el.dataset.plate, Number(el.dataset.rows) || 14);
+    el.appendChild(pre);
+  });
+})();
+</script>
+
+</body>
+</html>

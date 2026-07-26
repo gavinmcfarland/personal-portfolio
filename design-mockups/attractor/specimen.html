@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Attractor — Specimen</title>
+<meta name="description" content="Design specimen for the Attractor mockup — tokens, type and components." />
+<meta name="color-scheme" content="dark" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          void:   '#05080B',
+          steel:  '#0C1319',
+          panel:  'rgba(16,26,34,.72)',
+          ink:    '#DCE6EC',
+          muted:  '#8FA3B0',
+          faint:  '#5C7080',
+          ice:    '#79D0E6',
+          rule:   'rgba(121,208,230,.20)',
+        },
+        fontFamily: {
+          sans: ['IBM Plex Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ── Carried over from index.html — same tokens, same chrome ── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+
+  ::selection { background: #79D0E6; color: #05080B; }
+  :focus-visible { outline: 2px solid #79D0E6; outline-offset: 2px; }
+
+  .backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .matte { position: absolute; inset: -3%; transform: scale(1.04); }
+  .grain {
+    position: absolute; inset: 0; opacity: .05; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .vignette {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(120% 85% at 50% 42%, transparent 40%, rgba(5,8,11,.55) 78%, rgba(5,8,11,.92) 100%),
+      linear-gradient(to bottom, rgba(5,8,11,.75) 0%, transparent 22%, transparent 62%, rgba(5,8,11,.9) 100%);
+  }
+
+  .tick-rail {
+    height: 9px;
+    background-image: repeating-linear-gradient(90deg, rgba(121,208,230,.34) 0 1px, transparent 1px 34px);
+  }
+
+  .brackets { position: relative; }
+  .brackets::before, .brackets::after {
+    content: ''; position: absolute; width: 13px; height: 13px; pointer-events: none;
+    border-color: #79D0E6; opacity: .75;
+  }
+  .brackets::before { top: -1px; left: -1px; border-top: 1px solid; border-left: 1px solid; }
+  .brackets::after  { bottom: -1px; right: -1px; border-bottom: 1px solid; border-right: 1px solid; }
+  .brackets > .bracket-b, .brackets > .bracket-c {
+    position: absolute; width: 13px; height: 13px; pointer-events: none;
+    border-color: #79D0E6; opacity: .75;
+  }
+  .brackets > .bracket-b { top: -1px; right: -1px; border-top: 1px solid; border-right: 1px solid; }
+  .brackets > .bracket-c { bottom: -1px; left: -1px; border-bottom: 1px solid; border-left: 1px solid; }
+
+  .label {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: .68rem; letter-spacing: .18em; text-transform: uppercase;
+  }
+
+  .glass {
+    background: rgba(11,19,26,.74);
+    backdrop-filter: blur(14px) saturate(115%);
+    -webkit-backdrop-filter: blur(14px) saturate(115%);
+    border: 1px solid rgba(121,208,230,.22);
+  }
+
+  .tab {
+    position: relative;
+    display: flex; align-items: center; gap: .65rem; width: 100%;
+    padding: .62rem .8rem;
+    text-align: left;
+    border: 1px solid transparent;
+    border-left: 2px solid rgba(121,208,230,.22);
+    background: rgba(121,208,230,.03);
+    color: #8FA3B0;
+    transition: background .22s ease, color .22s ease, border-color .22s ease;
+  }
+  .tab:hover { background: rgba(121,208,230,.09); color: #DCE6EC; }
+  .tab[aria-selected='true'] {
+    background: rgba(121,208,230,.13);
+    border-left-color: #79D0E6;
+    color: #DCE6EC;
+  }
+  .tab .pip {
+    width: 7px; height: 7px; flex: none;
+    border: 1px solid rgba(121,208,230,.5);
+    transition: background .22s ease, border-color .22s ease;
+  }
+  .tab[aria-selected='true'] .pip { background: #79D0E6; border-color: #79D0E6; }
+
+  .drawer summary { list-style: none; cursor: pointer; }
+  .drawer summary::-webkit-details-marker { display: none; }
+  .drawer summary .caret { transition: transform .25s ease; }
+  .drawer[open] summary .caret { transform: rotate(180deg); }
+  .drawer[open] summary { color: #DCE6EC; }
+
+  @keyframes fade-up { from { opacity: 0; transform: translateY(.45rem); } to { opacity: 1; transform: none; } }
+  .fade-up { opacity: 0; animation: fade-up .6s cubic-bezier(.2,.7,.3,1) forwards; animation-delay: calc(var(--i, 0) * 70ms); }
+  @media (prefers-reduced-motion: reduce) { .fade-up { animation: none; opacity: 1; } }
+
+  /* ── Specimen-only helpers (no equivalent in index.html) ── */
+  .swatch { aspect-ratio: 1.6 / 1; border: 1px solid rgba(121,208,230,.22); }
+  .type-row { display: grid; grid-template-columns: 6.5rem 1fr; gap: 1rem; align-items: baseline; }
+  @media (max-width: 640px) { .type-row { grid-template-columns: 1fr; gap: .25rem; } }
+</style>
+</head>
+
+<body class="min-h-screen bg-void font-sans text-[.94rem] text-ink antialiased">
+
+<a href="#content" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:bg-ice focus:px-4 focus:py-2 focus:text-sm focus:text-void">Skip to content</a>
+
+<div class="backdrop" aria-hidden="true">
+  <div class="matte">
+    <svg class="h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#0A141C"/>
+          <stop offset="52%" stop-color="#1B2E3B"/>
+          <stop offset="80%" stop-color="#2E4757"/>
+          <stop offset="100%" stop-color="#16242E"/>
+        </linearGradient>
+        <radialGradient id="glow" cx="72%" cy="60%" r="46%">
+          <stop offset="0%"   stop-color="#8FC4DC" stop-opacity=".42"/>
+          <stop offset="100%" stop-color="#8FC4DC" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="r1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#4E6C7E"/><stop offset="100%" stop-color="#33505F"/>
+        </linearGradient>
+        <linearGradient id="r2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2C4655"/><stop offset="100%" stop-color="#1B2E3A"/>
+        </linearGradient>
+        <linearGradient id="r3" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#16252F"/><stop offset="100%" stop-color="#0C161D"/>
+        </linearGradient>
+      </defs>
+      <rect width="1600" height="900" fill="url(#sky)"/>
+      <ellipse cx="1150" cy="540" rx="740" ry="330" fill="url(#glow)"/>
+      <path fill="url(#r1)" opacity=".55"
+        d="M0 612 L104 548 L168 578 L262 496 L338 552 L430 470 L520 540 L604 500 L700 566 L790 512 L880 570 L980 508 L1074 566 L1168 520 L1262 574 L1360 522 L1452 578 L1544 536 L1600 566 L1600 900 L0 900 Z"/>
+      <path fill="url(#r2)" opacity=".85"
+        d="M0 700 L88 640 L182 682 L286 596 L372 664 L468 606 L560 676 L664 622 L756 692 L858 630 L952 700 L1054 640 L1150 706 L1252 648 L1348 712 L1452 656 L1544 716 L1600 686 L1600 900 L0 900 Z"/>
+      <path fill="url(#r3)"
+        d="M0 796 L120 730 L232 784 L348 712 L462 780 L580 724 L692 796 L812 736 L926 804 L1046 748 L1160 812 L1280 756 L1396 818 L1508 768 L1600 812 L1600 900 L0 900 Z"/>
+      <path fill="#05080B" opacity=".96"
+        d="M0 856 L180 828 L360 862 L540 834 L720 868 L900 838 L1080 870 L1260 840 L1440 872 L1600 846 L1600 900 L0 900 Z"/>
+      <g stroke="#0A121A" stroke-width="3" opacity=".92" fill="none">
+        <path d="M1418 232 L1418 858"/>
+        <path d="M1418 300 L1382 330 M1418 300 L1454 330"/>
+        <path d="M1418 396 L1376 432 M1418 396 L1460 432"/>
+        <path d="M1418 512 L1386 544 M1418 512 L1450 544"/>
+      </g>
+      <ellipse cx="1418" cy="252" rx="34" ry="9" fill="#0A121A" opacity=".92"/>
+      <path d="M1418 176 L1418 232" stroke="#0A121A" stroke-width="2"/>
+    </svg>
+  </div>
+  <div class="grain"></div>
+  <div class="vignette"></div>
+</div>
+
+<div class="relative z-10 mx-auto flex min-h-screen max-w-[1400px] flex-col px-4 sm:px-7">
+
+  <header class="fade-up pt-4" style="--i:0">
+    <div class="tick-rail"></div>
+    <div class="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-b border-rule py-4">
+      <nav class="order-1 flex items-center gap-6">
+        <a href="index.html" class="label text-muted transition hover:text-ice">← Mockup</a>
+        <a href="#palette"   class="label text-muted transition hover:text-ice">Colour</a>
+        <a href="#type"      class="label text-muted transition hover:text-ice">Type</a>
+        <a href="#components" class="label text-muted transition hover:text-ice">Components</a>
+      </nav>
+      <div class="order-3 w-full text-center sm:order-2 sm:w-auto">
+        <p class="font-mono text-[.82rem] font-medium tracking-[.3em] text-ink">GAVIN McFARLAND</p>
+        <p class="label mt-1 text-[.6rem] text-faint">Specimen · Attractor</p>
+      </div>
+      <div class="order-2 flex items-center gap-3 sm:order-3">
+        <label for="motion" class="label cursor-pointer text-faint">Motion</label>
+        <button id="motion" type="button" role="switch" aria-checked="true"
+          class="relative h-[18px] w-9 border border-rule bg-ice/10 transition hover:border-ice/60">
+          <span id="motion-knob" class="absolute left-[2px] top-[2px] block h-[12px] w-[16px] bg-ice transition-transform duration-200" style="transform: translateX(16px);"></span>
+          <span class="sr-only">Toggle interface motion</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="content" class="flex-1 py-10 sm:py-16 flex flex-col gap-10">
+
+    <!-- ── a. Title / intro ─────────────────────────────────── -->
+    <section class="stage brackets glass fade-up relative" style="--i:1">
+      <span class="bracket-b"></span><span class="bracket-c"></span>
+      <div class="border-b border-rule px-4 py-2.5 sm:px-6">
+        <h1 class="label text-ice">Specimen</h1>
+      </div>
+      <div class="p-5 sm:p-8">
+        <h2 class="text-2xl font-semibold tracking-tight sm:text-[1.7rem]">Attractor</h2>
+        <p class="mt-4 max-w-prose leading-relaxed text-muted">
+          2Advanced "Release Five" (2010) rebuilt with a 2026 conscience — HUD chrome,
+          bracket corners, tick rails, hairline dividers and a floating master/detail
+          explorer over a hand-drawn SVG matte. Dark only, deliberately: this direction
+          has no light mode worth having.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── b. Colour palette ────────────────────────────────── -->
+    <section id="palette" class="stage brackets glass fade-up relative" style="--i:2">
+      <span class="bracket-b"></span><span class="bracket-c"></span>
+      <div class="flex items-center justify-between border-b border-rule px-4 py-2.5 sm:px-6">
+        <h2 class="label text-ice">Colour Palette</h2>
+        <p class="label text-faint">Dark only — no themed light mode</p>
+      </div>
+      <div class="grid grid-cols-2 gap-px bg-rule p-px sm:grid-cols-4">
+
+        <div class="bg-steel/60 p-4">
+          <div class="swatch mb-3" style="background:#05080B"></div>
+          <p class="text-[.85rem] text-ink">void</p>
+          <p class="font-mono text-[.7rem] text-faint">#05080B</p>
+          <p class="label mt-1 text-[.58rem] text-faint">Page background</p>
+        </div>
+
+        <div class="bg-steel/60 p-4">
+          <div class="swatch mb-3" style="background:#0C1319"></div>
+          <p class="text-[.85rem] text-ink">steel</p>
+          <p class="font-mono text-[.7rem] text-faint">#0C1319</p>
+          <p class="label mt-1 text-[.58rem] text-faint">Panel fill</p>
+        </div>
+
+        <div class="bg-steel/60 p-4">
+          <div class="swatch mb-3" style="background:rgba(16,26,34,.72)"></div>
+          <p class="text-[.85rem] text-ink">panel</p>
+          <p class="font-mono text-[.7rem] text-faint">rgba(16,26,34,.72)</p>
+          <p class="label mt-1 text-[.58rem] text-faint">Translucent panel</p>
+        </div>
+
+        <div class="bg-steel/60 p-4">
+          <div class="swatch mb-3" style="background:#DCE6EC"></div>
+          <p class="text-[.85rem] text-ink">ink</p>
+          <p class="font-mono text-[.7rem] text-faint">#DCE6EC</p>
+          <p class="label mt-1 text-[.58rem] text-faint">Primary text</p>
+        </div>
+
+        <div class="bg-steel/60 p-4">
+          <div class="swatch mb-3" style="background:#8FA3B0"></div>
+          <p class="text-[.85rem] text-ink">muted</p>
+          <p class="font-mono text-[.7rem] text-faint">#8FA3B0</p>
+          <p class="label mt-1 text-[.58rem] text-faint">Secondary text</p>
+        </div>
+
+        <div class="bg-steel/60 p-4">
+          <div class="swatch mb-3" style="background:#5C7080"></div>
+          <p class="text-[.85rem] text-ink">faint</p>
+          <p class="font-mono text-[.7rem] text-faint">#5C7080</p>
+          <p class="label mt-1 text-[.58rem] text-faint">Tertiary / labels</p>
+        </div>
+
+        <div class="bg-steel/60 p-4">
+          <div class="swatch mb-3" style="background:#79D0E6"></div>
+          <p class="text-[.85rem] text-ink">ice</p>
+          <p class="font-mono text-[.7rem] text-faint">#79D0E6</p>
+          <p class="label mt-1 text-[.58rem] text-faint">Accent / selection</p>
+        </div>
+
+        <div class="bg-steel/60 p-4">
+          <div class="swatch mb-3" style="background:rgba(121,208,230,.20); border:1px solid rgba(121,208,230,.4)"></div>
+          <p class="text-[.85rem] text-ink">rule</p>
+          <p class="font-mono text-[.7rem] text-faint">rgba(121,208,230,.20)</p>
+          <p class="label mt-1 text-[.58rem] text-faint">Hairline dividers</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── c. Typography ────────────────────────────────────── -->
+    <section id="type" class="stage brackets glass fade-up relative" style="--i:3">
+      <span class="bracket-b"></span><span class="bracket-c"></span>
+      <div class="border-b border-rule px-4 py-2.5 sm:px-6">
+        <h2 class="label text-ice">Typography</h2>
+      </div>
+      <div class="grid gap-px bg-rule sm:grid-cols-2">
+        <div class="bg-steel/40 p-5 sm:p-7">
+          <p class="label mb-3 text-faint">IBM Plex Sans · 400 / 500 / 600</p>
+          <p class="font-sans text-2xl font-normal leading-snug text-ink">Sphinx of black quartz, judge my vow.</p>
+          <p class="font-sans text-2xl font-medium leading-snug text-ink mt-2">Sphinx of black quartz, judge my vow.</p>
+          <p class="font-sans text-2xl font-semibold leading-snug text-ink mt-2">Sphinx of black quartz, judge my vow.</p>
+        </div>
+        <div class="bg-steel/40 p-5 sm:p-7">
+          <p class="label mb-3 text-faint">IBM Plex Mono · 400 / 500</p>
+          <p class="font-mono text-xl font-normal leading-snug text-ink">Sphinx of black quartz, judge my vow.</p>
+          <p class="font-mono text-xl font-medium leading-snug text-ink mt-2">Sphinx of black quartz, judge my vow.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── d. Type scale ────────────────────────────────────── -->
+    <section class="stage brackets glass fade-up relative" style="--i:4">
+      <span class="bracket-b"></span><span class="bracket-c"></span>
+      <div class="border-b border-rule px-4 py-2.5 sm:px-6">
+        <h2 class="label text-ice">Type Scale</h2>
+      </div>
+      <div class="p-5 sm:p-8 flex flex-col gap-5">
+
+        <div class="type-row">
+          <p class="label text-faint">1.7rem / 27px<br>Heading</p>
+          <p class="font-sans text-[1.7rem] font-semibold tracking-tight text-ink">Project title</p>
+        </div>
+
+        <div class="type-row">
+          <p class="label text-faint">.94rem / 15px<br>Body</p>
+          <p class="font-sans text-[.94rem] leading-relaxed text-ink">Default running body copy at the base document size.</p>
+        </div>
+
+        <div class="type-row">
+          <p class="label text-faint">.88rem / 14px<br>Body / prose</p>
+          <p class="font-sans text-[.88rem] leading-relaxed text-muted">Secondary prose used inside drawers and detail copy.</p>
+        </div>
+
+        <div class="type-row">
+          <p class="label text-faint">.85rem / 13.6px<br>List item</p>
+          <p class="font-sans text-[.85rem] text-ink">Explorer list item title</p>
+        </div>
+
+        <div class="type-row">
+          <p class="label text-faint">.82rem / 13.1px<br>Mono meta</p>
+          <p class="font-mono text-[.82rem] text-ink">2024 · Year / metadata value</p>
+        </div>
+
+        <div class="type-row">
+          <p class="label text-faint">.68rem / 10.9px<br>Label (HUD)</p>
+          <p class="label text-ice">Selected Work</p>
+        </div>
+
+        <div class="type-row">
+          <p class="label text-faint">.7rem / 11.2px<br>Chip / tag</p>
+          <p class="font-mono text-[.7rem] text-faint">TypeScript</p>
+        </div>
+
+        <div class="type-row">
+          <p class="label text-faint">.6rem / 9.6px<br>Micro label</p>
+          <p class="label text-[.6rem] text-faint">© 2026 Gavin McFarland</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── e. Components ────────────────────────────────────── -->
+    <section id="components" class="stage brackets glass fade-up relative" style="--i:5">
+      <span class="bracket-b"></span><span class="bracket-c"></span>
+      <div class="border-b border-rule px-4 py-2.5 sm:px-6">
+        <h2 class="label text-ice">Components</h2>
+      </div>
+
+      <div class="grid gap-px bg-rule lg:grid-cols-[15.5rem_1fr]">
+        <!-- Master list -->
+        <div class="bg-steel/60 p-4 sm:p-5">
+          <p class="label mb-3 text-faint">Select Item</p>
+          <div role="tablist" aria-orientation="vertical" aria-label="Projects (specimen)" class="grid gap-1">
+            <button class="tab" role="tab" aria-selected="true" tabindex="0">
+              <span class="pip" aria-hidden="true"></span>
+              <span class="flex-1 text-[.85rem]">Vantage</span>
+              <span class="font-mono text-[.68rem] text-faint">2025</span>
+            </button>
+            <button class="tab" role="tab" aria-selected="false" tabindex="-1">
+              <span class="pip" aria-hidden="true"></span>
+              <span class="flex-1 text-[.85rem]">Northlight</span>
+              <span class="font-mono text-[.68rem] text-faint">2024</span>
+            </button>
+            <button class="tab" role="tab" aria-selected="false" tabindex="-1">
+              <span class="pip" aria-hidden="true"></span>
+              <span class="flex-1 text-[.85rem]">Fieldwork</span>
+              <span class="font-mono text-[.68rem] text-faint">2023</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Detail pane -->
+        <div class="bg-steel/40 p-5 sm:p-7">
+          <p class="label text-ice">Design system · Prototyping toolkit</p>
+          <h3 class="mt-4 text-2xl font-semibold tracking-tight sm:text-[1.7rem]">Vantage</h3>
+
+          <dl class="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-y border-rule py-3">
+            <div class="flex items-baseline gap-2">
+              <dt class="label text-faint">Year</dt>
+              <dd class="font-mono text-[.82rem]">2025</dd>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <dt class="label text-faint">Role</dt>
+              <dd class="text-[.82rem]">Lead designer</dd>
+            </div>
+          </dl>
+
+          <p class="mt-5 max-w-prose leading-relaxed text-muted">
+            Placeholder detail copy set in the specimen's real body style, at the same
+            measure and leading used for genuine project descriptions.
+          </p>
+
+          <ul class="mt-6 flex flex-wrap gap-1.5">
+            <li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-faint">TypeScript</li>
+            <li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-faint">Svelte</li>
+            <li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-faint">Figma API</li>
+          </ul>
+
+          <a class="label mt-7 inline-flex items-center gap-2 border border-ice/40 px-4 py-2 text-ice transition hover:bg-ice hover:text-void"
+             href="#components">
+            View project
+            <svg class="h-3 w-3" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 10 4M4.6 4H10v5.4"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Drawers, chips, links, buttons -->
+      <div class="grid gap-px border-t border-rule bg-rule md:grid-cols-3">
+        <details class="drawer glass border-0 px-4 py-3 sm:px-5" open>
+          <summary class="label flex items-center gap-2 text-faint transition hover:text-ice">
+            <svg class="caret h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+            Drawer (open)
+          </summary>
+          <p class="mt-3 text-[.88rem] leading-relaxed text-muted">
+            Native &lt;details&gt;/&lt;summary&gt; disclosure. Only the caret rotation is custom.
+          </p>
+        </details>
+
+        <details class="drawer glass border-0 px-4 py-3 sm:px-5">
+          <summary class="label flex items-center gap-2 text-faint transition hover:text-ice">
+            <svg class="caret h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+            Drawer (closed)
+          </summary>
+          <ul class="mt-3 flex flex-wrap gap-1.5">
+            <li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-muted">Node.js</li>
+            <li class="border border-rule px-2 py-0.5 font-mono text-[.7rem] text-muted">Vite</li>
+          </ul>
+        </details>
+
+        <details class="drawer glass border-0 px-4 py-3 sm:px-5">
+          <summary class="label flex items-center gap-2 text-faint transition hover:text-ice">
+            <svg class="caret h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+            Links
+          </summary>
+          <ul class="mt-3 space-y-1.5 text-[.88rem]">
+            <li><a class="text-muted underline decoration-ice/30 underline-offset-4 transition hover:text-ice" href="#components">Underlined link</a></li>
+            <li><a class="text-muted underline decoration-ice/30 underline-offset-4 transition hover:text-ice" href="#components">Second link</a></li>
+          </ul>
+        </details>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4 border-t border-rule px-4 py-4 sm:px-6">
+        <button type="button" class="label border border-rule px-2.5 py-1 text-faint transition hover:border-ice/60 hover:text-ice">Ghost button</button>
+        <a class="label inline-flex items-center gap-2 border border-ice/40 px-4 py-2 text-ice transition hover:bg-ice hover:text-void" href="#components">CTA button</a>
+        <div class="flex items-center gap-2">
+          <span class="label text-faint">Toggle</span>
+          <button type="button" role="switch" aria-checked="false" class="relative h-[18px] w-9 border border-rule bg-ice/10 transition hover:border-ice/60">
+            <span class="absolute left-[2px] top-[2px] block h-[12px] w-[16px] bg-ice transition-transform duration-200"></span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── f. Texture / backdrop ────────────────────────────── -->
+    <section class="stage brackets glass fade-up relative" style="--i:6">
+      <span class="bracket-b"></span><span class="bracket-c"></span>
+      <div class="border-b border-rule px-4 py-2.5 sm:px-6">
+        <h2 class="label text-ice">Texture &amp; Backdrop</h2>
+      </div>
+      <div class="p-5 sm:p-8">
+        <p class="max-w-prose leading-relaxed text-muted">
+          The page sits over three fixed, pointer-events-none layers, visible behind this
+          whole specimen: an SVG matte painting (four ridgelines, atmospheric perspective,
+          no external image assets), a static feTurbulence grain wash at 5% opacity in
+          overlay blend mode, and a radial + linear vignette that darkens the edges. A
+          scaled-down copy of the matte is framed below.
+        </p>
+        <div class="brackets glass relative mt-5 h-40 overflow-hidden sm:h-56">
+          <span class="bracket-b"></span><span class="bracket-c"></span>
+          <svg class="h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+            <rect width="1600" height="900" fill="#0A141C"/>
+            <path fill="#33505F" opacity=".55" d="M0 612 L200 548 L400 600 L600 540 L800 590 L1000 530 L1200 580 L1400 540 L1600 566 L1600 900 L0 900 Z"/>
+            <path fill="#1B2E3A" opacity=".85" d="M0 700 L200 650 L400 690 L600 630 L800 680 L1000 630 L1200 690 L1400 650 L1600 686 L1600 900 L0 900 Z"/>
+            <path fill="#0C161D" d="M0 796 L200 750 L400 796 L600 740 L800 800 L1000 750 L1200 800 L1400 760 L1600 812 L1600 900 L0 900 Z"/>
+          </svg>
+          <div class="absolute inset-0" style="opacity:.05; mix-blend-mode:overlay; background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n2)'/%3E%3C/svg%3E&quot;)"></div>
+        </div>
+        <div class="mt-5">
+          <p class="label mb-2 text-faint">Tick rail</p>
+          <div class="tick-rail"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="flex flex-wrap items-center justify-between gap-3 border-t border-rule py-5">
+    <p class="label text-[.6rem] text-faint">© 2026 Gavin McFarland</p>
+    <a href="index.html" class="label text-[.6rem] text-faint transition hover:text-ice">Back to mockup</a>
+  </footer>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+  // Guarded: this page has no data.js / system.js dependency, but the
+  // pattern mirrors index.html's defensive style in case one is added later.
+  try {
+    const motionBtn = document.getElementById('motion');
+    const knob = document.getElementById('motion-knob');
+    if (motionBtn && knob) {
+      let on = true;
+      motionBtn.addEventListener('click', () => {
+        on = !on;
+        motionBtn.setAttribute('aria-checked', String(on));
+        knob.style.transform = on ? 'translateX(16px)' : 'translateX(0)';
+        document.body.classList.toggle('no-motion', !on);
+      });
+    }
+  } catch (e) { /* no-op — specimen must never break on script error */ }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — Editorial Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────────────────────────────────────
+   GAVIN McFARLAND · Editorial studio direction (Direction A)
+   Specimen sheet — same tokens, type, and components as index.html
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --bg:#FBFAF7;            /* warm paper */
+  --panel:#F3F1EC;         /* raised fill / canvas ground */
+  --ink:#171512;           /* primary */
+  --muted:#4A463F;         /* serif prose */
+  --faint:#9A9488;         /* meta / captions */
+  --line:rgba(23,21,18,.12);
+  --line-strong:rgba(23,21,18,.30);
+  --rule:rgba(23,21,18,.85);
+  --accent:#1E7A4D;
+  --accent-soft:rgba(30,122,77,.10);
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --margin:clamp(20px,5vw,72px);
+  --gutter:clamp(16px,2vw,32px);
+  --maxw:1300px;
+}
+html.dark{
+  --bg:#100F0D;
+  --panel:#1A1815;
+  --ink:#F4F1EA;
+  --muted:#B9B3A7;
+  --faint:#6E685C;
+  --line:rgba(244,241,234,.12);
+  --line-strong:rgba(244,241,234,.28);
+  --rule:rgba(244,241,234,.72);
+  --accent:#5FD39B;
+  --accent-soft:rgba(95,211,155,.14);
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);-webkit-text-size-adjust:100%;}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);line-height:1.5;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  transition:background-color .4s ease,color .4s ease;
+}
+::selection{background:var(--accent);color:#fff;}
+a{color:inherit;text-decoration:none;}
+.page{max-width:var(--maxw);margin:0 auto;padding:0 var(--margin);}
+.g12{display:grid;grid-template-columns:repeat(12,1fr);column-gap:var(--gutter);}
+.tnum{font-variant-numeric:tabular-nums;}
+.serif{font-family:var(--serif);}
+.pretty{text-wrap:pretty;}.balance{text-wrap:balance;}
+
+.kicker{font-size:.6875rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);}
+
+/* ── running header ── */
+.folio{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.5rem 0 1.1rem;}
+.folio .fl{display:flex;gap:clamp(1rem,4vw,3rem);align-items:center;}
+.toggle{font-size:.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);
+  background:none;border:1px solid var(--line);border-radius:100px;padding:.42rem .85rem;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.5em;transition:border-color .2s,color .2s;}
+.toggle:hover{border-color:var(--line-strong);color:var(--ink);}
+.rule-hair{height:1px;background:var(--line);border:0;margin:0;}
+
+/* ── masthead (specimen title) ── */
+.masthead{padding:clamp(2.5rem,6vw,5rem) 0 clamp(2rem,4vw,3rem);}
+.eyebrow{display:block;margin-bottom:clamp(1.4rem,3vw,2.2rem);}
+.name{
+  font-family:var(--serif);font-optical-sizing:auto;
+  font-weight:380;font-size:clamp(3.4rem,11vw,8.5rem);line-height:.92;
+  letter-spacing:-.028em;margin:0;color:var(--ink);
+}
+.name em{font-style:italic;font-weight:340;}
+.mast-lower{margin-top:clamp(2.2rem,4.5vw,3.6rem);align-items:start;}
+.mast-lead{grid-column:1 / span 8;}
+.mast-lead .lead{
+  font-family:var(--serif);font-optical-sizing:auto;font-weight:340;
+  font-size:clamp(1.4rem,2.6vw,1.9rem);line-height:1.28;letter-spacing:-.012em;
+  color:var(--ink);margin:0 0 1.3rem;max-width:38ch;
+}
+.mast-lead .sub{font-size:1.0625rem;line-height:1.65;color:var(--muted);max-width:56ch;margin:0;}
+
+.ulink{color:var(--ink);background-image:linear-gradient(var(--line-strong),var(--line-strong));
+  background-size:100% 1px;background-position:0 100%;background-repeat:no-repeat;
+  transition:background-size .2s,color .2s,background-image .2s;padding-bottom:.03em;}
+.ulink:hover{color:var(--accent);background-image:linear-gradient(var(--accent),var(--accent));}
+
+/* ── section head ── */
+section{margin-top:clamp(4rem,8vw,7rem);}
+.sec-head{display:flex;align-items:baseline;gap:1.25rem;padding-bottom:1.15rem;}
+.sec-num{font-size:.75rem;font-weight:600;color:var(--accent);letter-spacing:.05em;flex:none;}
+.sec-title{font-family:var(--serif);font-weight:400;font-size:clamp(1.35rem,2vw,1.75rem);letter-spacing:-.01em;color:var(--ink);flex:none;margin:0;}
+.sec-line{flex:1;height:1px;background:var(--rule);align-self:center;opacity:.85;}
+.sec-count{font-size:.75rem;color:var(--faint);flex:none;letter-spacing:.03em;text-transform:uppercase;}
+
+/* ── work list (component sample) ── */
+.work-row{align-items:baseline;padding:clamp(1.5rem,2.4vw,2.2rem) 0;border-top:1px solid var(--line);position:relative;transition:background-color .25s;}
+.work-list .work-row:last-child{border-bottom:1px solid var(--line);}
+.work-row:hover{background:var(--panel);}
+.work-idx{grid-column:1 / span 1;font-size:.9375rem;font-weight:600;color:var(--faint);transition:color .25s;}
+.work-title{grid-column:2 / span 3;font-family:var(--serif);font-weight:380;font-size:clamp(1.6rem,2.6vw,2.15rem);line-height:1.02;color:var(--ink);letter-spacing:-.015em;}
+.work-desc{grid-column:5 / span 4;font-size:1.0625rem;line-height:1.5;color:var(--muted);}
+.work-tech{grid-column:9 / span 3;display:flex;flex-wrap:wrap;gap:.35rem .7rem;padding-top:.4rem;}
+.work-tech span{font-size:.6875rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);}
+.work-arrow{grid-column:12 / span 1;justify-self:end;align-self:start;}
+.work-arrow svg{width:17px;height:17px;stroke:var(--faint);transition:transform .25s,stroke .25s;}
+.work-row:hover .work-arrow svg{stroke:var(--accent);transform:translate(3px,-3px);}
+.work-row:hover .work-idx{color:var(--accent);}
+
+/* ── canvas hero (component sample) ── */
+.canvas-hero{margin-top:clamp(1.8rem,3vw,2.6rem);}
+.canvas-frame{
+  position:relative;height:clamp(280px,36vw,380px);border-radius:16px;overflow:hidden;
+  background:var(--panel);border:1px solid var(--line);
+  background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:22px 22px;
+}
+.cv-md{position:absolute;left:6%;top:22%;width:min(300px,44%);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.2rem;box-shadow:0 18px 40px -24px rgba(0,0,0,.4);}
+.cv-md h4{font-family:var(--serif);font-weight:420;font-size:1.35rem;margin:0 0 .5rem;letter-spacing:-.01em;}
+.cv-md p{font-size:.9rem;line-height:1.55;color:var(--muted);margin:0 0 .7rem;}
+.cv-md ul{margin:0;padding-left:1.1rem;font-size:.9rem;color:var(--muted);line-height:1.7;}
+.cv-md code{font-family:var(--sans);background:var(--panel);border-radius:5px;padding:.05em .4em;font-size:.85em;}
+.sticky{position:absolute;padding:1rem;border-radius:4px;font-family:'Fraunces',serif;font-style:italic;font-size:1.05rem;line-height:1.35;color:#3a2f0a;box-shadow:0 16px 34px -22px rgba(0,0,0,.5);transform:rotate(-2deg);}
+.sticky.y{background:#FCE18A;right:9%;top:14%;width:150px;}
+.sticky.b{background:#AFD4F5;color:#12324f;right:14%;bottom:12%;width:150px;transform:rotate(2deg);}
+.cv-cap{margin-top:.85rem;font-size:.8125rem;color:var(--faint);}
+.cv-cap code{font-family:var(--sans);color:var(--muted);}
+
+/* ── recognition rows (component sample) ── */
+.idx-row{align-items:baseline;padding:1.15rem 0;border-top:1px solid var(--line);}
+.idx-list .idx-row:last-child{border-bottom:1px solid var(--line);}
+.idx-year{grid-column:1 / span 1;font-size:.9375rem;font-weight:600;color:var(--faint);}
+.idx-title{grid-column:3 / span 6;font-family:var(--serif);font-weight:380;font-size:1.3rem;color:var(--ink);letter-spacing:-.01em;}
+.idx-place{grid-column:9 / span 4;font-size:.75rem;color:var(--faint);text-align:right;letter-spacing:.05em;text-transform:uppercase;align-self:baseline;}
+
+.colophon{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;padding:1.2rem 0 3rem;margin-top:clamp(3.5rem,6vw,5rem);}
+.colophon span{color:var(--faint);}
+
+/* ── specimen-only scaffolding (built from the same tokens above) ── */
+.spec-block{margin-top:clamp(2.2rem,4vw,3.2rem);}
+.spec-block:first-child{margin-top:0;}
+
+.swatch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:var(--gutter);}
+.swatch{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg);}
+.swatch-fill{height:84px;border-bottom:1px solid var(--line);}
+.swatch-meta{padding:.85rem .95rem 1rem;}
+.swatch-name{font-size:.8125rem;font-weight:600;color:var(--ink);margin-bottom:.15rem;}
+.swatch-role{font-size:.75rem;color:var(--muted);margin-bottom:.5rem;}
+.swatch-vals{display:grid;gap:.2rem;}
+.swatch-val{font-family:var(--sans);font-size:.6875rem;letter-spacing:.02em;color:var(--faint);}
+.swatch-val b{color:var(--muted);font-weight:600;}
+
+.font-card{border-top:1px solid var(--line);padding:2rem 0;}
+.font-card:last-child{border-bottom:1px solid var(--line);}
+.font-label{display:flex;align-items:baseline;gap:.75rem;margin-bottom:1rem;}
+.font-family-name{font-family:var(--serif);font-size:1.4rem;font-weight:400;color:var(--ink);}
+.font-role{font-size:.75rem;color:var(--faint);letter-spacing:.05em;text-transform:uppercase;}
+.pangram{font-size:clamp(1.3rem,2.6vw,1.9rem);line-height:1.3;color:var(--ink);margin:0 0 1rem;letter-spacing:-.01em;}
+.weight-row{display:flex;flex-wrap:wrap;gap:.5rem 1.8rem;font-size:1.0625rem;color:var(--muted);}
+.weight-row span b{color:var(--ink);font-weight:inherit;}
+
+.scale-row{display:grid;grid-template-columns:120px 1fr;align-items:baseline;gap:1.5rem;border-top:1px solid var(--line);padding:1.4rem 0;}
+.scale-row:last-child{border-bottom:1px solid var(--line);}
+.scale-meta{display:flex;flex-direction:column;gap:.3rem;}
+.scale-role{font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);}
+.scale-val{font-size:.75rem;color:var(--muted);font-family:var(--sans);}
+.scale-sample{color:var(--ink);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.chip-row{display:flex;flex-wrap:wrap;gap:.6rem;}
+.chip{border:1px solid var(--line);border-radius:100px;padding:.4rem .9rem;font-size:.75rem;letter-spacing:.03em;color:var(--muted);}
+
+.texture-frame{position:relative;height:180px;border-radius:16px;overflow:hidden;background:var(--panel);border:1px solid var(--line);
+  background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:22px 22px;}
+.texture-frame span{position:absolute;left:1.2rem;bottom:1.1rem;font-size:.75rem;color:var(--faint);letter-spacing:.05em;text-transform:uppercase;}
+
+@media(max-width:900px){
+  .mast-lead{grid-column:1 / -1;}
+  .work-idx{grid-column:1 / span 2;}
+  .work-title{grid-column:3 / span 10;margin-bottom:.6rem;}
+  .work-desc{grid-column:3 / span 10;margin-bottom:.6rem;}
+  .work-tech{grid-column:3 / span 10;}
+  .idx-title{grid-column:3 / span 10;}
+  .idx-place{grid-column:1 / -1;text-align:left;margin-top:.3rem;}
+  .cv-md{width:56%;}
+  .scale-row{grid-template-columns:1fr;gap:.4rem;}
+}
+@media(max-width:560px){
+  .work-title,.work-desc,.work-tech{grid-column:1 / -1;}
+  .idx-year{grid-column:1 / span 2;}
+  .sticky.y{right:5%;}.sticky.b{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="folio">
+    <div class="fl kicker">
+      <span>Design system specimen</span>
+      <span><a class="ulink" href="index.html">← Back to site</a></span>
+    </div>
+    <button class="toggle" id="themeToggle"><span id="themeLabel">Dark</span></button>
+  </header>
+  <hr class="rule-hair" />
+
+  <!-- A. TITLE / INTRO -->
+  <section class="masthead" style="margin-top:0">
+    <span class="eyebrow kicker">Gavin McFarland — Editorial Studio</span>
+    <h1 class="name">Specimen</h1>
+    <div class="mast-lower g12">
+      <div class="mast-lead">
+        <p class="lead pretty">High-contrast Fraunces display, Inter meta, warm paper ground, one green accent.</p>
+        <p class="sub pretty">The full set of colour tokens, type roles and characteristic components used across this editorial-direction mockup — rendered live, in its own type and colour system, so it can be compared side by side with the other directions.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- B. COLOUR PALETTE -->
+  <section id="colour">
+    <div class="sec-head">
+      <span class="sec-num tnum">01</span>
+      <h2 class="sec-title">Colour Palette</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count tnum">10 tokens · light &amp; dark</span>
+    </div>
+
+    <div class="spec-block swatch-grid">
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--bg)"></div>
+        <div class="swatch-meta">
+          <div class="swatch-name">--bg</div>
+          <div class="swatch-role">Warm paper ground</div>
+          <div class="swatch-vals"><span class="swatch-val"><b>Light</b> #FBFAF7</span><span class="swatch-val"><b>Dark</b> #100F0D</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--panel)"></div>
+        <div class="swatch-meta">
+          <div class="swatch-name">--panel</div>
+          <div class="swatch-role">Raised fill / canvas ground</div>
+          <div class="swatch-vals"><span class="swatch-val"><b>Light</b> #F3F1EC</span><span class="swatch-val"><b>Dark</b> #1A1815</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--ink)"></div>
+        <div class="swatch-meta">
+          <div class="swatch-name">--ink</div>
+          <div class="swatch-role">Primary text</div>
+          <div class="swatch-vals"><span class="swatch-val"><b>Light</b> #171512</span><span class="swatch-val"><b>Dark</b> #F4F1EA</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--muted)"></div>
+        <div class="swatch-meta">
+          <div class="swatch-name">--muted</div>
+          <div class="swatch-role">Serif prose</div>
+          <div class="swatch-vals"><span class="swatch-val"><b>Light</b> #4A463F</span><span class="swatch-val"><b>Dark</b> #B9B3A7</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--faint)"></div>
+        <div class="swatch-meta">
+          <div class="swatch-name">--faint</div>
+          <div class="swatch-role">Meta / captions</div>
+          <div class="swatch-vals"><span class="swatch-val"><b>Light</b> #9A9488</span><span class="swatch-val"><b>Dark</b> #6E685C</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--line)"></div>
+        <div class="swatch-meta">
+          <div class="swatch-name">--line</div>
+          <div class="swatch-role">Hairline borders</div>
+          <div class="swatch-vals"><span class="swatch-val"><b>Light</b> rgba(23,21,18,.12)</span><span class="swatch-val"><b>Dark</b> rgba(244,241,234,.12)</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--line-strong)"></div>
+        <div class="swatch-meta">
+          <div class="swatch-name">--line-strong</div>
+          <div class="swatch-role">Emphasised borders / hover</div>
+          <div class="swatch-vals"><span class="swatch-val"><b>Light</b> rgba(23,21,18,.30)</span><span class="swatch-val"><b>Dark</b> rgba(244,241,234,.28)</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--rule)"></div>
+        <div class="swatch-meta">
+          <div class="swatch-name">--rule</div>
+          <div class="swatch-role">Section-head rule</div>
+          <div class="swatch-vals"><span class="swatch-val"><b>Light</b> rgba(23,21,18,.85)</span><span class="swatch-val"><b>Dark</b> rgba(244,241,234,.72)</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--accent)"></div>
+        <div class="swatch-meta">
+          <div class="swatch-name">--accent</div>
+          <div class="swatch-role">Section numerals / hover state</div>
+          <div class="swatch-vals"><span class="swatch-val"><b>Light</b> #1E7A4D</span><span class="swatch-val"><b>Dark</b> #5FD39B</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:var(--accent-soft)"></div>
+        <div class="swatch-meta">
+          <div class="swatch-name">--accent-soft</div>
+          <div class="swatch-role">Accent halo / soft fill</div>
+          <div class="swatch-vals"><span class="swatch-val"><b>Light</b> rgba(30,122,77,.10)</span><span class="swatch-val"><b>Dark</b> rgba(95,211,155,.14)</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="cv-cap spec-block">Toggle Dark / Light in the header above — every swatch here follows the same <code style="font-family:var(--sans);background:var(--panel);border-radius:5px;padding:.05em .4em;">html.dark</code> class switch as the live site.</p>
+  </section>
+
+  <!-- C. TYPOGRAPHY -->
+  <section id="type">
+    <div class="sec-head">
+      <span class="sec-num tnum">02</span>
+      <h2 class="sec-title">Typography</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count tnum">Two families</span>
+    </div>
+
+    <div class="spec-block">
+      <div class="font-card">
+        <div class="font-label"><span class="font-family-name">Fraunces</span><span class="font-role">Display &amp; serif prose</span></div>
+        <p class="pangram" style="font-weight:340;">The quick brown fox jumps over the lazy dog</p>
+        <p class="pangram" style="font-style:italic;font-weight:340;">The quick brown fox jumps over the lazy dog</p>
+        <div class="weight-row">
+          <span style="font-family:var(--serif);font-weight:300;"><b>300</b> Light</span>
+          <span style="font-family:var(--serif);font-weight:340;"><b>340</b> Regular (lead, work titles)</span>
+          <span style="font-family:var(--serif);font-weight:380;"><b>380</b> Medium (masthead, index titles)</span>
+          <span style="font-family:var(--serif);font-weight:420;"><b>420</b> Semi (canvas card heading)</span>
+          <span style="font-family:var(--serif);font-style:italic;font-weight:340;"><b>italic</b> emphasis, sticky notes</span>
+        </div>
+      </div>
+      <div class="font-card">
+        <div class="font-label"><span class="font-family-name" style="font-family:var(--sans);font-weight:600;">Inter</span><span class="font-role">Meta, body copy &amp; UI</span></div>
+        <p class="pangram" style="font-family:var(--sans);font-weight:400;">The quick brown fox jumps over the lazy dog</p>
+        <div class="weight-row">
+          <span style="font-family:var(--sans);font-weight:400;"><b>400</b> Body / captions</span>
+          <span style="font-family:var(--sans);font-weight:500;"><b>500</b> Links / tags</span>
+          <span style="font-family:var(--sans);font-weight:600;"><b>600</b> Kickers / labels</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- D. TYPE SCALE -->
+  <section id="scale">
+    <div class="sec-head">
+      <span class="sec-num tnum">03</span>
+      <h2 class="sec-title">Type Scale</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count tnum">9 roles</span>
+    </div>
+
+    <div class="spec-block">
+      <div class="scale-row">
+        <div class="scale-meta"><span class="scale-role">Display</span><span class="scale-val">clamp(3.4rem,11vw,8.5rem) · 380</span></div>
+        <p class="scale-sample" style="font-family:var(--serif);font-weight:380;font-size:clamp(2.4rem,7vw,5rem);letter-spacing:-.028em;line-height:.92;">Aa Specimen</p>
+      </div>
+      <div class="scale-row">
+        <div class="scale-meta"><span class="scale-role">Lede / Connect</span><span class="scale-val">clamp(1.9rem,4.2vw,3.1rem) · 340</span></div>
+        <p class="scale-sample" style="font-family:var(--serif);font-weight:340;font-size:clamp(1.5rem,3.4vw,2.4rem);letter-spacing:-.02em;">Looking for the next build</p>
+      </div>
+      <div class="scale-row">
+        <div class="scale-meta"><span class="scale-role">Lead paragraph</span><span class="scale-val">clamp(1.5rem,3vw,2.4rem) · 340</span></div>
+        <p class="scale-sample" style="font-family:var(--serif);font-weight:340;font-size:clamp(1.3rem,2.4vw,1.8rem);letter-spacing:-.012em;">Tools that take the friction out of making things</p>
+      </div>
+      <div class="scale-row">
+        <div class="scale-meta"><span class="scale-role">Work title</span><span class="scale-val">clamp(1.6rem,2.6vw,2.15rem) · 380</span></div>
+        <p class="scale-sample" style="font-family:var(--serif);font-weight:380;font-size:clamp(1.4rem,2.2vw,1.9rem);letter-spacing:-.015em;">Plugma</p>
+      </div>
+      <div class="scale-row">
+        <div class="scale-meta"><span class="scale-role">Section title</span><span class="scale-val">clamp(1.35rem,2vw,1.75rem) · 400</span></div>
+        <p class="scale-sample" style="font-family:var(--serif);font-weight:400;font-size:clamp(1.2rem,1.7vw,1.6rem);letter-spacing:-.01em;">Selected Work</p>
+      </div>
+      <div class="scale-row">
+        <div class="scale-meta"><span class="scale-role">Index / recognition</span><span class="scale-val">1.3rem · 380</span></div>
+        <p class="scale-sample" style="font-family:var(--serif);font-weight:380;font-size:1.3rem;letter-spacing:-.01em;">Plugin Exhibition booth</p>
+      </div>
+      <div class="scale-row">
+        <div class="scale-meta"><span class="scale-role">Body</span><span class="scale-val">1.0625rem · 400 sans</span></div>
+        <p class="scale-sample" style="font-family:var(--sans);font-weight:400;font-size:1.0625rem;color:var(--muted);">Full-stack, with roots in product design and user research.</p>
+      </div>
+      <div class="scale-row">
+        <div class="scale-meta"><span class="scale-role">Numeral / tnum</span><span class="scale-val">.9375rem · 600 sans</span></div>
+        <p class="scale-sample tnum" style="font-family:var(--sans);font-weight:600;font-size:.9375rem;color:var(--faint);">01 — 02 — 03 — 04</p>
+      </div>
+      <div class="scale-row">
+        <div class="scale-meta"><span class="scale-role">Kicker / micro label</span><span class="scale-val">.6875rem · 600 sans</span></div>
+        <p class="scale-sample kicker" style="margin:0;">Available for work · London 2026</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- E. COMPONENTS -->
+  <section id="components">
+    <div class="sec-head">
+      <span class="sec-num tnum">04</span>
+      <h2 class="sec-title">Components</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count">Live samples</span>
+    </div>
+
+    <div class="spec-block">
+      <span class="kicker" style="display:block;margin-bottom:1rem;">Buttons &amp; links</span>
+      <div class="chip-row" style="align-items:center;gap:1.5rem;">
+        <button class="toggle"><span>Toggle theme</span></button>
+        <a class="ulink" href="#components">Underlined link ↗</a>
+        <a class="ulink" href="#components" style="color:var(--accent);">Accent state on hover</a>
+      </div>
+    </div>
+
+    <div class="spec-block">
+      <span class="kicker" style="display:block;margin-bottom:1rem;">Tag chips (work-tech)</span>
+      <div class="work-tech" style="padding:0;">
+        <span>TypeScript</span><span>React</span><span>Vite</span><span>Figma API</span>
+      </div>
+    </div>
+
+    <div class="spec-block">
+      <span class="kicker" style="display:block;margin-bottom:.5rem;">Work row</span>
+      <div class="work-list">
+        <a class="work-row g12" href="#components">
+          <span class="work-idx tnum">01</span><span class="work-title">Specimen Co.</span>
+          <span class="work-desc pretty">A sample project row showing index, serif title, description and tag set together.</span>
+          <span class="work-tech"><span>Node.js</span><span>TypeScript</span><span>Vite</span></span>
+          <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+        </a>
+        <a class="work-row g12" href="#components">
+          <span class="work-idx tnum">02</span><span class="work-title">Studio Draft</span>
+          <span class="work-desc pretty">Second row demonstrating the hover state — background lift, arrow shift, accent index.</span>
+          <span class="work-tech"><span>JavaScript</span><span>Figma API</span></span>
+          <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+        </a>
+      </div>
+    </div>
+
+    <div class="spec-block">
+      <span class="kicker" style="display:block;margin-bottom:.5rem;">Recognition / index row</span>
+      <div class="idx-list">
+        <div class="idx-row g12"><span class="idx-year tnum">2024</span><span class="idx-title">Design Direction A — shortlist</span><span class="idx-place">Portfolio Review · Studio</span></div>
+        <div class="idx-row g12"><span class="idx-year tnum">2022</span><span class="idx-title">Editorial Systems Award</span><span class="idx-place">Type Directors Club</span></div>
+      </div>
+    </div>
+
+    <div class="spec-block">
+      <span class="kicker" style="display:block;margin-bottom:1rem;">Canvas card (cv-md) &amp; sticky notes</span>
+      <div class="canvas-hero">
+        <div class="canvas-frame">
+          <div class="cv-md">
+            <h4>This is a canvas</h4>
+            <p>An <strong>embeddable</strong> React component — the same engine behind the canvas edition of this site.</p>
+            <ul><li>Pan &amp; zoom the board</li><li>Add notes, text &amp; <code>markdown</code></li></ul>
+          </div>
+          <div class="sticky y">Drag me around</div>
+          <div class="sticky b">Double-click to edit</div>
+        </div>
+        <p class="cv-cap">Card, list and inline <code>code</code> styles as used inside the canvas hero.</p>
+      </div>
+    </div>
+
+    <div class="spec-block">
+      <span class="kicker" style="display:block;margin-bottom:.75rem;">Rule / divider</span>
+      <hr class="rule-hair" />
+    </div>
+  </section>
+
+  <!-- F. TEXTURE -->
+  <section id="texture">
+    <div class="sec-head">
+      <span class="sec-num tnum">05</span>
+      <h2 class="sec-title">Texture</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count">Canvas ground</span>
+    </div>
+    <div class="spec-block">
+      <div class="texture-frame"><span>Dotted grid — radial-gradient(var(--line) 1px, transparent 1px), 22px</span></div>
+    </div>
+  </section>
+
+  <hr class="rule-hair" style="margin-top:clamp(3.5rem,6vw,5rem)" />
+  <footer class="colophon kicker">
+    <span>© 2026 Gavin McFarland</span>
+    <span>Set in Fraunces &amp; Inter</span>
+    <span><a class="ulink" href="index.html">Back to Editorial Studio index</a></span>
+  </footer>
+</div>
+
+<script>
+try{
+  const root=document.documentElement,tLabel=document.getElementById('themeLabel');
+  const saved=localStorage.getItem('theme');
+  if(saved==='dark'||(!saved&&matchMedia('(prefers-color-scheme:dark)').matches)){root.classList.add('dark');}
+  function syncLabel(){if(tLabel)tLabel.textContent=root.classList.contains('dark')?'Light':'Dark';}
+  syncLabel();
+  const btn=document.getElementById('themeToggle');
+  if(btn)btn.addEventListener('click',()=>{
+    root.classList.toggle('dark');localStorage.setItem('theme',root.classList.contains('dark')?'dark':'light');syncLabel();
+  });
+}catch(e){/* no-op: specimen still renders without JS */}
+</script>
+</body>
+</html>

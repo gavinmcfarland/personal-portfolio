@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — Minimal — Gavin McFarland</title>
+<meta name="description" content="Design-system specimen for the Minimal mockup." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+<!-- Set theme before first paint so there is no flash of the wrong mode. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          ink:     { DEFAULT: '#141417', dark: '#F2F2EF' },
+          muted:   { DEFAULT: '#3C3C42', dark: '#B4B4B9' },
+          faint:   { DEFAULT: '#8B8B91', dark: '#6E6E75' },
+          surface: { DEFAULT: '#F4F3F1', dark: '#161619' },
+          canvas:  { DEFAULT: '#FFFFFF', dark: '#0B0B0C' },
+          accent:  { DEFAULT: '#7C2D91', dark: '#C88BE8' },
+        },
+        fontFamily: {
+          sans:  ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          serif: ['Tinos', 'Times New Roman', 'Georgia', 'serif'],
+        },
+        maxWidth: { content: '68rem' },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Minimal — Specimen
+     Same tokens, same rules, same motion vocabulary as index.html.
+     ───────────────────────────────────────────────────────────── */
+
+  ::selection { background: #7C2D91; color: #fff; }
+  .dark ::selection { background: #C88BE8; color: #0B0B0C; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(0.6em); } to { opacity: 1; transform: none; } }
+  .rise {
+    opacity: 0;
+    animation: rise 0.9s cubic-bezier(.2,.7,.3,1) forwards;
+    animation-delay: calc(var(--i, 0) * 110ms);
+  }
+
+  .rotator { display: inline-grid; vertical-align: bottom; }
+  .rotator > span {
+    grid-area: 1 / 1;
+    opacity: 0;
+    animation: cycle 12s infinite;
+    animation-delay: calc(var(--n) * 3s);
+  }
+  @keyframes cycle {
+    0%, 2%   { opacity: 0; transform: translateY(0.35em); }
+    6%, 23%  { opacity: 1; transform: none; }
+    29%,100% { opacity: 0; transform: translateY(-0.35em); }
+  }
+
+  .reveal { opacity: 0; transform: translateY(1.25rem); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.3,1); }
+  .reveal.shown { opacity: 1; transform: none; }
+
+  .expander { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .55s cubic-bezier(.2,.7,.3,1); }
+  .expander > div { overflow: hidden; }
+  .expander[data-open='true'] { grid-template-rows: 1fr; }
+
+  .link-draw { background-image: linear-gradient(currentColor, currentColor); background-size: 0% 1px;
+    background-position: 0 100%; background-repeat: no-repeat; transition: background-size .3s ease; }
+  .link-draw:hover, .link-draw:focus-visible { background-size: 100% 1px; }
+
+  :focus-visible { outline: 2px solid #7C2D91; outline-offset: 3px; border-radius: 2px; }
+  .dark :focus-visible { outline-color: #C88BE8; }
+
+  /* Specimen-only helpers (not part of the mockup's own system) */
+  .swatch-label { font-variant-numeric: tabular-nums; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise, .rotator > span { animation: none; opacity: 1; transform: none; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .expander { transition: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="bg-canvas dark:bg-canvas-dark text-ink dark:text-ink-dark font-sans antialiased">
+
+<!-- ── Nav ─────────────────────────────────────────────────── -->
+<header class="sticky top-0 z-40 border-b border-black/[.08] bg-canvas/80 backdrop-blur-md dark:border-white/[.10] dark:bg-canvas-dark/80">
+  <nav class="mx-auto flex max-w-content items-center justify-between px-6 py-4 sm:px-10">
+    <a href="index.html" class="text-sm font-medium tracking-tight">Gavin McFarland</a>
+    <div class="flex items-center gap-6">
+      <div class="hidden gap-6 text-sm text-muted dark:text-muted-dark sm:flex">
+        <a href="index.html" class="link-draw hover:text-ink dark:hover:text-ink-dark">← Back to mockup</a>
+        <a href="#palette"   class="link-draw hover:text-ink dark:hover:text-ink-dark">Palette</a>
+        <a href="#type"      class="link-draw hover:text-ink dark:hover:text-ink-dark">Type</a>
+        <a href="#components" class="link-draw hover:text-ink dark:hover:text-ink-dark">Components</a>
+      </div>
+      <button id="theme-toggle" type="button" aria-label="Toggle dark mode"
+        class="grid h-9 w-9 place-items-center rounded-full border border-black/[.10] text-muted transition hover:border-accent hover:text-accent dark:border-white/[.14] dark:text-muted-dark dark:hover:border-accent-dark dark:hover:text-accent-dark">
+        <svg class="h-[18px] w-[18px] dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <svg class="hidden h-[18px] w-[18px] dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<!-- ── a. Title / intro ───────────────────────────────────── -->
+<section class="relative overflow-hidden">
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
+    <div class="absolute -top-40 left-1/2 h-[38rem] w-[68rem] -translate-x-1/2 rounded-full bg-gradient-to-br from-accent/[.14] via-accent/[.05] to-transparent blur-3xl dark:from-accent-dark/[.16] dark:via-accent-dark/[.05]"></div>
+    <div class="absolute -bottom-56 right-[-10%] h-[30rem] w-[30rem] rounded-full bg-gradient-to-tr from-[#3B6FE0]/[.10] to-transparent blur-3xl dark:from-[#7FA8FF]/[.10]"></div>
+  </div>
+
+  <div class="mx-auto max-w-content px-6 pb-16 pt-16 sm:px-10 sm:pb-20 sm:pt-24">
+    <p class="rise text-xs uppercase tracking-[.18em] text-faint dark:text-faint-dark" style="--i:0">Design system reference</p>
+    <h1 class="rise mt-7 font-serif text-[clamp(2rem,6vw,3.75rem)] font-normal leading-[1.05] tracking-[-0.02em]" style="--i:1">
+      Specimen — Minimal
+    </h1>
+    <p class="rise mt-6 max-w-xl font-serif text-lg leading-relaxed text-muted dark:text-muted-dark sm:text-xl" style="--i:2">
+      Quiet, typographic, generous whitespace. Serif prose against sans structure,
+      one accent, hairline rules instead of boxes — motion only ever sequences a
+      first read, never decorates.
+    </p>
+    <a href="index.html" class="rise link-draw mt-8 inline-block text-sm text-muted dark:text-muted-dark" style="--i:3">← Back to index.html</a>
+  </div>
+</section>
+
+<!-- ── b. Colour palette ──────────────────────────────────── -->
+<section id="palette" class="border-t border-black/[.08] dark:border-white/[.10]">
+  <div class="mx-auto max-w-content px-6 py-16 sm:px-10 sm:py-20">
+    <div class="flex items-baseline justify-between gap-6">
+      <h2 class="font-serif text-3xl tracking-tight sm:text-4xl">Colour</h2>
+      <span class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Tailwind theme tokens</span>
+    </div>
+    <p class="mt-4 max-w-2xl font-serif text-lg leading-relaxed text-muted dark:text-muted-dark">
+      Six named tokens, each with a light and dark value, defined in <code class="font-sans text-[13px]">tailwind.config</code>.
+      Toggle the switch in the header — every swatch below is rendered with the live token, not a copy.
+    </p>
+
+    <div class="mt-10 grid gap-px overflow-hidden rounded-xl border border-black/[.09] bg-black/[.09] dark:border-white/[.10] dark:bg-white/[.10] sm:grid-cols-2 lg:grid-cols-3">
+
+      <div class="bg-canvas p-6 dark:bg-canvas-dark">
+        <div class="h-20 rounded-lg border border-black/[.09] bg-ink dark:border-white/[.10] dark:bg-ink-dark"></div>
+        <p class="mt-4 text-sm font-medium">ink</p>
+        <p class="mt-1 text-xs text-faint dark:text-faint-dark">Primary text / filled buttons</p>
+        <p class="swatch-label mt-2 text-xs text-muted dark:text-muted-dark">Light #141417 · Dark #F2F2EF</p>
+      </div>
+
+      <div class="bg-canvas p-6 dark:bg-canvas-dark">
+        <div class="h-20 rounded-lg border border-black/[.09] bg-muted dark:border-white/[.10] dark:bg-muted-dark"></div>
+        <p class="mt-4 text-sm font-medium">muted</p>
+        <p class="mt-1 text-xs text-faint dark:text-faint-dark">Secondary text, prose</p>
+        <p class="swatch-label mt-2 text-xs text-muted dark:text-muted-dark">Light #3C3C42 · Dark #B4B4B9</p>
+      </div>
+
+      <div class="bg-canvas p-6 dark:bg-canvas-dark">
+        <div class="h-20 rounded-lg border border-black/[.09] bg-faint dark:border-white/[.10] dark:bg-faint-dark"></div>
+        <p class="mt-4 text-sm font-medium">faint</p>
+        <p class="mt-1 text-xs text-faint dark:text-faint-dark">Eyebrow labels, metadata</p>
+        <p class="swatch-label mt-2 text-xs text-muted dark:text-muted-dark">Light #8B8B91 · Dark #6E6E75</p>
+      </div>
+
+      <div class="bg-canvas p-6 dark:bg-canvas-dark">
+        <div class="h-20 rounded-lg border border-black/[.09] bg-surface dark:border-white/[.10] dark:bg-surface-dark"></div>
+        <p class="mt-4 text-sm font-medium">surface</p>
+        <p class="mt-1 text-xs text-faint dark:text-faint-dark">About section wash, card hover</p>
+        <p class="swatch-label mt-2 text-xs text-muted dark:text-muted-dark">Light #F4F3F1 · Dark #161619</p>
+      </div>
+
+      <div class="bg-canvas p-6 dark:bg-canvas-dark">
+        <div class="h-20 rounded-lg border border-black/[.09] bg-canvas dark:border-white/[.10] dark:bg-canvas-dark"></div>
+        <p class="mt-4 text-sm font-medium">canvas</p>
+        <p class="mt-1 text-xs text-faint dark:text-faint-dark">Page background</p>
+        <p class="swatch-label mt-2 text-xs text-muted dark:text-muted-dark">Light #FFFFFF · Dark #0B0B0C</p>
+      </div>
+
+      <div class="bg-canvas p-6 dark:bg-canvas-dark">
+        <div class="h-20 rounded-lg border border-black/[.09] bg-accent dark:border-white/[.10] dark:bg-accent-dark"></div>
+        <p class="mt-4 text-sm font-medium">accent</p>
+        <p class="mt-1 text-xs text-faint dark:text-faint-dark">Links, focus ring, selection, hover state</p>
+        <p class="swatch-label mt-2 text-xs text-muted dark:text-muted-dark">Light #7C2D91 · Dark #C88BE8</p>
+      </div>
+
+    </div>
+
+    <div class="mt-8 grid gap-px overflow-hidden rounded-xl border border-black/[.09] bg-black/[.09] dark:border-white/[.10] dark:bg-white/[.10] sm:grid-cols-2 lg:grid-cols-3">
+      <div class="bg-canvas p-6 dark:bg-canvas-dark">
+        <div class="h-20 rounded-lg border border-black/[.09] dark:border-white/[.10]" style="background:#3B6FE0"></div>
+        <p class="mt-4 text-sm font-medium">gradient blue (secondary, inline-only)</p>
+        <p class="mt-1 text-xs text-faint dark:text-faint-dark">Second radial field in the hero wash — not a config token</p>
+        <p class="swatch-label mt-2 text-xs text-muted dark:text-muted-dark">Light #3B6FE0 · Dark #7FA8FF</p>
+      </div>
+    </div>
+
+    <p class="mt-6 text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Selection &amp; focus</p>
+    <div class="mt-4 flex flex-wrap items-center gap-8">
+      <p class="font-serif text-lg text-muted dark:text-muted-dark">Try selecting <span style="background:#7C2D91;color:#fff;" class="dark:!bg-[#C88BE8] dark:!text-[#0B0B0C] px-1">this run of text</span></p>
+      <a href="#" class="link-draw text-sm text-accent dark:text-accent-dark" onclick="event.preventDefault()">Tab here to see the focus ring</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── c. Typography ──────────────────────────────────────── -->
+<section class="border-t border-black/[.08] bg-surface dark:border-white/[.10] dark:bg-surface-dark">
+  <div class="mx-auto max-w-content px-6 py-16 sm:px-10 sm:py-20">
+    <h2 class="font-serif text-3xl tracking-tight sm:text-4xl">Typefaces</h2>
+
+    <div class="mt-10 grid gap-10 lg:grid-cols-2">
+      <div>
+        <p class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Sans — Inter (structure, UI)</p>
+        <p class="mt-4 font-sans text-3xl" style="font-weight:400">Sphinx of black quartz, judge my vow</p>
+        <p class="mt-3 font-sans text-3xl" style="font-weight:500">Sphinx of black quartz, judge my vow</p>
+        <p class="mt-3 font-sans text-3xl" style="font-weight:600">Sphinx of black quartz, judge my vow</p>
+        <p class="mt-4 text-sm text-muted dark:text-muted-dark">Weights in use: 400 (regular), 500 (medium, nav &amp; buttons), 600 (semibold). Variable optical size 14–32.</p>
+      </div>
+      <div>
+        <p class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Serif — Tinos (headings, prose)</p>
+        <p class="mt-4 font-serif text-3xl" style="font-weight:400">Sphinx of black quartz, judge my vow</p>
+        <p class="mt-3 font-serif text-3xl italic" style="font-weight:400">Sphinx of black quartz, judge my vow</p>
+        <p class="mt-3 font-serif text-3xl" style="font-weight:700">Sphinx of black quartz, judge my vow</p>
+        <p class="mt-4 text-sm text-muted dark:text-muted-dark">Weights in use: 400 regular, 400 italic, 700 bold. A Times-metric web serif standing in for prose against Inter's sans structure.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── d. Type scale ───────────────────────────────────────── -->
+<section id="type" class="border-t border-black/[.08] dark:border-white/[.10]">
+  <div class="mx-auto max-w-content px-6 py-16 sm:px-10 sm:py-20">
+    <h2 class="font-serif text-3xl tracking-tight sm:text-4xl">Type scale</h2>
+
+    <div class="mt-10 divide-y divide-black/[.09] border-y border-black/[.09] dark:divide-white/[.10] dark:border-white/[.10]">
+
+      <div class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr] sm:items-baseline sm:gap-6">
+        <p class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Display / H1<br>40–80px · clamp</p>
+        <p class="font-serif leading-[1.05] tracking-[-0.02em]" style="font-size:clamp(2rem,6vw,4rem)">Tools for the web</p>
+      </div>
+
+      <div class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr] sm:items-baseline sm:gap-6">
+        <p class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Heading / H2<br>30–36px · 1.875–2.25rem</p>
+        <p class="font-serif text-3xl tracking-tight sm:text-4xl">Selected work</p>
+      </div>
+
+      <div class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr] sm:items-baseline sm:gap-6">
+        <p class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Heading / H3<br>20px · 1.25rem</p>
+        <p class="font-serif text-xl tracking-tight">Plugma</p>
+      </div>
+
+      <div class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr] sm:items-baseline sm:gap-6">
+        <p class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Lead / intro<br>18–20px · 1.125–1.25rem</p>
+        <p class="font-serif leading-relaxed text-muted dark:text-muted-dark text-lg sm:text-xl">Fifteen years across finance, government and retail.</p>
+      </div>
+
+      <div class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr] sm:items-baseline sm:gap-6">
+        <p class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Body / prose<br>16px · 1rem</p>
+        <p class="font-serif leading-relaxed text-muted dark:text-muted-dark">I sit in the gap between design and engineering — the place where a beautiful spec meets the reality of shipping it.</p>
+      </div>
+
+      <div class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr] sm:items-baseline sm:gap-6">
+        <p class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">UI / interface<br>14px · 0.875rem</p>
+        <p class="font-sans text-sm">Nav links, buttons, definition-list values</p>
+      </div>
+
+      <div class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr] sm:items-baseline sm:gap-6">
+        <p class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Form input<br>15px · text-[15px]</p>
+        <p class="font-sans" style="font-size:15px">you@company.com</p>
+      </div>
+
+      <div class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr] sm:items-baseline sm:gap-6">
+        <p class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Eyebrow / micro label<br>12px · uppercase, .14–.18em tracking</p>
+        <p class="font-sans text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Independent · London</p>
+      </div>
+
+      <div class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr] sm:items-baseline sm:gap-6">
+        <p class="text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Badge / tag<br>11px · tabular where numeric</p>
+        <p class="font-sans text-[11px] tracking-wide text-muted dark:text-muted-dark">TypeScript · 2024</p>
+      </div>
+    </div>
+
+    <p class="mt-6 text-sm text-muted dark:text-muted-dark">
+      No monospace typeface in this system — numerals that need to line up (project years) use
+      <code class="font-sans text-[13px]">tabular-nums</code> on Inter rather than switching family.
+    </p>
+  </div>
+</section>
+
+<!-- ── e. Components ──────────────────────────────────────── -->
+<section id="components" class="border-t border-black/[.08] bg-surface dark:border-white/[.10] dark:bg-surface-dark">
+  <div class="mx-auto max-w-content px-6 py-16 sm:px-10 sm:py-20">
+    <h2 class="font-serif text-3xl tracking-tight sm:text-4xl">Components</h2>
+
+    <!-- Buttons -->
+    <p class="mt-10 text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Buttons &amp; links</p>
+    <div class="mt-4 flex flex-wrap items-center gap-x-8 gap-y-4">
+      <a href="#" onclick="event.preventDefault()" class="rounded-full bg-ink px-6 py-3 text-sm font-medium text-white transition hover:bg-accent dark:bg-ink-dark dark:text-canvas-dark dark:hover:bg-accent-dark dark:hover:text-white">
+        See selected work
+      </a>
+      <button type="button" class="rounded-full border border-ink px-6 py-2.5 text-sm font-medium transition hover:border-accent hover:text-accent dark:border-ink-dark dark:hover:border-accent-dark dark:hover:text-accent-dark">
+        Send
+      </button>
+      <a href="#" onclick="event.preventDefault()" class="link-draw text-sm text-muted dark:text-muted-dark">Start a conversation</a>
+      <a href="#" onclick="event.preventDefault()" class="link-draw text-sm text-accent dark:text-accent-dark">Case study →</a>
+    </div>
+
+    <!-- Tags / chips -->
+    <p class="mt-10 text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Toolkit tags</p>
+    <ul class="mt-4 flex flex-wrap gap-2">
+      <li class="rounded-full border border-black/[.12] px-3 py-1 text-xs text-muted dark:border-white/[.14] dark:text-muted-dark">TypeScript</li>
+      <li class="rounded-full border border-black/[.12] px-3 py-1 text-xs text-muted dark:border-white/[.14] dark:text-muted-dark">Svelte</li>
+      <li class="rounded-full border border-black/[.12] px-3 py-1 text-xs text-muted dark:border-white/[.14] dark:text-muted-dark">Node.js</li>
+    </ul>
+
+    <p class="mt-8 text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Tech badges (project card)</p>
+    <ul class="mt-4 flex flex-wrap gap-1.5">
+      <li class="rounded-full bg-black/[.055] px-2.5 py-1 text-[11px] tracking-wide text-muted dark:bg-white/[.08] dark:text-muted-dark">Node.js</li>
+      <li class="rounded-full bg-black/[.055] px-2.5 py-1 text-[11px] tracking-wide text-muted dark:bg-white/[.08] dark:text-muted-dark">TypeScript</li>
+      <li class="rounded-full bg-black/[.055] px-2.5 py-1 text-[11px] tracking-wide text-muted dark:bg-white/[.08] dark:text-muted-dark">Vite</li>
+    </ul>
+
+    <!-- Project card -->
+    <p class="mt-10 text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Project card</p>
+    <div class="mt-4 grid gap-px overflow-hidden rounded-xl border border-black/[.09] bg-black/[.09] dark:border-white/[.10] dark:bg-white/[.10] sm:grid-cols-2">
+      <article class="group flex flex-col bg-canvas p-7 transition-colors hover:bg-surface dark:bg-canvas-dark dark:hover:bg-surface-dark">
+        <div class="flex items-baseline justify-between gap-4">
+          <h3 class="font-serif text-xl tracking-tight">Plugma</h3>
+          <span class="shrink-0 text-xs tabular-nums text-faint dark:text-faint-dark">2024</span>
+        </div>
+        <p class="mt-1 text-xs uppercase tracking-[.13em] text-faint dark:text-faint-dark">Creator &amp; maintainer</p>
+        <p class="mt-4 font-serif leading-relaxed text-muted dark:text-muted-dark">A zero-config CLI for building Figma plugins with true hot-module reloading. Works with React, Svelte and Vue.</p>
+        <ul class="mt-6 flex flex-wrap gap-1.5">
+          <li class="rounded-full bg-black/[.055] px-2.5 py-1 text-[11px] tracking-wide text-muted dark:bg-white/[.08] dark:text-muted-dark">Node.js</li>
+          <li class="rounded-full bg-black/[.055] px-2.5 py-1 text-[11px] tracking-wide text-muted dark:bg-white/[.08] dark:text-muted-dark">TypeScript</li>
+          <li class="rounded-full bg-black/[.055] px-2.5 py-1 text-[11px] tracking-wide text-muted dark:bg-white/[.08] dark:text-muted-dark">Vite</li>
+        </ul>
+        <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-black/[.09] pt-5 text-sm dark:border-white/[.10]">
+          <a href="https://www.plugma.dev/" class="group/link inline-flex items-center gap-1.5 font-medium text-accent dark:text-accent-dark">
+            plugma.dev
+            <svg class="h-3.5 w-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 10 4M4.6 4H10v5.4"/></svg>
+          </a>
+          <a href="#" onclick="event.preventDefault()" class="group/link inline-flex items-center gap-1.5 text-muted transition hover:text-ink dark:text-muted-dark dark:hover:text-ink-dark">
+            Case study
+            <svg class="h-3.5 w-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 10 4M4.6 4H10v5.4"/></svg>
+          </a>
+        </div>
+      </article>
+
+      <article class="group flex flex-col bg-canvas p-7 transition-colors hover:bg-surface dark:bg-canvas-dark dark:hover:bg-surface-dark">
+        <div class="flex items-baseline justify-between gap-4">
+          <h3 class="font-serif text-xl tracking-tight">Askeroo</h3>
+          <span class="shrink-0 text-xs tabular-nums text-faint dark:text-faint-dark">2024</span>
+        </div>
+        <p class="mt-1 text-xs uppercase tracking-[.13em] text-faint dark:text-faint-dark">Creator &amp; maintainer</p>
+        <p class="mt-4 font-serif leading-relaxed text-muted dark:text-muted-dark">A modern CLI prompt library with stateful back-navigation, conditional fields and task runners.</p>
+        <ul class="mt-6 flex flex-wrap gap-1.5">
+          <li class="rounded-full bg-black/[.055] px-2.5 py-1 text-[11px] tracking-wide text-muted dark:bg-white/[.08] dark:text-muted-dark">TypeScript</li>
+          <li class="rounded-full bg-black/[.055] px-2.5 py-1 text-[11px] tracking-wide text-muted dark:bg-white/[.08] dark:text-muted-dark">React</li>
+          <li class="rounded-full bg-black/[.055] px-2.5 py-1 text-[11px] tracking-wide text-muted dark:bg-white/[.08] dark:text-muted-dark">Ink</li>
+        </ul>
+        <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-black/[.09] pt-5 text-sm dark:border-white/[.10]">
+          <a href="https://github.com/gavinmcfarland/askeroo" class="group/link inline-flex items-center gap-1.5 font-medium text-accent dark:text-accent-dark">
+            GitHub
+            <svg class="h-3.5 w-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 10 4M4.6 4H10v5.4"/></svg>
+          </a>
+          <a href="#" onclick="event.preventDefault()" class="group/link inline-flex items-center gap-1.5 text-muted transition hover:text-ink dark:text-muted-dark dark:hover:text-ink-dark">
+            Case study
+            <svg class="h-3.5 w-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 10 4M4.6 4H10v5.4"/></svg>
+          </a>
+        </div>
+      </article>
+    </div>
+
+    <!-- Definition list / rows -->
+    <p class="mt-10 text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Fact rows (definition list)</p>
+    <dl class="mt-4 divide-y divide-black/[.09] border-y border-black/[.09] text-sm dark:divide-white/[.10] dark:border-white/[.10]">
+      <div class="flex justify-between gap-4 py-3.5">
+        <dt class="text-faint dark:text-faint-dark">Based</dt>
+        <dd>London, UK</dd>
+      </div>
+      <div class="flex justify-between gap-4 py-3.5">
+        <dt class="text-faint dark:text-faint-dark">Experience</dt>
+        <dd>15 years</dd>
+      </div>
+      <div class="flex justify-between gap-4 py-3.5">
+        <dt class="text-faint dark:text-faint-dark">Focus</dt>
+        <dd class="text-right">Design systems, dev tools</dd>
+      </div>
+    </dl>
+
+    <!-- Link rows with arrow -->
+    <p class="mt-10 text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Directory link rows</p>
+    <ul class="mt-4 divide-y divide-black/[.09] border-y border-black/[.09] dark:divide-white/[.10] dark:border-white/[.10]">
+      <li><a href="mailto:gavin@limitlessloop.com" class="group flex items-center justify-between py-3.5 text-sm transition hover:text-accent dark:hover:text-accent-dark">
+        <span>gavin@limitlessloop.com</span>
+        <span class="text-faint transition group-hover:translate-x-0.5 group-hover:text-accent dark:group-hover:text-accent-dark">↗</span>
+      </a></li>
+      <li><a href="https://github.com/gavinmcfarland" class="group flex items-center justify-between py-3.5 text-sm transition hover:text-accent dark:hover:text-accent-dark">
+        <span>GitHub</span>
+        <span class="text-faint transition group-hover:translate-x-0.5 group-hover:text-accent dark:group-hover:text-accent-dark">↗</span>
+      </a></li>
+    </ul>
+
+    <!-- Form fields -->
+    <p class="mt-10 text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Form fields</p>
+    <form class="mt-4 max-w-lg space-y-5" novalidate onsubmit="event.preventDefault()">
+      <div class="grid gap-5 sm:grid-cols-2">
+        <label class="block">
+          <span class="text-xs uppercase tracking-[.14em] text-faint dark:text-faint-dark">Name</span>
+          <input type="text" placeholder="Ada Lovelace"
+            class="mt-2 w-full border-0 border-b border-black/[.16] bg-transparent px-0 py-2.5 text-[15px] placeholder:text-faint/70 focus:border-accent focus:ring-0 dark:border-white/[.18] dark:placeholder:text-faint-dark dark:focus:border-accent-dark" />
+        </label>
+        <label class="block">
+          <span class="text-xs uppercase tracking-[.14em] text-faint dark:text-faint-dark">Email</span>
+          <input type="email" placeholder="you@company.com"
+            class="mt-2 w-full border-0 border-b border-black/[.16] bg-transparent px-0 py-2.5 text-[15px] placeholder:text-faint/70 focus:border-accent focus:ring-0 dark:border-white/[.18] dark:placeholder:text-faint-dark dark:focus:border-accent-dark" />
+        </label>
+      </div>
+      <label class="block">
+        <span class="text-xs uppercase tracking-[.14em] text-faint dark:text-faint-dark">Message</span>
+        <textarea rows="3" placeholder="What are you working on?"
+          class="mt-2 w-full resize-none border-0 border-b border-black/[.16] bg-transparent px-0 py-2.5 text-[15px] placeholder:text-faint/70 focus:border-accent focus:ring-0 dark:border-white/[.18] dark:placeholder:text-faint-dark dark:focus:border-accent-dark"></textarea>
+      </label>
+    </form>
+
+    <!-- Expanding panel -->
+    <p class="mt-10 text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Expanding panel</p>
+    <button id="specimen-toggle" type="button" aria-expanded="false" aria-controls="specimen-panel"
+      class="group mt-4 inline-flex items-center gap-3 rounded-full bg-ink px-6 py-3 text-sm font-medium text-white transition hover:bg-accent dark:bg-ink-dark dark:text-canvas-dark dark:hover:bg-accent-dark dark:hover:text-white">
+      <span id="specimen-toggle-label">Send a message</span>
+      <svg class="h-4 w-4 transition-transform duration-500 group-aria-expanded:rotate-45" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <path d="M8 3v10M3 8h10"/>
+      </svg>
+    </button>
+    <div id="specimen-panel" class="expander mt-2" data-open="false">
+      <div class="pt-6">
+        <p class="max-w-md font-serif text-muted dark:text-muted-dark">Zero-to-auto height via a 0fr → 1fr grid-template-rows transition — no JS height measurement needed.</p>
+      </div>
+    </div>
+
+    <!-- Hero-style reveal / rotator -->
+    <p class="mt-10 text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Hero reveal &amp; rotating word</p>
+    <p class="mt-4 font-serif text-2xl leading-snug tracking-[-0.02em]">
+      Built for
+      <span class="rotator text-accent dark:text-accent-dark">
+        <span style="--n:0">designers</span>
+        <span style="--n:1">developers</span>
+        <span style="--n:2">everyone</span>
+        <span class="invisible" aria-hidden="true">developers</span>
+      </span>
+    </p>
+    <p class="mt-2 text-sm text-muted dark:text-muted-dark">Each word fades through on a 12s cycle via <code class="font-sans text-[13px]">.rotator</code>; the <code class="font-sans text-[13px]">.rise</code> class staggers the hero lines in on load with <code class="font-sans text-[13px]">--i</code>.</p>
+
+    <!-- Rules -->
+    <p class="mt-10 text-xs uppercase tracking-[.16em] text-faint dark:text-faint-dark">Rules</p>
+    <div class="mt-4 space-y-4">
+      <hr class="border-black/[.08] dark:border-white/[.10]" />
+      <p class="text-sm text-muted dark:text-muted-dark">Hairline dividers separate sections instead of cards or shadows.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── f. Texture / pattern ───────────────────────────────── -->
+<section class="border-t border-black/[.08] dark:border-white/[.10]">
+  <div class="mx-auto max-w-content px-6 py-16 sm:px-10 sm:py-20">
+    <h2 class="font-serif text-3xl tracking-tight sm:text-4xl">Texture</h2>
+    <p class="mt-4 max-w-2xl font-serif text-lg leading-relaxed text-muted dark:text-muted-dark">
+      Two devices recur: a soft radial gradient wash behind the hero, and a "hairline grid" where
+      the 1px gap between cards is the border itself (a coloured background peeking through a
+      <code class="font-sans text-[13px]">gap-px</code> grid), rather than individual box borders.
+    </p>
+
+    <div class="relative mt-8 h-56 overflow-hidden rounded-xl border border-black/[.09] dark:border-white/[.10]">
+      <div aria-hidden="true" class="pointer-events-none absolute inset-0">
+        <div class="absolute -top-24 left-1/2 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-gradient-to-br from-accent/[.14] via-accent/[.05] to-transparent blur-3xl dark:from-accent-dark/[.16] dark:via-accent-dark/[.05]"></div>
+        <div class="absolute -bottom-20 right-[-10%] h-48 w-48 rounded-full bg-gradient-to-tr from-[#3B6FE0]/[.10] to-transparent blur-3xl dark:from-[#7FA8FF]/[.10]"></div>
+      </div>
+      <div class="relative flex h-full items-center justify-center">
+        <p class="text-xs uppercase tracking-[.18em] text-faint dark:text-faint-dark">Hero gradient wash</p>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-px overflow-hidden rounded-xl border border-black/[.09] bg-black/[.09] dark:border-white/[.10] dark:bg-white/[.10] sm:grid-cols-3">
+      <div class="bg-canvas p-6 text-center text-xs text-faint dark:bg-canvas-dark dark:text-faint-dark">1px gap</div>
+      <div class="bg-canvas p-6 text-center text-xs text-faint dark:bg-canvas-dark dark:text-faint-dark">= border</div>
+      <div class="bg-canvas p-6 text-center text-xs text-faint dark:bg-canvas-dark dark:text-faint-dark">no shadows</div>
+    </div>
+  </div>
+</section>
+
+<footer class="border-t border-black/[.08] dark:border-white/[.10]">
+  <div class="mx-auto flex max-w-content flex-col gap-3 px-6 py-8 text-sm text-faint dark:text-faint-dark sm:flex-row sm:items-center sm:justify-between sm:px-10">
+    <p>© 2026 Gavin McFarland</p>
+    <a href="index.html" class="link-draw hover:text-ink dark:hover:text-ink-dark">← Back to mockup</a>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ── Theme (same mechanism as index.html) ─────────────── */
+  const themeToggle = document.getElementById('theme-toggle');
+  themeToggle?.addEventListener('click', () => {
+    const dark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+  });
+
+  /* ── Scroll reveal (guarded, same easing as index.html) ─ */
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries, obs) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        e.target.classList.add('shown');
+        obs.unobserve(e.target);
+      }
+    }, { rootMargin: '0px 0px -10% 0px' });
+    document.querySelectorAll('.reveal').forEach((el, i) => {
+      el.style.transitionDelay = `${Math.min(i, 6) * 60}ms`;
+      io.observe(el);
+    });
+  }
+
+  /* ── Expanding panel demo ───────────────────────────────── */
+  const toggle = document.getElementById('specimen-toggle');
+  const panel  = document.getElementById('specimen-panel');
+  const label  = document.getElementById('specimen-toggle-label');
+  toggle?.addEventListener('click', () => {
+    const open = panel.dataset.open !== 'true';
+    panel.dataset.open = String(open);
+    toggle.setAttribute('aria-expanded', String(open));
+    label.textContent = open ? 'Close' : 'Send a message';
+  });
+})();
+</script>
+</body>
+</html>

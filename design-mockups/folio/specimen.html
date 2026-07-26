@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — Folio — Gavin McFarland</title>
+<meta name="description" content="Design specimen for the Folio mockup: tokens, type scale and components." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+
+<!-- Set theme before first paint so there is no flash of the wrong mode. Same key as index.html. -->
+<script>
+  (() => {
+    const stored = localStorage.getItem('gm-theme');
+    const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          paper: { DEFAULT: '#FBFAF7', dark: '#0E0F10' },
+          ink:   { DEFAULT: '#16171A', dark: '#E8E8E5' },
+          muted: { DEFAULT: '#55575E', dark: '#9B9C9C' },
+          faint: { DEFAULT: '#8B8D95', dark: '#6A6C6E' },
+          teal:  { DEFAULT: '#17685A', dark: '#63C2A9' },
+          term:  '#0A0B0C',
+          prompt:'#5BE59A',
+          rule:  { DEFAULT: 'rgba(22,23,26,.14)', dark: 'rgba(232,232,229,.16)' },
+        },
+        fontFamily: {
+          sans: ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     GAVIN McFARLAND · Folio — specimen
+     Same shell as index.html / project.html: document rows top and
+     bottom, hanging indents, leader dots, the terminal block. This
+     page just points the vocabulary at itself.
+     ───────────────────────────────────────────────────────────── */
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+
+  ::selection { background: #17685A; color: #FBFAF7; }
+  .dark ::selection { background: #63C2A9; color: #0E0F10; }
+
+  :focus-visible { outline: 2px solid #17685A; outline-offset: 3px; border-radius: 2px; }
+  .dark :focus-visible { outline-color: #63C2A9; }
+
+  .rail a {
+    display: block; padding: .2rem 0 .2rem .75rem;
+    border-left: 2px solid transparent;
+    font-style: italic; font-weight: 400;
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .rail a[aria-current='true'] { border-left-color: #17685A; color: #16171A; }
+  .dark .rail a[aria-current='true'] { border-left-color: #63C2A9; color: #E8E8E5; }
+
+  .leader {
+    flex: 1 1 auto; min-width: 1.5rem;
+    border-bottom: 1px dotted rgba(22,23,26,.3);
+    transform: translateY(-.24em);
+  }
+  .dark .leader { border-bottom-color: rgba(232,232,229,.28); }
+
+  .tp { display: grid; grid-template-columns: 1fr; gap: .35rem; }
+  @media (min-width: 820px) {
+    .tp { grid-template-columns: 12rem 1fr; gap: .5rem 1.75rem; align-items: baseline; }
+  }
+
+  .ln {
+    color: #17685A;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .18em;
+    text-decoration-color: rgba(23,104,90,.3);
+    transition: text-decoration-color .2s ease;
+  }
+  .ln:hover { text-decoration-color: currentColor; }
+  .dark .ln { color: #63C2A9; text-decoration-color: rgba(99,194,169,.32); }
+
+  .entry { transition: background-color .2s ease; }
+  .entry:hover { background-color: rgba(22,23,26,.03); }
+  .dark .entry:hover { background-color: rgba(232,232,229,.045); }
+  .entry .mk { opacity: 0; transform: translateX(-.25rem); transition: opacity .2s ease, transform .2s ease; }
+  .entry:hover .mk, .entry:focus-visible .mk { opacity: 1; transform: none; }
+
+  .prose p { margin: 0 0 1.1rem; max-width: 64ch; line-height: 1.72; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose strong { font-weight: 500; color: #16171A; }
+  .dark .prose strong { color: #E8E8E5; }
+
+  .tree { white-space: pre; overflow-x: auto; }
+
+  .sec { scroll-margin-top: 4rem; }
+
+  /* Swatch card for the colour section. */
+  .swatch {
+    aspect-ratio: 3 / 2;
+    border-radius: 3px;
+    border: 1px solid rgba(22,23,26,.14);
+  }
+  .dark .swatch { border-color: rgba(232,232,229,.16); }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(.5rem); } to { opacity: 1; transform: none; } }
+  .rise { opacity: 0; animation: rise .6s cubic-bezier(.2,.7,.3,1) forwards; animation-delay: calc(var(--i,0) * 70ms); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise { animation: none; opacity: 1; }
+    html { scroll-behavior: auto; }
+    .entry .mk { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+
+<body class="bg-paper font-sans text-ink antialiased dark:bg-paper-dark dark:text-ink-dark">
+
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-teal focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
+
+<!-- ── Document row ─────────────────────────────────────────── -->
+<div class="rise border-b border-rule px-6 py-3 font-mono text-[.74rem] tracking-[.04em] text-muted dark:border-rule-dark dark:text-muted-dark sm:px-10" style="--i:0">
+  <div class="mx-auto flex max-w-5xl items-baseline justify-between gap-4">
+    <span class="flex items-baseline gap-2">
+      <a class="transition hover:text-teal dark:hover:text-teal-dark" href="index.html">gavin mcfarland</a>
+      <span class="text-faint dark:text-faint-dark"> / </span>
+      <span class="font-medium text-ink dark:text-ink-dark" aria-current="page">specimen</span>
+    </span>
+    <span class="hidden sm:inline">folio — design system</span>
+
+    <span class="flex items-baseline gap-4">
+      <span>london</span>
+      <button id="theme-toggle" type="button" aria-label="Toggle dark mode"
+        class="-mb-1 rounded p-0.5 text-faint transition hover:text-ink dark:text-faint-dark dark:hover:text-ink-dark">
+        <svg class="h-3.5 w-3.5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <svg class="hidden h-3.5 w-3.5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+    </span>
+  </div>
+</div>
+
+<div class="mx-auto flex max-w-5xl gap-12 px-6 py-16 sm:px-10 sm:py-20">
+
+  <!-- ── Rail ─────────────────────────────────────────────────── -->
+  <nav class="rail rise sticky top-8 hidden h-max w-36 shrink-0 font-mono text-[.8rem] text-faint dark:text-faint-dark lg:block" style="--i:1" aria-label="Contents">
+    <a href="#intro">intro</a>
+    <a href="#colour">colour</a>
+    <a href="#type">type</a>
+    <a href="#scale">scale</a>
+    <a href="#components">components</a>
+    <a href="#end">end</a>
+  </nav>
+
+  <main id="main" class="min-w-0 flex-1">
+
+    <!-- ── a. Title / intro ─────────────────────────────────── -->
+    <section id="intro" class="sec rise" style="--i:2">
+      <h2 class="mb-5 font-mono text-[.8rem] italic text-faint dark:text-faint-dark lg:sr-only">intro</h2>
+
+      <p class="font-mono text-[.8rem] italic text-faint dark:text-faint-dark">specimen</p>
+      <h1 class="mt-2 max-w-[30ch] text-[clamp(1.5rem,3.4vw,2rem)] font-medium leading-[1.25] tracking-[-.02em]">
+        Folio
+      </h1>
+      <p class="mt-5 max-w-[64ch] text-[1rem] leading-[1.72] text-muted dark:text-muted-dark">
+        A manual and a terminal fused into one document: monospace carries structure — labels,
+        figures, paths, leader-dot rows — while DM Sans carries the argument. Warm paper by day,
+        near-black by night, one teal accent throughout.
+      </p>
+    </section>
+
+    <!-- ── b. Colour palette ───────────────────────────────────── -->
+    <section id="colour" class="sec rise mt-20 sm:mt-24" style="--i:3">
+      <h2 class="mb-5 font-mono text-[.8rem] italic text-faint dark:text-faint-dark lg:sr-only">colour</h2>
+
+      <p class="font-mono text-[.86rem] leading-[2] text-muted dark:text-muted-dark">light — <span class="text-ink dark:text-ink-dark">token / value</span></p>
+      <div class="mt-4 grid grid-cols-2 gap-x-6 gap-y-7 sm:grid-cols-3 lg:grid-cols-4">
+        <div>
+          <div class="swatch" style="background:#FBFAF7"></div>
+          <p class="mt-2 font-mono text-[.82rem]">paper</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#FBFAF7</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:#16171A"></div>
+          <p class="mt-2 font-mono text-[.82rem]">ink</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#16171A</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:#55575E"></div>
+          <p class="mt-2 font-mono text-[.82rem]">muted</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#55575E</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:#8B8D95"></div>
+          <p class="mt-2 font-mono text-[.82rem]">faint</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#8B8D95</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:#17685A"></div>
+          <p class="mt-2 font-mono text-[.82rem]">teal</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#17685A</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:rgba(22,23,26,.14);background-color:#FBFAF7;background-image:linear-gradient(rgba(22,23,26,.14),rgba(22,23,26,.14))"></div>
+          <p class="mt-2 font-mono text-[.82rem]">rule</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">rgba(22,23,26,.14)</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:#0A0B0C"></div>
+          <p class="mt-2 font-mono text-[.82rem]">term</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#0A0B0C (fixed, both modes)</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:#5BE59A"></div>
+          <p class="mt-2 font-mono text-[.82rem]">prompt</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#5BE59A (terminal only)</p>
+        </div>
+      </div>
+
+      <p class="mt-10 font-mono text-[.86rem] leading-[2] text-muted dark:text-muted-dark">dark — <span class="text-ink dark:text-ink-dark">token / value</span></p>
+      <div class="mt-4 grid grid-cols-2 gap-x-6 gap-y-7 sm:grid-cols-3 lg:grid-cols-4">
+        <div>
+          <div class="swatch" style="background:#0E0F10"></div>
+          <p class="mt-2 font-mono text-[.82rem]">paper-dark</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#0E0F10</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:#E8E8E5"></div>
+          <p class="mt-2 font-mono text-[.82rem]">ink-dark</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#E8E8E5</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:#9B9C9C"></div>
+          <p class="mt-2 font-mono text-[.82rem]">muted-dark</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#9B9C9C</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:#6A6C6E"></div>
+          <p class="mt-2 font-mono text-[.82rem]">faint-dark</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#6A6C6E</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:#63C2A9"></div>
+          <p class="mt-2 font-mono text-[.82rem]">teal-dark</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">#63C2A9</p>
+        </div>
+        <div>
+          <div class="swatch" style="background:#0E0F10;background-image:linear-gradient(rgba(232,232,229,.16),rgba(232,232,229,.16))"></div>
+          <p class="mt-2 font-mono text-[.82rem]">rule-dark</p>
+          <p class="font-mono text-[.72rem] text-faint dark:text-faint-dark">rgba(232,232,229,.16)</p>
+        </div>
+      </div>
+
+      <p class="mt-8 max-w-[64ch] leading-[1.72] text-muted dark:text-muted-dark">
+        Selection uses <span class="font-mono text-[.86rem]">teal</span> on
+        <span class="font-mono text-[.86rem]">paper</span> (and the reverse in dark). Try selecting this line —
+        <span class="font-mono text-[.86rem]">::selection</span> is themed too.
+      </p>
+    </section>
+
+    <!-- ── c. Typography ───────────────────────────────────────── -->
+    <section id="type" class="sec rise mt-20 sm:mt-24" style="--i:4">
+      <h2 class="mb-5 font-mono text-[.8rem] italic text-faint dark:text-faint-dark lg:sr-only">type</h2>
+
+      <div class="tp border-b border-rule pb-7 dark:border-rule-dark">
+        <dt class="font-mono text-[.88rem] text-ink dark:text-ink-dark">DM Sans<br /><span class="text-faint dark:text-faint-dark">400, 500, 400 italic</span></dt>
+        <dd>
+          <p class="text-[1.6rem] font-normal leading-[1.3] tracking-[-.02em]">Sphinx of black quartz, judge my vow.</p>
+          <p class="mt-2 text-[1.6rem] font-medium leading-[1.3] tracking-[-.02em]">Sphinx of black quartz, judge my vow.</p>
+          <p class="mt-2 text-[1.6rem] italic leading-[1.3] tracking-[-.02em] text-muted dark:text-muted-dark">Sphinx of black quartz, judge my vow.</p>
+          <p class="mt-3 max-w-[54ch] leading-[1.72] text-muted dark:text-muted-dark">Carries every paragraph of prose — summary copy, capability descriptions, the terminal's contact labels.</p>
+        </dd>
+      </div>
+
+      <div class="tp mt-7">
+        <dt class="font-mono text-[.88rem] text-ink dark:text-ink-dark">JetBrains Mono<br /><span class="text-faint dark:text-faint-dark">400, 500, 400 italic</span></dt>
+        <dd>
+          <p class="font-mono text-[1.4rem] font-normal leading-[1.3]">Sphinx of black quartz, judge my vow.</p>
+          <p class="mt-2 font-mono text-[1.4rem] font-medium leading-[1.3]">Sphinx of black quartz, judge my vow.</p>
+          <p class="mt-2 font-mono text-[1.4rem] italic leading-[1.3] text-faint dark:text-faint-dark">Sphinx of black quartz, judge my vow.</p>
+          <p class="mt-3 max-w-[54ch] leading-[1.72] text-muted dark:text-muted-dark">Carries every label, section marker, rail entry, file path, key/value row and the terminal block.</p>
+        </dd>
+      </div>
+    </section>
+
+    <!-- ── d. Type scale ────────────────────────────────────────── -->
+    <section id="scale" class="sec rise mt-20 sm:mt-24" style="--i:5">
+      <h2 class="mb-5 font-mono text-[.8rem] italic text-faint dark:text-faint-dark lg:sr-only">scale</h2>
+
+      <div class="space-y-6">
+        <div class="tp items-baseline border-b border-rule pb-4 dark:border-rule-dark">
+          <dt class="font-mono text-[.78rem] text-faint dark:text-faint-dark">display <span class="text-ink dark:text-ink-dark">clamp(1.5rem,3.4vw,2rem)</span></dt>
+          <dd class="text-[clamp(1.5rem,3.4vw,2rem)] font-medium leading-[1.25] tracking-[-.02em]">I build the small tools teams are missing.</dd>
+        </div>
+        <div class="tp items-baseline border-b border-rule pb-4 dark:border-rule-dark">
+          <dt class="font-mono text-[.78rem] text-faint dark:text-faint-dark">lede <span class="text-ink dark:text-ink-dark">1.05rem / 16.8px</span></dt>
+          <dd class="text-[1.05rem] leading-[1.6] text-muted dark:text-muted-dark">Plugma — a zero-config toolchain for Figma plugins.</dd>
+        </div>
+        <div class="tp items-baseline border-b border-rule pb-4 dark:border-rule-dark">
+          <dt class="font-mono text-[.78rem] text-faint dark:text-faint-dark">body <span class="text-ink dark:text-ink-dark">1rem / 16px</span></dt>
+          <dd class="text-[1rem] leading-[1.72] text-muted dark:text-muted-dark">Fifteen years in the gap between design and engineering.</dd>
+        </div>
+        <div class="tp items-baseline border-b border-rule pb-4 dark:border-rule-dark">
+          <dt class="font-mono text-[.78rem] text-faint dark:text-faint-dark">entry <span class="text-ink dark:text-ink-dark">.92rem / 14.7px</span></dt>
+          <dd class="font-mono text-[.92rem]">table-creator</dd>
+        </div>
+        <div class="tp items-baseline border-b border-rule pb-4 dark:border-rule-dark">
+          <dt class="font-mono text-[.78rem] text-faint dark:text-faint-dark">key/value <span class="text-ink dark:text-ink-dark">.88rem / 14.1px</span></dt>
+          <dd class="font-mono text-[.88rem] text-ink dark:text-ink-dark">design systems</dd>
+        </div>
+        <div class="tp items-baseline border-b border-rule pb-4 dark:border-rule-dark">
+          <dt class="font-mono text-[.78rem] text-faint dark:text-faint-dark">terminal <span class="text-ink dark:text-ink-dark">.86rem / 13.8px</span></dt>
+          <dd class="font-mono text-[.86rem] text-prompt"><span class="select-none opacity-70">$</span> contact gavin</dd>
+        </div>
+        <div class="tp items-baseline border-b border-rule pb-4 dark:border-rule-dark">
+          <dt class="font-mono text-[.78rem] text-faint dark:text-faint-dark">label / rail <span class="text-ink dark:text-ink-dark">.8rem / 12.8px</span></dt>
+          <dd class="font-mono text-[.8rem] italic text-faint dark:text-faint-dark">summary</dd>
+        </div>
+        <div class="tp items-baseline">
+          <dt class="font-mono text-[.78rem] text-faint dark:text-faint-dark">micro <span class="text-ink dark:text-ink-dark">.74rem / 11.8px</span></dt>
+          <dd class="font-mono text-[.74rem] tracking-[.04em] text-faint dark:text-faint-dark">london · july 2026 · gavin mcfarland</dd>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── e. Components ───────────────────────────────────────── -->
+    <section id="components" class="sec rise mt-20 sm:mt-24" style="--i:6">
+      <h2 class="mb-5 font-mono text-[.8rem] italic text-faint dark:text-faint-dark lg:sr-only">components</h2>
+
+      <p class="font-mono text-[.8rem] italic text-faint dark:text-faint-dark">breadcrumb</p>
+      <p class="mt-3 font-mono text-[.86rem]">
+        <a class="transition hover:text-teal dark:hover:text-teal-dark" href="index.html">gavin mcfarland</a>
+        <span class="text-faint dark:text-faint-dark"> / </span>
+        <a class="transition hover:text-teal dark:hover:text-teal-dark" href="index.html#work">work</a>
+        <span class="text-faint dark:text-faint-dark"> / </span>
+        <span class="font-medium text-ink dark:text-ink-dark" aria-current="page">plugma</span>
+      </p>
+
+      <p class="mt-10 font-mono text-[.8rem] italic text-faint dark:text-faint-dark">links — .ln</p>
+      <p class="mt-3 max-w-[64ch] leading-[1.72] text-muted dark:text-muted-dark">
+        Prose links, like <a class="ln" href="#components">this reference to askeroo</a>, use a faded
+        teal underline that solidifies on hover. External ones close with
+        <a class="ln" href="#components" target="_blank" rel="noopener noreferrer">a rotated arrow &#8599;</a>.
+      </p>
+
+      <p class="mt-10 font-mono text-[.8rem] italic text-faint dark:text-faint-dark">work rows — leader dots</p>
+      <div class="-mx-3 mt-3 border-t border-rule dark:border-rule-dark">
+        <a class="entry flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-rule px-3 py-4 dark:border-rule-dark" href="#components">
+          <span class="font-mono text-[.92rem]">plugma</span>
+          <span class="mk font-mono text-[.75rem] text-teal dark:text-teal-dark">&rarr;</span>
+          <span class="leader"></span>
+          <span class="text-[.92rem] text-muted dark:text-muted-dark">Zero-config toolchain for Figma plugins</span>
+          <span class="ml-1 font-mono text-[.78rem] text-faint dark:text-faint-dark">2024</span>
+        </a>
+        <a class="entry flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-rule px-3 py-4 dark:border-rule-dark" href="#components" target="_blank" rel="noopener noreferrer">
+          <span class="font-mono text-[.92rem]">askeroo</span>
+          <span class="mk font-mono text-[.75rem] text-teal dark:text-teal-dark">&#8599;</span>
+          <span class="leader"></span>
+          <span class="text-[.92rem] text-muted dark:text-muted-dark">CLI prompts with back-navigation</span>
+          <span class="ml-1 font-mono text-[.78rem] text-faint dark:text-faint-dark">2024</span>
+        </a>
+        <a class="entry flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-rule px-3 py-4 dark:border-rule-dark" href="#components" target="_blank" rel="noopener noreferrer">
+          <span class="font-mono text-[.92rem]">figlet</span>
+          <span class="mk font-mono text-[.75rem] text-teal dark:text-teal-dark">&#8599;</span>
+          <span class="leader"></span>
+          <span class="text-[.92rem] text-muted dark:text-muted-dark">Plugin IDE in the browser</span>
+          <span class="ml-1 font-mono text-[.78rem] text-faint dark:text-faint-dark">2023</span>
+        </a>
+      </div>
+
+      <p class="mt-10 font-mono text-[.8rem] italic text-faint dark:text-faint-dark">hanging indent — .tp / dl</p>
+      <dl class="mt-3 space-y-7">
+        <div class="tp">
+          <dt class="font-mono text-[.88rem] text-ink dark:text-ink-dark">design systems</dt>
+          <dd class="max-w-[54ch] leading-[1.72] text-muted dark:text-muted-dark">
+            Tokens, components, and the governance that keeps them honest.
+          </dd>
+        </div>
+        <div class="tp">
+          <dt class="font-mono text-[.88rem] text-ink dark:text-ink-dark">developer tooling</dt>
+          <dd class="max-w-[54ch] leading-[1.72] text-muted dark:text-muted-dark">
+            CLIs, plugins and build steps — the small piece of infrastructure nobody owns.
+          </dd>
+        </div>
+      </dl>
+
+      <p class="mt-10 font-mono text-[.8rem] italic text-faint dark:text-faint-dark">key/value facts — leader dots as rules</p>
+      <dl class="mt-3 max-w-lg font-mono text-[.86rem]">
+        <div class="flex items-baseline gap-3 border-b border-rule py-3 dark:border-rule-dark">
+          <dt class="text-faint dark:text-faint-dark">year</dt>
+          <dd class="leader"></dd><dd>2024</dd>
+        </div>
+        <div class="flex items-baseline gap-3 border-b border-rule py-3 dark:border-rule-dark">
+          <dt class="text-faint dark:text-faint-dark">role</dt>
+          <dd class="leader"></dd><dd>creator, maintainer</dd>
+        </div>
+        <div class="flex items-baseline gap-3 py-3">
+          <dt class="text-faint dark:text-faint-dark">status</dt>
+          <dd class="leader"></dd><dd>maintained</dd>
+        </div>
+      </dl>
+
+      <p class="mt-10 font-mono text-[.8rem] italic text-faint dark:text-faint-dark">environment rows — flush key</p>
+      <dl class="mt-3 space-y-2.5 font-mono text-[.86rem]">
+        <div class="flex gap-5">
+          <dt class="w-20 shrink-0 text-faint dark:text-faint-dark">stack</dt>
+          <dd class="text-muted dark:text-muted-dark">typescript, svelte, node, react, vite, figma-api</dd>
+        </div>
+        <div class="flex gap-5">
+          <dt class="w-20 shrink-0 text-faint dark:text-faint-dark">based</dt>
+          <dd class="text-muted dark:text-muted-dark">london, uk</dd>
+        </div>
+      </dl>
+
+      <p class="mt-10 font-mono text-[.8rem] italic text-faint dark:text-faint-dark">prose — .prose</p>
+      <div class="prose mt-3 text-muted dark:text-muted-dark">
+        <p>
+          Every plugin runs two contexts that cannot see each other: a <strong>sandbox</strong> with
+          document access and no DOM, and an <strong>iframe</strong> with a DOM and no document access.
+        </p>
+      </div>
+
+      <p class="mt-10 font-mono text-[.8rem] italic text-faint dark:text-faint-dark">file tree — .tree</p>
+      <div class="tree mt-3 font-mono text-[.82rem] leading-[1.9] text-muted dark:text-muted-dark">plugin/
+├── manifest.json    <span class="text-faint dark:text-faint-dark">what Figma reads</span>
+├── src/
+│   ├── main.ts      <span class="text-faint dark:text-faint-dark">sandbox — document access</span>
+│   └── ui.tsx       <span class="text-faint dark:text-faint-dark">iframe — interface</span>
+└── package.json</div>
+
+      <p class="mt-10 font-mono text-[.8rem] italic text-faint dark:text-faint-dark">prev / next nav</p>
+      <nav class="mt-3 border-t border-rule pt-6 font-mono text-[.86rem] dark:border-rule-dark" aria-label="More projects">
+        <div class="flex flex-wrap gap-x-10 gap-y-2">
+          <p><span class="text-faint dark:text-faint-dark">prev</span> <a class="ln" href="#components">icon-preview</a></p>
+          <p><span class="text-faint dark:text-faint-dark">next</span> <a class="ln" href="#components">askeroo</a></p>
+        </div>
+        <p class="mt-3"><a class="ln" href="#components">all work</a></p>
+      </nav>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── Document row ─────────────────────────────────────────── -->
+<div class="border-t border-rule px-6 py-3 font-mono text-[.74rem] tracking-[.04em] text-faint dark:border-rule-dark dark:text-faint-dark sm:px-10">
+  <div class="mx-auto flex max-w-5xl items-baseline justify-between gap-4">
+    <span>london</span>
+    <span class="hidden sm:inline">july 2026</span>
+    <span>gavin mcfarland</span>
+  </div>
+</div>
+
+<!-- ── Terminal ─────────────────────────────────────────────── -->
+<footer id="end" class="sec bg-term px-6 py-16 text-[#E8E8E5] sm:px-10 sm:py-20">
+  <div class="mx-auto max-w-5xl">
+
+    <p class="font-mono text-[.86rem] text-prompt">
+      <span class="select-none opacity-70">$</span> back to folio
+    </p>
+
+    <ul class="mt-8 space-y-px font-mono text-[.86rem]">
+      <li>
+        <a class="group flex items-baseline gap-4 py-2.5 text-[#B9BDC2] transition hover:text-white" href="index.html">
+          <span class="w-20 shrink-0 text-[#5F6469]">index</span>
+          <span class="border-b border-transparent transition group-hover:border-prompt">index.html</span>
+        </a>
+      </li>
+      <li>
+        <a class="group flex items-baseline gap-4 py-2.5 text-[#B9BDC2] transition hover:text-white" href="project.html">
+          <span class="w-20 shrink-0 text-[#5F6469]">project</span>
+          <span class="border-b border-transparent transition group-hover:border-prompt">project.html</span>
+        </a>
+      </li>
+    </ul>
+
+    <p class="mt-14 border-t border-white/10 pt-5 font-mono text-[.74rem] text-[#5F6469]">
+      specimen · folio · gavin mcfarland
+    </p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  const toggle = document.getElementById('theme-toggle');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const dark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('gm-theme', dark ? 'dark' : 'light');
+    });
+  }
+
+  /* Rail tracking, same as index.html/project.html. Guarded: the
+     rail links here point at on-page sections only, so this always
+     has something to observe. */
+  const links = new Map();
+  document.querySelectorAll('.rail a').forEach((a) => links.set(a.getAttribute('href').slice(1), a));
+
+  if ('IntersectionObserver' in window) {
+    const visible = new Set();
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) visible.add(entry.target.id);
+        else visible.delete(entry.target.id);
+      });
+
+      const current = [...links.keys()].find((id) => visible.has(id));
+
+      links.forEach((a, id) => {
+        if (id === current) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+    }, { rootMargin: '-8% 0px -70% 0px' });
+
+    document.querySelectorAll('.sec').forEach((s) => io.observe(s));
+  }
+})();
+</script>
+
+</body>
+</html>

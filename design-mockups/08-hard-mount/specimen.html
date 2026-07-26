@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Specimen — Hard Mount — Gavin McFarland</title>
+<meta name="description" content="Type, colour and component specimen for the Hard Mount design system.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A0A0A'/%3E%3Crect x='16' y='0' width='16' height='16' fill='%23F2C300'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Set the theme before first paint so there is no flash of the wrong mode. -->
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+<style>
+  /* Page-local: the specimen swatch grid and the type-scale rows.
+     Everything else is drawn from §3 in system.css. */
+  .swrow {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0,1fr);
+    gap: 0 var(--gutter);
+    align-items: stretch;
+    border-bottom: 1px solid var(--rule-hair);
+  }
+  .swrow:last-child { border-bottom: 0; }
+  .sw {
+    aspect-ratio: 1;
+    border-right: 1px solid var(--rule);
+    align-self: stretch;
+  }
+  .sw__meta { padding: .5rem .5rem .6rem 0; display: grid; gap: .15rem; align-content: center; }
+  .sw__name { font-size: var(--t-mono); font-weight: 500; letter-spacing: -.005em; }
+  .sw__val  { font-family: var(--f-mono); font-size: var(--t-micro); color: var(--faint); letter-spacing: .04em; }
+
+  .swgrid { display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--rule); }
+  @media (min-width: 700px) { .swgrid { grid-template-columns: repeat(3, 1fr); } }
+  .swgrid > .swrow { border-right: 1px solid var(--rule-hair); }
+
+  .fontcard { border: 1px solid var(--rule); padding: var(--frame-pad); background: var(--plate-bg); }
+  .fontcard + .fontcard { border-top: 0; }
+  .fontname { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .75rem; }
+  .pangram-sans { font-family: var(--f-sans); font-size: clamp(1.1rem, 2.4vw, 1.5rem); font-weight: 500; letter-spacing: -.01em; line-height: 1.3; }
+  .pangram-mono { font-family: var(--f-mono); font-size: clamp(1rem, 2vw, 1.25rem); line-height: 1.5; }
+  .weights { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-top: .75rem; }
+  .weights span { font-family: var(--f-mono); font-size: var(--t-micro); color: var(--faint); letter-spacing: .04em; }
+
+  .scalerow {
+    display: grid;
+    grid-template-columns: 6rem minmax(0,1fr) auto;
+    align-items: baseline;
+    gap: 0 var(--gutter);
+    padding: .75rem .5rem;
+    border-bottom: 1px solid var(--rule-hair);
+  }
+  .scalerow:last-child { border-bottom: 0; }
+  .scalerow__role { font-family: var(--f-mono); font-size: var(--t-micro); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+  .scalerow__val  { font-family: var(--f-mono); font-size: var(--t-micro); color: var(--faint); text-align: right; white-space: nowrap; }
+
+  .compbox { border: 1px solid var(--rule); padding: var(--frame-pad); background: var(--plate-bg); }
+  .compbox + .compbox { margin-top: var(--bl); }
+  .compbox__label { display: block; margin-bottom: 1rem; }
+</style>
+</head>
+
+<body data-page="specimen">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="sheet topbar__in">
+    <a class="mark" href="index.html">
+      <span class="mark__glyph" aria-hidden="true"></span>
+      <span class="mark__name">G. McFarland</span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Primary"></nav>
+    <div class="tools">
+      <button class="ghost" id="grid-toggle" type="button" aria-label="Show construction grid" title="Construction grid (G)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/>
+        </svg>
+      </button>
+      <button class="ghost" id="theme-toggle" type="button" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" aria-hidden="true">
+          <path d="M8 8h8v8H8z"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── a. Title / intro ──────────────────────────────────────── -->
+  <section class="section">
+    <div class="sheet">
+      <span class="block">Sheet 00 / 05 — Specimen</span>
+      <h1 class="display" style="margin-top:1rem">Hard Mount — design specimen</h1>
+      <p class="lead" style="margin-top:1rem; max-width:52ch">
+        Content mounted in drawn boxes, not floated cards: square corners, no shadows,
+        a hairline that goes from 11% ink to full black to say so. Everything on the
+        sheet is numbered, because on a drawing everything is.
+      </p>
+      <p class="micro" style="margin-top:1rem">
+        <a class="lnq" href="index.html">← Back to index</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ── b. Colour palette ─────────────────────────────────────── -->
+  <section class="section" aria-labelledby="colour-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="head__num">01</span>
+        <h2 class="head__t" id="colour-h">Colour palette</h2>
+        <span class="lnq head__x mono" style="cursor:default">Light shown · toggle ☀/☾ for dark</span>
+      </div>
+
+      <p class="micro" style="margin-bottom:.5rem">Surface &amp; ink</p>
+      <div class="swgrid">
+        <div class="swrow"><div class="sw" style="background:var(--stock)"></div><div class="sw__meta"><span class="sw__name">Stock</span><span class="sw__val">--stock<br>#E5E2DB / #0A0A0A</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--plate-bg)"></div><div class="sw__meta"><span class="sw__name">Plate</span><span class="sw__val">--plate-bg<br>#FFFFFF / #151515</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--sunk)"></div><div class="sw__meta"><span class="sw__name">Sunk</span><span class="sw__val">--sunk<br>#DAD6CD / #050505</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--ink)"></div><div class="sw__meta"><span class="sw__name">Ink</span><span class="sw__val">--ink<br>#0A0A0A / #EDEDEA</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--muted)"></div><div class="sw__meta"><span class="sw__name">Muted</span><span class="sw__val">--muted<br>#3E3E3B / #A9A8A3</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--faint)"></div><div class="sw__meta"><span class="sw__name">Faint</span><span class="sw__val">--faint<br>#74736E / #6E6D69</span></div></div>
+      </div>
+
+      <p class="micro" style="margin:1.5rem 0 .5rem">Signal — accent (text/line) &amp; mark (block fill only)</p>
+      <div class="swgrid">
+        <div class="swrow"><div class="sw" style="background:var(--accent)"></div><div class="sw__meta"><span class="sw__name">Accent</span><span class="sw__val">--accent<br>#1B3BE0 / #93A8FF</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--accent-soft)"></div><div class="sw__meta"><span class="sw__name">Accent soft</span><span class="sw__val">--accent-soft<br>#D8DDF9 / #1B2247</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--mark)"></div><div class="sw__meta"><span class="sw__name">Mark</span><span class="sw__val">--mark<br>#F2C300</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--mark-ink)"></div><div class="sw__meta"><span class="sw__name">Mark ink</span><span class="sw__val">--mark-ink<br>#0A0A0A</span></div></div>
+      </div>
+
+      <p class="micro" style="margin:1.5rem 0 .5rem">Rules &amp; grid</p>
+      <div class="swgrid">
+        <div class="swrow"><div class="sw" style="background:var(--rule)"></div><div class="sw__meta"><span class="sw__name">Rule</span><span class="sw__val">--rule<br>#0A0A0A / #EDEDEA</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--rule-hair)"></div><div class="sw__meta"><span class="sw__name">Rule hair</span><span class="sw__val">--rule-hair<br>#B9B5AC / #37372F</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--grid-minor)"></div><div class="sw__meta"><span class="sw__name">Grid minor</span><span class="sw__val">--grid-minor<br>#D3CFC5 / #1A1A18</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--grid-major)"></div><div class="sw__meta"><span class="sw__name">Grid major</span><span class="sw__val">--grid-major<br>#BCB7AC / #2A2A26</span></div></div>
+      </div>
+
+      <p class="micro" style="margin:1.5rem 0 .5rem">Board blocks — flat fills, hairline bordered</p>
+      <div class="swgrid">
+        <div class="swrow"><div class="sw" style="background:var(--bk-a)"></div><div class="sw__meta"><span class="sw__name">Block A</span><span class="sw__val">--bk-a / --bk-a-ink<br>#F2C300 / #7A6300</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--bk-b)"></div><div class="sw__meta"><span class="sw__name">Block B</span><span class="sw__val">--bk-b / --bk-b-ink<br>#B9C7EE / #2C3A6B</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--bk-c)"></div><div class="sw__meta"><span class="sw__name">Block C</span><span class="sw__val">--bk-c / --bk-c-ink<br>#BDD0B4 / #35492D</span></div></div>
+        <div class="swrow"><div class="sw" style="background:var(--bk-d)"></div><div class="sw__meta"><span class="sw__name">Block D</span><span class="sw__val">--bk-d / --bk-d-ink<br>#E8C0A8 / #5E3A21</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── c. Typography ─────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="type-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="head__num">02</span>
+        <h2 class="head__t" id="type-h">Typography</h2>
+      </div>
+
+      <div>
+        <div class="fontcard">
+          <div class="fontname">
+            <span class="label label--ink">Space Grotesk — the sans</span>
+            <span class="micro">400 · 500 · 700</span>
+          </div>
+          <p class="pangram-sans">Sphinx of black quartz, judge my vow — set in 500 for headings.</p>
+          <div class="weights">
+            <span style="font-family:var(--f-sans); font-weight:400; font-size:var(--t-lead); color:var(--ink); letter-spacing:normal; text-transform:none;">400 Regular — the seam between tools</span>
+          </div>
+          <div class="weights">
+            <span style="font-family:var(--f-sans); font-weight:500; font-size:var(--t-lead); color:var(--ink); letter-spacing:normal; text-transform:none;">500 Medium — the seam between tools</span>
+          </div>
+          <div class="weights">
+            <span style="font-family:var(--f-sans); font-weight:700; font-size:var(--t-lead); color:var(--ink); letter-spacing:normal; text-transform:none;">700 Bold — the seam between tools</span>
+          </div>
+        </div>
+        <div class="fontcard">
+          <div class="fontname">
+            <span class="label label--ink">Space Mono — the mono</span>
+            <span class="micro">400 · 700</span>
+          </div>
+          <p class="pangram-mono">The five boxing wizards jump quickly — labels, code, sched rows.</p>
+          <div class="weights">
+            <span style="font-family:var(--f-mono); font-weight:400; font-size:var(--t-lead); color:var(--ink); letter-spacing:normal; text-transform:none;">400 Regular — plugma / askeroo / figlet</span>
+          </div>
+          <div class="weights">
+            <span style="font-family:var(--f-mono); font-weight:700; font-size:var(--t-lead); color:var(--ink); letter-spacing:normal; text-transform:none;">700 Bold — SHEET 03 / 05 — DETAIL</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── d. Type scale ──────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="scale-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="head__num">03</span>
+        <h2 class="head__t" id="scale-h">Type scale</h2>
+      </div>
+
+      <div style="border-top:1px solid var(--rule)">
+        <div class="scalerow">
+          <span class="scalerow__role">Display</span>
+          <span class="display">Tools design systems are built with</span>
+          <span class="scalerow__val">clamp(1.5–1.875rem) / 24–30px · Space Grotesk 500</span>
+        </div>
+        <div class="scalerow">
+          <span class="scalerow__role">Lead</span>
+          <span class="lead">Fifteen years between design and front-end, on the seam.</span>
+          <span class="scalerow__val">1rem / 16px · Space Grotesk 400</span>
+        </div>
+        <div class="scalerow">
+          <span class="scalerow__role">Title</span>
+          <span class="title">plugma — zero-config Figma toolchain</span>
+          <span class="scalerow__val">1rem / 16px · Space Grotesk 500</span>
+        </div>
+        <div class="scalerow">
+          <span class="scalerow__role">Body</span>
+          <span class="body">A Figma plugin is two programs that cannot see each other.</span>
+          <span class="scalerow__val">.9375rem / 15px · Space Grotesk 400</span>
+        </div>
+        <div class="scalerow">
+          <span class="scalerow__role">Small / mono</span>
+          <span class="small">Setup went from most of a day to a single command.</span>
+          <span class="scalerow__val">.8125rem / 13px · Space Mono 400</span>
+        </div>
+        <div class="scalerow">
+          <span class="scalerow__role">Label</span>
+          <span class="label label--ink">Specification</span>
+          <span class="scalerow__val">.75rem / 12px · Space Mono 400, upper</span>
+        </div>
+        <div class="scalerow">
+          <span class="scalerow__role">Micro</span>
+          <span class="micro">Sheet 01 / 05 — Index</span>
+          <span class="scalerow__val">.6875rem / 11px · Space Mono 400, upper</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── e. Components ──────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="comp-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="head__num">04</span>
+        <h2 class="head__t" id="comp-h">Components</h2>
+      </div>
+
+      <!-- Buttons -->
+      <div class="compbox">
+        <span class="label label--ink compbox__label">Buttons — .btn</span>
+        <div class="row">
+          <a class="btn" href="#">See the work</a>
+          <a class="btn btn--quiet" href="#">Start a conversation</a>
+        </div>
+      </div>
+
+      <!-- Links -->
+      <div class="compbox">
+        <span class="label label--ink compbox__label">Links — .ln / .lnq</span>
+        <p class="body">
+          Read more about <a class="ln" href="#">plugma.dev</a>, or go back to the
+          <a class="lnq" href="#">gallery view →</a>.
+        </p>
+      </div>
+
+      <!-- Tags / chips -->
+      <div class="compbox">
+        <span class="label label--ink compbox__label">Tags &amp; chips — .tag / .chip</span>
+        <ul class="tags" style="margin-bottom:1rem">
+          <li class="tag">American Express</li>
+          <li class="tag">NatWest</li>
+          <li class="tag">Home Office</li>
+          <li class="tag">LSEG</li>
+        </ul>
+        <div class="chips">
+          <span class="chip"><input type="radio" name="spec-filter" checked><span>All</span></span>
+          <span class="chip"><input type="radio" name="spec-filter"><span>Tool</span></span>
+          <span class="chip"><input type="radio" name="spec-filter"><span>Plug-in</span></span>
+          <span class="chip"><input type="radio" name="spec-filter"><span>Library</span></span>
+        </div>
+      </div>
+
+      <!-- Block / inversion -->
+      <div class="compbox">
+        <span class="label label--ink compbox__label">Inversion — .block</span>
+        <div class="row">
+          <span class="block">Sheet 01 / 05</span>
+          <span class="block block--mark">Tool</span>
+          <span class="block block--accent">Plug-in</span>
+        </div>
+      </div>
+
+      <!-- Schedule rows (table) -->
+      <div class="compbox">
+        <span class="label label--ink compbox__label">Schedule — .sched (project rows)</span>
+        <div class="sched">
+          <a class="sched__row" href="#">
+            <span class="sched__num">01</span>
+            <span class="sched__name">plugma
+              <span class="sched__desc">Zero-config toolchain for Figma plugins</span>
+            </span>
+            <span class="sched__kind"><span class="swatch" style="background:var(--mark)"></span>Tool</span>
+            <span class="sched__year">2024</span>
+          </a>
+          <a class="sched__row" href="#">
+            <span class="sched__num">02</span>
+            <span class="sched__name">askeroo
+              <span class="sched__desc">CLI prompts you can back out of</span>
+            </span>
+            <span class="sched__kind"><span class="swatch" style="background:transparent"></span>Library</span>
+            <span class="sched__year">2024</span>
+          </a>
+          <a class="sched__row" href="#">
+            <span class="sched__num">03</span>
+            <span class="sched__name">table-creator
+              <span class="sched__desc">Real data tables on the canvas</span>
+            </span>
+            <span class="sched__kind"><span class="swatch" style="background:var(--accent)"></span>Plug-in</span>
+            <span class="sched__year">2022</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Definition schedule -->
+      <div class="compbox">
+        <span class="label label--ink compbox__label">Definition schedule — .defs</span>
+        <dl class="defs">
+          <div><dt>Year</dt><dd class="mono">2024</dd></div>
+          <div><dt>Role</dt><dd class="mono">Creator, maintainer</dd></div>
+          <div><dt>Status</dt><dd class="mono">Maintained</dd></div>
+          <div><dt>Stack</dt><dd class="mono">Node, TypeScript, Vite</dd></div>
+        </dl>
+      </div>
+
+      <!-- Frame / plate -->
+      <div class="compbox">
+        <span class="label label--ink compbox__label">Frame &amp; plate — .frame / .plate</span>
+        <div class="g12">
+          <div class="c4">
+            <div class="frame frame--bare">
+              <div style="padding:.5rem">
+                <div class="plate">
+                  <div class="plate__art" data-art="arcs"></div>
+                  <span class="plate__glyph" aria-hidden="true">P</span>
+                </div>
+              </div>
+              <div class="frame__bar">
+                <span>Plate 01</span>
+                <span>plugma</span>
+              </div>
+            </div>
+          </div>
+          <div class="c4">
+            <div class="frame frame--bare">
+              <div style="padding:.5rem">
+                <div class="plate">
+                  <div class="plate__art" data-art="grid"></div>
+                  <span class="plate__glyph" aria-hidden="true">S</span>
+                </div>
+              </div>
+              <div class="frame__bar">
+                <span>Plate 02</span>
+                <span>screenshot-2-layout</span>
+              </div>
+            </div>
+          </div>
+          <div class="c4">
+            <div class="frame frame--bare">
+              <div style="padding:.5rem">
+                <div class="plate">
+                  <div class="plate__art" data-art="bars"></div>
+                  <span class="plate__glyph" aria-hidden="true">F</span>
+                </div>
+              </div>
+              <div class="frame__bar">
+                <span>Plate 03</span>
+                <span>figlet</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card -->
+      <div class="compbox">
+        <span class="label label--ink compbox__label">Card — .card (gallery unit)</span>
+        <div class="g12">
+          <a class="frame frame--bare card c4" href="#">
+            <div class="card__plate">
+              <div class="plate">
+                <div class="plate__art" data-art="dots"></div>
+                <span class="plate__glyph" aria-hidden="true">I</span>
+              </div>
+            </div>
+            <div class="card__body">
+              <span class="strong">icon-preview</span>
+              <p class="small" style="margin-top:.15rem">Every icon at the size it ships at</p>
+            </div>
+            <div class="frame__bar">
+              <span>05 · Plug-in</span>
+              <span>2021</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Prose, blockquote-equivalent, inline code -->
+      <div class="compbox">
+        <span class="label label--ink compbox__label">Prose &amp; inline code — .prose</span>
+        <div class="prose">
+          <p>
+            Setup went from <strong>most of a day</strong> to a single command:
+            <code>npx create-plugma@latest</code>. It is still maintained, and it is the
+            substrate under every plugin built since.
+          </p>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="compbox">
+        <span class="label label--ink compbox__label">Form — .field / .input</span>
+        <div class="g12">
+          <div class="c6 field">
+            <label for="spec-name">Name</label>
+            <input class="input" id="spec-name" type="text" placeholder="Ada Lovelace">
+          </div>
+          <div class="c6 field" data-invalid="true">
+            <label for="spec-email">Email</label>
+            <input class="input" id="spec-email" type="email" placeholder="you@studio.com" value="not-an-email">
+            <span class="err">Enter a valid email</span>
+          </div>
+        </div>
+        <div class="note-ok" style="margin-top:1rem">
+          <span class="strong">Sent.</span>
+          <span>Message received — reply within two working days.</span>
+        </div>
+      </div>
+
+      <!-- Title block -->
+      <div class="compbox" style="padding:0">
+        <span class="label label--ink compbox__label" style="padding:1rem 1rem 0">Title block — .tb</span>
+        <dl class="tb" style="border:1px solid var(--rule); border-top:1px solid var(--rule); margin-top:1rem">
+          <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+          <div><dt>Contact</dt><dd>gavin@limitlessloop.com</dd></div>
+          <div><dt>Sheet</dt><dd>00 / 05</dd></div>
+          <div><dt>Variation</dt><dd>08 · Hard Mount</dd></div>
+        </dl>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── f. Texture / grid overlay ──────────────────────────────── -->
+  <section class="section" aria-labelledby="tex-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="head__num">05</span>
+        <h2 class="head__t" id="tex-h">Plate textures &amp; construction grid</h2>
+      </div>
+      <p class="body" style="margin-bottom:1rem; max-width:60ch">
+        Every plate pattern is drawn in CSS, not imaged — solid rules and blocks, no
+        low-alpha softness. Press <span class="label label--ink" style="padding:.05em .35em">G</span>
+        to overlay the same 12-column construction grid the whole sheet is drawn on.
+      </p>
+      <div class="g12">
+        <div class="c2"><div class="plate"><div class="plate__art" data-art="grid"></div></div><p class="micro" style="margin-top:.35rem">grid</p></div>
+        <div class="c2"><div class="plate"><div class="plate__art" data-art="arcs"></div></div><p class="micro" style="margin-top:.35rem">arcs</p></div>
+        <div class="c2"><div class="plate"><div class="plate__art" data-art="stack"></div></div><p class="micro" style="margin-top:.35rem">stack</p></div>
+        <div class="c2"><div class="plate"><div class="plate__art" data-art="bars"></div></div><p class="micro" style="margin-top:.35rem">bars</p></div>
+        <div class="c2"><div class="plate"><div class="plate__art" data-art="dots"></div></div><p class="micro" style="margin-top:.35rem">dots</p></div>
+        <div class="c2"><div class="plate"><div class="plate__art" data-art="rule"></div></div><p class="micro" style="margin-top:.35rem">rule</p></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="titleblock">
+  <div class="sheet">
+    <dl class="tb">
+      <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Sheet</dt><dd>00 / 05</dd></div>
+      <div><dt>Variation</dt><dd>08 · Hard Mount</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>

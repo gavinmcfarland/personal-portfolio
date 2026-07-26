@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>specimen(7) — 14 · colourbar</title>
+<meta name="description" content="Specimen sheet for 14 · colourbar — the sixteen-colour control strip, the two system faces, and the five-step flat type ramp, printed live.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='1' y='1' width='7' height='7' fill='%23000080'/%3E%3Crect x='8' y='1' width='7' height='7' fill='%23008080'/%3E%3Crect x='1' y='8' width='7' height='7' fill='%23FFFF00'/%3E%3Crect x='8' y='8' width='7' height='7' fill='%23C0C0C0'/%3E%3C/svg%3E">
+
+<!-- Same init as every other page in this set: surface is read before
+     the sheet is painted, so there is never a flash of the wrong one. -->
+<script>(()=>{document.documentElement.classList.toggle('dark',localStorage.getItem('gm-surface-14')==='dark');})();</script>
+<link rel="stylesheet" href="system.css">
+
+<style>
+  /* ── Specimen-only scaffolding ──────────────────────────────────
+     Layout for this page alone. No new colour, no new type step, no
+     radius, no shadow — every value below is a var() already defined
+     in system.css §1. This block only arranges swatches on a grid. */
+  .spec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .spec-tok { background: var(--paper); padding: .6rem .7rem .7rem; }
+  .spec-tok__sw { display: block; height: 2.75rem; border: 1px solid var(--rule); margin-bottom: .5rem; }
+  .spec-tok__name { display: block; font-family: var(--f-mono); font-size: var(--t-ui); font-weight: 700; }
+  .spec-tok__role { display: block; font-size: var(--t-ui); color: var(--muted); margin-top: .1rem; }
+  .spec-tok__val { display: block; font-family: var(--f-mono); font-size: var(--t-micro); color: var(--faint); margin-top: .35rem; }
+
+  .spec-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: 1.5rem; }
+  .spec-pair > div { background: var(--paper); padding: .8rem 1rem; }
+  .spec-pair__lbl { font-family: var(--f-mono); font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .08em; color: var(--faint); display: block; margin-bottom: .5rem; }
+
+  .spec-16 { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: .6rem; }
+  @media (max-width: 599px) { .spec-16 { grid-template-columns: repeat(4, 1fr); } }
+  .spec-16 > div { padding: .5rem .5rem .6rem; min-height: 4.5rem; display: flex; flex-direction: column; justify-content: flex-end; }
+  .spec-16 .n { font-family: var(--f-mono); font-size: var(--t-micro); font-weight: 700; text-transform: uppercase; }
+  .spec-16 .v { font-family: var(--f-mono); font-size: 9px; opacity: .85; }
+
+  .spec-face { border: 1px solid var(--rule); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .spec-face__name { font-family: var(--f-mono); font-size: var(--t-ui); color: var(--faint); text-transform: uppercase; letter-spacing: .08em; display: block; margin-bottom: .6rem; }
+  .spec-face__line { line-height: 1.4; margin-bottom: .3rem; }
+  .spec-face__meta { font-family: var(--f-mono); font-size: var(--t-ui); color: var(--muted); margin-top: .5rem; }
+
+  .spec-scale__row { display: flex; align-items: baseline; gap: 1.25rem; border-top: 1px solid var(--rule-hair); padding: .9rem 0; }
+  .spec-scale__row:first-child { border-top: 1px solid var(--rule); }
+  .spec-scale__meta { width: 11rem; flex: none; font-family: var(--f-mono); font-size: var(--t-ui); color: var(--muted); }
+  .spec-scale__meta b { display: block; color: var(--ink); font-size: var(--t-ui); }
+  .spec-scale__sample { color: var(--ink); }
+
+  .spec-strips { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+  .spec-strips figure { margin: 0; }
+  .spec-strips .strip { height: 3.5rem; }
+  .spec-strips .strip[data-strip="d"], .spec-strips .strip[data-strip="f"] { height: 5rem; }
+
+  .spec-marks { display: flex; flex-wrap: wrap; gap: 2.5rem; align-items: flex-end; margin-bottom: .5rem; }
+  .spec-marks__box { position: relative; width: 8rem; height: 5rem; border: 1px dashed var(--rule-hair); }
+  .spec-marks figcaption { font-family: var(--f-mono); font-size: var(--t-ui); color: var(--faint); margin-top: .5rem; }
+
+  .spec-swatchrow { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+</style>
+</head>
+
+<body data-page="specimen">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<aside class="rail">
+  <a class="rail__mark" href="index.html"><span class="sw" data-c="navy"></span>gavin(1)</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="strip rail__strip" data-strip="a" id="rail-strip" aria-hidden="true"></div>
+  <div class="rail__foot">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">grid</button>
+    <button id="theme-toggle" type="button">surface</button>
+    <span>14 · colourbar</span>
+  </div>
+</aside>
+
+<div class="page">
+<main id="main">
+
+  <div class="mast">
+    <div class="sheet" style="position:relative;padding-inline:0">
+      <span class="mark mark--tab" data-c="yellow" style="top:-1.5rem;right:0" aria-hidden="true">specimen</span>
+      <p class="micro" style="color:var(--chrome);margin-bottom:.5rem">specimen(7) · design system reference</p>
+      <p class="display">The sixteen-colour control strip, the two system faces, and the five-step flat
+        type ramp — printed as itself, not described.</p>
+      <div class="strip" data-strip="a" style="height:14px;margin-top:1.25rem;border-color:var(--paper)" aria-hidden="true">
+        <i data-c="navy"></i><i data-c="teal"></i><i data-c="aqua"></i><i data-c="silver"></i><i data-c="white"></i><i data-c="yellow"></i><i data-c="olive"></i><i data-c="maroon"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet">
+
+    <!-- ── 01 NAME ───────────────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">01</span> Name</h2>
+      <div class="man__b">
+        <p class="ink"><span class="b">14 · colourbar</span> — a cross of the man(7) skeleton (mono
+        structure, numbered sections, a <span class="mono">$</span> prompt) with the press control
+        strip: flat cells of the Windows&nbsp;95 sixteen, divided by hard 1px rules, ink near-black on
+        white stock. No curves, no shadows, no gradients, no webfont.</p>
+      </div>
+    </section>
+
+    <!-- ── 02 COLOUR ─────────────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">02</span> Colour <span class="man__x">tokens · light + dark</span></h2>
+      <div class="man__b" style="max-width:none">
+
+        <p style="margin-bottom:1rem">Stock and ink invert between surfaces; the sixteen below do not —
+        a control strip that shifted with the theme would stop being a control strip.</p>
+
+        <div class="spec-pair">
+          <div>
+            <span class="spec-pair__lbl">Stock &amp; structure — light</span>
+            <div class="spec-swatchrow">
+              <span class="chip"><span class="sw" style="background:#FFFFFF"></span>paper #FFFFFF</span>
+              <span class="chip"><span class="sw" style="background:#F4F4F4"></span>surface #F4F4F4</span>
+              <span class="chip"><span class="sw" style="background:#E8E8E8"></span>sunk #E8E8E8</span>
+              <span class="chip"><span class="sw" style="background:#C0C0C0"></span>chrome #C0C0C0</span>
+              <span class="chip"><span class="sw" style="background:#0A0A0A"></span>ink #0A0A0A</span>
+              <span class="chip"><span class="sw" style="background:#4A4A4A"></span>muted #4A4A4A</span>
+              <span class="chip"><span class="sw" style="background:#767676"></span>faint #767676</span>
+              <span class="chip"><span class="sw" style="background:#0A0A0A"></span>rule #0A0A0A</span>
+              <span class="chip"><span class="sw" style="background:#C0C0C0"></span>rule-hair #C0C0C0</span>
+              <span class="chip"><span class="sw" style="background:#000080"></span>accent #000080</span>
+              <span class="chip"><span class="sw" style="background:#FFFFFF"></span>on-accent #FFFFFF</span>
+            </div>
+          </div>
+          <div>
+            <span class="spec-pair__lbl">Stock &amp; structure — dark (<span class="mono">.dark</span>)</span>
+            <div class="spec-swatchrow">
+              <span class="chip"><span class="sw" style="background:#0A0A0A;border-color:#3A3A3A"></span>paper #0A0A0A</span>
+              <span class="chip"><span class="sw" style="background:#161616;border-color:#3A3A3A"></span>surface #161616</span>
+              <span class="chip"><span class="sw" style="background:#1F1F1F;border-color:#3A3A3A"></span>sunk #1F1F1F</span>
+              <span class="chip"><span class="sw" style="background:#1C1C1C;border-color:#3A3A3A"></span>chrome #1C1C1C</span>
+              <span class="chip"><span class="sw" style="background:#F0F0F0"></span>ink #F0F0F0</span>
+              <span class="chip"><span class="sw" style="background:#B4B4B4"></span>muted #B4B4B4</span>
+              <span class="chip"><span class="sw" style="background:#909090"></span>faint #909090</span>
+              <span class="chip"><span class="sw" style="background:#F0F0F0"></span>rule #F0F0F0</span>
+              <span class="chip"><span class="sw" style="background:#3A3A3A"></span>rule-hair #3A3A3A</span>
+              <span class="chip"><span class="sw" style="background:#7C8CFF"></span>accent #7C8CFF</span>
+              <span class="chip"><span class="sw" style="background:#0A0A0A"></span>on-accent #0A0A0A</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="micro faint" style="margin-bottom:.5rem">The sixteen — fixed across both surfaces, each paired with the ink it may carry type in</p>
+        <div class="spec-16">
+          <div data-c="black"><span class="n">black</span><span class="v">#000000 / ink #FFF</span></div>
+          <div data-c="maroon"><span class="n">maroon</span><span class="v">#800000 / ink #FFF</span></div>
+          <div data-c="green"><span class="n">green</span><span class="v">#008000 / ink #FFF</span></div>
+          <div data-c="olive"><span class="n">olive</span><span class="v">#808000 / ink #000</span></div>
+          <div data-c="navy"><span class="n">navy · accent</span><span class="v">#000080 / ink #FFF</span></div>
+          <div data-c="purple"><span class="n">purple</span><span class="v">#800080 / ink #FFF</span></div>
+          <div data-c="teal"><span class="n">teal</span><span class="v">#008080 / ink #FFF</span></div>
+          <div data-c="silver"><span class="n">silver</span><span class="v">#C0C0C0 / ink #000</span></div>
+          <div data-c="gray"><span class="n">gray</span><span class="v">#808080 / ink #000</span></div>
+          <div data-c="red"><span class="n">red</span><span class="v">#FF0000 / ink #000</span></div>
+          <div data-c="lime"><span class="n">lime</span><span class="v">#00FF00 / ink #000</span></div>
+          <div data-c="yellow"><span class="n">yellow</span><span class="v">#FFFF00 / ink #000</span></div>
+          <div data-c="blue"><span class="n">blue</span><span class="v">#0000FF / ink #FFF</span></div>
+          <div data-c="fuchsia"><span class="n">fuchsia</span><span class="v">#FF00FF / ink #000</span></div>
+          <div data-c="aqua"><span class="n">aqua</span><span class="v">#00FFFF / ink #000</span></div>
+          <div data-c="white"><span class="n">white</span><span class="v">#FFFFFF / ink #000</span></div>
+        </div>
+        <p class="strip-cap">Strip f — key, all sixteen at once. Navy (accent) is the one interactive
+        colour: links, hover, current page, focus.</p>
+      </div>
+    </section>
+
+    <div class="bleed" aria-hidden="true">
+      <i data-c="navy"></i><i data-c="navy"></i><i data-c="teal"></i><i data-c="silver"></i><i data-c="yellow"></i><i data-c="maroon"></i>
+    </div>
+
+    <!-- ── 03 TYPOGRAPHY ─────────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">03</span> Typography <span class="man__x">no webfont</span></h2>
+      <div class="man__b" style="max-width:none">
+        <p style="margin-bottom:1rem">Neither face is fetched — this set ships no <span class="mono">@font-face</span>,
+        which is 05's position and the reason a sheet renders before it is styled.</p>
+
+        <div class="spec-face">
+          <span class="spec-face__name">--f-ui · prose</span>
+          <p class="spec-face__line" style="font-family:var(--f-ui);font-weight:400;font-size:1.15rem">The quick brown fox jumps over the lazy dog. 1234567890</p>
+          <p class="spec-face__line" style="font-family:var(--f-ui);font-weight:700;font-size:1.15rem">The quick brown fox jumps over the lazy dog. 1234567890</p>
+          <span class="spec-face__meta">Tahoma, Verdana, Geneva, 'DejaVu Sans', sans-serif — 400 &amp; 700 · all prose, the display line, and the lede</span>
+        </div>
+
+        <div class="spec-face">
+          <span class="spec-face__name">--f-mono · structure</span>
+          <p class="spec-face__line" style="font-family:var(--f-mono);font-weight:400;font-size:1.15rem">The quick brown fox jumps over the lazy dog. 1234567890</p>
+          <p class="spec-face__line" style="font-family:var(--f-mono);font-weight:700;font-size:1.15rem">The quick brown fox jumps over the lazy dog. 1234567890</p>
+          <span class="spec-face__meta">'Lucida Console', 'Consolas', 'DejaVu Sans Mono', ui-monospace, monospace — 400 &amp; 700 · section numbers, the $ prompt, labels, tables, code</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 04 TYPE SCALE ─────────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">04</span> Type scale <span class="man__x">five steps, flat · 400/700 only</span></h2>
+      <div class="man__b" style="max-width:none">
+
+        <div class="spec-scale__row">
+          <span class="spec-scale__meta"><b>micro</b>11px · --t-micro</span>
+          <span class="spec-scale__sample micro">Uppercase micro-label, rail numeral</span>
+        </div>
+        <div class="spec-scale__row">
+          <span class="spec-scale__meta"><b>ui</b>12px · --t-ui</span>
+          <span class="spec-scale__sample mono">Mono structure, captions, table rows</span>
+        </div>
+        <div class="spec-scale__row">
+          <span class="spec-scale__meta"><b>body</b>13px · --t-body</span>
+          <span class="spec-scale__sample" style="font-size:13px">All prose sets at this size, in --f-ui</span>
+        </div>
+        <div class="spec-scale__row">
+          <span class="spec-scale__meta"><b>lead</b>15px · --t-lead</span>
+          <span class="spec-scale__sample cmd" style="font-size:15px"><span class="cmd__$">$</span> gavin --hire</span>
+        </div>
+        <div class="spec-scale__row">
+          <span class="spec-scale__meta"><b>display</b>20px · --t-display</span>
+          <span class="spec-scale__sample display" style="font-size:20px">One line per sheet, maximum</span>
+        </div>
+        <div class="spec-scale__row">
+          <span class="spec-scale__meta"><b>folio</b>64px · --t-folio</span>
+          <span class="spec-scale__sample" style="font-family:var(--f-mono);font-weight:700;font-size:40px;line-height:1">07</span>
+        </div>
+        <p class="micro faint" style="margin-top:.9rem">Folio is ornament only — a knocked-out numeral inside a colour patch (§6), shown here reduced to fit the row.</p>
+      </div>
+    </section>
+
+    <!-- ── 05 COMPONENTS ─────────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">05</span> Components <span class="man__x">live, real class names</span></h2>
+
+      <div class="man__b" style="max-width:none;margin-bottom:1.5rem">
+        <p style="margin-bottom:1rem">Command line, definition list, links, chips and the one button — the
+        set's whole vocabulary of small parts.</p>
+        <p class="cmd" style="margin-bottom:.5rem">
+          <span class="cmd__$">$</span>
+          <span><span class="b">gavin</span> <span class="dim">[--design-systems] [--front-end] [--tooling]</span></span>
+        </p>
+        <p class="cmd" style="margin-bottom:1rem">
+          <span class="cmd__$">$</span>
+          <span><span class="b">gavin</span> <span class="dim">--hire</span> <span class="faint">[--remote | --london]</span></span>
+        </p>
+        <div class="man__dl" style="padding-left:0;margin-bottom:1.1rem">
+          <div><dt>--design-systems</dt><dd>Token pipelines, component APIs, and documentation that survives a handover.</dd></div>
+          <div><dt>--front-end</dt><dd>TypeScript, Svelte, React, Vite — WCAG 2.2 AA as a build gate.</dd></div>
+        </div>
+        <p style="margin-bottom:.9rem">
+          A prose link is <a class="ln" href="#">underlined and fills navy on hover</a>; a bare link
+          <a class="ln--bare" href="#">only takes colour</a>. One button: <button class="btn" type="button">Send message</button>
+        </p>
+        <div class="spec-swatchrow" style="margin-bottom:.3rem">
+          <span class="chip"><span class="sw" data-c="navy"></span>tool</span>
+          <span class="chip"><span class="sw" data-c="teal"></span>library</span>
+          <span class="chip"><span class="sw" data-c="maroon"></span>plug-in</span>
+        </div>
+      </div>
+
+      <p class="man__x" style="display:block;margin-bottom:.5rem;padding-left:0">t1 · ruled table</p>
+      <div class="scroll-x" style="margin-bottom:1.5rem">
+        <div class="tbl">
+          <div class="tbl__row tbl__head">
+            <span>no.</span><span>item</span><span>description</span><span>kind</span><span style="text-align:right">year</span>
+          </div>
+          <a class="tbl__row" href="#">
+            <span class="tbl__num">01</span>
+            <span class="tbl__item">plugma</span>
+            <span class="tbl__desc">Build Figma plugins with a single command and hot reloading.</span>
+            <span><span class="chip"><span class="sw" data-c="navy"></span>tool</span></span>
+            <span class="tbl__year">2024</span>
+          </a>
+          <a class="tbl__row" href="#">
+            <span class="tbl__num">02</span>
+            <span class="tbl__item">askeroo</span>
+            <span class="tbl__desc">Command-line prompts that remember the question before them.</span>
+            <span><span class="chip"><span class="sw" data-c="teal"></span>library</span></span>
+            <span class="tbl__year">2024</span>
+          </a>
+          <a class="tbl__row" href="#">
+            <span class="tbl__num">03</span>
+            <span class="tbl__item">table-creator</span>
+            <span class="tbl__desc">Data tables on the canvas, with bulk edits that survive later changes.</span>
+            <span><span class="chip"><span class="sw" data-c="maroon"></span>plug-in</span></span>
+            <span class="tbl__year">2022</span>
+          </a>
+        </div>
+      </div>
+
+      <p class="man__x" style="display:block;margin-bottom:.5rem;padding-left:0">t5 · entry</p>
+      <a class="entry" href="#" style="pointer-events:none">
+        <span class="cmd">
+          <span class="cmd__$">$</span>
+          <span><span class="dim">gavin --toolchain</span> <span class="cmd__name">plugma</span></span>
+          <span class="cmd__year">2024</span>
+        </span>
+        <span class="entry__grid">
+          <span style="display:block">
+            <span class="strip" data-strip="b" style="height:8rem" aria-hidden="true">
+              <i data-c="silver"></i><i data-c="navy"></i><i data-c="teal"></i><i data-c="aqua"></i><i data-c="white"></i><i data-c="navy"></i>
+            </span>
+            <span class="strip-cap">Strip 01 — wedge, 1:1:2:3:5:8</span>
+          </span>
+          <span style="display:block">
+            <span class="entry__desc">Build Figma plugins with a single command and the hot reloading the platform never shipped.</span>
+            <span class="mono ln" style="display:inline-block;margin-top:.9rem">plugma.dev</span>
+          </span>
+        </span>
+      </a>
+
+      <div class="man__b" style="max-width:none;margin-top:1.5rem">
+        <p class="man__x" style="display:block;margin-bottom:.5rem;padding-left:0">code &amp; quote</p>
+        <div class="pre" style="margin-bottom:1.25rem"><span class="c">// tokens.css</span><br>--accent: var(--c-navy);<br>--rule:   var(--ink);</div>
+        <blockquote class="art__quote" style="margin-inline:0">
+          A token pipeline is a contract, not a suggestion.
+          <cite>— tokens-contract, note(1)</cite>
+        </blockquote>
+      </div>
+
+      <div class="man__b" style="max-width:none;margin-top:1rem">
+        <p class="man__x" style="display:block;margin-bottom:.5rem;padding-left:0">form field</p>
+        <div style="max-width:24rem">
+          <div class="field">
+            <label for="spec-email">Email</label>
+            <input class="input" id="spec-email" type="email" placeholder="you@studio.com">
+          </div>
+          <div class="field" data-invalid="true">
+            <label for="spec-msg">Message</label>
+            <textarea class="input" id="spec-msg" rows="2"></textarea>
+            <p class="err">Required.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 06 STRIPS, MARKS &amp; GRID ────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">06</span> Strips, marks &amp; grid <span class="man__x">the illustration engine</span></h2>
+      <div class="man__b" style="max-width:none">
+        <p style="margin-bottom:1rem">No dot, hatch, screen, stipple or gradient anywhere below — every
+        cell is one solid <span class="mono">background-color</span> from the sixteen. This is the whole
+        illustration system: six strip geometries, three marks, and a 12-column construction grid.</p>
+
+        <div class="spec-strips">
+          <figure>
+            <span class="strip" data-strip="a" aria-hidden="true"><i data-c="navy"></i><i data-c="teal"></i><i data-c="aqua"></i><i data-c="silver"></i><i data-c="white"></i><i data-c="yellow"></i></span>
+            <figcaption class="strip-cap">a — step</figcaption>
+          </figure>
+          <figure>
+            <span class="strip" data-strip="b" aria-hidden="true"><i data-c="teal"></i><i data-c="aqua"></i><i data-c="white"></i><i data-c="silver"></i><i data-c="gray"></i><i data-c="black"></i></span>
+            <figcaption class="strip-cap">b — wedge, 1:1:2:3:5:8</figcaption>
+          </figure>
+          <figure>
+            <span class="strip" data-strip="c" aria-hidden="true"><i data-c="maroon"></i><i data-c="silver"></i><i data-c="white"></i><i data-c="red"></i></span>
+            <figcaption class="strip-cap">c — quad</figcaption>
+          </figure>
+          <figure>
+            <span class="strip" data-strip="d" aria-hidden="true"><i data-c="navy"></i><i data-c="aqua"></i><i data-c="teal"></i><i data-c="silver"></i><i data-c="white"></i></span>
+            <figcaption class="strip-cap">d — rail</figcaption>
+          </figure>
+          <figure>
+            <span class="strip" data-strip="e" aria-hidden="true"><i data-c="olive"></i></span>
+            <figcaption class="strip-cap">e — slug</figcaption>
+          </figure>
+          <figure>
+            <span class="strip" data-strip="f" aria-hidden="true">
+              <i data-c="black"></i><i data-c="maroon"></i><i data-c="green"></i><i data-c="olive"></i><i data-c="navy"></i><i data-c="purple"></i><i data-c="teal"></i><i data-c="silver"></i>
+              <i data-c="gray"></i><i data-c="red"></i><i data-c="lime"></i><i data-c="yellow"></i><i data-c="blue"></i><i data-c="fuchsia"></i><i data-c="aqua"></i><i data-c="white"></i>
+            </span>
+            <figcaption class="strip-cap">f — key, all sixteen</figcaption>
+          </figure>
+        </div>
+
+        <div class="spec-marks">
+          <figure>
+            <div class="spec-marks__box">
+              <span class="mark mark--crop" style="top:50%;left:50%;transform:translate(-50%,-50%)" aria-hidden="true"></span>
+            </div>
+            <figcaption>crop — register mark</figcaption>
+          </figure>
+          <figure>
+            <div class="spec-marks__box">
+              <span class="mark mark--stamp" style="top:50%;left:50%;transform:translate(-50%,-50%);position:absolute" aria-hidden="true"></span>
+            </div>
+            <figcaption>stamp — square ring, maroon (red in dark)</figcaption>
+          </figure>
+          <figure>
+            <div class="spec-marks__box">
+              <span class="mark mark--tab" data-c="yellow" style="top:50%;left:50%;transform:translate(-50%,-50%);position:absolute" aria-hidden="true">proof</span>
+            </div>
+            <figcaption>tab — flat flag, two words at most</figcaption>
+          </figure>
+        </div>
+
+        <p class="micro faint" style="margin-top:.5rem">Construction grid — press <span class="mono">G</span>,
+        or the grid button in the rail, to lay the live 12-column overlay over this sheet.</p>
+      </div>
+    </section>
+
+    <!-- ── 07 SEE ALSO ───────────────────────────────────────────── -->
+    <section class="sec">
+      <h2 class="man__h"><span class="num">07</span> See also</h2>
+      <div class="man__b xref">
+        <p class="ink">
+          <a href="index.html">gavin</a><span class="n">(1)</span>,
+          <a href="colour.html">colour</a><span class="n">(7)</span>,
+          <a href="work.html">work</a><span class="n">(1)</span>
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <p>specimen(7) &nbsp;·&nbsp; 14 · Colourbar &nbsp;·&nbsp; <a class="ln--bare" href="index.html">back to gavin(1)</a></p>
+  </div>
+</footer>
+</div>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>

@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specimen — Swiss Editorial · Gavin McFarland</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────────────────────────────────────
+   SPECIMEN · Swiss editorial redesign
+   Tokens, type and components copied verbatim from index.html so
+   this sheet renders in the exact same visual language.
+   ───────────────────────────────────────────────────────────── */
+
+:root{
+  --bg:#FFFFFF;
+  --surface:#F4F3F1;      /* row hover wash */
+  --ink:#141417;          /* primary */
+  --muted:#3C3C42;        /* serif prose */
+  --faint:#8B8B91;        /* meta / captions */
+  --line:rgba(0,0,0,.11); /* row hairlines */
+  --line-strong:rgba(0,0,0,.30);
+  --rule:rgba(0,0,0,.82);  /* the black masthead / section rules */
+  --accent:#7C2D91;        /* CV purple */
+  --accent-soft:rgba(124,45,145,.10);
+
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --serif:'Tinos','Times New Roman',Times,Georgia,serif;
+
+  --gutter:clamp(14px,1.9vw,30px);
+  --margin:clamp(20px,5vw,64px);
+  --maxw:1360px;
+}
+html.dark{
+  --bg:#0B0B0C;
+  --surface:#161619;
+  --ink:#F2F2EF;
+  --muted:#B4B4B9;
+  --faint:#66666B;
+  --line:rgba(242,242,239,.11);
+  --line-strong:rgba(242,242,239,.30);
+  --rule:rgba(242,242,239,.72);
+  --accent:#C88BE8;
+  --accent-soft:rgba(200,139,232,.14);
+}
+
+*{box-sizing:border-box;}
+html{background:var(--bg);-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--serif);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  transition:background-color .4s ease,color .4s ease;
+}
+::selection{background:var(--accent);color:#fff;}
+a{color:inherit;text-decoration:none;}
+
+.page{max-width:var(--maxw);margin:0 auto;padding:0 var(--margin);}
+.g12{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  column-gap:var(--gutter);
+}
+.tnum{font-variant-numeric:tabular-nums;}
+.sans{font-family:var(--sans);}
+.serif{font-family:var(--serif);}
+.pretty{text-wrap:pretty;}
+.balance{text-wrap:balance;}
+
+/* ── Kicker / folio microtype ─────────────────────────────────── */
+.kicker{
+  font-family:var(--sans);
+  font-size:.6875rem;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--faint);
+}
+
+/* ── FOLIO (running header) ───────────────────────────────────── */
+.folio{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  padding:1.25rem 0 .95rem;
+}
+.folio .fl{display:flex;gap:clamp(1rem,4vw,3.5rem);align-items:center;}
+.folio .fl span{color:var(--faint);}
+.folio .fl a{color:var(--faint);}
+.folio .fl a:hover{color:var(--ink);}
+
+.toggle{
+  font-family:var(--sans);
+  font-size:.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint);
+  background:none;border:1px solid var(--line);
+  border-radius:100px;
+  padding:.4rem .8rem;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.5em;
+  transition:border-color .2s ease,color .2s ease;
+}
+.toggle:hover{border-color:var(--line-strong);color:var(--ink);}
+.toggle .glyph{width:9px;height:9px;border-radius:50%;border:1.5px solid currentColor;}
+html.dark .toggle .glyph{background:currentColor;border-color:currentColor;}
+
+.rule-strong{height:2px;background:var(--rule);border:0;margin:0;}
+.rule-hair{height:1px;background:var(--line);border:0;margin:0;}
+
+/* ── MASTHEAD ─────────────────────────────────────────────────── */
+.masthead{padding:clamp(2.75rem,7vw,6rem) 0 clamp(2rem,4vw,3.25rem);}
+.name{
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:clamp(3.1rem,12.5vw,10rem);
+  line-height:.9;
+  letter-spacing:-.04em;
+  margin:0;
+  color:var(--ink);
+}
+.name .amp{color:var(--faint);}
+.mast-lower{margin-top:clamp(2rem,4vw,3.25rem);align-items:start;}
+.mast-side{grid-column:1 / span 3;}
+.mast-side .role{
+  font-family:var(--sans);font-weight:600;font-size:.9375rem;
+  color:var(--ink);margin:0 0 1.4rem;line-height:1.35;
+}
+.mast-side dl{margin:0;display:grid;gap:.85rem;}
+.mast-side dt{font-family:var(--sans);font-size:.625rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:.15rem;}
+.mast-side dd{margin:0;font-family:var(--sans);font-size:.875rem;color:var(--ink);}
+.mast-lead{grid-column:5 / span 8;}
+.mast-lead p{margin:0;color:var(--muted);}
+.mast-lead .lead{
+  font-size:clamp(1.15rem,2.05vw,1.6rem);
+  line-height:1.45;color:var(--ink);
+  letter-spacing:-.005em;margin-bottom:1.15rem;
+}
+.mast-lead .sub{font-size:1.0625rem;line-height:1.6;max-width:56ch;}
+
+/* Underline link */
+.ulink{
+  color:var(--ink);
+  background-image:linear-gradient(var(--line-strong),var(--line-strong));
+  background-size:100% 1px;background-position:0 100%;background-repeat:no-repeat;
+  transition:background-size .2s ease,color .2s ease,background-image .2s ease;
+  padding-bottom:.02em;
+}
+.ulink:hover{color:var(--accent);background-image:linear-gradient(var(--accent),var(--accent));}
+
+/* ── SECTION HEADER ───────────────────────────────────────────── */
+section{margin-top:clamp(4rem,8vw,7.5rem);}
+.sec-head{
+  display:flex;align-items:baseline;gap:1.25rem;
+  padding-bottom:1.1rem;margin-bottom:.25rem;
+}
+.sec-num{font-family:var(--sans);font-size:.75rem;font-weight:600;color:var(--faint);letter-spacing:.05em;flex:none;}
+.sec-title{
+  font-family:var(--sans);font-weight:700;font-size:.8125rem;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink);flex:none;margin:0;
+}
+.sec-line{flex:1;height:1px;background:var(--rule);align-self:center;opacity:.9;}
+.sec-count{font-family:var(--sans);font-size:.75rem;color:var(--faint);flex:none;letter-spacing:.02em;}
+
+/* ── WORK LIST ────────────────────────────────────────────────── */
+.work-row{
+  align-items:baseline;
+  padding:clamp(1.3rem,2vw,1.9rem) 0;
+  border-top:1px solid var(--line);
+  position:relative;
+  transition:background-color .25s ease;
+}
+.work-list .work-row:last-child{border-bottom:1px solid var(--line);}
+.work-row:hover{background:var(--surface);}
+.work-idx{grid-column:1 / span 1;font-family:var(--sans);font-weight:700;font-size:.9375rem;color:var(--accent);}
+.work-title{grid-column:2 / span 3;font-family:var(--serif);font-size:clamp(1.35rem,2.3vw,1.85rem);line-height:1.05;color:var(--ink);letter-spacing:-.01em;}
+.work-desc{grid-column:5 / span 4;font-size:1.0625rem;line-height:1.5;color:var(--muted);}
+.work-tech{grid-column:9 / span 3;display:flex;flex-wrap:wrap;gap:.35rem .8rem;padding-top:.35rem;}
+.work-tech span{font-family:var(--sans);font-size:.6875rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);}
+.work-arrow{grid-column:12 / span 1;justify-self:end;align-self:start;}
+.work-arrow svg{width:16px;height:16px;stroke:var(--faint);transition:transform .25s ease,stroke .25s ease;}
+.work-row:hover .work-arrow svg{stroke:var(--accent);transform:translate(3px,-3px);}
+.work-row:hover .work-idx{color:var(--accent);}
+
+/* ── INDEX ROWS (recognition) ─────────────────────────────────── */
+.idx-row{
+  align-items:baseline;
+  padding:1.1rem 0;
+  border-top:1px solid var(--line);
+}
+.idx-list .idx-row:last-child{border-bottom:1px solid var(--line);}
+.idx-year{grid-column:1 / span 1;font-family:var(--sans);font-weight:700;font-size:.9375rem;color:var(--faint);}
+.idx-title{grid-column:3 / span 6;font-family:var(--serif);font-size:1.1875rem;color:var(--ink);}
+.idx-place{grid-column:9 / span 4;font-family:var(--sans);font-size:.8125rem;color:var(--faint);text-align:right;letter-spacing:.03em;text-transform:uppercase;align-self:baseline;}
+
+/* ── COLOPHON ─────────────────────────────────────────────────── */
+.colophon{
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;
+  padding:1.15rem 0 2.75rem;margin-top:clamp(3.5rem,6vw,5.5rem);
+}
+.colophon span{color:var(--faint);}
+
+/* ─────────────────────────────────────────────────────────────
+   SPECIMEN-ONLY scaffolding — built from the same tokens/idiom.
+   ───────────────────────────────────────────────────────────── */
+
+.spec-lead{grid-column:1 / span 8;}
+.spec-lead p{margin:0;color:var(--muted);}
+.spec-lead .lead{
+  font-size:clamp(1.15rem,2.05vw,1.6rem);
+  line-height:1.45;color:var(--ink);
+  letter-spacing:-.005em;margin-bottom:1.15rem;
+}
+.spec-lead .sub{font-size:1.0625rem;line-height:1.6;max-width:60ch;}
+@media(max-width:860px){.spec-lead{grid-column:1 / -1;}}
+
+/* Colour palette — swatch rows on the 12-col grid */
+.swatch-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+  margin-top:.5rem;
+}
+.swatch{
+  background:var(--bg);
+  padding:0;
+  display:flex;
+  flex-direction:column;
+}
+.swatch .chip{
+  height:78px;
+  border-bottom:1px solid var(--line);
+}
+.swatch .meta{padding:.8rem .9rem 1rem;}
+.swatch .role{
+  font-family:var(--sans);font-size:.6875rem;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink);
+  display:block;margin-bottom:.35rem;
+}
+.swatch .var{
+  font-family:var(--sans);font-size:.75rem;font-weight:500;
+  color:var(--faint);display:block;line-height:1.5;
+}
+.swatch .val{font-variant-numeric:tabular-nums;}
+
+/* Typeface blocks */
+.face{
+  border-top:1px solid var(--line);
+  padding:clamp(1.4rem,2.4vw,2rem) 0;
+  align-items:baseline;
+}
+.face-list .face:last-child{border-bottom:1px solid var(--line);}
+.face-label{grid-column:1 / span 3;}
+.face-label .fam{font-family:var(--sans);font-weight:700;font-size:.8125rem;letter-spacing:.11em;text-transform:uppercase;color:var(--ink);display:block;margin-bottom:.5rem;}
+.face-label .fnote{font-family:var(--sans);font-size:.8125rem;color:var(--faint);line-height:1.55;display:block;}
+.face-label .weights{margin-top:.7rem;display:flex;flex-wrap:wrap;gap:.3rem .7rem;}
+.face-label .weights span{font-family:var(--sans);font-size:.625rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);}
+.face-spec{grid-column:4 / span 9;}
+.face-spec .pangram{margin:0 0 .6rem;line-height:1.15;letter-spacing:-.01em;color:var(--ink);}
+.face-spec .pangram.sans-spec{font-family:var(--sans);font-size:clamp(1.6rem,4vw,2.9rem);font-weight:600;}
+.face-spec .pangram.serif-spec{font-family:var(--serif);font-size:clamp(1.7rem,4.2vw,3rem);}
+.face-spec .row{display:flex;flex-wrap:wrap;gap:1rem 2rem;margin-top:.9rem;}
+.face-spec .row b{font-weight:700;}
+.face-spec .row i{font-style:italic;}
+.face-spec .glyphs{font-size:1.15rem;color:var(--muted);letter-spacing:.04em;}
+@media(max-width:860px){
+  .face-label{grid-column:1 / -1;margin-bottom:1.1rem;}
+  .face-spec{grid-column:1 / -1;}
+}
+
+/* Type scale rows */
+.scale-row{
+  align-items:baseline;
+  padding:clamp(1rem,1.8vw,1.5rem) 0;
+  border-top:1px solid var(--line);
+}
+.scale-list .scale-row:last-child{border-bottom:1px solid var(--line);}
+.scale-meta{grid-column:1 / span 3;}
+.scale-meta .srole{font-family:var(--sans);font-weight:600;font-size:.8125rem;color:var(--ink);display:block;letter-spacing:.02em;}
+.scale-meta .sval{font-family:var(--sans);font-size:.75rem;color:var(--faint);display:block;margin-top:.25rem;font-variant-numeric:tabular-nums;}
+.scale-sample{grid-column:4 / span 9;color:var(--ink);line-height:1.1;overflow:hidden;}
+@media(max-width:860px){
+  .scale-meta{grid-column:1 / -1;margin-bottom:.5rem;}
+  .scale-sample{grid-column:1 / -1;}
+}
+
+/* Components demo helpers */
+.comp-grid{margin-top:.5rem;}
+.comp-block{
+  grid-column:span 6;
+  border:1px solid var(--line);
+  padding:clamp(1.2rem,2vw,1.75rem);
+  margin-top:-1px;
+}
+.comp-block + .comp-block{margin-left:-1px;}
+.comp-block .clabel{
+  font-family:var(--sans);font-size:.625rem;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--faint);
+  display:block;margin-bottom:1.1rem;
+}
+.comp-inline{display:flex;flex-wrap:wrap;gap:.9rem 1.4rem;align-items:center;}
+@media(max-width:860px){.comp-block{grid-column:1 / -1;}}
+
+/* Chips (echo of work-tech, standalone) */
+.chips{display:flex;flex-wrap:wrap;gap:.35rem .8rem;}
+.chips span{font-family:var(--sans);font-size:.6875rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);}
+
+/* Blockquote in the serif idiom */
+.spec-quote{
+  grid-column:span 6;
+  border:1px solid var(--line);
+  padding:clamp(1.4rem,2.4vw,2rem);
+  margin:-1px 0 0 -1px;
+}
+.spec-quote blockquote{
+  margin:0;
+  font-family:var(--serif);
+  font-size:clamp(1.25rem,2.2vw,1.7rem);
+  line-height:1.3;color:var(--ink);
+  border-left:2px solid var(--accent);
+  padding-left:clamp(1rem,1.6vw,1.4rem);
+  letter-spacing:-.01em;
+}
+.spec-quote figcaption{
+  font-family:var(--sans);font-size:.75rem;font-weight:600;
+  letter-spacing:.05em;color:var(--faint);
+  margin-top:1rem;padding-left:clamp(1rem,1.6vw,1.4rem);
+}
+@media(max-width:860px){.spec-quote{grid-column:1 / -1;}}
+
+/* Inline code / mono */
+code.mono{
+  font-family:'Tinos',ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:.95em;
+  background:var(--accent-soft);
+  color:var(--accent);
+  padding:.08em .4em;
+  border-radius:3px;
+  letter-spacing:.01em;
+}
+
+/* Button demo — solid variant built from tokens */
+.btn-solid{
+  font-family:var(--sans);
+  font-size:.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--bg);background:var(--ink);
+  border:1px solid var(--ink);border-radius:100px;
+  padding:.5rem .95rem;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.5em;
+  transition:opacity .2s ease;
+}
+.btn-solid:hover{opacity:.82;}
+.btn-accent{
+  font-family:var(--sans);
+  font-size:.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:#fff;background:var(--accent);
+  border:1px solid var(--accent);border-radius:100px;
+  padding:.5rem .95rem;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.5em;
+  transition:opacity .2s ease;
+}
+.btn-accent:hover{opacity:.85;}
+
+/* Rule demo stack */
+.rule-demo > * + *{margin-top:1.4rem;}
+.rule-demo .rlabel{font-family:var(--sans);font-size:.625rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:.5rem;}
+
+/* ── entrance stagger ─────────────────────────────────────────── */
+.rise{opacity:0;transform:translateY(14px);animation:rise .9s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes rise{to{opacity:1;transform:none;}}
+.d1{animation-delay:.04s;}.d2{animation-delay:.11s;}.d3{animation-delay:.2s;}.d4{animation-delay:.29s;}
+.reveal{opacity:0;transform:translateY(20px);}
+.reveal.in{opacity:1;transform:none;transition:opacity .8s ease,transform .8s cubic-bezier(.16,1,.3,1);}
+
+@media(prefers-reduced-motion:reduce){
+  .rise,.reveal{animation:none!important;opacity:1!important;transform:none!important;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── FOLIO ─────────────────────────────────────────────── -->
+  <header class="folio rise d1">
+    <div class="fl kicker">
+      <span>Specimen</span>
+      <span class="hide-sm">Swiss Editorial</span>
+      <a href="index.html">← Back to portfolio</a>
+    </div>
+    <button class="toggle" id="themeToggle" aria-label="Toggle colour theme">
+      <span class="glyph"></span><span id="themeLabel">Dark</span>
+    </button>
+  </header>
+  <hr class="rule-strong rise d1" />
+
+  <!-- ── a. TITLE / INTRO ──────────────────────────────────── -->
+  <section class="masthead" style="margin-top:0">
+    <h1 class="name rise d2">Specimen</h1>
+    <div class="mast-lower g12">
+      <div class="spec-lead rise d4">
+        <p class="lead pretty">The design system behind the <em>Swiss Editorial</em> mockup — a Vignelli / Pentagram lineage of strict 12-column grids, hairline rules and a display masthead.</p>
+        <p class="sub pretty">Tinos serif for prose, Inter sans for structure, and a single CV-purple accent. Everything below is rendered in the mockup's own tokens, so it themes light and dark exactly as the portfolio does.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── b. COLOUR PALETTE ─────────────────────────────────── -->
+  <section id="palette">
+    <div class="sec-head reveal">
+      <span class="sec-num tnum">01</span>
+      <h2 class="sec-title">Colour</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count tnum">Ten tokens · light + dark</span>
+    </div>
+    <p class="kicker" style="margin:0 0 1.1rem">Swatches follow the active theme — toggle to compare. Literal values for both themes shown per token.</p>
+    <div class="swatch-grid reveal">
+
+      <div class="swatch">
+        <div class="chip" style="background:var(--bg)"></div>
+        <div class="meta"><span class="role">Background</span><span class="var">--bg</span><span class="var val">#FFFFFF / #0B0B0C</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--surface)"></div>
+        <div class="meta"><span class="role">Surface</span><span class="var">--surface</span><span class="var val">#F4F3F1 / #161619</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--ink)"></div>
+        <div class="meta"><span class="role">Ink · primary</span><span class="var">--ink</span><span class="var val">#141417 / #F2F2EF</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--muted)"></div>
+        <div class="meta"><span class="role">Muted · prose</span><span class="var">--muted</span><span class="var val">#3C3C42 / #B4B4B9</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--faint)"></div>
+        <div class="meta"><span class="role">Faint · meta</span><span class="var">--faint</span><span class="var val">#8B8B91 / #66666B</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--accent)"></div>
+        <div class="meta"><span class="role">Accent · CV purple</span><span class="var">--accent</span><span class="var val">#7C2D91 / #C88BE8</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--accent-soft)"></div>
+        <div class="meta"><span class="role">Accent soft</span><span class="var">--accent-soft</span><span class="var val">rgba(124,45,145,.10) / rgba(200,139,232,.14)</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--line)"></div>
+        <div class="meta"><span class="role">Line · hairline</span><span class="var">--line</span><span class="var val">rgba(0,0,0,.11) / rgba(242,242,239,.11)</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--line-strong)"></div>
+        <div class="meta"><span class="role">Line · strong</span><span class="var">--line-strong</span><span class="var val">rgba(0,0,0,.30) / rgba(242,242,239,.30)</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--rule)"></div>
+        <div class="meta"><span class="role">Rule · masthead</span><span class="var">--rule</span><span class="var val">rgba(0,0,0,.82) / rgba(242,242,239,.72)</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── c. TYPOGRAPHY ─────────────────────────────────────── -->
+  <section id="type">
+    <div class="sec-head reveal">
+      <span class="sec-num tnum">02</span>
+      <h2 class="sec-title">Typefaces</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count tnum">Two families</span>
+    </div>
+    <div class="face-list">
+
+      <div class="face g12 reveal">
+        <div class="face-label">
+          <span class="fam">Inter</span>
+          <span class="fnote">Structure, labels, the display name. Optical sizing 14–32. Google Fonts.</span>
+          <div class="weights">
+            <span>400 Regular</span><span>500 Medium</span><span>600 Semibold</span><span>700 Bold</span>
+          </div>
+        </div>
+        <div class="face-spec">
+          <p class="pangram sans-spec">Sphinx of black quartz, judge my vow.</p>
+          <div class="row sans">
+            <span style="font-weight:400">Regular</span>
+            <span style="font-weight:500">Medium</span>
+            <span style="font-weight:600">Semibold</span>
+            <span style="font-weight:700"><b>Bold</b></span>
+            <span class="glyphs">AaBbCc 0123456789 &amp; @ # ↗</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="face g12 reveal">
+        <div class="face-label">
+          <span class="fam">Tinos</span>
+          <span class="fnote">Serif prose, project titles, running body. A Times-metric workhorse. Google Fonts.</span>
+          <div class="weights">
+            <span>400 Regular</span><span>400 Italic</span><span>700 Bold</span><span>700 Bold Italic</span>
+          </div>
+        </div>
+        <div class="face-spec">
+          <p class="pangram serif-spec">Pack my box with five dozen liquor jugs.</p>
+          <div class="row serif">
+            <span style="font-weight:400">Regular</span>
+            <span style="font-weight:400"><i>Italic</i></span>
+            <span style="font-weight:700"><b>Bold</b></span>
+            <span style="font-weight:700"><b><i>Bold Italic</i></b></span>
+            <span class="glyphs">AaBbCc 0123456789 &amp; @ #</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── d. TYPE SCALE ─────────────────────────────────────── -->
+  <section id="scale">
+    <div class="sec-head reveal">
+      <span class="sec-num tnum">03</span>
+      <h2 class="sec-title">Type Scale</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count tnum">Display → micro</span>
+    </div>
+    <div class="scale-list">
+
+      <div class="scale-row g12 reveal">
+        <div class="scale-meta"><span class="srole">Display · masthead</span><span class="sval">clamp(3.1rem, 12.5vw, 10rem) · Inter 600</span></div>
+        <div class="scale-sample sans" style="font-weight:600;font-size:clamp(2.6rem,8vw,5.5rem);line-height:.9;letter-spacing:-.04em">Gavin<span style="color:var(--faint)"> McFarland</span></div>
+      </div>
+
+      <div class="scale-row g12 reveal">
+        <div class="scale-meta"><span class="srole">Connect lede</span><span class="sval">clamp(1.5rem, 3.4vw, 2.4rem) · Inter</span></div>
+        <div class="scale-sample sans" style="font-size:clamp(1.5rem,3.4vw,2.4rem);line-height:1.2;letter-spacing:-.015em">Open to freelance work and collaborations.</div>
+      </div>
+
+      <div class="scale-row g12 reveal">
+        <div class="scale-meta"><span class="srole">Project title</span><span class="sval">clamp(1.35rem, 2.3vw, 1.85rem) · Tinos</span></div>
+        <div class="scale-sample serif" style="font-size:clamp(1.35rem,2.3vw,1.85rem);line-height:1.05;letter-spacing:-.01em">Plugma — a zero-config CLI</div>
+      </div>
+
+      <div class="scale-row g12 reveal">
+        <div class="scale-meta"><span class="srole">Lead paragraph</span><span class="sval">clamp(1.15rem, 2.05vw, 1.6rem) · Tinos</span></div>
+        <div class="scale-sample serif" style="font-size:clamp(1.15rem,2.05vw,1.6rem);line-height:1.45">I build developer tooling and interactive products.</div>
+      </div>
+
+      <div class="scale-row g12 reveal">
+        <div class="scale-meta"><span class="srole">Index title</span><span class="sval">1.1875rem · 19px · Tinos</span></div>
+        <div class="scale-sample serif" style="font-size:1.1875rem">Plugin Exhibition booth</div>
+      </div>
+
+      <div class="scale-row g12 reveal">
+        <div class="scale-meta"><span class="srole">Body · prose</span><span class="sval">1.0625rem · 17px · Tinos</span></div>
+        <div class="scale-sample serif" style="font-size:1.0625rem;line-height:1.5">A modern CLI prompt library with stateful back-navigation and conditional fields.</div>
+      </div>
+
+      <div class="scale-row g12 reveal">
+        <div class="scale-meta"><span class="srole">Role · UI label</span><span class="sval">.9375rem · 15px · Inter 600</span></div>
+        <div class="scale-sample sans" style="font-size:.9375rem;font-weight:600;line-height:1.35">Developer &amp; Product Designer</div>
+      </div>
+
+      <div class="scale-row g12 reveal">
+        <div class="scale-meta"><span class="srole">Section title</span><span class="sval">.8125rem · 13px · Inter 700 · .11em</span></div>
+        <div class="scale-sample sans" style="font-size:.8125rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase">Selected Work</div>
+      </div>
+
+      <div class="scale-row g12 reveal">
+        <div class="scale-meta"><span class="srole">Kicker · folio</span><span class="sval">.6875rem · 11px · Inter 600 · .14em</span></div>
+        <div class="scale-sample sans" style="font-size:.6875rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)">Developer &amp; Product Designer</div>
+      </div>
+
+      <div class="scale-row g12 reveal">
+        <div class="scale-meta"><span class="srole">Micro · dt label</span><span class="sval">.625rem · 10px · Inter 600 · .14em</span></div>
+        <div class="scale-sample sans" style="font-size:.625rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)">Discipline · Based · Status</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── e. COMPONENTS ─────────────────────────────────────── -->
+  <section id="components">
+    <div class="sec-head reveal">
+      <span class="sec-num tnum">04</span>
+      <h2 class="sec-title">Components</h2>
+      <span class="sec-line"></span>
+      <span class="sec-count tnum">Live · real classes</span>
+    </div>
+
+    <!-- Work list (the signature component) -->
+    <p class="kicker" style="margin:0 0 .6rem">Work list · <code class="mono">.work-row</code></p>
+    <div class="work-list reveal">
+      <a class="work-row g12" href="index.html">
+        <span class="work-idx tnum">01</span>
+        <span class="work-title">Plugma</span>
+        <span class="work-desc pretty">A zero-config CLI for building Figma plugins with true hot-module reloading.</span>
+        <span class="work-tech"><span>Node.js</span><span>TypeScript</span><span>Vite</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+      <a class="work-row g12" href="index.html">
+        <span class="work-idx tnum">02</span>
+        <span class="work-title">Askeroo</span>
+        <span class="work-desc pretty">A modern CLI prompt library with stateful back-navigation and task runners.</span>
+        <span class="work-tech"><span>TypeScript</span><span>React</span><span>Ink</span></span>
+        <span class="work-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>
+      </a>
+    </div>
+
+    <!-- Index rows -->
+    <p class="kicker" style="margin:2.5rem 0 .6rem">Index rows · <code class="mono">.idx-row</code></p>
+    <div class="idx-list reveal">
+      <div class="idx-row g12"><span class="idx-year tnum">2023</span><span class="idx-title">Plugin Exhibition booth</span><span class="idx-place">Figma · Moscone Center</span></div>
+      <div class="idx-row g12"><span class="idx-year tnum">2016</span><span class="idx-title">Best Customer Experience</span><span class="idx-place">John Lewis</span></div>
+    </div>
+
+    <!-- Buttons + links + chips grid -->
+    <div class="comp-grid g12" style="margin-top:2.5rem">
+
+      <div class="comp-block reveal">
+        <span class="clabel">Buttons &amp; toggle</span>
+        <div class="comp-inline">
+          <button class="toggle"><span class="glyph"></span>Dark</button>
+          <button class="btn-solid">View project</button>
+          <button class="btn-accent">Get in touch ↗</button>
+        </div>
+      </div>
+
+      <div class="comp-block reveal">
+        <span class="clabel">Links · <code class="mono">.ulink</code></span>
+        <div class="comp-inline" style="font-family:var(--serif);font-size:1.0625rem">
+          <a class="ulink" href="index.html">gavin@limitlessloop.com</a>
+          <a class="ulink" href="index.html">GitHub ↗</a>
+          <a class="ulink" href="index.html">Awenate</a>
+        </div>
+      </div>
+
+      <div class="comp-block reveal">
+        <span class="clabel">Tech chips · <code class="mono">.work-tech</code></span>
+        <div class="chips">
+          <span>Node.js</span><span>TypeScript</span><span>Svelte</span><span>Figma API</span><span>Vite</span><span>React</span>
+        </div>
+      </div>
+
+      <div class="comp-block reveal">
+        <span class="clabel">Rules &amp; dividers</span>
+        <div class="rule-demo">
+          <div><span class="rlabel">rule-strong · 2px</span><hr class="rule-strong"></div>
+          <div><span class="rlabel">rule-hair · 1px</span><hr class="rule-hair"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Blockquote + inline code -->
+    <div class="comp-grid g12" style="margin-top:2rem">
+      <figure class="spec-quote reveal">
+        <blockquote>Tools that take the friction out of building things.</blockquote>
+        <figcaption>— Design direction, Swiss Editorial</figcaption>
+      </figure>
+      <div class="comp-block reveal" style="margin-top:0">
+        <span class="clabel">Inline code &amp; prose</span>
+        <p class="serif" style="margin:0;font-size:1.0625rem;line-height:1.6;color:var(--muted)">
+          The grid is set with <code class="mono">.g12</code> — twelve columns and a
+          <code class="mono">clamp()</code> gutter. Titles rest on the baseline while
+          <code class="mono">--accent</code> carries every interactive state.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule-hair" style="margin-top:clamp(3.5rem,6vw,5.5rem)" />
+  <footer class="colophon kicker">
+    <span>© 2026 Gavin McFarland</span>
+    <span class="hide-sm">Specimen · Set in Tinos &amp; Inter</span>
+    <span><a href="index.html">Back to portfolio →</a></span>
+  </footer>
+
+</div>
+
+<script>
+/* ── Theme toggle — identical to index.html (localStorage 'theme') ── */
+const root=document.documentElement,tLabel=document.getElementById('themeLabel');
+const saved=localStorage.getItem('theme');
+if(saved==='dark'||(!saved&&matchMedia('(prefers-color-scheme:dark)').matches)){root.classList.add('dark');}
+function syncLabel(){tLabel.textContent=root.classList.contains('dark')?'Light':'Dark';}
+syncLabel();
+document.getElementById('themeToggle').addEventListener('click',()=>{
+  root.classList.toggle('dark');
+  localStorage.setItem('theme',root.classList.contains('dark')?'dark':'light');
+  syncLabel();
+});
+
+/* ── Reveal on scroll ─────────────────────────────────────────── */
+const io=new IntersectionObserver((es)=>{
+  es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+},{rootMargin:'0px 0px -8% 0px',threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Specimen — Enamel</title>
+<meta name="description" content="12 · Enamel design system specimen — tokens, type and components.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2324282D'/%3E%3Crect x='4' y='4' width='11' height='11' fill='%23FF6A4D'/%3E%3Crect x='17' y='4' width='11' height='11' fill='%233B6DFF'/%3E%3Crect x='4' y='17' width='11' height='11' fill='%23C9F23A'/%3E%3Crect x='17' y='17' width='11' height='11' fill='%2324BDB8'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-surface');document.documentElement.classList.toggle('light',s?s==='steel':matchMedia('(prefers-color-scheme: light)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+
+<style>
+  /* ── Specimen-only additions. Same tokens, same doctrine —
+     no curves, no shadows, no gradients, flat type. ──────────── */
+
+  .swatch { border: 1px solid var(--edge); }
+  .swatch__field { height: 4.5rem; display: flex; align-items: flex-end; padding: .5rem; }
+  .swatch__meta { padding: .6rem .75rem .75rem; border-top: 1px solid var(--edge); background: var(--panel); }
+  .swatch__meta .mono { display: block; margin-top: .25rem; }
+
+  .fam { border: 1px solid var(--edge); padding: 1rem; }
+  .fam__sample { margin-top: .6rem; }
+  .fam__weights { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .75rem; }
+
+  .scale-row { display: grid; grid-template-columns: 6.5rem 1fr 8rem; align-items: baseline; gap: 1rem; padding: .9rem 0; border-bottom: 1px solid var(--edge); }
+  .scale-row:first-child { border-top: 2px solid var(--rule); }
+  .scale-row__label { font-family: var(--f-mono); font-size: var(--t-mark); text-transform: uppercase; letter-spacing: .1em; color: var(--faint); }
+  .scale-row__val { font-family: var(--f-mono); font-size: var(--t-mono); color: var(--faint); text-align: right; }
+
+  .comp-block { margin-bottom: 2rem; }
+  .comp-block:last-child { margin-bottom: 0; }
+  .comp-block > .mark { display: block; margin-bottom: .75rem; }
+</style>
+</head>
+
+<body data-page="specimen">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="bar__name" href="index.html">G.McF</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="bar__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Surface</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- a. Title / intro ─────────────────────────────────────────── -->
+  <section class="band band--tight">
+    <div class="sheet">
+      <div class="g12">
+        <div class="c9">
+          <p class="mark faint">Specimen · <a class="ln--bare" href="index.html">← Index</a></p>
+          <h1 style="margin-top:.6rem">12 · Enamel — the design system, laid flat.</h1>
+          <p class="dim" style="margin-top:.5rem;max-width:60ch">
+            A graphite ground carrying four flat enamels as the only colour;
+            no display size anywhere — three sizes span eleven to fifteen
+            pixels, and rank is made by fill, inversion, weight, rule and
+            space instead of scale.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- b. Colour palette ────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="pal-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">01</span>
+        <h2 id="pal-h">Colour</h2>
+        <span class="head__x">Graphite ground · steel alternate · four enamels</span>
+      </div>
+
+      <p class="mark faint" style="margin-bottom:.6rem">Ground &amp; ink — current surface</p>
+      <div class="g12" style="margin-bottom:1.75rem">
+        <div class="c3">
+          <div class="swatch">
+            <div class="swatch__field" style="background:var(--ground)"></div>
+            <div class="swatch__meta"><span class="mark">Ground</span><span class="mono dim">--ground</span></div>
+          </div>
+        </div>
+        <div class="c3">
+          <div class="swatch">
+            <div class="swatch__field" style="background:var(--panel)"></div>
+            <div class="swatch__meta"><span class="mark">Panel</span><span class="mono dim">--panel</span></div>
+          </div>
+        </div>
+        <div class="c3">
+          <div class="swatch">
+            <div class="swatch__field" style="background:var(--sunk)"></div>
+            <div class="swatch__meta"><span class="mark">Sunk</span><span class="mono dim">--sunk</span></div>
+          </div>
+        </div>
+        <div class="c3">
+          <div class="swatch">
+            <div class="swatch__field" style="background:var(--edge)"></div>
+            <div class="swatch__meta"><span class="mark">Edge (hairline)</span><span class="mono dim">--edge</span></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="mark faint" style="margin-bottom:.6rem">Ink scale — current surface</p>
+      <div class="g12" style="margin-bottom:1.75rem">
+        <div class="c3">
+          <div class="swatch">
+            <div class="swatch__field" style="background:var(--ground)"><span class="strong" style="color:var(--ink)">Ink</span></div>
+            <div class="swatch__meta"><span class="mark">Ink — primary text</span><span class="mono dim">--ink</span></div>
+          </div>
+        </div>
+        <div class="c3">
+          <div class="swatch">
+            <div class="swatch__field" style="background:var(--ground)"><span style="color:var(--mid)">Mid</span></div>
+            <div class="swatch__meta"><span class="mark">Mid — secondary</span><span class="mono dim">--mid</span></div>
+          </div>
+        </div>
+        <div class="c3">
+          <div class="swatch">
+            <div class="swatch__field" style="background:var(--ground)"><span style="color:var(--faint)">Faint</span></div>
+            <div class="swatch__meta"><span class="mark">Faint — tertiary</span><span class="mono dim">--faint</span></div>
+          </div>
+        </div>
+        <div class="c3">
+          <div class="swatch">
+            <div class="swatch__field" style="background:var(--ground)"><span style="color:var(--rule)">Rule</span></div>
+            <div class="swatch__meta"><span class="mark">Rule — the drawn line</span><span class="mono dim">--rule</span></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="mark faint" style="margin-bottom:.6rem">The four enamels — flat fills, paired inks. Vermilion is the only one permitted as text.</p>
+      <div class="g12" data-swatches="enamel"></div>
+
+      <p class="mark faint" style="margin:1.75rem 0 .6rem">Literal values, both surfaces</p>
+      <div class="scroll-x">
+        <table class="tbl" data-swatches="table">
+          <thead>
+            <tr><th>Token</th><th>Role</th><th>Graphite (dark)</th><th>Steel (light)</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- c. Typography ────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="type-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">02</span>
+        <h2 id="type-h">Typography</h2>
+        <span class="head__x">Two families · nothing here has a serif on it</span>
+      </div>
+
+      <div class="g12">
+        <div class="c6">
+          <div class="fam">
+            <p class="mark faint">Text — Chivo</p>
+            <p class="fam__sample" style="font-family:var(--f-text);font-size:1.6rem;font-weight:600">
+              Sphinx of black quartz, judge my vow.
+            </p>
+            <p class="fam__sample dim" style="font-family:var(--f-text);font-size:var(--t-text)">
+              The five boxing wizards jump quickly — set in Chivo at 15px,
+              the largest size that carries meaning in this system.
+            </p>
+            <div class="fam__weights">
+              <span class="tag" style="font-family:var(--f-text);text-transform:none;font-weight:400">400 Regular</span>
+              <span class="tag" style="font-family:var(--f-text);text-transform:none;font-weight:600">600 Semibold</span>
+              <span class="tag" style="font-family:var(--f-text);text-transform:none;font-weight:700">700 Bold</span>
+              <span class="tag" style="font-family:var(--f-text);text-transform:none;font-style:italic;font-weight:400">400 Italic</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="c6">
+          <div class="fam">
+            <p class="mark faint">Mono — JetBrains Mono</p>
+            <p class="fam__sample mono" style="font-size:1.6rem">
+              Sphinx of black quartz, judge my vow.
+            </p>
+            <p class="fam__sample mono dim">
+              The five boxing wizards jump quickly — every mark, numeral,
+              label, table and rule in this system is set in this face.
+            </p>
+            <div class="fam__weights">
+              <span class="tag mono" style="text-transform:none;font-weight:400">400 Regular</span>
+              <span class="tag mono" style="text-transform:none;font-weight:500">500 Medium</span>
+              <span class="tag mono" style="text-transform:none;font-weight:700">700 Bold</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- d. Type scale ────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="scale-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">03</span>
+        <h2 id="scale-h">Type scale</h2>
+        <span class="head__x">Three sizes, four pixels apart — that is the whole scale</span>
+      </div>
+
+      <div class="scale-row">
+        <span class="scale-row__label">Ornament</span>
+        <span class="numeral">04</span>
+        <span class="scale-row__val">52px / 3.25rem</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-row__label">Heading</span>
+        <h3 style="font-size:var(--t-text)">Every heading is body size — this is enforced, not merely intended.</h3>
+        <span class="scale-row__val">15px / .9375rem</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-row__label">Body</span>
+        <p style="font-size:var(--t-text)">Set in Chivo — prose, descriptions, table cell overflow.</p>
+        <span class="scale-row__val">15px / .9375rem</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-row__label">Mono</span>
+        <span class="mono">All structure — tables, nav, tags, defs, numerals.</span>
+        <span class="scale-row__val">12px / .75rem</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-row__label">Mark</span>
+        <span class="mark">Tracked uppercase mono marks</span>
+        <span class="scale-row__val">11px / .6875rem</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- e. Components ────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="comp-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">04</span>
+        <h2 id="comp-h">Components</h2>
+        <span class="head__x">Rendered live, in the system's own classes</span>
+      </div>
+
+      <!-- Rank devices -->
+      <div class="comp-block">
+        <span class="mark faint">Rank — enamel fill, inversion, edge marker</span>
+        <div class="g12" style="--gap:.75rem">
+          <div class="c3">
+            <div class="fill" data-tone="vermilion">
+              <p class="mark" style="opacity:.75">Fill · vermilion</p>
+              <p class="strong" style="margin-top:.4rem">Loudest device</p>
+            </div>
+          </div>
+          <div class="c3">
+            <div class="fill" data-tone="blue">
+              <p class="mark" style="opacity:.75">Fill · blue</p>
+              <p class="strong" style="margin-top:.4rem">Design tokens</p>
+            </div>
+          </div>
+          <div class="c3">
+            <div class="invert">
+              <p class="mark" style="opacity:.7">Inversion</p>
+              <p class="strong" style="margin-top:.4rem">Loud, no colour spent</p>
+            </div>
+          </div>
+          <div class="c3">
+            <div class="edged" data-tone="teal" style="padding-block:.4rem">
+              <p class="mark faint">Edge marker</p>
+              <p class="dim" style="margin-top:.4rem">Binds without boxing</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buttons, links, tags -->
+      <div class="comp-block">
+        <span class="mark faint">Buttons, links &amp; tags</span>
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+          <button class="btn" type="button">View archive</button>
+          <a class="ln" href="#">An underlined link</a>
+          <a class="ln--bare" href="#">A bare link</a>
+          <span class="tag"><span class="sw" data-tone="blue"></span>Tool</span>
+          <span class="tag"><span class="sw" data-tone="teal"></span>Plug-in</span>
+          <span class="tag"><span class="sw" data-tone="lime"></span>Library</span>
+        </div>
+      </div>
+
+      <!-- Panels -->
+      <div class="comp-block">
+        <span class="mark faint">Panels</span>
+        <div class="g12" style="--gap:.5rem">
+          <div class="c4">
+            <div class="panel" style="min-height:5rem;justify-content:space-between">
+              <span class="mark faint">Status</span>
+              <span class="strong">Independent · autumn 2026</span>
+            </div>
+          </div>
+          <div class="c4">
+            <div class="panel panel--sunk" style="min-height:5rem;justify-content:space-between">
+              <span class="mark faint">Based</span>
+              <span class="strong">London, UK · GMT</span>
+            </div>
+          </div>
+          <div class="c4">
+            <div class="panel" style="min-height:5rem;justify-content:space-between">
+              <span class="mark faint">Role</span>
+              <span class="strong">Design engineer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="comp-block">
+        <span class="mark faint">Table</span>
+        <div class="scroll-x">
+          <table class="tbl" style="min-width:44rem">
+            <thead>
+              <tr><th></th><th>Name</th><th>Description</th><th style="text-align:right">Year</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="t-n">01</td>
+                <td class="t-name"><a class="ln--bare" href="#">Overlay Kit →</a></td>
+                <td class="t-desc">Figma plug-in for auditing spacing tokens against a live canvas.</td>
+                <td class="t-year">2024</td>
+              </tr>
+              <tr>
+                <td class="t-n">02</td>
+                <td class="t-name"><a class="ln--bare" href="#">Token Bridge →</a></td>
+                <td class="t-desc">Two-way sync between design tokens and a Style Dictionary build.</td>
+                <td class="t-year">2023</td>
+              </tr>
+              <tr>
+                <td class="t-n">03</td>
+                <td class="t-name"><a class="ln--bare" href="#">Ledger →</a></td>
+                <td class="t-desc">Editor plug-in that diffs component APIs against their docs.</td>
+                <td class="t-year">2022</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Rows / defs -->
+      <div class="comp-block">
+        <span class="mark faint">Rows &amp; definitions</span>
+        <div class="rows">
+          <div class="row">
+            <div class="row__k"><span class="n">01</span>Design engineer</div>
+            <div class="row__v">Independent, London — building the tools design systems are made with.</div>
+          </div>
+          <div class="row">
+            <div class="row__k"><span class="n">02</span>Front-end lead</div>
+            <div class="row__v">Six years on component APIs and the token pipelines feeding them.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fold / accordion -->
+      <div class="comp-block">
+        <span class="mark faint">Accordion</span>
+        <details class="fold" open>
+          <summary>Why a graphite ground</summary>
+          <p class="fold__body">Vitreous enamel is fused onto steel, not paper — the ground is worked, mid-dark, and never pretends to be a printed sheet.</p>
+        </details>
+        <details class="fold">
+          <summary>Why only three sizes</summary>
+          <p class="fold__body">Rank is made by fill, inversion, weight, rule, numbering, edge marker and space instead — eight devices, judged side by side in signal.html.</p>
+        </details>
+      </div>
+
+      <!-- Code block -->
+      <div class="comp-block">
+        <span class="mark faint">Code block</span>
+        <div class="nd-code">
+          <div class="nd-code__bar">tokens.css</div>
+          <pre>--vermilion: #FF6A4D;
+--blue:      #3B6DFF;
+--lime:      #C9F23A;
+--teal:      #24BDB8;</pre>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="comp-block">
+        <span class="mark faint">Form field</span>
+        <div class="g12" style="--gap:.75rem;max-width:32rem">
+          <div class="c12">
+            <div class="field">
+              <label for="spec-email">Email</label>
+              <input class="input" id="spec-email" type="email" placeholder="you@studio.com">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rules -->
+      <div class="comp-block">
+        <span class="mark faint">Rules</span>
+        <div style="display:flex;flex-direction:column;gap:.75rem">
+          <hr class="hr">
+          <hr class="hr hr--strong">
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- f. Textures ───────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="tx-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="n">05</span>
+        <h2 id="tx-h">Textures</h2>
+        <span class="head__x">Hard-stop patterns — enamel cannot gradate</span>
+      </div>
+      <div class="g12" style="--gap:.75rem">
+        <div class="c2">
+          <div class="plate" data-tone="vermilion" style="min-height:5.5rem">
+            <div class="tx tx-grid"></div>
+            <span class="mark" style="position:relative;padding:.6rem;display:block;opacity:.85">Grid</span>
+          </div>
+        </div>
+        <div class="c2">
+          <div class="plate" data-tone="blue" style="min-height:5.5rem">
+            <div class="tx tx-rule"></div>
+            <span class="mark" style="position:relative;padding:.6rem;display:block;opacity:.85">Rule</span>
+          </div>
+        </div>
+        <div class="c2">
+          <div class="plate" data-tone="lime" style="min-height:5.5rem">
+            <div class="tx tx-dot"></div>
+            <span class="mark" style="position:relative;padding:.6rem;display:block;opacity:.85">Dot</span>
+          </div>
+        </div>
+        <div class="c2">
+          <div class="plate" data-tone="teal" style="min-height:5.5rem">
+            <div class="tx tx-hatch"></div>
+            <span class="mark" style="position:relative;padding:.6rem;display:block;opacity:.85">Hatch</span>
+          </div>
+        </div>
+        <div class="c2">
+          <div class="plate" data-tone="vermilion" style="min-height:5.5rem">
+            <div class="tx tx-bar"></div>
+            <span class="mark" style="position:relative;padding:.6rem;display:block;opacity:.85">Bar</span>
+          </div>
+        </div>
+        <div class="c2">
+          <div class="plate" data-tone="ink" style="min-height:5.5rem">
+            <span class="numeral" style="position:absolute;right:.4rem;bottom:-.3rem;opacity:.5">05</span>
+            <span class="mark" style="position:relative;padding:.6rem;display:block;opacity:.85">Numeral</span>
+          </div>
+        </div>
+      </div>
+      <p class="mark faint" style="margin-top:1rem">Construction grid — press G, or the Grid button in the bar</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Sheet</dt><dd>Specimen</dd></div>
+      <div><dt>Set</dt><dd>12 · Enamel</dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+<script>
+  (() => {
+    // Guarded: renders correctly even if data.js / system.js are absent,
+    // and independently of DATA.nav (this page is not part of DATA.nav).
+    const nav = document.getElementById('nav');
+    if (nav && window.DATA && Array.isArray(DATA.nav)) {
+      nav.innerHTML = DATA.nav.map((n) => `<a href="${n.href}">${n.name}</a>`).join('');
+    }
+
+    const enamels = [
+      { name: 'Vermilion', tone: 'vermilion', role: 'Accent · text-safe', dark: '#FF6A4D', darkInk: '#2B0700', light: '#C8341A', lightInk: '#FFF1EE' },
+      { name: 'Blue',      tone: 'blue',      role: 'Design tokens',      dark: '#3B6DFF', darkInk: '#F0F4FF', light: '#1E4FD8', lightInk: '#EFF3FF' },
+      { name: 'Lime',      tone: 'lime',      role: 'Libraries',          dark: '#C9F23A', darkInk: '#1A2200', light: '#A8CC1F', lightInk: '#161C00' },
+      { name: 'Teal',      tone: 'teal',      role: 'Plug-ins',           dark: '#24BDB8', darkInk: '#02231F', light: '#12897F', lightInk: '#ECFFFD' },
+    ];
+
+    const swatches = document.querySelector('[data-swatches="enamel"]');
+    if (swatches) {
+      swatches.innerHTML = enamels.map((e) => `
+        <div class="c3">
+          <div class="swatch">
+            <div class="fill" data-tone="${e.tone}" style="min-height:4.5rem;justify-content:flex-end">
+              <span class="mark" style="opacity:.8">${e.role}</span>
+            </div>
+            <div class="swatch__meta">
+              <span class="mark">${e.name}</span>
+              <span class="mono dim">--${e.tone}</span>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    const rows = [
+      ['--ground', 'Ground', '#24282D', '#C3C8CD'],
+      ['--panel', 'Panel', '#2C3138', '#D0D4D8'],
+      ['--sunk', 'Sunk', '#1B1E22', '#B0B6BC'],
+      ['--ink', 'Ink', '#E7EAED', '#16191C'],
+      ['--mid', 'Mid', '#9AA1A9', '#4A4F55'],
+      ['--faint', 'Faint', '#6B727A', '#767C83'],
+      ['--edge', 'Edge (hairline)', '#3A4048', '#A6ACB2'],
+      ['--rule', 'Rule (drawn line)', '#E7EAED', '#16191C'],
+      ['--vermilion', 'Vermilion', '#FF6A4D', '#C8341A'],
+      ['--vermilion-ink', 'Vermilion ink', '#2B0700', '#FFF1EE'],
+      ['--blue', 'Blue', '#3B6DFF', '#1E4FD8'],
+      ['--blue-ink', 'Blue ink', '#F0F4FF', '#EFF3FF'],
+      ['--lime', 'Lime', '#C9F23A', '#A8CC1F'],
+      ['--lime-ink', 'Lime ink', '#1A2200', '#161C00'],
+      ['--teal', 'Teal', '#24BDB8', '#12897F'],
+      ['--teal-ink', 'Teal ink', '#02231F', '#ECFFFD'],
+    ];
+    const tbody = document.querySelector('[data-swatches="table"] tbody');
+    if (tbody) {
+      tbody.innerHTML = rows.map(([tok, role, dark, light]) => `
+        <tr>
+          <td class="mono">${tok}</td>
+          <td class="t-desc">${role}</td>
+          <td class="mono"><span class="sw" style="display:inline-block;background:${dark};margin-right:.4rem;vertical-align:middle"></span>${dark}</td>
+          <td class="mono"><span class="sw" style="display:inline-block;background:${light};margin-right:.4rem;vertical-align:middle"></span>${light}</td>
+        </tr>`).join('');
+    }
+  })();
+</script>
+</body>
+</html>

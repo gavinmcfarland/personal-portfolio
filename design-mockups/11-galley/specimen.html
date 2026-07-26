@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Specimen — 11 · Galley</title>
+<meta name="description" content="Type, colour and components of the Galley design system, drawn out on one sheet.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F4F1E9'/%3E%3Crect x='4' y='4' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='9' width='13' height='2' fill='%231A1916'/%3E%3Crect x='4' y='14' width='9' height='2' fill='%231A1916'/%3E%3Crect x='22' y='4' width='2' height='12' fill='%23A82818'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+
+<style>
+  /* ── Specimen-only scaffolding. Same tokens, same doctrine (no
+     curves, no shadows, no gradients) — just the grids a swatch
+     sheet needs that the document half of the system never did. */
+
+  .sp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: 1px;
+    background: var(--hair);
+    border: 1px solid var(--ink);
+    margin: 1.5rem 0 2.5rem;
+  }
+  .sp-swatch { background: var(--paper); padding: 1rem; display: flex; flex-direction: column; gap: .6rem; }
+  .sp-chip { height: 3.25rem; border: 1px solid var(--ink); }
+  .sp-name { font-family: var(--f-mark); font-size: var(--t-mark); }
+  .sp-val  { font-family: var(--f-mark); font-size: var(--t-micro); color: var(--mid); }
+
+  .sp-sub { margin: 0 0 1rem; }
+
+  .sp-fam { border-top: 1px solid var(--ink); padding-top: 1.5rem; margin-bottom: 2.5rem; }
+  .sp-fam__meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
+  .sp-fam__pangram { font-size: 1.75rem; line-height: 1.3; margin-bottom: 1.25rem; }
+  .sp-fam__weights { display: flex; flex-wrap: wrap; gap: 1.5rem 2.5rem; }
+  .sp-fam__weights > div { font-size: 1.0625rem; }
+
+  .sp-scale-row { display: grid; grid-template-columns: 9rem 1fr; gap: 1.5rem; align-items: baseline; padding: 1rem 0; border-bottom: 1px solid var(--hair); }
+  .sp-scale-row:first-child { border-top: 1px solid var(--ink); }
+  .sp-scale-row__meta { font-family: var(--f-mark); font-size: var(--t-micro); color: var(--faint); }
+  .sp-scale-row__meta b { display: block; color: var(--mid); text-transform: none; letter-spacing: 0; font-size: var(--t-mark); margin-top: .2rem; }
+
+  .sp-block { margin-bottom: 3rem; }
+  .sp-block:last-child { margin-bottom: 0; }
+  .sp-block > .micro.faint { display: block; margin-bottom: .75rem; }
+
+  .sp-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; }
+  .sp-notes { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: .75rem; margin: 1.5rem 0 2.5rem; }
+  .sp-plates { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 1px; background: var(--hair); border: 1px solid var(--ink); margin: 1.5rem 0 2.5rem; }
+  .sp-plates .plate { border: 0; min-height: 6rem; }
+
+  .sp-tx { border: 1px solid var(--ink); min-height: 6rem; position: relative; background: var(--paper); display: flex; align-items: flex-end; padding: .6rem; }
+  .sp-tx .tx { position: absolute; inset: 0; --tx-ink: var(--ink); opacity: .22; }
+  .sp-tx span { position: relative; font-family: var(--f-mark); font-size: var(--t-micro); text-transform: uppercase; letter-spacing: .12em; color: var(--mid); }
+</style>
+</head>
+
+<body data-page="specimen">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<header class="head">
+  <a class="head__name" href="index.html">G. McFarland</a>
+  <nav id="nav" aria-label="Primary"></nav>
+  <div class="head__tools">
+    <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+    <button id="theme-toggle" type="button">Theme</button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- a · Title / intro ─────────────────────────────────────────── -->
+  <section class="frame frame--tl">
+    <span class="frame__mark">Sheet 00 · specimen</span>
+    <div class="hold--wide">
+      <p class="micro faint">11 · Galley · design system</p>
+      <h1 class="display" style="margin:1.5rem 0">
+        Two inks, one correction, <br><em>and a typewriter for the marks.</em>
+      </h1>
+      <p class="dim hold">
+        No sans-serif anywhere, no curves, no shadows, no gradients that
+        actually grade. This sheet lays every token, size and component of
+        the set out in its own hand, so it can be checked against the
+        others at a glance.
+      </p>
+      <p class="mark" style="margin-top:2rem">
+        <a class="ln" href="index.html">← Back to the index</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- b · Colour palette ────────────────────────────────────────── -->
+  <section class="frame frame--wide frame--auto">
+    <span class="frame__mark">§b · colour</span>
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">01</span>
+        <h2>Colour</h2>
+        <span class="marker__x faint">Two inks + one correction · colour lives on the board</span>
+      </div>
+
+      <p class="micro faint sp-sub">Document half — light</p>
+      <div class="sp-grid">
+        <div class="sp-swatch"><div class="sp-chip" style="background:#F4F1E9"></div><span class="sp-name">--paper</span><span class="sp-val">#F4F1E9</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#1A1916"></div><span class="sp-name">--ink</span><span class="sp-val">#1A1916</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#6B6960"></div><span class="sp-name">--mid</span><span class="sp-val">#6B6960</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#A9A69C"></div><span class="sp-name">--faint</span><span class="sp-val">#A9A69C</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#D9D4C7"></div><span class="sp-name">--hair</span><span class="sp-val">#D9D4C7</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#A82818"></div><span class="sp-name">--red</span><span class="sp-val">#A82818 · the correction</span></div>
+      </div>
+
+      <p class="micro faint sp-sub">Document half — dark (<code class="mark">.dark</code>, or system preference; same six roles, new values)</p>
+      <div class="sp-grid">
+        <div class="sp-swatch"><div class="sp-chip" style="background:#111110"></div><span class="sp-name">--paper</span><span class="sp-val">#111110</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#EBE7DC"></div><span class="sp-name">--ink</span><span class="sp-val">#EBE7DC</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#97948B"></div><span class="sp-name">--mid</span><span class="sp-val">#97948B</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#63615A"></div><span class="sp-name">--faint</span><span class="sp-val">#63615A</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#2C2B27"></div><span class="sp-name">--hair</span><span class="sp-val">#2C2B27</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#E0563C"></div><span class="sp-name">--red</span><span class="sp-val">#E0563C · the correction</span></div>
+      </div>
+
+      <p class="micro faint sp-sub">The board — five note tones, unthemed, the only saturated colour in the set</p>
+      <div class="sp-grid">
+        <div class="sp-swatch"><div class="sp-chip" style="background:#E8C51C"></div><span class="sp-name">--n-citron</span><span class="sp-val">#E8C51C on #1F1A00</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#6FA8D6"></div><span class="sp-name">--n-sky</span><span class="sp-val">#6FA8D6 on #041A2A</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#DE8397"></div><span class="sp-name">--n-rose</span><span class="sp-val">#DE8397 on #2B060F</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#8CA269"></div><span class="sp-name">--n-moss</span><span class="sp-val">#8CA269 on #131C08</span></div>
+        <div class="sp-swatch"><div class="sp-chip" style="background:#23221E"></div><span class="sp-name">--n-ink</span><span class="sp-val">#23221E on #F4F1E9</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- c · Typography ────────────────────────────────────────────── -->
+  <section class="frame frame--wide frame--auto">
+    <span class="frame__mark">§c · typography</span>
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">02</span>
+        <h2>Typography</h2>
+        <span class="marker__x faint">Two families, no sans-serif fallback anywhere</span>
+      </div>
+
+      <div class="sp-fam">
+        <div class="sp-fam__meta">
+          <span class="sp-name">Spectral</span>
+          <span class="sp-val">--f-text · ui-serif, Georgia, 'Times New Roman', serif · the argument</span>
+        </div>
+        <p class="sp-fam__pangram">The quick brown fox jumps over the lazy proofreader's dog.</p>
+        <div class="sp-fam__weights">
+          <div style="font-weight:300">300 light — Sphinx of black quartz, judge my vow.</div>
+          <div style="font-weight:400">400 regular — Sphinx of black quartz, judge my vow.</div>
+          <div style="font-weight:600">600 semibold — Sphinx of black quartz, judge my vow.</div>
+          <div style="font-style:italic">400 italic — Sphinx of black quartz, judge my vow.</div>
+        </div>
+      </div>
+
+      <div class="sp-fam" style="border-bottom:1px solid var(--ink);padding-bottom:1.5rem">
+        <div class="sp-fam__meta">
+          <span class="sp-name" style="font-family:var(--f-mark)">Courier Prime</span>
+          <span class="sp-val">--f-mark · ui-monospace, 'Courier New', monospace · every structural mark</span>
+        </div>
+        <p class="sp-fam__pangram" style="font-family:var(--f-mark);font-size:1.3rem">The quick brown fox jumps over the lazy proofreader's dog.</p>
+        <div class="sp-fam__weights" style="font-family:var(--f-mark)">
+          <div style="font-weight:400">400 regular — Sphinx of black quartz, judge my vow.</div>
+          <div style="font-weight:700">700 bold — Sphinx of black quartz, judge my vow.</div>
+          <div style="font-style:italic">400 italic — Sphinx of black quartz, judge my vow.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- d · Type scale ────────────────────────────────────────────── -->
+  <section class="frame frame--wide frame--auto">
+    <span class="frame__mark">§d · scale</span>
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">03</span>
+        <h2>Type scale</h2>
+        <span class="marker__x faint">Flat by doctrine — 17px prose, 12px marks, three exceptions</span>
+      </div>
+
+      <div class="sp-scale-row">
+        <span class="sp-scale-row__meta">--t-display<b>36–54px<br>2.25–3.375rem</b></span>
+        <span class="display">Display — one line per sheet</span>
+      </div>
+      <div class="sp-scale-row">
+        <span class="sp-scale-row__meta">--t-folio<b>80px<br>5rem</b></span>
+        <span class="folio" style="position:static">04</span>
+      </div>
+      <div class="sp-scale-row">
+        <span class="sp-scale-row__meta">--t-quote<b>24px<br>1.5rem</b></span>
+        <span class="quote" style="max-width:none">One oversized quotation, on the note sheet only.</span>
+      </div>
+      <div class="sp-scale-row">
+        <span class="sp-scale-row__meta">--t-text<b>17px<br>1.0625rem</b></span>
+        <span>The only prose size in the set — set in Spectral at 1.62 line height, and never made smaller or larger for emphasis.</span>
+      </div>
+      <div class="sp-scale-row">
+        <span class="sp-scale-row__meta">--t-mark<b>12px<br>.75rem</b></span>
+        <span class="mark">Every structural mark — nav, index rows, forms, the board — set in Courier Prime at this one size.</span>
+      </div>
+      <div class="sp-scale-row">
+        <span class="sp-scale-row__meta">--t-micro<b>11px<br>.6875rem</b></span>
+        <span class="micro">Tracked uppercase label · section markers · frame marks</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- e · Components ────────────────────────────────────────────── -->
+  <section class="frame frame--wide frame--auto">
+    <span class="frame__mark">§e · components</span>
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">04</span>
+        <h2>Components</h2>
+        <span class="marker__x faint">The set's actual working parts</span>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Marker &amp; correction mark — the recurring section head</span>
+        <div class="marker" style="margin-bottom:0">
+          <span class="corr">03</span>
+          <h3 style="margin:0">Editor tooling</h3>
+          <a class="marker__x ln" href="work.html">All six →</a>
+        </div>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Button — one .btn, appearing twice in the whole set</span>
+        <p><a class="btn" href="work.html">The work</a> <a class="btn" href="contact.html" style="margin-left:1rem">Get in touch</a></p>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Links — .ln (underlined, red on hover) and .ln--bare</span>
+        <p>A design system stops being a set of files and starts being <a class="ln" href="#">an agreement between two codebases</a> —
+        or, set bare, <a class="ln--bare" href="#">a link that only shows itself on hover</a>.</p>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Index — the ruled table, real project data</span>
+        <div data-index></div>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Plates — texture in ink, a folio numeral, no colour</span>
+        <div class="sp-plates">
+          <span class="plate"><span class="tx tx-rule" aria-hidden="true"></span><span class="folio" aria-hidden="true">01</span></span>
+          <span class="plate"><span class="tx tx-hatch" aria-hidden="true"></span><span class="folio" aria-hidden="true">02</span></span>
+          <span class="plate"><span class="tx tx-grid" aria-hidden="true"></span><span class="folio" aria-hidden="true">03</span></span>
+          <span class="plate"><span class="tx tx-weave" aria-hidden="true"></span><span class="folio" aria-hidden="true">04</span></span>
+          <span class="plate"><span class="tx tx-stipple" aria-hidden="true"></span><span class="folio" aria-hidden="true">05</span></span>
+        </div>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Definition list — attribution &amp; metadata blocks</span>
+        <dl class="defs">
+          <div><dt>Client</dt><dd>Northwind Studio</dd></div>
+          <div><dt>Role</dt><dd>Design engineer</dd></div>
+          <div><dt>Year</dt><dd>2025</dd></div>
+          <div><dt>Stack</dt><dd>Figma Plugin API · TypeScript</dd></div>
+        </dl>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Hanging notes — the measure on the left, corrections in the open field</span>
+        <div class="hang">
+          <div>
+            <p style="margin-bottom:1.1rem">Every tool on this sheet started as a recurring problem rather than an idea — a message bridge hand-assembled once too often, a token renamed in one codebase and not the other.</p>
+            <p class="dim">The measure never widens. What changes is how much sheet is left beside it.</p>
+          </div>
+          <div class="hang__notes">
+            <div><span class="micro">Query</span><span class="mark dim">Is "bridge" the right word, or is it doing too much work? Left as it stands.</span></div>
+            <div><span class="micro">Fig. A</span><span class="mark dim">Drawn properly on <a class="ln" href="board.html">the board</a>.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Board notes — colour lives here, and nowhere else in the document half</span>
+        <div class="sp-notes">
+          <div class="note" data-tone="citron"><span class="note__label">01</span>Zero
+config</div>
+          <div class="note" data-tone="sky"><span class="note__label">02</span>Real HMR,
+state kept</div>
+          <div class="note" data-tone="rose"><span class="note__label">03</span>React
+Svelte
+Vue</div>
+          <div class="note" data-tone="moss"><span class="note__label">04</span>Ship the loop,
+not the config</div>
+          <div class="note" data-tone="ink"><span class="note__label">05</span>One command
+to ship</div>
+        </div>
+      </div>
+
+      <div class="sp-row" style="margin-bottom:2.5rem">
+        <div class="nd-doc" style="flex:1;min-width:16rem">
+          <span class="micro"><span class="ph ph--12" aria-hidden="true"></span>Brief</span>
+          A zero-config toolchain for Figma plugins. Scaffold it, develop it with real hot reloading, ship it — without hand-assembling a bundler, a manifest and a message bridge first.
+        </div>
+        <div class="nd-code" style="flex:1;min-width:16rem">
+          <div class="nd-code__bar">main.ts</div>
+          <pre>// sandbox half — document access, no DOM
+figma.ui.onmessage = (msg) =&gt; {
+  if (msg.type === 'resize') {
+    figma.ui.resize(msg.w, msg.h)
+  }
+}</pre>
+        </div>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Accordion — .fold, used for the journal grouped by year</span>
+        <details class="fold" open>
+          <summary>2026 <span class="faint">· 02</span></summary>
+          <div class="fold__body">
+            <a class="ln--bare" href="#" style="display:block;padding:.6rem 0;border-bottom:1px solid var(--hair)">
+              <span class="mark" style="display:flex;gap:1rem;align-items:baseline">
+                <span class="faint">14 Mar</span><span style="color:var(--ink)">Naming a token before it exists</span><span class="faint" style="margin-left:auto">6 min</span>
+              </span>
+              <span class="dim" style="display:block;margin-top:.15rem">On the gap between a design decision and the variable that will eventually hold it.</span>
+            </a>
+          </div>
+        </details>
+        <details class="fold">
+          <summary>2025 <span class="faint">· 07</span></summary>
+          <div class="fold__body">
+            <a class="ln--bare" href="#" style="display:block;padding:.6rem 0;border-bottom:1px solid var(--hair)">
+              <span class="mark" style="display:flex;gap:1rem;align-items:baseline">
+                <span class="faint">02 Nov</span><span style="color:var(--ink)">Two programs, one plugin</span><span class="faint" style="margin-left:auto">6 min</span>
+              </span>
+              <span class="dim" style="display:block;margin-top:.15rem">A Figma plugin looks like one thing and behaves like two.</span>
+            </a>
+          </div>
+        </details>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Form — underlines, not boxes; a blank to fill</span>
+        <form style="max-width:var(--measure)">
+          <div class="field">
+            <label for="sp-name">Name</label>
+            <input class="input" id="sp-name" name="name" type="text" placeholder="Ada Lovelace">
+            <span class="err"></span>
+          </div>
+          <div class="field" data-invalid="true">
+            <label for="sp-email">Email</label>
+            <input class="input" id="sp-email" name="email" type="email" value="not-an-address">
+            <span class="err">Not a valid address</span>
+          </div>
+          <div class="field">
+            <label for="sp-msg">Message</label>
+            <textarea class="input" id="sp-msg" rows="3" placeholder="A sentence or two about the brief."></textarea>
+            <span class="err"></span>
+          </div>
+        </form>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Stepper &amp; tick — the space.html placement control</span>
+        <div class="stepper" style="margin-bottom:1rem">
+          <button type="button" data-step="-1">← Prev</button>
+          <output>04 / 09</output>
+          <button type="button" data-step="1">Next →</button>
+        </div>
+        <div class="tick">
+          <button type="button" aria-selected="false">Top left</button>
+          <button type="button" aria-selected="true">Bottom left</button>
+          <button type="button" aria-selected="false">Centred left</button>
+          <button type="button" aria-selected="false">Right</button>
+        </div>
+      </div>
+
+      <div class="sp-block">
+        <span class="micro faint">Rules — .rule and .hair, the frame's own hairline</span>
+        <hr class="rule" style="margin-bottom:.75rem">
+        <hr class="hair">
+      </div>
+    </div>
+  </section>
+
+  <!-- f · Texture ───────────────────────────────────────────────── -->
+  <section class="frame frame--wide frame--auto">
+    <span class="frame__mark">§f · texture</span>
+    <div class="hold--full">
+      <div class="marker">
+        <span class="corr">05</span>
+        <h2>Texture</h2>
+        <span class="marker__x faint">Hard-stop ink patterns — a gradient that does not grade is a pattern</span>
+      </div>
+      <div class="sp-grid" style="grid-template-columns:repeat(auto-fill,minmax(9rem,1fr))">
+        <div class="sp-tx"><span class="tx tx-rule" aria-hidden="true"></span><span>.tx-rule</span></div>
+        <div class="sp-tx"><span class="tx tx-hatch" aria-hidden="true"></span><span>.tx-hatch</span></div>
+        <div class="sp-tx"><span class="tx tx-grid" aria-hidden="true"></span><span>.tx-grid</span></div>
+        <div class="sp-tx"><span class="tx tx-weave" aria-hidden="true"></span><span>.tx-weave</span></div>
+        <div class="sp-tx"><span class="tx tx-stipple" aria-hidden="true"></span><span>.tx-stipple</span></div>
+      </div>
+      <p class="dim" style="max-width:var(--measure)">Five ink patterns stand in for colour on a plate — <code class="mark">border-radius: 0</code>
+      globally, not one <code class="mark">box-shadow</code>, and the construction grid (<span class="mark">G</span>, top right)
+      is the same repeating-line texture at full opacity.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <dl class="defs">
+    <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+    <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+    <div><dt>Sheet</dt><dd>Specimen</dd></div>
+    <div><dt>Set</dt><dd>11 · Galley</dd></div>
+  </dl>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>

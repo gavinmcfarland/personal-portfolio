@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Specimen — The Working Sheet</title>
+<meta name="description" content="Design-system specimen for 10 · Broadsheet: tokens, type and components in their own visual language.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23D8D6CD'/%3E%3Crect x='4' y='4' width='24' height='7' fill='%2317171A'/%3E%3Crect x='4' y='14' width='11' height='14' fill='%23C4321B'/%3E%3Crect x='17' y='14' width='11' height='14' fill='%231B3C96'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+
+<script>(()=>{const s=localStorage.getItem('gm-theme');document.documentElement.classList.toggle('dark',s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches);})();</script>
+
+<link rel="stylesheet" href="system.css">
+
+<style>
+  /* Specimen-only layout helpers — built from the system's own tokens,
+     no new colours, no new type. Just grids to hold the swatches. */
+  .spec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: var(--gutter); }
+  .spec-swatch { border: 1px solid var(--rule); background: var(--plate); }
+  .spec-swatch__chip { height: 4rem; border-bottom: 1px solid var(--rule); }
+  .spec-swatch__meta { padding: .55rem .7rem; }
+  .spec-type-row { display: grid; grid-template-columns: 7rem 1fr auto; align-items: baseline; gap: 1rem; padding: .85rem 0; border-bottom: 1px solid var(--hair); }
+  .spec-type-row:first-of-type { border-top: 1px solid var(--rule); }
+  .spec-font-block { padding: 1.25rem 0; border-bottom: 1px solid var(--hair); }
+  .spec-font-block:first-of-type { border-top: 1px solid var(--rule); }
+</style>
+</head>
+
+<body data-page="specimen">
+<a class="skip" href="#main">Skip to content</a>
+<div id="gridlines" data-on="false" aria-hidden="true"></div>
+
+<div class="masthead">
+  <div class="sheet">
+    <div class="masthead__top">
+      <h1 class="masthead__title">The Working Sheet</h1>
+      <p class="meta faint">Specimen · <span id="edition-date">—</span></p>
+    </div>
+    <p class="masthead__strap" style="margin-top:.4rem">
+      Tokens, type and components — 10 · Broadsheet, in its own visual language
+    </p>
+    <hr class="rule--double" style="margin-top:1rem">
+  </div>
+</div>
+
+<header class="bar">
+  <div class="sheet bar__in">
+    <nav id="nav" aria-label="Primary"></nav>
+    <div class="bar__tools">
+      <button id="grid-toggle" type="button" title="Construction grid (G)">Grid</button>
+      <button id="theme-toggle" type="button">Theme</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── a. Title / intro ─────────────────────────────────────────── -->
+  <section class="band">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">00</span>
+        <h2>Specimen</h2>
+        <a class="head__x ln" href="index.html">← Back to the sheet</a>
+      </div>
+      <p class="display" style="max-width:26ch">
+        The Working Sheet — a broadsheet run for one voice across twelve structures.
+      </p>
+      <p class="dim" style="margin-top:.9rem;max-width:62ch">
+        Newsprint stock, a serif that argues and a condensed sans that organises,
+        two spot inks printed flat the way a two-colour press would — under a
+        doctrine of no curves, no shadows, no gradients, and flat type ranked by
+        rule, inversion and number rather than by size.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── b. Colour palette ────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="col-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">01</span>
+        <h2 id="col-h">Colour</h2>
+        <span class="head__x faint">18 tokens · light + dark</span>
+      </div>
+
+      <p class="micro dim" style="margin-bottom:.75rem">Stock &amp; ink — light theme</p>
+      <div class="spec-grid">
+        <div class="spec-swatch">
+          <div class="spec-swatch__chip" style="background:var(--stock)"></div>
+          <div class="spec-swatch__meta"><p class="meta strong">--stock</p><p class="micro faint">#D8D6CD</p></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__chip" style="background:var(--plate)"></div>
+          <div class="spec-swatch__meta"><p class="meta strong">--plate</p><p class="micro faint">#EEEDE7</p></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__chip" style="background:var(--sunk)"></div>
+          <div class="spec-swatch__meta"><p class="meta strong">--sunk</p><p class="micro faint">#C7C5BA</p></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__chip" style="background:var(--ink)"></div>
+          <div class="spec-swatch__meta"><p class="meta strong">--ink</p><p class="micro faint">#17171A</p></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__chip" style="background:var(--muted)"></div>
+          <div class="spec-swatch__meta"><p class="meta strong">--muted</p><p class="micro faint">#4C4C50</p></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__chip" style="background:var(--faint)"></div>
+          <div class="spec-swatch__meta"><p class="meta strong">--faint</p><p class="micro faint">#86858A</p></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__chip" style="background:var(--rule)"></div>
+          <div class="spec-swatch__meta"><p class="meta strong">--rule</p><p class="micro faint">#17171A</p></div>
+        </div>
+        <div class="spec-swatch">
+          <div class="spec-swatch__chip" style="background:var(--hair)"></div>
+          <div class="spec-swatch__meta"><p class="meta strong">--hair</p><p class="micro faint">#B2B0A6</p></div>
+        </div>
+      </div>
+
+      <p class="micro dim" style="margin:1.5rem 0 .75rem">Spot inks — printed flat, with their ink-on-fill pair</p>
+      <div class="l-bento" style="grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr))">
+        <div class="panel" style="display:flex;flex-direction:column;gap:0;padding:0">
+          <span class="plate" data-tone="red" style="min-height:4.5rem;flex:none"><span class="tx tx-halftone"></span></span>
+          <span class="spec-swatch__meta"><p class="meta strong">--red / --red-ink</p><p class="micro faint">#C4321B / #FFF4F1</p></span>
+        </div>
+        <div class="panel" style="display:flex;flex-direction:column;gap:0;padding:0">
+          <span class="plate" data-tone="blue" style="min-height:4.5rem;flex:none"><span class="tx tx-crosshatch"></span></span>
+          <span class="spec-swatch__meta"><p class="meta strong">--blue / --blue-ink</p><p class="micro faint">#1B3C96 / #EDF0FA</p></span>
+        </div>
+        <div class="panel" style="display:flex;flex-direction:column;gap:0;padding:0">
+          <span class="plate" data-tone="ochre" style="min-height:4.5rem;flex:none"><span class="tx tx-stipple"></span></span>
+          <span class="spec-swatch__meta"><p class="meta strong">--ochre / --ochre-ink</p><p class="micro faint">#C08A12 / #241A00</p></span>
+        </div>
+        <div class="panel" style="display:flex;flex-direction:column;gap:0;padding:0">
+          <span class="plate" data-tone="moss" style="min-height:4.5rem;flex:none"><span class="tx tx-weave"></span></span>
+          <span class="spec-swatch__meta"><p class="meta strong">--moss / --moss-ink</p><p class="micro faint">#56663F / #EFF3E7</p></span>
+        </div>
+        <div class="panel" style="display:flex;flex-direction:column;gap:0;padding:0">
+          <span class="plate" data-tone="slate" style="min-height:4.5rem;flex:none"><span class="tx tx-rules"></span></span>
+          <span class="spec-swatch__meta"><p class="meta strong">--slate / --slate-ink</p><p class="micro faint">#6B7A8C / #F1F4F7</p></span>
+        </div>
+      </div>
+
+      <p class="micro dim" style="margin:1.5rem 0 .75rem">Dark theme — the 12 tokens .dark overrides (toggle Theme, top right, to see them applied)</p>
+      <div class="scroll-x"><table class="l-table">
+        <thead><tr><th>Token</th><th>Light</th><th>Dark</th></tr></thead>
+        <tbody>
+          <tr><td class="t-item strong">--stock</td><td class="t-desc">#D8D6CD</td><td class="t-desc">#131316</td></tr>
+          <tr><td class="t-item strong">--plate</td><td class="t-desc">#EEEDE7</td><td class="t-desc">#1C1C20</td></tr>
+          <tr><td class="t-item strong">--sunk</td><td class="t-desc">#C7C5BA</td><td class="t-desc">#0D0D0F</td></tr>
+          <tr><td class="t-item strong">--ink</td><td class="t-desc">#17171A</td><td class="t-desc">#E9E8E2</td></tr>
+          <tr><td class="t-item strong">--muted</td><td class="t-desc">#4C4C50</td><td class="t-desc">#A3A2A0</td></tr>
+          <tr><td class="t-item strong">--faint</td><td class="t-desc">#86858A</td><td class="t-desc">#6C6B70</td></tr>
+          <tr><td class="t-item strong">--rule</td><td class="t-desc">#17171A</td><td class="t-desc">#E9E8E2</td></tr>
+          <tr><td class="t-item strong">--hair</td><td class="t-desc">#B2B0A6</td><td class="t-desc">#34343A</td></tr>
+          <tr><td class="t-item strong">--red / --red-ink</td><td class="t-desc">#C4321B / #FFF4F1</td><td class="t-desc">#F0553A / #1A0603</td></tr>
+          <tr><td class="t-item strong">--blue / --blue-ink</td><td class="t-desc">#1B3C96 / #EDF0FA</td><td class="t-desc">#6D8CFF / #060B22</td></tr>
+        </tbody>
+      </table></div>
+      <p class="micro faint" style="margin-top:.6rem">Ochre, moss and slate carry over unchanged in dark — they are fills first, text colours only inside a panel they also fill.</p>
+    </div>
+  </section>
+
+  <!-- ── c. Typography ────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="type-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">02</span>
+        <h2 id="type-h">Typography</h2>
+        <span class="head__x faint">2 families</span>
+      </div>
+
+      <div class="spec-font-block">
+        <p class="micro dim">--f-serif — the argument</p>
+        <p style="font-family:var(--f-serif);font-weight:400;font-size:1.5rem;margin-top:.5rem">Newsreader — sphinx of black quartz, judge my vow.</p>
+        <p style="font-family:var(--f-serif);font-weight:400;font-style:italic;font-size:1.5rem;margin-top:.35rem">Newsreader italic — pack my box with five dozen liquor jugs.</p>
+        <p style="font-family:var(--f-serif);font-weight:600;font-size:1.5rem;margin-top:.35rem">Newsreader 600 — the quick brown fox jumps over the lazy dog.</p>
+        <p class="micro faint" style="margin-top:.6rem">Weights loaded: 400, 600 · italic 400 · optical size 6–72</p>
+      </div>
+
+      <div class="spec-font-block">
+        <p class="micro dim">--f-sans — the organiser</p>
+        <p style="font-family:var(--f-sans);font-weight:400;font-size:1.25rem;margin-top:.5rem">Inter Tight 400 — waltz, bad nymph, for quick jigs vex.</p>
+        <p style="font-family:var(--f-sans);font-weight:500;font-size:1.25rem;margin-top:.35rem">Inter Tight 500 — jinxed wizards pluck ivy from the big quilt.</p>
+        <p style="font-family:var(--f-sans);font-weight:600;font-size:1.25rem;margin-top:.35rem">Inter Tight 600 — the five boxing wizards jump quickly.</p>
+        <p class="micro faint" style="margin-top:.6rem">Weights loaded: 400, 500, 600 · carries every structural label, rule and folio</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── d. Type scale ────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="scale-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">03</span>
+        <h2 id="scale-h">Type scale</h2>
+        <span class="head__x faint">6 roles</span>
+      </div>
+
+      <div class="spec-type-row">
+        <span class="micro faint">--t-folio</span>
+        <span class="folio" style="font-size:3.5rem;line-height:.8">03</span>
+        <span class="meta faint">72px / 4.5rem — decorative numerals, ornament not hierarchy</span>
+      </div>
+      <div class="spec-type-row">
+        <span class="micro faint">Masthead</span>
+        <span style="font-family:var(--f-sans);font-weight:600;font-size:clamp(1.5rem,4.5vw,2.5rem);text-transform:uppercase;letter-spacing:-.02em;line-height:1">Sheet</span>
+        <span class="meta faint">24–40px, fluid — the one title per issue</span>
+      </div>
+      <div class="spec-type-row">
+        <span class="micro faint">--t-display</span>
+        <span class="display">One line, once a page.</span>
+        <span class="meta faint">28–34px, fluid — exception (a), maximum one per page</span>
+      </div>
+      <div class="spec-type-row">
+        <span class="micro faint">--t-body</span>
+        <span class="prose">The only prose size on the sheet.</span>
+        <span class="meta faint">16px / 1rem — serif, line-height 1.5</span>
+      </div>
+      <div class="spec-type-row">
+        <span class="micro faint">--t-meta</span>
+        <span class="meta">All structural sans — labels, rows, folios.</span>
+        <span class="meta faint">13px / 0.8125rem</span>
+      </div>
+      <div class="spec-type-row">
+        <span class="micro faint">--t-micro</span>
+        <span class="micro">Tracked uppercase labels</span>
+        <span class="meta faint">11px / 0.6875rem — 600 weight, .09em tracking</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── e. Components ────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="comp-h">
+    <div class="sheet">
+
+      <div class="head">
+        <span class="num">04</span>
+        <h2 id="comp-h">Components</h2>
+      </div>
+
+      <p class="micro dim" style="margin-bottom:.6rem">Links, buttons, flags</p>
+      <p class="meta" style="margin-bottom:1rem">
+        <a class="ln" href="#">A ruled link</a>
+        <span class="faint" style="margin:0 .5rem">·</span>
+        <a class="ln--bare strong" href="#">A bare, bold link</a>
+        <span class="faint" style="margin:0 .5rem">·</span>
+        <button class="btn" type="button">Send message</button>
+        <span class="faint" style="margin:0 .5rem">·</span>
+        <button class="btn" type="button">Reset board</button>
+      </p>
+      <p style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.75rem">
+        <span class="flag" data-tone="red"><span class="sw" data-tone="red"></span>Tool</span>
+        <span class="flag" data-tone="blue"><span class="sw" data-tone="blue"></span>Plug-in</span>
+        <span class="flag" data-tone="ochre"><span class="sw" data-tone="ochre"></span>Library</span>
+        <span class="flag" data-tone="moss"><span class="sw" data-tone="moss"></span>Prototype</span>
+        <span class="flag" data-tone="slate"><span class="sw" data-tone="slate"></span>Archived</span>
+      </p>
+
+      <p class="micro dim" style="margin-bottom:.6rem">Rule — thick over thin</p>
+      <hr class="rule--double" style="margin-bottom:1.75rem">
+
+      <p class="micro dim" style="margin-bottom:.6rem">Entries — the atom every layout rearranges</p>
+      <div style="margin-bottom:1.75rem">
+        <a class="entry" href="#" style="padding:.6rem 0;border-bottom:1px solid var(--hair)">
+          <span class="entry__k">
+            <span class="num">01</span>
+            <span class="entry__t">plugma</span>
+            <span class="entry__y">2024</span>
+          </span>
+          <span class="entry__d">Zero-config toolchain for Figma plugins</span>
+        </a>
+        <a class="entry" href="#" style="padding:.6rem 0;border-bottom:1px solid var(--hair)">
+          <span class="entry__k">
+            <span class="num">02</span>
+            <span class="entry__t">figlet ↗</span>
+            <span class="entry__y">2023</span>
+          </span>
+          <span class="entry__d">A plugin IDE that runs in the browser</span>
+        </a>
+        <a class="entry" href="#" style="padding:.6rem 0">
+          <span class="entry__k">
+            <span class="num">03</span>
+            <span class="entry__t">table-creator ↗</span>
+            <span class="entry__y">2022</span>
+          </span>
+          <span class="entry__d">Real data tables on the canvas</span>
+        </a>
+      </div>
+
+      <p class="micro dim" style="margin-bottom:.6rem">Ruled table — the baseline every other structure argues against</p>
+      <div class="scroll-x" style="margin-bottom:1.75rem"><table class="l-table">
+        <thead><tr><th>No.</th><th>Item</th><th>Description</th><th>Kind</th><th style="text-align:right">Year</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="t-num">01</td>
+            <td class="t-item strong">plugma</td>
+            <td class="t-desc">Zero-config toolchain for Figma plugins</td>
+            <td><span class="flag" data-tone="red"><span class="sw" data-tone="red"></span>Tool</span></td>
+            <td class="t-year">2024</td>
+          </tr>
+          <tr>
+            <td class="t-num">02</td>
+            <td class="t-item strong">askeroo</td>
+            <td class="t-desc">CLI prompts you can back out of</td>
+            <td><span class="flag" data-tone="ochre"><span class="sw" data-tone="ochre"></span>Library</span></td>
+            <td class="t-year">2024</td>
+          </tr>
+          <tr>
+            <td class="t-num">03</td>
+            <td class="t-item strong">screenshot-2-layout</td>
+            <td class="t-desc">Screenshot in, auto-layout frame out</td>
+            <td><span class="flag" data-tone="blue"><span class="sw" data-tone="blue"></span>Plug-in</span></td>
+            <td class="t-year">2024</td>
+          </tr>
+          <tr>
+            <td class="t-num">04</td>
+            <td class="t-item strong">table-creator</td>
+            <td class="t-desc">Real data tables on the canvas</td>
+            <td><span class="flag" data-tone="slate"><span class="sw" data-tone="slate"></span>Plug-in</span></td>
+            <td class="t-year">2022</td>
+          </tr>
+        </tbody>
+      </table></div>
+
+      <div class="g12" style="margin-bottom:1.75rem">
+        <div class="c6">
+          <p class="micro dim" style="margin-bottom:.6rem">Panel + plate, printed with a texture</p>
+          <a class="panel" href="#">
+            <span class="micro dim" style="display:flex;justify-content:space-between;margin-bottom:.5rem">
+              <span><span class="num">05</span> icon-preview ↗</span>
+              <span>2021</span>
+            </span>
+            <span class="plate" data-tone="blue" style="min-height:6.5rem">
+              <span class="tx tx-halftone"></span>
+              <span class="folio" aria-hidden="true">05</span>
+            </span>
+            <span class="meta dim" style="margin-top:.5rem">Every icon at the size it ships at</span>
+          </a>
+        </div>
+        <div class="c6">
+          <p class="micro dim" style="margin-bottom:.6rem">Note — board vocabulary, allowed to leak onto sheets</p>
+          <div class="note" data-tone="ochre">
+            <span class="note__label">Reminder</span>
+            <span>Ship the 16px review before the icon set does, not after.</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="micro dim" style="margin-bottom:.6rem">Definitions</p>
+      <dl class="defs" style="margin-bottom:1.75rem">
+        <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+        <div><dt>Role</dt><dd>Design engineer</dd></div>
+        <div><dt>Set</dt><dd>10 · Broadsheet</dd></div>
+      </dl>
+
+      <p class="micro dim" style="margin-bottom:.6rem">Fold — accordion, plus/minus not a chevron</p>
+      <div style="margin-bottom:1.75rem">
+        <details class="fold" open>
+          <summary>2024 <span class="faint" style="font-weight:400">· 03</span></summary>
+          <div class="fold__body">Three tools shipped this year, all built the same way — a recurring problem, and the thing that fixes it not existing yet.</div>
+        </details>
+        <details class="fold">
+          <summary>2023 <span class="faint" style="font-weight:400">· 01</span></summary>
+          <div class="fold__body">figlet — a plugin IDE that runs in the browser, so a plugin can be written and inspected without leaving the canvas it edits.</div>
+        </details>
+      </div>
+
+      <p class="micro dim" style="margin-bottom:.6rem">Drop cap — exception (c), one sheet only, demonstrated here</p>
+      <p class="dropcap prose" style="max-width:48ch;margin-bottom:1.75rem">
+        Fifteen years spent on the seam between design and front-end leaves you with
+        opinions about tooling, most of them stubborn.
+      </p>
+
+      <p class="micro dim" style="margin-bottom:.6rem">Icon placeholders — a bordered square, never filled, never a glyph</p>
+      <p style="display:flex;gap:.6rem;align-items:center">
+        <span class="ph"></span>
+        <span class="ph ph--36"></span>
+        <span class="ph ph--14"></span>
+        <span class="ph ph--hatch"></span>
+      </p>
+
+    </div>
+  </section>
+
+  <!-- ── f. Textures ──────────────────────────────────────────────── -->
+  <section class="band" aria-labelledby="tx-h">
+    <div class="sheet">
+      <div class="head">
+        <span class="num">05</span>
+        <h2 id="tx-h">Textures</h2>
+        <span class="head__x faint">hard-stop press patterns, no gradients</span>
+      </div>
+      <p class="dim" style="margin-bottom:1.25rem;max-width:62ch">
+        Every fill below is a repeating- or radial-gradient with adjacent colour
+        stops at identical positions — a hard stop, not a blend. It is how a press
+        makes a tone out of a single ink, which is the point.
+      </p>
+      <div class="l-bento" style="grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr))">
+        <div class="panel" style="padding:0">
+          <span class="plate" data-tone="red" style="min-height:6rem"><span class="tx tx-halftone"></span></span>
+          <span class="spec-swatch__meta"><p class="meta strong">.tx-halftone</p></span>
+        </div>
+        <div class="panel" style="padding:0">
+          <span class="plate" data-tone="moss" style="min-height:6rem"><span class="tx tx-crosshatch"></span></span>
+          <span class="spec-swatch__meta"><p class="meta strong">.tx-crosshatch</p></span>
+        </div>
+        <div class="panel" style="padding:0">
+          <span class="plate" data-tone="slate" style="min-height:6rem"><span class="tx tx-rules"></span></span>
+          <span class="spec-swatch__meta"><p class="meta strong">.tx-rules</p></span>
+        </div>
+        <div class="panel" style="padding:0">
+          <span class="plate" data-tone="ochre" style="min-height:6rem"><span class="tx tx-stipple"></span></span>
+          <span class="spec-swatch__meta"><p class="meta strong">.tx-stipple</p></span>
+        </div>
+        <div class="panel" style="padding:0">
+          <span class="plate" data-tone="blue" style="min-height:6rem"><span class="tx tx-weave"></span></span>
+          <span class="spec-swatch__meta"><p class="meta strong">.tx-weave</p></span>
+        </div>
+      </div>
+      <p class="micro faint" style="margin-top:.75rem">Press G, or the Grid button above, to overlay the 12-column construction grid the layouts are built on.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="sheet">
+    <dl class="defs">
+      <div><dt>Drawn by</dt><dd>G. McFarland</dd></div>
+      <div><dt>Contact</dt><dd><a class="ln" data-email href="#">—</a></dd></div>
+      <div><dt>Sheet</dt><dd>Specimen</dd></div>
+      <div><dt>Set</dt><dd>10 · Broadsheet</dd></div>
+      <div><dt>Back to</dt><dd><a class="ln" href="index.html">The Working Sheet →</a></dd></div>
+    </dl>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="system.js"></script>
+</body>
+</html>
