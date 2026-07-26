@@ -1,4 +1,4 @@
-import { field, ground, decal, generate, pixels, retro, generateGround, generateDecal, generateRetroDecal, regenerate, bookmarks, fieldMeta, grounds, decals } from '../src/index.js';
+import { field, ground, decal, generate, pixels, retro, generateGround, generateDecal, generateRetroDecal, generateIcon, generateDitherIcon, generateOrganicComposition, generateDitherComposition, regenerate, bookmarks, fieldMeta, grounds, decals } from '../src/index.js';
 
 /* Which surface — the dark terminal or the printed "bone" sheet. Every
    texture re-tints from this one value, exactly as the CSS does. */
@@ -6,7 +6,7 @@ let palette = 'ink';
 document.documentElement.classList.toggle('light', palette === 'bone');
 
 /* The seeded families, keyed by the name a bookmark stores. */
-const FAMILIES = { dither: generate, pixels, retro, ground: generateGround, decal: generateDecal, 'retro-decal': generateRetroDecal };
+const FAMILIES = { dither: generate, pixels, retro, ground: generateGround, decal: generateDecal, 'retro-decal': generateRetroDecal, icon: generateIcon, 'dither-icon': generateDitherIcon, 'organic-composition': generateOrganicComposition, 'dither-composition': generateDitherComposition };
 
 /* Per-family render size (empty → the generator's own intrinsic size, which
    is how decals keep their small footprint). */
@@ -17,6 +17,10 @@ const SIZES = {
   ground: { width: 200, height: 120 },
   decal: {},
   'retro-decal': {},
+  icon: {},
+  'dither-icon': {},
+  'organic-composition': {},
+  'dither-composition': {},
 };
 
 /* How each family presents. Grounds render behind a paragraph to show they
@@ -40,7 +44,9 @@ function decalMount(tex) {
   box.append(tex.render());
   return box;
 }
-const MOUNTS = { ground: groundMount, decal: decalMount, 'retro-decal': decalMount };
+// Compositions fill the whole tile (canvasMount, the default) rather than
+// sitting small in a decal box — they are posters, not stamps.
+const MOUNTS = { ground: groundMount, decal: decalMount, 'retro-decal': decalMount, icon: decalMount, 'dither-icon': decalMount };
 const mountFor = (family, tex) => (MOUNTS[family] || canvasMount)(tex);
 
 /* Labelled cell holding a rendered canvas — used by the static rows
@@ -189,6 +195,10 @@ let retroBase = 7000;
 let groundBase = 9000;
 let decalBase = 11000;
 let retroDecalBase = 13000;
+let iconBase = 15000;
+let ditherIconBase = 17000;
+let organicCompBase = 19000;
+let ditherCompBase = 21000;
 
 function drawSeeded() {
   starRefreshers.clear();
@@ -198,6 +208,10 @@ function drawSeeded() {
   reseedRow('gen-grounds', 'ground', groundBase, 'grd');
   reseedRow('gen-decals', 'decal', decalBase, 'dcl');
   reseedRow('retro-decals', 'retro-decal', retroDecalBase, 'rdc');
+  reseedRow('retro-icons', 'icon', iconBase, 'icn');
+  reseedRow('dither-icons', 'dither-icon', ditherIconBase, 'dic');
+  reseedRow('organic-compositions', 'organic-composition', organicCompBase, 'ocmp');
+  reseedRow('dither-compositions', 'dither-composition', ditherCompBase, 'dcmp');
 }
 
 function drawAll() {
@@ -221,6 +235,10 @@ document.getElementById('regen').addEventListener('click', () => {
   groundBase += 8;
   decalBase += 8;
   retroDecalBase += 8;
+  iconBase += 8;
+  ditherIconBase += 8;
+  organicCompBase += 8;
+  ditherCompBase += 8;
   drawSeeded();
 });
 

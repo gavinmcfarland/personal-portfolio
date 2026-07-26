@@ -191,6 +191,239 @@ export function compileMask(spec, W, H, scale) {
       };
     }
 
+    /* Negation — 1 where the inner mask is 0. The moon's crescent is a disc
+       AND NOT a shifted disc. */
+    case 'not': {
+      const inner = compileMask(spec.of, W, H, scale);
+      return (x, y) => (inner && inner(x, y) ? 0 : 1);
+    }
+
+    /* An arbitrary polygon, vertices given as fractions of the field. Point-
+       in-polygon by ray casting, so it handles concave shapes too — which is
+       every interesting icon: stars, hearts, crosses, hexagons. */
+    case 'polygon': {
+      const pts = spec.points.map(([fx, fy]) => [fx * W, fy * H]);
+      const n = pts.length;
+      return (x, y) => {
+        let inside = false;
+        for (let i = 0, j = n - 1; i < n; j = i++) {
+          const [xi, yi] = pts[i];
+          const [xj, yj] = pts[j];
+          if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+        }
+        return inside ? 1 : 0;
+      };
+    }
+
+    /* A texture that is ORGANIC to a shape rather than a tile cropped by it.
+       It builds the shape's own polar field — `t`, the fraction of the way
+       from the centre out to the boundary (0…1), and the angle — then paints
+       a retro effect in that space, so the pattern nests inside the outline,
+       radiates from the centre, or spirals around it. `shape` is `disc`
+       (constant radius) or `polygon` (boundary radius precomputed per angle).
+       `style` picks the effect. */
+    case 'organic': {
+      const cx = (spec.cx == null ? 0.5 : spec.cx) * W;
+      const cy = (spec.cy == null ? 0.5 : spec.cy) * H;
+      const TAU = Math.PI * 2;
+
+      // Boundary radius as a function of angle.
+      let radiusAt;
+      if (spec.shape === 'disc') {
+        const R = spec.radius * s;
+        radiusAt = () => R;
+      } else {
+        const pts = spec.points.map(([fx, fy]) => [fx * W, fy * H]);
+        const NB = 720;
+        const R = new Float64Array(NB);
+        for (let b = 0; b < NB; b++) {
+          const ang = (b / NB) * TAU;
+          const dx = Math.cos(ang);
+          const dy = Math.sin(ang);
+          let best = 0;
+          for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+            const [ax, ay] = pts[j];
+            const [bx2, by2] = pts[i];
+            const ex = bx2 - ax;
+            const ey = by2 - ay;
+            const denom = dx * ey - dy * ex;
+            if (Math.abs(denom) < 1e-9) continue;
+            const tt = ((ax - cx) * ey - (ay - cy) * ex) / denom;
+            const uu = ((ax - cx) * dy - (ay - cy) * dx) / denom;
+            if (tt > 0 && uu >= -1e-6 && uu <= 1 + 1e-6) best = Math.max(best, tt);
+          }
+          R[b] = best;
+        }
+        radiusAt = (ang) => R[(((ang / TAU) * NB) | 0) % NB];
+      }
+
+      const style = spec.style || 'contours';
+      const rings = spec.rings || 5;
+      const rays = spec.rays || 10;
+      const arms = spec.arms || 2;
+      const inv = spec.invert ? 1 : 0;
+      const cell = (spec.cell || 3) * s;
+      const m4 = bayerMatrix(4);
+      const grid = spec.grid;
+      const gRows = grid ? grid.length : 0;
+      const gCols = grid ? grid[0].length : 0;
+
+      return (x, y) => {
+        const dx = x - cx;
+        const dy = y - cy;
+        const r = Math.hypot(dx, dy);
+        let ang = Math.atan2(dy, dx);
+        if (ang < 0) ang += TAU;
+        const Rv = radiusAt(ang);
+        if (Rv <= 0) return 0;
+        const t = r / Rv;
+        if (t > 1) return 0; // outside the shape
+        const a = ang / TAU; // 0…1 around
+
+        switch (style) {
+          case 'contours': {
+            const v = (t * rings) % 1;
+            return (v < 0.5 ? 1 : 0) ^ inv;
+          }
+          case 'rays': {
+            const v = (a * rays) % 1;
+            return (v < 0.5 ? 1 : 0) ^ inv;
+          }
+          case 'spiral': {
+            const v = (t * rings + a * arms) % 1;
+            return (v < 0.5 ? 1 : 0) ^ inv;
+          }
+          case 'polarxor': {
+            const ri = Math.floor(t * rings);
+            const ai = Math.floor(a * rays);
+            return ((ri ^ ai) & 1) ^ inv;
+          }
+          case 'polargrid': {
+            const gy = Math.min(gRows - 1, Math.floor(t * gRows));
+            const gx = ((Math.floor(a * gCols) % gCols) + gCols) % gCols;
+            return grid[gy][gx] ? 1 : 0;
+          }
+          case 'dither':
+          default: {
+            const depth = inv ? t : 1 - t; // bright at centre
+            const bx = ((Math.floor(x / cell) % 4) + 4) % 4;
+            const by = ((Math.floor(y / cell) % 4) + 4) % 4;
+            return depth > (m4[by][bx] + 0.5) / 16 ? 1 : 0;
+          }
+        }
+      };
+    }
+
+    /* A shape rendered as a SHADED 3-D solid, then ordered-dithered — depth,
+       material, light and gloss in 1 bit. The shape's signed distance field
+       becomes a relief (a spherical `dome` or a `bevel` with a raised rim);
+       the surface normal is read from that relief; Lambert diffuse plus a
+       specular highlight from a fixed light give the shading; a Bayer matrix
+       breaks the brightness into square dots. Material presets vary only the
+       reflectance, so the light stays consistent and the result reads as a
+       real object, not noise. */
+    case 'shaded': {
+      const cx = (spec.cx == null ? 0.5 : spec.cx) * W;
+      const cy = (spec.cy == null ? 0.5 : spec.cy) * H;
+      const N = W * H;
+      const sd = new Float32Array(N); // signed distance: >0 inside
+
+      if (spec.shape === 'disc') {
+        const R = spec.radius * s;
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) sd[y * W + x] = R - Math.hypot(x - cx, y - cy);
+        }
+      } else {
+        const pts = spec.points.map(([fx, fy]) => [fx * W, fy * H]);
+        const n = pts.length;
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            let dmin = Infinity;
+            let inside = false;
+            for (let i = 0, j = n - 1; i < n; j = i++) {
+              const ax = pts[j][0];
+              const ay = pts[j][1];
+              const bx2 = pts[i][0];
+              const by2 = pts[i][1];
+              const ex = bx2 - ax;
+              const ey = by2 - ay;
+              const wx = x - ax;
+              const wy = y - ay;
+              let tt = (wx * ex + wy * ey) / (ex * ex + ey * ey || 1);
+              tt = tt < 0 ? 0 : tt > 1 ? 1 : tt;
+              const d = Math.hypot(wx - tt * ex, wy - tt * ey);
+              if (d < dmin) dmin = d;
+              if (by2 > y !== ay > y && x < ((ax - bx2) * (y - by2)) / (ay - by2) + bx2) inside = !inside;
+            }
+            sd[y * W + x] = inside ? dmin : -dmin;
+          }
+        }
+      }
+
+      let maxIn = 1;
+      for (let i = 0; i < N; i++) if (sd[i] > maxIn) maxIn = sd[i];
+
+      const profile = spec.profile || 'dome';
+      const bevel = (spec.bevel || 0.35) * maxIn;
+      const h = new Float32Array(N);
+      for (let i = 0; i < N; i++) {
+        const d = sd[i];
+        if (d <= 0) { h[i] = 0; continue; }
+        if (profile === 'bevel') h[i] = d < bevel ? d / bevel : 1;
+        else { const hn = d > maxIn ? 1 : d / maxIn; h[i] = Math.sqrt(Math.max(0, 1 - (1 - hn) * (1 - hn))); }
+      }
+
+      const L = spec.light || [-0.55, -0.6, 0.55];
+      const ll = Math.hypot(L[0], L[1], L[2]) || 1;
+      const lx = L[0] / ll;
+      const ly = L[1] / ll;
+      const lz = L[2] / ll;
+      const hn0 = Math.hypot(lx, ly, lz + 1) || 1; // half-vector with view (0,0,1)
+      const hvx = lx / hn0;
+      const hvy = ly / hn0;
+      const hvz = (lz + 1) / hn0;
+
+      const shininess = spec.shininess || 30;
+      const ks = spec.ks == null ? 0.6 : spec.ks;
+      const kd = spec.kd == null ? 0.85 : spec.kd;
+      const amb = spec.ambient == null ? 0.13 : spec.ambient;
+      const bump = maxIn * (spec.bump || 0.5);
+      const cell = (spec.cell || 2) * s;
+      const inv = spec.invert ? 1 : 0;
+      const level = spec.level == null ? null : spec.level;
+      const m4 = bayerMatrix(4);
+
+      return (xf, yf) => {
+        // Masks are sampled at a block centre, which is fractional for an odd
+        // cell — floor to a real pixel before indexing the relief arrays.
+        const x = xf < 0 ? 0 : xf >= W ? W - 1 : Math.floor(xf);
+        const y = yf < 0 ? 0 : yf >= H ? H - 1 : Math.floor(yf);
+        const i = y * W + x;
+        if (sd[i] <= 0) return 0;
+        const xl = x > 0 ? i - 1 : i;
+        const xr = x < W - 1 ? i + 1 : i;
+        const yu = y > 0 ? i - W : i;
+        const yd = y < H - 1 ? i + W : i;
+        let nx = (h[xl] - h[xr]) * bump;
+        let ny = (h[yu] - h[yd]) * bump;
+        let nz = 1;
+        const nl = Math.hypot(nx, ny, nz) || 1;
+        nx /= nl; ny /= nl; nz /= nl;
+        const diff = Math.max(0, nx * lx + ny * ly + nz * lz);
+        const sdot = Math.max(0, nx * hvx + ny * hvy + nz * hvz);
+        let b = amb + kd * diff + ks * Math.pow(sdot, shininess);
+        if (b > 1) b = 1;
+        if (inv) b = 1 - b;
+        // `level` mode returns the lit region above a brightness — a tonal
+        // band the caller fills with its own dither dots, so the shading can
+        // be rendered as a halftone instead of a Bayer ramp.
+        if (level != null) return b >= level ? 1 : 0;
+        const bx = ((Math.floor(x / cell) % 4) + 4) % 4;
+        const by = ((Math.floor(y / cell) % 4) + 4) % 4;
+        return b > (m4[by][bx] + 0.5) / 16 ? 1 : 0;
+      };
+    }
+
     /* A single true circle at an arbitrary point — `cx`/`cy` are fractions
        of the field, `radius` is in px. Lets a decal set a circle beside a
        rectangle rather than dead-centre. */
@@ -223,10 +456,12 @@ export function compileMask(spec, W, H, scale) {
       const outer = spec.outer * s;
       const i2 = inner * inner;
       const o2 = outer * outer;
+      const ccx = (spec.cx == null ? 0.5 : spec.cx) * W;
+      const ccy = (spec.cy == null ? 0.5 : spec.cy) * H;
       return (x, y) => {
-        const cx = x - W / 2;
-        const cy = y - H / 2;
-        const d2 = cx * cx + cy * cy;
+        const dx = x - ccx;
+        const dy = y - ccy;
+        const d2 = dx * dx + dy * dy;
         return d2 >= i2 && d2 <= o2 ? 1 : 0;
       };
     }

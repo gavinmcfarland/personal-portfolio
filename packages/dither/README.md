@@ -61,6 +61,10 @@ new DitherTexture({
 | `generateGround(seed)` | any string/number | a fresh quiet ground for behind text |
 | `generateDecal(seed)` | any string/number | a fresh small decal on transparency |
 | `generateRetroDecal(seed)` | any string/number | a decal shape filled with a retro pattern |
+| `generateIcon(seed)` | any string/number | a shaded 3D material icon (Bayer dither) |
+| `generateDitherIcon(seed)` | any string/number | the same, as a square-dot halftone |
+| `generateOrganicComposition(seed)` | any string/number | an organised artwork of repeated primitives, organic detail |
+| `generateDitherComposition(seed)` | any string/number | the same arrangement, dither tones |
 
 All helpers take the same overrides: `{ width, height, palette, background, scale }`.
 
@@ -273,6 +277,57 @@ generateRetroDecal('stamp', { archetype: 'bayer', shape: 'badge' }); // pin fill
 needs an AND of two masks, so the engine gained an `intersect` mask
 (`{ type: 'intersect', of: [maskA, maskB] }`) — the counterpart to a mask array,
 which is a union.
+
+### Retro icons
+
+`generateIcon(seed)` draws an iconic silhouette — `circle`, `square`, `diamond`,
+`triangle`, `pentagon`, `hexagon`, `octagon`, `star`, `star6`, `heart`, `cross`,
+`moon` — filled with a texture that is **organic to the shape**, not a tile
+cropped by it. Each shape has a polar field (`t`, the fraction from centre to
+its own boundary, plus the angle), and the retro effect is painted in that
+space, so it nests inside the outline or radiates from the centre.
+
+```js
+generateIcon('badge');                                   // seed picks shape + effect
+generateIcon('badge', { shape: 'star', archetype: 'contours' });
+```
+
+Effects (`archetype`): `contours` (nested copies of the outline), `dither` (a
+Bayer ramp from the centre out), `rays` (a sunburst), `spiral`, `polarxor` (a
+polar plaid), and `polargrid` (a retro grid — xor / teletext / maze / plasma /
+chevron — wrapped around the shape's rings and sectors). Shapes come from the
+`polygon` mask (concave-safe, so stars and hearts work); the moon is a disc with
+a `not` disc bitten out; the geometry all runs through the `organic` mask.
+
+### Shaded material icons
+
+`generateIcon(seed)` renders each shape as a **shaded 3-D solid** — its signed
+distance field becomes a relief (a `dome` or a `bevel`), lit from a fixed
+upper-left key light with Lambert diffuse and a specular highlight, then
+ordered-dithered. Materials (`archetype`): `glossy`, `matte`, `metal`, `button`.
+`generateDitherIcon(seed)` renders the same lighting as a square-dot **halftone**
+(tone bands filled with quarter/checker dots) instead of a Bayer ramp.
+
+## Compositions
+
+`generateOrganicComposition(seed)` and `generateDitherComposition(seed)` build
+small organised artworks from **repeated geometric primitives** — everything
+snaps to one unit grid, each group repeats a single shape, and stacks share a
+baseline:
+
+- `stacks` — bottom-aligned columns (domes, squares, spires), a bar chart of geometry;
+- `grid` — a clean N×N grid of one primitive, tone ramping across the diagonal;
+- `tower` — a stack of squares under a spire;
+- `nested` — concentric arcs (a rainbow) or rings (a tunnel).
+
+The two functions differ only in finish: **organic** fills each primitive with
+its own shape-following texture; **dither** fills each with a square-dot halftone
+whose density is the element's tone, so a nest of arcs reads as a 1-bit gradient
+the way a colour ramp does.
+
+```js
+generateDitherComposition('poster', { archetype: 'stacks' }).render(canvas);
+```
 
 ## Bookmarks
 

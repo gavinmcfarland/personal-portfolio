@@ -223,15 +223,31 @@ const retroShapes = {
 const RETRO_SHAPE_BAG = ['badge', 'badge', 'block', 'tab', 'stripe', 'chip'];
 const RETRO_FILL_BAG = ['xor', 'automata', 'teletext', 'bayer', 'maze', 'plasma', 'chevron'];
 
-/* The fill layer for a retro decal — a dense small crop of one retro
+/* Small clipped shapes need a fill that reliably reads, so invert any grid
+   that comes out mostly bare — a sparse pattern becomes its dense negative,
+   keeping the same structure and the same single pixel grid. */
+function densify(grid) {
+  let on = 0;
+  let total = 0;
+  for (const row of grid) for (const v of row) { on += v; total += 1; }
+  if (on / total < 0.4) {
+    for (let y = 0; y < grid.length; y++) {
+      for (let x = 0; x < grid[y].length; x++) grid[y][x] = grid[y][x] ? 0 : 1;
+    }
+  }
+  return grid;
+}
+
+/* The fill layer for a retro decal or icon — a dense small crop of one retro
    algorithm, inked bold. CA uses `full` so a small shape is never bare. */
 function retroFillLayer(fillName, r) {
-  if (fillName === 'xor') return { grid: xorGrid(r), cell: r.pick([2, 3]), ink: 'tx-solid' };
-  if (fillName === 'automata') return { grid: caGrid(r, { full: true }), cell: r.pick([2, 3]), ink: 'tx-solid' };
-  if (fillName === 'teletext') return { grid: teletextGrid(r), cell: r.pick([2, 3]), ink: 'tx-solid' };
-  if (fillName === 'maze') return { grid: mazeGrid(r), cell: r.pick([2, 3]), ink: 'tx-solid' };
-  if (fillName === 'plasma') return { grid: plasmaGrid(r), cell: r.pick([2, 3]), ink: 'tx-solid' };
-  if (fillName === 'chevron') return { grid: chevronGrid(r), cell: r.pick([2, 3]), ink: 'tx-solid' };
+  const cell = () => r.pick([2, 3]);
+  if (fillName === 'xor') return { grid: densify(xorGrid(r)), cell: cell(), ink: 'tx-solid' };
+  if (fillName === 'automata') return { grid: densify(caGrid(r, { full: true })), cell: cell(), ink: 'tx-solid' };
+  if (fillName === 'teletext') return { grid: densify(teletextGrid(r)), cell: cell(), ink: 'tx-solid' };
+  if (fillName === 'maze') return { grid: densify(mazeGrid(r)), cell: cell(), ink: 'tx-solid' };
+  if (fillName === 'plasma') return { grid: densify(plasmaGrid(r)), cell: cell(), ink: 'tx-solid' };
+  if (fillName === 'chevron') return { grid: densify(chevronGrid(r)), cell: cell(), ink: 'tx-solid' };
   const mask = bayerMaskSpec(r); // bayer — tile = cell so shape clips whole cells
   return { mark: 'solid', tile: mask.cell, ink: 'tx-solid', mask };
 }
@@ -272,3 +288,184 @@ export function generateRetroDecalSpec(seed, opts = {}) {
 
   return { width, height, layers: [layer], archetype: fillName, shape: shapeName };
 }
+
+/* ── Retro icons ──────────────────────────────────────────────────────
+   Iconic silhouettes — stars, moons, hearts, hexagons and the rest — each
+   filled with a retro pattern and clipped to its shape. All the geometry is
+   a polygon (so stars, crosses and hearts work as easily as squares) except
+   the round ones, which are discs; the moon is a disc minus a shifted disc. */
+
+const TAU = Math.PI * 2;
+
+/* Vertices of a regular `sides`-gon, as fractions of the box. */
+function regularPoly(sides, radius, rotDeg) {
+  const rot = ((rotDeg || 0) * Math.PI) / 180;
+  const pts = [];
+  for (let i = 0; i < sides; i++) {
+    const a = rot + (i * TAU) / sides;
+    pts.push([0.5 + radius * Math.cos(a), 0.5 + radius * Math.sin(a)]);
+  }
+  return pts;
+}
+
+/* A `points`-pointed star, alternating outer and inner radius. */
+function starPoly(points, outer, inner, rotDeg) {
+  const rot = ((rotDeg == null ? -90 : rotDeg) * Math.PI) / 180;
+  const pts = [];
+  for (let i = 0; i < points * 2; i++) {
+    const R = i % 2 ? inner : outer;
+    const a = rot + (i * Math.PI) / points;
+    pts.push([0.5 + R * Math.cos(a), 0.5 + R * Math.sin(a)]);
+  }
+  return pts;
+}
+
+/* Scale/centre a raw vertex list to fill the box with a small margin. */
+function fitPoly(raw, margin = 0.08) {
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const [x, y] of raw) {
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+  }
+  const s = (1 - 2 * margin) / Math.max(maxX - minX, maxY - minY);
+  const ox = (1 - (maxX - minX) * s) / 2 - minX * s;
+  const oy = (1 - (maxY - minY) * s) / 2 - minY * s;
+  return raw.map(([x, y]) => [x * s + ox, y * s + oy]);
+}
+
+/* A heart, sampled from the classic parametric curve (screen-y flipped so
+   the point sits at the bottom). */
+function heartPoly() {
+  const raw = [];
+  for (let i = 0; i < 56; i++) {
+    const t = (i / 56) * TAU;
+    const x = 16 * Math.sin(t) ** 3;
+    const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+    raw.push([x, y]);
+  }
+  return fitPoly(raw, 0.06);
+}
+
+/* A plus/cross, twelve vertices. */
+function crossPoly(arm, len) {
+  const c = 0.5;
+  return [
+    [c - arm, c - len], [c + arm, c - len], [c + arm, c - arm], [c + len, c - arm],
+    [c + len, c + arm], [c + arm, c + arm], [c + arm, c + len], [c - arm, c + len],
+    [c - arm, c + arm], [c - len, c + arm], [c - len, c - arm], [c - arm, c - arm],
+  ];
+}
+
+/* Each shape returns { field, silhouette }. `field` is the polar geometry the
+   organic texture is built from (a disc's radius, or a polygon's vertices);
+   `silhouette` is the mask that clips to the exact outline (they differ only
+   for the moon, whose field is its full disc but whose outline is a crescent). */
+const iconShapes = {
+  circle: (r, D) => discShape(D),
+  square: () => polyShape(regularPoly(4, 0.44, 45)),
+  diamond: () => polyShape(regularPoly(4, 0.48, 0)),
+  triangle: () => polyShape(regularPoly(3, 0.5, -90)),
+  pentagon: () => polyShape(regularPoly(5, 0.48, -90)),
+  hexagon: () => polyShape(regularPoly(6, 0.48, 0)),
+  octagon: () => polyShape(regularPoly(8, 0.48, 22.5)),
+  star: (r) => polyShape(starPoly(5, 0.5, r.pick([0.19, 0.22, 0.25]), -90)),
+  star6: (r) => polyShape(starPoly(6, 0.48, r.pick([0.24, 0.28]), -90)),
+  heart: () => polyShape(heartPoly()),
+  cross: () => polyShape(crossPoly(0.16, 0.46)),
+  moon: (r, D) => {
+    const radius = Math.round(D * 0.46);
+    const shift = r.pick([0.26, 0.32, 0.38]);
+    const silhouette = {
+      type: 'intersect',
+      of: [
+        { type: 'disc', cx: 0.5, cy: 0.5, radius },
+        { type: 'not', of: { type: 'disc', cx: 0.5 + shift, cy: 0.42, radius: Math.round(D * 0.44) } },
+      ],
+    };
+    return { field: { shape: 'disc', radius }, silhouette };
+  },
+};
+function discShape(D) {
+  const radius = Math.round(D * 0.46);
+  return { field: { shape: 'disc', radius }, silhouette: { type: 'disc', cx: 0.5, cy: 0.5, radius } };
+}
+function polyShape(points) {
+  return { field: { shape: 'polygon', points }, silhouette: { type: 'polygon', points } };
+}
+
+const ICON_SHAPE_BAG = ['circle', 'square', 'diamond', 'triangle', 'pentagon', 'hexagon', 'octagon', 'star', 'star6', 'heart', 'cross', 'moon'];
+
+/* Materials — the icon is a shaded 3-D solid, dithered. The light is the same
+   for all of them (upper-left, toward the viewer), so what changes between
+   them is only the SURFACE: how domed or bevelled it is, and how it reflects.
+   That is what makes a set read as one lit scene rather than random noise. */
+const ICON_MATERIALS = {
+  // A shiny pillow — a tight, bright specular highlight and rounded volume.
+  glossy: { profile: 'dome', shininess: 42, ks: 0.85, kd: 0.7, ambient: 0.1, bump: 0.55 },
+  // Soft, unpolished — pure diffuse volume, no highlight. Reads as clay.
+  matte: { profile: 'dome', shininess: 1, ks: 0, kd: 1, ambient: 0.16, bump: 0.5 },
+  // A bevelled disc of metal — a hard rim highlight along the lit edge.
+  metal: { profile: 'bevel', bevel: 0.3, shininess: 60, ks: 0.9, kd: 0.5, ambient: 0.14, bump: 0.85 },
+  // A raised UI button — a flat top with a lit chamfer around it.
+  button: { profile: 'bevel', bevel: 0.44, shininess: 22, ks: 0.55, kd: 0.8, ambient: 0.15, bump: 0.7 },
+};
+const ICON_FILL_BAG = ['glossy', 'matte', 'metal', 'button'];
+const ICON_LIGHT = [-0.55, -0.62, 0.56]; // fixed upper-left key light
+
+/* Returns { width, height, layers, archetype (the material), shape }. Pin the
+   material with `{ archetype }` and/or the shape with `{ shape }`. */
+export function generateIconSpec(seed, opts = {}) {
+  const r = makeRng(seed);
+  // Always draw both picks (fixed order) so a bookmark reproduces both.
+  const pickedShape = r.pick(ICON_SHAPE_BAG);
+  const shapeName = opts.shape && iconShapes[opts.shape] ? opts.shape : pickedShape;
+  const pickedMat = r.pick(ICON_FILL_BAG);
+  const material = ICON_FILL_BAG.includes(opts.archetype) ? opts.archetype : pickedMat;
+
+  const D = r.pick([64, 72, 80]);
+  const { field, silhouette } = iconShapes[shapeName](r, D);
+  const cell = r.pick([2, 2, 3]); // finer cells read as more detail
+
+  // The shaded material, built on the shape's own signed-distance relief.
+  const shaded = { type: 'shaded', ...field, cx: 0.5, cy: 0.5, cell, light: ICON_LIGHT, ...ICON_MATERIALS[material] };
+  const fill = { mark: 'solid', tile: cell, ink: 'tx-solid', mask: { type: 'intersect', of: [shaded, silhouette] } };
+
+  return { width: D, height: D, layers: [fill], archetype: material, shape: shapeName };
+}
+
+/* The same shaded 3-D materials, but rendered as a HALFTONE with the
+   package's square dots instead of a Bayer ramp: the lighting is sliced into
+   tone bands, and each band is filled with a denser mark, so shadow reads as
+   sparse quarter-dots and highlight as a solid checker. Chunkier and more
+   "printed" than the Bayer version. */
+export function generateDitherIconSpec(seed, opts = {}) {
+  const r = makeRng(seed);
+  const pickedShape = r.pick(ICON_SHAPE_BAG);
+  const shapeName = opts.shape && iconShapes[opts.shape] ? opts.shape : pickedShape;
+  const pickedMat = r.pick(ICON_FILL_BAG);
+  const material = ICON_FILL_BAG.includes(opts.archetype) ? opts.archetype : pickedMat;
+
+  const D = r.pick([64, 72, 80]);
+  const { field, silhouette } = iconShapes[shapeName](r, D);
+  const P = r.pick([4, 5, 6]); // dot pitch — coarser than the Bayer cell
+  const half = Math.round(P / 2);
+  const mat = ICON_MATERIALS[material];
+
+  // A tonal band: the lit region above `level`, clipped to the outline.
+  const band = (level) => ({
+    type: 'intersect',
+    of: [{ type: 'shaded', ...field, cx: 0.5, cy: 0.5, light: ICON_LIGHT, ...mat, level }, silhouette],
+  });
+
+  // Darkest → lightest: each band adds ink, so brightness reads as density.
+  const layers = [
+    { mark: 'quarter', tile: P, ink: 'tx', mask: band(0.16) },
+    { mark: 'quarter', tile: P, offset: [half, half], ink: 'tx', mask: band(0.4) },
+    { mark: 'checker', tile: P, ink: 'tx-strong', mask: band(0.62) },
+    { mark: 'checker', tile: P, offset: [half, half], ink: 'tx-solid', mask: band(0.82) },
+  ];
+
+  return { width: D, height: D, layers, archetype: material, shape: shapeName };
+}
+
+export const iconShapeNames = ICON_SHAPE_BAG.slice();

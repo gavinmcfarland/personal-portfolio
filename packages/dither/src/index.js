@@ -21,7 +21,8 @@ import { generateLayers, seamlessSize, archetypes } from './generate.js';
 import { generatePixelLayers, pixelArchetypes } from './pixel.js';
 import { generateRetroLayers, retroArchetypes } from './retro.js';
 import { bookmarks } from './bookmarks.js';
-import { generateGroundLayers, groundArchetypes, generateDecalSpec, decalArchetypes, generateRetroDecalSpec } from './furniture.js';
+import { generateCompositionSpec } from './compose.js';
+import { generateGroundLayers, groundArchetypes, generateDecalSpec, decalArchetypes, generateRetroDecalSpec, generateIconSpec, generateDitherIconSpec, iconShapeNames } from './furniture.js';
 import { seedLabel } from './rng.js';
 
 const isBrowser = typeof document !== 'undefined';
@@ -181,6 +182,51 @@ export function generateRetroDecal(seed, overrides = {}) {
   );
 }
 
+/* Grow a fresh ICON from a seed — an iconic silhouette (star, moon, heart,
+   circle, hexagon, square, triangle, diamond, cross…) filled with a retro
+   pattern, on transparency. Pin the fill with `{ archetype }` and/or the
+   shape with `{ shape }`. */
+export function generateIcon(seed, overrides = {}) {
+  const { archetype, shape, ...over } = overrides;
+  const s = generateIconSpec(seed, { archetype, shape });
+  return tag(
+    new DitherTexture({ layers: s.layers, width: s.width, height: s.height, background: null, ...over }),
+    'icon',
+    seed,
+    s.archetype,
+  );
+}
+
+/* The same shaded 3-D material icons, rendered as a square-dot HALFTONE (the
+   package's dither dots) rather than a Bayer ramp. Pin the material with
+   `{ archetype }` and/or the shape with `{ shape }`. */
+export function generateDitherIcon(seed, overrides = {}) {
+  const { archetype, shape, ...over } = overrides;
+  const s = generateDitherIconSpec(seed, { archetype, shape });
+  return tag(
+    new DitherTexture({ layers: s.layers, width: s.width, height: s.height, background: null, ...over }),
+    'dither-icon',
+    seed,
+    s.archetype,
+  );
+}
+
+/* Compositions — small artworks of repeated geometric primitives (grids,
+   towers, nested arcs, stacked circles). Two finishes: `organic` fills each
+   primitive with its own shape-following texture, `dither` fills each with a
+   square-dot halftone whose density is the tone. Pin the arrangement with
+   `{ archetype: 'grid' | 'tower' | 'nested' | 'column' }`. */
+export function generateOrganicComposition(seed, overrides = {}) {
+  const { archetype, ...over } = overrides;
+  const s = generateCompositionSpec(seed, { detail: 'organic', archetype });
+  return tag(new DitherTexture({ layers: s.layers, width: s.width, height: s.height, background: null, ...over }), 'organic-composition', seed, s.archetype);
+}
+export function generateDitherComposition(seed, overrides = {}) {
+  const { archetype, ...over } = overrides;
+  const s = generateCompositionSpec(seed, { detail: 'dither', archetype });
+  return tag(new DitherTexture({ layers: s.layers, width: s.width, height: s.height, background: null, ...over }), 'dither-composition', seed, s.archetype);
+}
+
 /* Every generated texture carries the three things a bookmark needs to grow
    it again: its family, its seed, and the archetype the seed resolved to. */
 function tag(tex, family, seed, archetype) {
@@ -192,7 +238,7 @@ function tag(tex, family, seed, archetype) {
 }
 
 /* The generators, keyed by the family a bookmark stores. */
-const GENERATORS = { dither: generate, pixels, retro, ground: generateGround, decal: generateDecal, 'retro-decal': generateRetroDecal };
+const GENERATORS = { dither: generate, pixels, retro, ground: generateGround, decal: generateDecal, 'retro-decal': generateRetroDecal, icon: generateIcon, 'dither-icon': generateDitherIcon, 'organic-composition': generateOrganicComposition, 'dither-composition': generateDitherComposition };
 
 /* Turn a saved bookmark back into a texture. `overrides` (palette, size,
    scale…) are display choices layered on top of the stored seed/archetype —
@@ -226,6 +272,10 @@ export {
   generateGroundLayers,
   generateDecalSpec,
   generateRetroDecalSpec,
+  generateIconSpec,
+  generateDitherIconSpec,
+  generateCompositionSpec,
+  iconShapeNames,
   seamlessSize,
   archetypes,
   pixelArchetypes,
