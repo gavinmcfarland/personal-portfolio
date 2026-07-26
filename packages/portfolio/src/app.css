@@ -141,7 +141,7 @@ body {
   font-family: var(--font-mono);
   /* Man-page density: a slightly smaller body and a steady line so long mono
      prose stays readable without sprawling. */
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   line-height: 1.7;
   background: var(--bg);
   color: var(--ink);

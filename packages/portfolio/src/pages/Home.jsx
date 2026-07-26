@@ -69,7 +69,7 @@ const Home = () => (
       description="Designer and full-stack engineer building tools and web applications. Currently freelancing and building Awenate."
     />
     {/* All page content lives in <main>, one <section> per group. */}
-    <main className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24">
+    <main className="mr-auto w-full max-w-5xl pb-16 pl-8 pr-5 sm:pb-20 sm:pl-14 sm:pr-6 lg:pl-24">
       {/* CONTENTS, CAPABILITIES, ENVIRONMENT and INDEX were removed from Home;
           copies of all four live on the unlisted /backup page. */}
       <Intro />

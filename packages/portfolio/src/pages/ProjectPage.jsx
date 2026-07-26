@@ -86,7 +86,7 @@ export default function ProjectPage({ project }) {
           </div>
 
           {project.tagline && (
-            <p className="mt-1.5 max-w-[68ch] text-pretty text-[0.9375rem] leading-relaxed text-muted sm:text-[1rem] lg:mt-3">
+            <p className="mt-1.5 max-w-[68ch] text-pretty text-[0.875rem] leading-relaxed text-muted lg:mt-3">
               {project.tagline}
             </p>
           )}
