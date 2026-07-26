@@ -52,6 +52,9 @@ importers:
       '@gavinmcfarland/canvas':
         specifier: workspace:*
         version: link:../canvas
+      '@gavinmcfarland/dither':
+        specifier: workspace:*
+        version: link:../dither
       '@vercel/og':
         specifier: ^0.6.8
         version: 0.6.8

@@ -18,6 +18,7 @@ import ExamplesIndex from "./pages/examples/ExamplesIndex";
 import CaseStudy from "./pages/examples/CaseStudy";
 import Changelog from "./pages/examples/Changelog";
 import Colophon from "./pages/examples/Colophon";
+import Backup from "./pages/Backup";
 import NotFound from "./pages/NotFound";
 import { visibleProjects } from "./data/projects";
 
@@ -160,6 +161,9 @@ function App() {
                 <Route path="/examples/plugma" element={<CaseStudy />} />
                 <Route path="/examples/changelog" element={<Changelog />} />
                 <Route path="/examples/colophon" element={<Colophon />} />
+                {/* Unlisted archive of seven Home sections — nothing links
+                    here, and the page is noindex. */}
+                <Route path="/backup" element={<Backup />} />
                 {/* CV page disabled — not public yet. Re-enable by restoring
                     the import above and this route. */}
                 {/* <Route path="/cv" element={<CV />} /> */}

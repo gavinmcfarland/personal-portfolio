@@ -61,7 +61,7 @@ export default function Changelog() {
           <p className="wordmark text-[1.75rem] sm:text-[2.25rem]">
             plugma <span className="text-faint">— changelog</span>
           </p>
-          <p className="mt-3 max-w-[60ch] text-muted">
+          <p className="max-w-[60ch] text-muted">
             Notable changes to the Plugma CLI, newest first. Dates are release
             dates; versions follow semantic versioning.
           </p>

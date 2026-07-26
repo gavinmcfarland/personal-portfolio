@@ -31,18 +31,18 @@ const DEFAULT_TITLE = "Gavin McFarland";
 const DEFAULT_SUBTITLE =
   "Designer and full-stack engineer building tools and web applications.";
 
-// Load a Google font as raw bytes so the card uses the site's typeface (Chivo)
-// rather than Satori's fallback. Subset to the glyphs we actually draw so the
-// download stays tiny.
+// Load a Google font as raw bytes so the card uses the site's typeface (Spline
+// Sans Mono) rather than Satori's fallback. Subset to the glyphs we actually
+// draw so the download stays tiny.
 async function loadFont(weight, text) {
-  const url = `https://fonts.googleapis.com/css2?family=Chivo:wght@${weight}&text=${encodeURIComponent(
+  const url = `https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@${weight}&text=${encodeURIComponent(
     text,
   )}`;
   const css = await (await fetch(url, {
     headers: { "User-Agent": "Mozilla/5.0" },
   })).text();
   const src = css.match(/src: url\((.+?)\) format/);
-  if (!src) throw new Error("Chivo font URL not found");
+  if (!src) throw new Error("Spline Sans Mono font URL not found");
   return await (await fetch(src[1])).arrayBuffer();
 }
 
@@ -68,8 +68,8 @@ export default async function handler(request) {
       loadFont(700, title),
     ]);
     fonts = [
-      { name: "Chivo", data: regular, weight: 400, style: "normal" },
-      { name: "Chivo", data: bold, weight: 700, style: "normal" },
+      { name: "Spline Sans Mono", data: regular, weight: 400, style: "normal" },
+      { name: "Spline Sans Mono", data: bold, weight: 700, style: "normal" },
     ];
   } catch {
     // Font fetch failed (e.g. offline build/preview) — fall back to Satori's
@@ -88,7 +88,7 @@ export default async function handler(request) {
           justifyContent: "space-between",
           backgroundColor: INK,
           padding: "80px",
-          fontFamily: "Chivo",
+          fontFamily: "Spline Sans Mono",
         }}
       >
         {/* Mark, top-left */}

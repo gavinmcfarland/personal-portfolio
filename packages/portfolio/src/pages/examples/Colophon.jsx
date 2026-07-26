@@ -13,7 +13,7 @@ const BUILD = [
   { level: 2, mark: "b", body: "Vite — build and dev server" },
   { level: 2, mark: "c", body: "Tailwind CSS on a small set of design tokens" },
   { level: 1, mark: "2", term: "Type" },
-  { level: 2, mark: "a", body: "JetBrains Mono — the whole document, man-page style" },
+  { level: 2, mark: "a", body: "Spline Sans Mono — the whole document, man-page style" },
   { level: 1, mark: "3", term: "Canvas" },
   { level: 2, mark: "a", body: "A custom embeddable canvas engine (the Scratch board)" },
   { level: 1, mark: "4", term: "Hosting" },
@@ -21,7 +21,7 @@ const BUILD = [
 ];
 
 const SPEC = [
-  { t: "TYPEFACE", d: "JetBrains Mono — one face for prose, code and headings" },
+  { t: "TYPEFACE", d: "Spline Sans Mono — one face for prose, code and headings" },
   { t: "MEASURE", d: "~64 characters; 1.7 line height" },
   { t: "ACCENT", d: "Vermilion #c8341a (light) / #e0563c (dark)" },
   { t: "GROUND", d: "Cool steel (light) / warm graphite (dark)" },
@@ -41,7 +41,7 @@ export default function Colophon() {
         <h2 className="section-label mb-4">NAME</h2>
         <div className="indent">
           <p className="wordmark text-[1.75rem] sm:text-[2.25rem]">Colophon</p>
-          <p className="mt-3 max-w-[62ch] text-muted">
+          <p className="max-w-[62ch] text-muted">
             What this site is made of. The whole thing is set as a manual: one
             monospace face, flat fills, hairline rules, and a single working
             accent. The system is called <span className="text-ink">Enamel</span>
@@ -76,7 +76,7 @@ export default function Colophon() {
         <div className="footnotes max-w-[64ch]">
           <div className="footnotes__rule" aria-hidden="true" />
           <p className="footnote">
-            <sup>1</sup> <span className="text-ink">JetBrains Mono</span> — SIL
+            <sup>1</sup> <span className="text-ink">Spline Sans Mono</span> — SIL
             Open Font License.
           </p>
           <p className="footnote">

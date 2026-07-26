@@ -52,7 +52,7 @@ export default function CaseStudy() {
           <h2 className="section-label mb-4">NAME</h2>
           <div className="indent">
             <p className="wordmark text-[1.75rem] sm:text-[2.25rem]">Plugma</p>
-            <p className="mt-3 text-muted">
+            <p className="text-muted">
               <span className="font-bold text-ink">plugma</span> &mdash; a
               zero-config CLI for building Figma plugins
             </p>
@@ -90,7 +90,7 @@ export default function CaseStudy() {
       </Section>
 
       <Section id="description" label="Description">
-        <div className="max-w-[64ch] space-y-4 text-muted">
+        <div className="man-body max-w-[64ch] text-muted">
           <p>
             Building Figma plugins usually means wrestling with bundler config,
             manifest wiring and a slow reload-the-whole-thing feedback loop.{" "}

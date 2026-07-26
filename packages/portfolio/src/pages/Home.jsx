@@ -8,11 +8,7 @@ import {
 import { ACCENT } from "../theme";
 import Seo from "../components/Seo";
 import Intro from "../components/Intro";
-import Contents from "../components/Contents";
 import Projects from "../components/Projects";
-import Capabilities from "../components/Capabilities";
-import PastExperience from "../components/PastExperience";
-import PageIndex from "../components/PageIndex";
 import Connect from "../components/Connect";
 import { Section } from "../components/ui";
 
@@ -74,10 +70,10 @@ const Home = () => (
     />
     {/* All page content lives in <main>, one <section> per group. */}
     <main className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24">
+      {/* CONTENTS, CAPABILITIES, ENVIRONMENT and INDEX were removed from Home;
+          copies of all four live on the unlisted /backup page. */}
       <Intro />
-      <Contents />
       <Projects />
-      <Capabilities />
 
       <Section id="playground" label="Scratch">
         <p className="max-w-[64ch] text-muted">
@@ -111,10 +107,6 @@ const Home = () => (
           />
         </div>
       </Section>
-
-      <PastExperience />
-
-      <PageIndex />
 
       <Connect />
     </main>

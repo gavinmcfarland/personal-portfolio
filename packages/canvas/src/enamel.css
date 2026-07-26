@@ -6,7 +6,7 @@
      · data-cv-part / data-type hooks (per-region / per-object structure)
      · the classNames.root='enamel' scope
    Doctrine, inherited from the mockup: no curves, no shadows, no gradients
-   (bar the grid dots), flat tiny type, Chivo + JetBrains Mono.
+   (bar the grid dots), flat tiny type, Chivo + Spline Sans Mono.
 
    Shared skin: imported by the package demo (packages/canvas/demo) and by the
    portfolio (which sets the same Enamel palette on its own chrome), so the
@@ -22,7 +22,7 @@
    also out-specifies the package's own `.dark .canvas-root` defaults). */
 
 /* Shape & type — identical in both surfaces (the doctrine: no curves, no
-   shadows, no frost; Chivo + JetBrains Mono, notes mono via --cv-hand). */
+   shadows, no frost; Chivo + Spline Sans Mono, notes mono via --cv-hand). */
 .canvas-root.enamel {
   --cv-radius: 0;
   --cv-ui-radius: 0;
@@ -30,8 +30,12 @@
   --cv-shadow: none;
   --cv-accent-soft: color-mix(in srgb, var(--cv-accent) 16%, transparent);
   --cv-sans: "Chivo", ui-sans-serif, system-ui, sans-serif;
-  --cv-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --cv-hand: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --cv-mono:
+    "Spline Sans Mono", ui-monospace, SFMono-Regular, Menlo, "Courier New",
+    monospace;
+  --cv-hand:
+    "Spline Sans Mono", ui-monospace, SFMono-Regular, Menlo, "Courier New",
+    monospace;
 }
 
 /* ── Cursor ────────────────────────────────────────────────────────────

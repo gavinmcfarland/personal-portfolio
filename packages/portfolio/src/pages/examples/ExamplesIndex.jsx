@@ -23,7 +23,7 @@ export default function ExamplesIndex() {
         <h2 className="section-label mb-4">NAME</h2>
         <div className="indent">
           <p className="wordmark text-[1.75rem] sm:text-[2.25rem]">Examples</p>
-          <p className="mt-3 max-w-[60ch] text-muted">
+          <p className="max-w-[60ch] text-muted">
             Prototype pages that put the printed-manual patterns to work on real
             content &mdash; a case study, a changelog and a colophon. Rough drafts
             to judge the fit, not finished pages.

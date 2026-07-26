@@ -6,8 +6,10 @@
   /* Manual — the whole document is set in one monospace, the way a man page is.
      Chivo is retired from prose (kept only as a token alias so any stray
      `font-sans`/`font-serif` still resolves to the mono face rather than a
-     browser default). JetBrains Mono carries everything now. */
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+     browser default). Spline Sans Mono carries everything now. */
+  --font-mono:
+    "Spline Sans Mono", ui-monospace, SFMono-Regular, Menlo, "Courier New",
+    monospace;
   --font-sans: var(--font-mono);
   --font-serif: var(--font-mono);
 
@@ -215,24 +217,36 @@ body :not(.canvas-root, .canvas-root *, .route-panel) {
    off its flush heading (roff's .SH → indented body), headings read as
    monospace section names, and links carry the cross-reference look. */
 
-/* The fixed indent stop. Body content hangs at it beneath a flush heading, the
-   way a man page indents everything under a section head. Collapses to nothing
-   on the narrowest screens, where there's no width to spend. */
+/* The fixed indent stop, and the one paragraph step. Both are taken straight
+   from the Dither sheet (design-mockups/13-dither: `--indent: 3ch`,
+   `.man__b p + p { margin-top: .9rem }`): body content hangs three characters
+   off its flush heading the way a man page indents everything under a section
+   head, and running paragraphs are separated by that single step and nothing
+   else. Measured in `ch`, so the stop is three monospace characters at every
+   width rather than a different distance per breakpoint. */
 :root {
-  --stop: 0rem;
-}
-@media (min-width: 640px) {
-  :root {
-    --stop: 2.25rem;
-  }
-}
-@media (min-width: 1024px) {
-  :root {
-    --stop: 3.25rem;
-  }
+  --stop: 3ch;
+  --para: 0.9rem;
 }
 .indent {
   padding-left: var(--stop);
+}
+
+/* Adjacent paragraphs in a section body — either hung directly at the stop or
+   inside a prose block within it (.man-body, the sheet's `.man__b`). Scoped to
+   direct children so denser lists (entry summaries, meta lines) keep their own
+   tighter spacing. */
+.indent > p + p,
+.man-body > p + p {
+  margin-top: var(--para);
+}
+.man-body {
+  max-width: 74ch;
+}
+/* A footnote block closes a body rather than continuing it, so it keeps the
+   slightly wider gap it had before the paragraph step was unified. */
+p + .footnotes {
+  margin-top: 1rem;
 }
 
 /* Section heading — a man-page section name: uppercase, tracked, monospace, and

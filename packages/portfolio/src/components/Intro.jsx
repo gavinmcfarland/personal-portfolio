@@ -1,54 +1,15 @@
-/* The opening of the manual: NAME, SYNOPSIS and DESCRIPTION, stacked the way
-   roff lays them out. The wordmark stands in for the page's identity (a real
-   man page leans on the running header for that); the NAME line glosses it as a
-   command, and the SYNOPSIS states the invocation with its optional flags. */
-
-/* The capability flags, reused verbatim by the EXAMPLES below — a project's
-   `kind` maps to one of these. Kept here so SYNOPSIS and EXAMPLES never drift. */
-const FLAGS = ["--tool", "--library", "--plugin"];
+/* The opening of the manual: DESCRIPTION. NAME and SYNOPSIS used to stand above
+   it (the wordmark, its whatis gloss, and the invocation with its optional
+   flags); both were removed from Home and are archived on /backup. */
 
 const Intro = () => (
   <header className="pt-16 sm:pt-20">
-    <section id="name" className="scroll-mt-24">
-      <h2 className="section-label mb-4">NAME</h2>
-      <div className="indent">
-        <p className="wordmark rise d1 text-[2rem] sm:text-[2.5rem]">
-          Gavin McFarland
-        </p>
-        <p className="rise d1 mt-3 text-muted">
-          <span className="font-bold text-ink">gavin</span> &mdash; designer and
-          engineer; builds the tool that was missing
-        </p>
-      </div>
-    </section>
-
-    <section id="synopsis" className="mt-12 scroll-mt-24 sm:mt-16">
-      <h2 className="section-label mb-4">SYNOPSIS</h2>
-      <p className="indent rise d2 leading-[2.1]">
-        <span className="font-bold text-ink">gavin</span>{" "}
-        {FLAGS.map((f) => (
-          <span key={f} className="whitespace-nowrap">
-            <span className="bracket">[</span>
-            <span className="flag">{f}</span>
-            <span className="bracket">]</span>{" "}
-          </span>
-        ))}
-        <span className="whitespace-nowrap">
-          <span className="bracket">[</span>
-          <span className="flag">problem ...</span>
-          <span className="bracket">]</span>
-        </span>
-      </p>
-    </section>
-
-    <section id="description" className="mt-12 scroll-mt-24 sm:mt-16">
+    <section id="description" className="scroll-mt-24">
       <h2 className="section-label mb-4">DESCRIPTION</h2>
-      <div className="indent rise d3 max-w-[64ch] space-y-4 text-muted">
+      <div className="indent rise d1 max-w-[64ch] text-muted">
         <p>
-          <span className="font-bold text-ink">gavin</span> operates in the gap
-          between a design file and a shipped product &mdash; design systems, the
-          front-end that carries them into production, and the tooling that holds
-          it together. Background in product design and user research.
+          Designer and full-stack engineer building tools and web applications.
+          Background in product design and user research.
         </p>
         <p>
           Currently freelancing and building{" "}
@@ -58,37 +19,19 @@ const Intro = () => (
             rel="noopener noreferrer"
             className="xref"
           >
-            awenate
+            Awenate
           </a>
-          <sup className="fn-ref">1</sup>. Previously at{" "}
+          . Previously, at{" "}
           <a
             href="https://lovable.dev"
             target="_blank"
             rel="noopener noreferrer"
             className="xref"
           >
-            lovable
-          </a>
-          <sup className="fn-ref">2</sup>. When the tool doesn&rsquo;t exist yet,
-          it gets built &mdash; see{" "}
-          <a href="#examples" className="xref">
-            EXAMPLES
+            Lovable
           </a>
           .
         </p>
-
-        <div className="footnotes">
-          <div className="footnotes__rule" aria-hidden="true" />
-          <p className="footnote">
-            <sup>1</sup> <span className="text-ink">awenate</span> &mdash; a tool
-            for turning scattered research notes into living documentation;
-            currently in private beta.
-          </p>
-          <p className="footnote">
-            <sup>2</sup> <span className="text-ink">lovable</span> &mdash; AI app
-            builder; design systems and front-end, 2024.
-          </p>
-        </div>
       </div>
     </section>
   </header>
