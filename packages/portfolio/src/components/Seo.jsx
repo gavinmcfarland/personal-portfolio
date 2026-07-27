@@ -38,6 +38,10 @@ export default function Seo({
     const url = window.location.href;
     const imageUrl = absolute(ogPath);
 
+    // Save the title alongside the meta tags below: Home stays mounted for the
+    // life of the app, so its <Seo> never re-runs when an overlay route closes.
+    // Without restoring here the tab would keep the overlay's title.
+    const previousTitle = document.title;
     document.title = fullTitle;
 
     const tags = [
@@ -77,8 +81,10 @@ export default function Seo({
     });
 
     return () => {
-      // On unmount, restore each tag's prior value so leaving a route doesn't
-      // strip the document down — the next route's <Seo> overwrites anyway.
+      // On unmount, restore the title and each tag's prior value so leaving a
+      // route doesn't strip the document down — and where the page underneath
+      // is already mounted (Home), its values come back rather than lingering.
+      document.title = previousTitle;
       for (const { el, previous } of nodes) {
         if (previous === null) el.remove();
         else el.setAttribute("content", previous);
