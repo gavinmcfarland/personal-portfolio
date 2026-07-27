@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { visibleProjects as projects } from "../data/projects";
-import ProjectPlate from "./ProjectPlate";
+// import ProjectPlate from "./ProjectPlate"; // TEMP: plates commented out
 import { blurOnPointerClick } from "./ui";
 
 /* The work, set as a man page's EXAMPLES: each project is its name, with its kind
@@ -37,6 +37,32 @@ function KindTag({ kind }) {
   );
 }
 
+/* The go-there mark at the right edge of a row. Faint until the row is pointed
+   at, then vermilion and nudged one step right — the same hover register the
+   title takes, so the whole row reacts as one target rather than two. Square
+   caps and a mitred vertex keep it in the flat-square family the kind swatch
+   and the plates belong to.
+
+   Touch widths only (`lg:hidden` — phone and tablet, the same breakpoint the
+   plate grid uses to go side by side). On a pointer device the row already
+   announces itself as a target by lighting the title and filling its background
+   on hover; the chevron is there for touch, where there is no hover to say so. */
+function Chevron() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="square"
+      className="h-4 w-4 flex-none text-faint transition duration-150 group-hover:translate-x-1 group-hover:text-accent lg:hidden"
+      aria-hidden="true"
+    >
+      <path d="m9 5 7 7-7 7" />
+    </svg>
+  );
+}
+
 const Projects = () => (
   <>
     <h2 id="examples" className="section-label reveal">
@@ -55,6 +81,9 @@ const Projects = () => (
           className="group -mx-4 block px-4 py-3 transition-colors duration-150 hover:bg-surface"
           onClick={blurOnPointerClick}
         >
+          {/* Title row spans the full width, so the kind chip stays hard against
+              the entry's right edge — the chevron rides the row below it rather
+              than sitting beside the chip and insetting it. */}
           <p className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
             <span className="font-bold text-ink transition-colors duration-150 group-hover:text-accent">
               {p.title}
@@ -64,17 +93,17 @@ const Projects = () => (
           {/* Plate left, description right — the entry shape from the Dither
               sheet: a 30rem × 13rem plate, stacking above the text on narrow
               screens where there is no room to set them side by side. */}
-          <div className="mt-(--sp-3) grid gap-4 pl-4 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-10">
-            <ProjectPlate seed={p.seed} archetype={p.archetype} className="h-[10rem] lg:h-[13rem]" />
-            <p className="max-w-measure text-muted">{p.summary}</p>
+          {/* TEMP: plates commented out — restore the grid classes below with
+              `grid gap-4 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-10`
+              when the <ProjectPlate> goes back in. */}
+          <div className="mt-(--sp-1) flex items-center justify-between gap-4 pl-4">
+            {/* <ProjectPlate id={p.id} className="h-[10rem] lg:h-[13rem]" /> */}
+            <p className="min-w-0 max-w-measure text-muted">{p.summary}</p>
+            <Chevron />
           </div>
         </Link>
       ))}
     </div>
-
-    <p className="note indent reveal">
-      {projects.length} examples &middot; tools, plugins and libraries
-    </p>
   </>
 );
 

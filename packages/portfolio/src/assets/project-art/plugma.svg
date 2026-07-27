@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="400" viewBox="0 0 960 400">
+  <!-- Plugma — one command, and the loop never breaks. A reload ring turning
+       over a block of terminal output: the hot-module cycle drawn as the only
+       closed figure on the sheet. -->
+  <defs>
+    <linearGradient id="pg-ground" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#151515"/>
+      <stop offset="0.6" stop-color="#3f3f3f"/>
+      <stop offset="1" stop-color="#7c7c7c"/>
+    </linearGradient>
+    <linearGradient id="pg-ring" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#4c4c4c"/>
+      <stop offset="0.5" stop-color="#e6e6e6"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <radialGradient id="pg-core" cx="38%" cy="32%" r="72%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#2a2a2a"/>
+    </radialGradient>
+    <linearGradient id="pg-out" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#dcdcdc"/>
+      <stop offset="1" stop-color="#5e5e5e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="400" fill="url(#pg-ground)"/>
+
+  <!-- the output the loop keeps rewriting -->
+  <g fill="url(#pg-out)" opacity="0.9">
+    <rect x="64" y="112" width="230" height="14"/>
+    <rect x="64" y="146" width="164" height="14"/>
+    <rect x="64" y="180" width="268" height="14"/>
+    <rect x="64" y="214" width="126" height="14"/>
+    <rect x="64" y="248" width="196" height="14"/>
+  </g>
+  <rect x="64" y="282" width="34" height="14" fill="#ffffff"/>
+
+  <!-- the cycle: an open ring with a head, turning clockwise -->
+  <g transform="translate(660 200)">
+    <circle r="128" fill="#101010" opacity="0.55"/>
+    <path d="M0 -110 A110 110 0 1 1 -110 0" fill="none" stroke="url(#pg-ring)" stroke-width="30"/>
+    <path d="M-4 -142 l58 32 -58 32z" fill="#ffffff"/>
+    <circle r="52" fill="url(#pg-core)"/>
+  </g>
+</svg>

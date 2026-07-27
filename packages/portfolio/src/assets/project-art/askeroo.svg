@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="400" viewBox="0 0 960 400">
+  <!-- Askeroo — a prompt flow you can walk backwards. A stack of answered
+       fields, each a step down the sheet, and one long return curving from
+       the last of them back up to the first. -->
+  <defs>
+    <linearGradient id="ak-ground" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1a1a"/>
+      <stop offset="0.5" stop-color="#454545"/>
+      <stop offset="1" stop-color="#888888"/>
+    </linearGradient>
+    <linearGradient id="ak-row" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ededed"/>
+      <stop offset="1" stop-color="#5a5a5a"/>
+    </linearGradient>
+    <linearGradient id="ak-return" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#6a6a6a"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <radialGradient id="ak-cursor" cx="40%" cy="34%" r="70%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#3d3d3d"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="960" height="400" fill="url(#ak-ground)"/>
+
+  <!-- the answered steps, descending -->
+  <g>
+    <rect x="300" y="62"  width="316" height="20" fill="url(#ak-row)"/>
+    <rect x="300" y="122" width="252" height="20" fill="url(#ak-row)" opacity="0.9"/>
+    <rect x="300" y="182" width="380" height="20" fill="url(#ak-row)" opacity="0.8"/>
+    <rect x="300" y="242" width="208" height="20" fill="url(#ak-row)" opacity="0.7"/>
+    <rect x="300" y="302" width="300" height="20" fill="url(#ak-row)" opacity="0.6"/>
+  </g>
+  <!-- the markers each step is asked at -->
+  <g fill="#ffffff">
+    <rect x="258" y="62"  width="20" height="20"/>
+    <rect x="258" y="122" width="20" height="20" opacity="0.8"/>
+    <rect x="258" y="182" width="20" height="20" opacity="0.65"/>
+    <rect x="258" y="242" width="20" height="20" opacity="0.5"/>
+  </g>
+  <!-- where the flow currently sits -->
+  <circle cx="268" cy="312" r="24" fill="url(#ak-cursor)"/>
+
+  <!-- the way back -->
+  <path d="M180 312 C 96 312 96 72 180 72" fill="none" stroke="url(#ak-return)" stroke-width="22"/>
+  <path d="M212 72 l-62 -34 0 68z" fill="#ffffff"/>
+
+  <!-- a conditional branch off the third step -->
+  <path d="M700 192 C 792 192 792 252 866 252" fill="none" stroke="#ffffff" stroke-width="12" opacity="0.55"/>
+  <rect x="854" y="238" width="28" height="28" fill="#ffffff" opacity="0.75"/>
+</svg>

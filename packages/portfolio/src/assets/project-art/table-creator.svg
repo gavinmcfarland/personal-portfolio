@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="400" viewBox="0 0 960 400">
+  <!-- Table Creator — structure that stays structure. A ruled field of cells
+       under a bright header, rows banded in alternating tone, and one column
+       lit the whole way down: an edit propagating through every row at once.
+
+       Rows are banded rather than ramped so the grid survives the reduction —
+       a smooth ramp across a table comes back as one undifferentiated field of
+       dots, and the whole point of the drawing is that it is ruled. -->
+  <defs>
+    <linearGradient id="tc-ground" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101010"/>
+      <stop offset="1" stop-color="#3d3d3d"/>
+    </linearGradient>
+    <linearGradient id="tc-head" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#c4c4c4"/>
+    </linearGradient>
+    <linearGradient id="tc-col" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#b0b0b0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="400" fill="url(#tc-ground)"/>
+
+  <!-- the body, and the rows banded through it -->
+  <rect x="80" y="48" width="800" height="304" fill="#5c5c5c"/>
+  <g fill="#8f8f8f">
+    <rect x="80" y="110" width="800" height="48"/>
+    <rect x="80" y="206" width="800" height="48"/>
+    <rect x="80" y="302" width="800" height="48"/>
+  </g>
+
+  <!-- the header -->
+  <rect x="80" y="48" width="800" height="54" fill="url(#tc-head)"/>
+
+  <!-- the column an edit runs down, brighter than any row it crosses -->
+  <rect x="486" y="102" width="154" height="250" fill="url(#tc-col)"/>
+
+  <!-- the rules: heavy enough to survive being reduced to dots -->
+  <g fill="#0c0c0c">
+    <rect x="80"  y="102" width="800" height="6"/>
+    <rect x="80"  y="156" width="800" height="6"/>
+    <rect x="80"  y="204" width="800" height="6"/>
+    <rect x="80"  y="252" width="800" height="6"/>
+    <rect x="80"  y="300" width="800" height="6"/>
+    <rect x="164" y="48"  width="6" height="304"/>
+    <rect x="325" y="48"  width="6" height="304"/>
+    <rect x="486" y="48"  width="6" height="304"/>
+    <rect x="634" y="48"  width="6" height="304"/>
+    <rect x="795" y="48"  width="6" height="304"/>
+  </g>
+
+  <!-- the frame -->
+  <rect x="80" y="48" width="800" height="304" fill="none" stroke="#0c0c0c" stroke-width="10"/>
+</svg>

@@ -1,17 +1,10 @@
 /* Selected projects, in the order they appear on the page.
 
-   `seed` + `archetype` are the project's dither plate — the abstract artwork on
-   its home-page row. <ProjectPlate> feeds both to @gavinmcfarland/dither's
-   `retro` generator: the seed decides the pattern's parameters, the archetype
-   which algorithm draws them. Same pair, same plate, always.
-
-   Pin the archetype rather than letting the seed choose it. The generator draws
-   the pick either way, so naming it never shifts the parameters — but it does
-   mean a plate stays the algorithm it was chosen as, whatever the package adds
-   to its archetype bag later. Where a comment names a `dither-xxxx` label, that
-   is the caption the dither demo prints for the texture (a hash of the seed,
-   not the seed itself) — kept so a plate can be matched back to the demo tile
-   it was picked from.
+   The abstract plate on a project's home-page row is its own drawing, not a
+   generated pattern: an SVG per project in src/assets/project-art/, keyed by
+   `id` in src/data/projectArt.js, redrawn as square dots by <ProjectPlate>.
+   Adding a project means adding an SVG under the same id — a project with no
+   artwork simply renders an empty plate.
 
    `summary` drives the list row on the home page; the richer fields
    (`tagline`, `description`, `highlights`, `role`, `year`, …) drive the
@@ -23,8 +16,6 @@
 export const projects = [
 	{
 		id: 'figlet',
-		seed: 'retro-7003-19', // demo label dither-9126
-		archetype: 'plasma',
 		title: 'Figlet',
 		kind: 'tool',
 		summary: 'A browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup. Like CodePen for Figma.',
@@ -47,8 +38,6 @@ export const projects = [
 	},
 	{
 		id: 'plugma',
-		seed: 'plugma-25',
-		archetype: 'maze',
 		title: 'Plugma',
 		kind: 'tool',
 		draft: true,
@@ -73,8 +62,6 @@ export const projects = [
 	},
 	{
 		id: 'askeroo',
-		seed: 'retro-7003-22', // demo label dither-9023
-		archetype: 'bayer',
 		title: 'Askeroo',
 		kind: 'library',
 		summary: 'A modern CLI prompt library with stateful back-navigation, conditional fields and task runners. Built on React and Ink.',
@@ -97,8 +84,6 @@ export const projects = [
 	},
 	{
 		id: 'table-creator',
-		seed: 'table-creator-9',
-		archetype: 'chevron',
 		title: 'Table Creator',
 		kind: 'plugin',
 		draft: true,
@@ -122,8 +107,6 @@ export const projects = [
 	},
 	{
 		id: 'icon-preview',
-		seed: 'retro-7007-12', // demo label dither-a7b9
-		archetype: 'bayer',
 		title: 'Icon Preview',
 		kind: 'plugin',
 		summary: 'A Figma plugin that live-previews the icon you are editing at preset sizes for web, iOS and Android.',
@@ -146,8 +129,6 @@ export const projects = [
 	},
 	{
 		id: 'layer-styles',
-		seed: 'dither-a1b9',
-		archetype: 'bayer',
 		title: 'Layer Styles',
 		kind: 'plugin',
 		summary: 'A Figma plugin for saving and applying style presets, strokes, fills, corner radius, effects, padding, grids, opacity and blend modes.',

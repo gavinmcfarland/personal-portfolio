@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="400" viewBox="0 0 960 400">
+  <!-- Layer Styles — one preset, held across everything it touches. A stack of
+       offset plates receding into the sheet, each a distinct step of tone with
+       a hard dark edge between it and the next, and a single band running
+       through all four: the property they now share.
+
+       The steps are separated rather than blended because a dither has no
+       half-tones to spare — two plates a few percent apart come back as the
+       same field of dots. -->
+  <defs>
+    <linearGradient id="ls-ground" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#0e0e0e"/>
+      <stop offset="1" stop-color="#3a3a3a"/>
+    </linearGradient>
+    <linearGradient id="ls-p1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6e6e6e"/>
+      <stop offset="1" stop-color="#3f3f3f"/>
+    </linearGradient>
+    <linearGradient id="ls-p2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9b9b9b"/>
+      <stop offset="1" stop-color="#666666"/>
+    </linearGradient>
+    <linearGradient id="ls-p3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c9c9c9"/>
+      <stop offset="1" stop-color="#8e8e8e"/>
+    </linearGradient>
+    <linearGradient id="ls-p4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#bcbcbc"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="400" fill="url(#ls-ground)"/>
+
+  <!-- four plates, each set back and down from the one before, darkest first
+       so the nearest reads as the brightest -->
+  <g stroke="#0a0a0a" stroke-width="10">
+    <rect x="128" y="36"  width="396" height="120" rx="16" fill="url(#ls-p1)"/>
+    <rect x="192" y="100" width="396" height="120" rx="16" fill="url(#ls-p2)"/>
+    <rect x="256" y="164" width="396" height="120" rx="16" fill="url(#ls-p3)"/>
+    <rect x="320" y="228" width="396" height="120" rx="16" fill="url(#ls-p4)"/>
+  </g>
+
+  <!-- the shared property, drawn through the whole stack: a bright bar kept
+       legible over both light and dark plates by its own dark edging -->
+  <g transform="rotate(-17 480 200)">
+    <rect x="72" y="182" width="792" height="36" fill="#0a0a0a"/>
+    <rect x="72" y="190" width="792" height="20" fill="#ffffff"/>
+  </g>
+
+  <!-- and the preset itself: the chip the band runs out of -->
+  <rect x="784" y="26" width="96" height="96" rx="18" fill="#ffffff" stroke="#0a0a0a" stroke-width="10"/>
+  <rect x="814" y="56" width="36" height="36" rx="8" fill="#101010"/>
+</svg>

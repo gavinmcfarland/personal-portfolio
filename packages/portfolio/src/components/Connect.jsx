@@ -14,7 +14,10 @@ const Connect = () => (
     <h2 id="connect" className="section-label reveal">
       See also
     </h2>
-    <p className="lede indent reveal max-w-measure text-muted">
+    {/* Not a `.lede` — what follows is a run of cross-references set as prose,
+        not a block that needs introducing, so the pair takes the ordinary
+        `p.indent + p.indent` step rather than .lede's wider one. */}
+    <p className="indent reveal max-w-measure text-muted">
       Looking for the next interesting thing to build.
     </p>
 
