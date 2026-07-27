@@ -1,13 +1,13 @@
-/* The tail of the manual: SEE ALSO cross-references. Section numbers follow the
-   man tradition — (1) is where the commands live, (7) is conventions and
-   everything social. AUTHOR (the address to report issues to) used to close the
-   section; it was removed from Home and is archived on /backup. */
+/* The tail of the manual: SEE ALSO cross-references. The man-style section
+   suffixes — (1), (7) — were dropped; the labels stand on their own. AUTHOR
+   (the address to report issues to) used to close the section; it was removed
+   from Home and is archived on /backup. */
 
 const socials = [
-  { label: "github", href: "https://github.com/gavinmcfarland", sec: 1 },
-  { label: "figma", href: "https://www.figma.com/@gavinmcfarland", sec: 7 },
-  { label: "x", href: "https://x.com/gavinmcfarland", sec: 7 },
-  { label: "linkedin", href: "https://www.linkedin.com/in/gavinmcfarland", sec: 7 },
+  { label: "github", href: "https://github.com/gavinmcfarland" },
+  { label: "figma", href: "https://www.figma.com/@gavinmcfarland" },
+  { label: "x", href: "https://x.com/gavinmcfarland" },
+  { label: "linkedin", href: "https://www.linkedin.com/in/gavinmcfarland" },
 ];
 
 const Connect = () => (
@@ -33,7 +33,6 @@ const Connect = () => (
           >
             {s.label}
           </a>
-          <span className="xref__sec">({s.sec})</span>
           {i < socials.length - 1 ? <span className="text-faint">, </span> : null}
         </span>
       ))}
