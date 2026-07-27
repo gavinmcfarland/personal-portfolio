@@ -40,6 +40,17 @@ const luma = (r, g, b) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 
 const isLuma = (v) => !!v && typeof v === 'object' && v.data instanceof Float32Array && v.width > 0;
 
+/* One scratch canvas, reused. A live camera calls through here on every
+   frame, and a fresh canvas per frame is a fresh GPU-backed allocation per
+   frame. */
+let scratch = null;
+function scratchCanvas(W, H) {
+  if (!scratch) scratch = isBrowser ? document.createElement('canvas') : new OffscreenCanvas(W, H);
+  if (scratch.width !== W) scratch.width = W;
+  if (scratch.height !== H) scratch.height = H;
+  return scratch;
+}
+
 /* Draw whatever we were handed into a canvas and read it back. `max` caps
    the longest edge so a 6000px photo does not cost 36M samples for a
    texture that will be a few thousand dots. */
@@ -55,10 +66,9 @@ function rasterise(source, max) {
   const W = Math.max(1, Math.round(sw * k));
   const H = Math.max(1, Math.round(sh * k));
 
-  const canvas = isBrowser ? document.createElement('canvas') : new OffscreenCanvas(W, H);
-  canvas.width = W;
-  canvas.height = H;
+  const canvas = scratchCanvas(W, H);
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.clearRect(0, 0, W, H); // the canvas is reused; do not inherit a frame
   ctx.drawImage(source, 0, 0, W, H);
   return ctx.getImageData(0, 0, W, H);
 }
@@ -123,6 +133,59 @@ export async function loadLuma(source, opts = {}) {
     await source.decode().catch(() => {});
   }
   return toLuma(source, opts);
+}
+
+/* ── The camera ───────────────────────────────────────────────────────
+   A fourth kind of source: not a file at all, but a live feed. It is here
+   rather than in application code because it is the same job as `loadLuma`
+   — get pixels from somewhere awkward and hand back a plane — and because
+   the frame loop wants a `grab()` that costs nothing to call.
+
+     const cam = await openCamera();
+     cam.video                       // the <video>, already playing
+     ditherImage(cam.grab(), opts)   // this frame, as a texture
+     cam.stop();                     // release the device
+
+   `grab()` is synchronous: it reads whatever frame the video is showing.
+   Call it from a rAF loop for live dithering, or once for a still. Frames
+   are captured at `raster` px on the long edge (480 by default, well below
+   the still-image cap) — a live feed is resampled down to a few thousand
+   dots anyway, and reading back a 1024px frame 60 times a second is the one
+   thing that will actually drop the rate. */
+export async function openCamera(opts = {}) {
+  if (!isBrowser || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error('No camera API in this browser.');
+  }
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: {
+      facingMode: opts.facing || 'user',
+      width: { ideal: opts.width || 640 },
+      height: { ideal: opts.height || 480 },
+    },
+  });
+
+  const video = document.createElement('video');
+  video.playsInline = true; // iOS would otherwise go fullscreen
+  video.muted = true;
+  video.autoplay = true;
+  video.srcObject = stream;
+  await video.play();
+  // A video reports 0×0 until the first frame has arrived, and rasterising
+  // that would give back an empty plane.
+  if (!video.videoWidth) {
+    await new Promise((resolve) => video.addEventListener('loadeddata', resolve, { once: true }));
+  }
+
+  const raster = opts.raster || 480;
+  return {
+    video,
+    grab: () => toLuma(video, { raster }),
+    stop() {
+      for (const track of stream.getTracks()) track.stop();
+      video.srcObject = null;
+    },
+  };
 }
 
 /* An SVG string as a URL an <img> will accept. */

@@ -67,6 +67,7 @@ new DitherTexture({
 | `generateDitherComposition(seed)` | any string/number | the same arrangement, dither tones |
 | `ditherImageFrom(src)` | a URL, SVG string, File | **your own picture**, redrawn as dots |
 | `ditherImage(source)` | a loaded `<img>`, canvas, `ImageData` | the same, synchronously |
+| `openCamera()` | — | a live camera feed, dithered frame by frame |
 
 All helpers take the same overrides: `{ width, height, palette, background, scale }`.
 
@@ -433,6 +434,40 @@ const mark = await ditherImageFrom(svgString, {
 el.style.backgroundImage = `url("${mark.toDataURL()}")`;
 ```
 
+### The camera
+
+A live feed is just a third kind of source. `openCamera()` asks for the
+device, hands back the playing `<video>`, and gives you a `grab()` that reads
+the current frame as a luminance plane — synchronously, so it drops straight
+into a frame loop:
+
+```js
+import { openCamera, ditherImage } from '@gavinmcfarland/dither';
+
+const cam = await openCamera();          // { video, grab, stop }
+sourcePanel.append(cam.video);           // optional: show the raw feed
+
+(function tick() {
+  ditherImage(cam.grab(), { palette: 'bone', cell: 3, method: 'bayer' }).render(canvas);
+  requestAnimationFrame(tick);
+})();
+
+cam.stop();                              // release the device
+```
+
+Nothing downstream knows it is video: the frame goes through the same
+resample-and-decide path as a PNG, and every option above applies unchanged.
+
+Frames are captured at 480px on the long edge rather than the 1024 a still
+gets (`raster` overrides it). A live feed is reduced to a few thousand dots
+anyway, and reading back a 1024px frame sixty times a second is the one thing
+that will actually cost you the frame rate. `{ facing: 'environment' }` picks
+the rear camera on a phone.
+
+`bayer` is the method to reach for on video. Its threshold map is fixed, so a
+still area of the scene dithers to the same dots every frame; error diffusion
+re-decides the whole grid from a moving error term, and flat areas boil.
+
 ### The three alpha modes
 
 | mode | transparency is… | good for |
@@ -497,8 +532,8 @@ byte-for-byte.
 pnpm --filter @gavinmcfarland/dither demo
 ```
 
-An image dithering bench (drop your own file in, or use a sample, and work
-the controls), a gallery of the six fields, walls of auto-generated dither / pixel / retro
+An image dithering bench (drop your own file in, use a sample, or turn on the
+camera, and work the controls), a gallery of the six fields, walls of auto-generated dither / pixel / retro
 patterns plus generated grounds and decals (click a tile to reseed it, ☆ to
 bookmark it), a Bookmarked row that persists across reloads, the preset grounds
 and decals, and a surface toggle between `ink` and `bone`.

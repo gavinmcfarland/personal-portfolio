@@ -23,7 +23,7 @@ import { generateRetroLayers, retroArchetypes } from './retro.js';
 import { bookmarks } from './bookmarks.js';
 import { generateCompositionSpec } from './compose.js';
 import { generateGroundLayers, groundArchetypes, generateDecalSpec, decalArchetypes, generateRetroDecalSpec, generateIconSpec, generateDitherIconSpec, iconShapeNames } from './furniture.js';
-import { imageSpec, loadLuma, toLuma, ditherMethods, imageStyles, alphaModes } from './image.js';
+import { imageSpec, loadLuma, toLuma, openCamera, ditherMethods, imageStyles, alphaModes } from './image.js';
 import { seedLabel } from './rng.js';
 
 const isBrowser = typeof document !== 'undefined';
@@ -314,6 +314,7 @@ export {
   imageSpec,
   loadLuma,
   toLuma,
+  openCamera,
   ditherMethods,
   imageStyles,
   alphaModes,

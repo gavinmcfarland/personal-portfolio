@@ -75,7 +75,7 @@
   .samples button { padding: .3rem .7rem; font-size: .75rem; }
   .samples button.on { border-color: var(--green); color: var(--green); }
   .imgout { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
-  .imgout .cell img, .imgout .cell canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); }
+  .imgout .cell img, .imgout .cell video, .imgout .cell canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); }
   .imgout .cell canvas { image-rendering: pixelated; }
 </style>
 </head>
@@ -90,7 +90,7 @@
   </header>
 
   <h2>Images <span class="n">— a picture or an SVG, redrawn as dots</span></h2>
-  <p class="note">The one family that does not invent its pattern. A screenshot, a photo or an SVG is resampled onto the dot grid — area-averaged, so fine detail becomes tone rather than aliasing — and each cell gets one hard decision. Drop your own file in, or pick a sample.</p>
+  <p class="note">The one family that does not invent its pattern. A screenshot, a photo or an SVG is resampled onto the dot grid — area-averaged, so fine detail becomes tone rather than aliasing — and each cell gets one hard decision. Drop your own file in, pick a sample, or dither a live camera feed frame by frame.</p>
   <div class="imgtool">
     <div class="imgctl">
       <div class="samples" id="img-samples"></div>

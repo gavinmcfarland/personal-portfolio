@@ -1,4 +1,4 @@
-import { field, ground, decal, generate, pixels, retro, generateGround, generateDecal, generateRetroDecal, generateIcon, generateDitherIcon, generateOrganicComposition, generateDitherComposition, regenerate, bookmarks, fieldMeta, grounds, decals, ditherImage, loadLuma, ditherMethods, imageStyles, alphaModes } from '../src/index.js';
+import { field, ground, decal, generate, pixels, retro, generateGround, generateDecal, generateRetroDecal, generateIcon, generateDitherIcon, generateOrganicComposition, generateDitherComposition, regenerate, bookmarks, fieldMeta, grounds, decals, ditherImage, loadLuma, openCamera, ditherMethods, imageStyles, alphaModes } from '../src/index.js';
 
 /* Which surface — the dark terminal or the printed "bone" sheet. Every
    texture re-tints from this one value, exactly as the CSS does. */
@@ -215,8 +215,9 @@ const imageOpts = {
 };
 
 let imageSource = null; // the decoded luminance plane
-let imagePreview = null; // a URL for the "before" panel
 let activeSample = SAMPLES[0].id;
+let camera = null; // an open camera, while one is running
+let liveFrame = 0; // its rAF handle
 
 const $ = (id) => document.getElementById(id);
 
@@ -231,18 +232,47 @@ function fillSelect(el, values, current) {
   }
 }
 
+/* The before/after panels are built once and then updated in place. A live
+   camera would otherwise have its <video> torn out of the document and
+   rebuilt sixty times a second, which stops playback dead. */
+let panels = null;
+function imagePanels() {
+  if (panels) return panels;
+
+  const before = document.createElement('div');
+  before.className = 'cell';
+  const source = document.createElement('div');
+  source.className = 'srchost';
+  const beforeCap = document.createElement('p');
+  beforeCap.className = 'cap';
+  beforeCap.innerHTML = '<b>source</b>';
+  before.append(source, beforeCap);
+
+  const after = document.createElement('div');
+  after.className = 'cell';
+  const canvas = document.createElement('canvas');
+  const cap = document.createElement('p');
+  cap.className = 'cap';
+  after.append(canvas, cap);
+
+  $('img-out').replaceChildren(before, after);
+  panels = { source, canvas, cap };
+  return panels;
+}
+
 async function loadImageSource(src, previewUrl) {
+  stopCamera();
   imageSource = await loadLuma(src);
-  imagePreview = previewUrl;
+  const img = document.createElement('img');
+  img.src = previewUrl;
+  img.alt = 'the source image';
+  imagePanels().source.replaceChildren(img);
   drawImage();
 }
 
 function drawImage() {
-  const out = $('img-out');
-  if (!imageSource) {
-    out.replaceChildren();
-    return;
-  }
+  if (!imageSource) return;
+  const { canvas, cap } = imagePanels();
   const tex = ditherImage(imageSource, {
     palette,
     width: 420,
@@ -261,25 +291,47 @@ function drawImage() {
     background: imageOpts.alpha === 'flatten' ? undefined : null,
   });
 
-  const before = document.createElement('div');
-  before.className = 'cell';
-  const img = document.createElement('img');
-  img.src = imagePreview;
-  img.alt = 'the source image';
-  const beforeCap = document.createElement('p');
-  beforeCap.className = 'cap';
-  beforeCap.innerHTML = '<b>source</b>';
-  before.append(img, beforeCap);
+  tex.render(canvas);
+  cap.innerHTML = `<b>${tex.spec.width}×${tex.spec.height}</b> · <span class="fam">${imageOpts.style} / ${imageOpts.method} · cell ${imageOpts.cell}</span>`;
+}
 
-  const after = document.createElement('div');
-  after.className = 'cell';
-  after.append(tex.render());
-  const afterCap = document.createElement('p');
-  afterCap.className = 'cap';
-  afterCap.innerHTML = `<b>${tex.spec.width}×${tex.spec.height}</b> · <span class="fam">${imageOpts.style} / ${imageOpts.method} · cell ${imageOpts.cell}</span>`;
-  after.append(afterCap);
+/* ── The camera ───────────────────────────────────────────────────────
+   A live feed dithered frame by frame. Each tick grabs the current frame as
+   a luminance plane and runs it through exactly the same path as a file —
+   nothing about the engine knows it is video. */
+async function startCamera() {
+  stopCamera();
+  activeSample = 'camera';
+  drawSampleButtons();
+  try {
+    camera = await openCamera();
+  } catch (err) {
+    // Denied, or no device. Say so where the user is looking.
+    camera = null;
+    activeSample = null;
+    drawSampleButtons();
+    $('img-drop').textContent = `Camera unavailable — ${err.message}`;
+    return;
+  }
+  // Redraw again now the camera is actually open — the pass above ran
+  // before the permission prompt resolved, so the button still said "start".
+  drawSampleButtons();
+  imagePanels().source.replaceChildren(camera.video);
 
-  out.replaceChildren(before, after);
+  const tick = () => {
+    if (!camera) return;
+    imageSource = camera.grab();
+    drawImage();
+    liveFrame = requestAnimationFrame(tick);
+  };
+  tick();
+}
+
+function stopCamera() {
+  if (liveFrame) cancelAnimationFrame(liveFrame);
+  liveFrame = 0;
+  if (camera) camera.stop();
+  camera = null;
 }
 
 function drawSampleButtons() {
@@ -299,6 +351,21 @@ function drawSampleButtons() {
     });
     host.append(b);
   }
+
+  const cam = document.createElement('button');
+  cam.type = 'button';
+  cam.textContent = camera ? 'stop camera' : 'camera';
+  cam.className = activeSample === 'camera' ? 'on' : '';
+  cam.addEventListener('click', () => {
+    if (camera) {
+      stopCamera();
+      activeSample = null;
+      drawSampleButtons();
+    } else {
+      startCamera();
+    }
+  });
+  host.append(cam);
 }
 
 /* A dropped or chosen file: decode it, and show the file itself as the
