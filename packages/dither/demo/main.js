@@ -1,4 +1,4 @@
-import { field, ground, decal, generate, pixels, retro, generateGround, generateDecal, generateRetroDecal, generateIcon, generateDitherIcon, generateOrganicComposition, generateDitherComposition, regenerate, bookmarks, fieldMeta, grounds, decals } from '../src/index.js';
+import { field, ground, decal, generate, pixels, retro, generateGround, generateDecal, generateRetroDecal, generateIcon, generateDitherIcon, generateOrganicComposition, generateDitherComposition, regenerate, bookmarks, fieldMeta, grounds, decals, ditherImage, loadLuma, ditherMethods, imageStyles, alphaModes } from '../src/index.js';
 
 /* Which surface — the dark terminal or the printed "bone" sheet. Every
    texture re-tints from this one value, exactly as the CSS does. */
@@ -188,6 +188,182 @@ function drawDecals() {
   }
 }
 
+/* ── Image dither ─────────────────────────────────────────────────────
+   Decode once into a luminance plane, then re-render from it on every
+   control change — resampling and dithering are cheap, decoding is not. */
+const SAMPLES = [
+  { id: 'window', label: 'window', src: './sample-window.svg' },
+  { id: 'mark', label: 'vector mark', src: './sample-mark.svg', alpha: 'shadow' },
+];
+
+const imageOpts = {
+  style: 'dither',
+  method: 'bayer',
+  fit: 'cover',
+  cell: 3,
+  contrast: 1.2,
+  brightness: 0,
+  // The ink range is what makes a flat UI capture read as a plate rather
+  // than as a mostly empty sheet: white paper becomes the faintest field of
+  // dots instead of nothing at all.
+  lo: 0.12,
+  hi: 0.92,
+  steps: 0,
+  autoLevels: true, // flat UI captures live in the top of the range
+  invert: undefined, // let the palette decide
+  alpha: 'flatten',
+};
+
+let imageSource = null; // the decoded luminance plane
+let imagePreview = null; // a URL for the "before" panel
+let activeSample = SAMPLES[0].id;
+
+const $ = (id) => document.getElementById(id);
+
+function fillSelect(el, values, current) {
+  el.replaceChildren();
+  for (const v of values) {
+    const o = document.createElement('option');
+    o.value = v;
+    o.textContent = v;
+    o.selected = v === current;
+    el.append(o);
+  }
+}
+
+async function loadImageSource(src, previewUrl) {
+  imageSource = await loadLuma(src);
+  imagePreview = previewUrl;
+  drawImage();
+}
+
+function drawImage() {
+  const out = $('img-out');
+  if (!imageSource) {
+    out.replaceChildren();
+    return;
+  }
+  const tex = ditherImage(imageSource, {
+    palette,
+    width: 420,
+    cell: imageOpts.cell,
+    style: imageOpts.style,
+    method: imageOpts.method,
+    fit: imageOpts.fit,
+    contrast: imageOpts.contrast,
+    brightness: imageOpts.brightness,
+    range: [imageOpts.lo, imageOpts.hi],
+    steps: imageOpts.steps,
+    autoLevels: imageOpts.autoLevels,
+    invert: imageOpts.invert,
+    alpha: imageOpts.alpha,
+    // A cut-out wants to sit over whatever is behind it, not on paper.
+    background: imageOpts.alpha === 'flatten' ? undefined : null,
+  });
+
+  const before = document.createElement('div');
+  before.className = 'cell';
+  const img = document.createElement('img');
+  img.src = imagePreview;
+  img.alt = 'the source image';
+  const beforeCap = document.createElement('p');
+  beforeCap.className = 'cap';
+  beforeCap.innerHTML = '<b>source</b>';
+  before.append(img, beforeCap);
+
+  const after = document.createElement('div');
+  after.className = 'cell';
+  after.append(tex.render());
+  const afterCap = document.createElement('p');
+  afterCap.className = 'cap';
+  afterCap.innerHTML = `<b>${tex.spec.width}×${tex.spec.height}</b> · <span class="fam">${imageOpts.style} / ${imageOpts.method} · cell ${imageOpts.cell}</span>`;
+  after.append(afterCap);
+
+  out.replaceChildren(before, after);
+}
+
+function drawSampleButtons() {
+  const host = $('img-samples');
+  host.replaceChildren();
+  for (const s of SAMPLES) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = s.label;
+    b.className = s.id === activeSample ? 'on' : '';
+    b.addEventListener('click', () => {
+      activeSample = s.id;
+      imageOpts.alpha = s.alpha || 'flatten';
+      $('img-alpha').value = imageOpts.alpha;
+      drawSampleButtons();
+      loadImageSource(s.src, s.src);
+    });
+    host.append(b);
+  }
+}
+
+/* A dropped or chosen file: decode it, and show the file itself as the
+   "before" panel. */
+function takeFile(file) {
+  if (!file) return;
+  activeSample = null;
+  drawSampleButtons();
+  const url = URL.createObjectURL(file);
+  loadImageSource(file, url);
+}
+
+function bindImageControls() {
+  fillSelect($('img-style'), imageStyles, imageOpts.style);
+  fillSelect($('img-method'), ditherMethods, imageOpts.method);
+  fillSelect($('img-fit'), ['cover', 'contain', 'fill'], imageOpts.fit);
+  fillSelect($('img-alpha'), alphaModes, imageOpts.alpha);
+
+  const range = (id, key, fmt) => {
+    const el = $(id);
+    const out = $(id + '-v');
+    el.value = imageOpts[key];
+    const sync = () => {
+      out.textContent = fmt(imageOpts[key]);
+    };
+    el.addEventListener('input', () => {
+      imageOpts[key] = parseFloat(el.value);
+      sync();
+      drawImage();
+    });
+    sync();
+  };
+
+  $('img-style').addEventListener('change', (e) => { imageOpts.style = e.target.value; drawImage(); });
+  $('img-method').addEventListener('change', (e) => { imageOpts.method = e.target.value; drawImage(); });
+  $('img-fit').addEventListener('change', (e) => { imageOpts.fit = e.target.value; drawImage(); });
+  range('img-cell', 'cell', (v) => `${v}px`);
+  range('img-contrast', 'contrast', (v) => v.toFixed(2));
+  range('img-brightness', 'brightness', (v) => (v > 0 ? '+' : '') + v.toFixed(2));
+  range('img-lo', 'lo', (v) => v.toFixed(2));
+  range('img-hi', 'hi', (v) => v.toFixed(2));
+  range('img-steps', 'steps', (v) => (v > 1 ? `${v} levels` : 'off'));
+
+  $('img-auto').checked = imageOpts.autoLevels;
+  $('img-auto').addEventListener('change', (e) => { imageOpts.autoLevels = e.target.checked; drawImage(); });
+  // Unchecked means "let the palette decide", which is the useful default.
+  $('img-invert').addEventListener('change', (e) => { imageOpts.invert = e.target.checked ? true : undefined; drawImage(); });
+  $('img-alpha').addEventListener('change', (e) => { imageOpts.alpha = e.target.value; drawImage(); });
+
+  const drop = $('img-drop');
+  const file = $('img-file');
+  drop.addEventListener('click', () => file.click());
+  file.addEventListener('change', () => takeFile(file.files[0]));
+  drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', (e) => {
+    e.preventDefault();
+    drop.classList.remove('over');
+    takeFile(e.dataTransfer.files[0]);
+  });
+
+  drawSampleButtons();
+  loadImageSource(SAMPLES[0].src, SAMPLES[0].src);
+}
+
 /* ── Orchestration ───────────────────────────────────────────────────── */
 let genBase = 1000;
 let pixBase = 3000;
@@ -215,6 +391,7 @@ function drawSeeded() {
 }
 
 function drawAll() {
+  drawImage();
   drawBookmarks();
   drawFields();
   drawSeeded();
@@ -248,4 +425,5 @@ document.getElementById('surface').addEventListener('click', () => {
   drawAll();
 });
 
+bindImageControls();
 drawAll();

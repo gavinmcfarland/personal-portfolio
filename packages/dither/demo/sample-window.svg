@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480">
+  <!-- A stand-in for a screenshot: a plugin window on a light ground, the
+       kind of flat, low-contrast UI capture that shows what the image
+       dither has to cope with (thin strokes, big empty areas, soft shadow). -->
+  <rect width="480" height="480" fill="#F2F2F2"/>
+  <g>
+    <rect x="76" y="76" width="334" height="316" rx="12" fill="#000" opacity="0.08"/>
+    <rect x="74" y="74" width="334" height="316" rx="12" fill="#FFF"/>
+    <path d="M74 113 h334" stroke="#E6E6E6" stroke-width="1.5" fill="none"/>
+    <rect x="90" y="85" width="20" height="20" rx="4" fill="#111"/>
+    <path d="M97 91 l-3 4 3 4 M103 91 l3 4 -3 4" stroke="#FFF" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="118" y="99" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#111">Figlet</text>
+    <path d="M383 88 l12 12 M395 88 l-12 12" stroke="#111" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+</svg>

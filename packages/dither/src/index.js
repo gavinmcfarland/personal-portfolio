@@ -23,6 +23,7 @@ import { generateRetroLayers, retroArchetypes } from './retro.js';
 import { bookmarks } from './bookmarks.js';
 import { generateCompositionSpec } from './compose.js';
 import { generateGroundLayers, groundArchetypes, generateDecalSpec, decalArchetypes, generateRetroDecalSpec, generateIconSpec, generateDitherIconSpec, iconShapeNames } from './furniture.js';
+import { imageSpec, loadLuma, toLuma, ditherMethods, imageStyles, alphaModes } from './image.js';
 import { seedLabel } from './rng.js';
 
 const isBrowser = typeof document !== 'undefined';
@@ -227,6 +228,41 @@ export function generateDitherComposition(seed, overrides = {}) {
   return tag(new DitherTexture({ layers: s.layers, width: s.width, height: s.height, background: null, ...over }), 'dither-composition', seed, s.archetype);
 }
 
+/* ── Images ───────────────────────────────────────────────────────────
+   The one family that does not invent its pattern: it takes a picture — a
+   screenshot, a photo, an SVG — and redraws it in the same grammar of
+   square dots on a regular grid.
+
+   `ditherImage` is synchronous and wants pixels you already hold (a loaded
+   <img>, a canvas, an ImageData, or a luminance plane from `loadLuma`).
+   `ditherImageFrom` is the one to reach for most of the time: it decodes a
+   URL, an SVG string, a File or a Blob first.
+
+   ```js
+   const tex = await ditherImageFrom('/shot.png', { cell: 4, method: 'atkinson', palette: 'bone' });
+   tex.render(canvas);
+   ``` */
+export function ditherImage(source, options = {}) {
+  const s = imageSpec(source, options);
+  // Only forward display options the caller actually set, so `undefined`
+  // never clobbers a DitherTexture default (notably `scale`).
+  const display = {};
+  for (const key of ['palette', 'background', 'scale']) {
+    if (options[key] !== undefined) display[key] = options[key];
+  }
+  const tex = new DitherTexture({ layers: s.layers, width: s.width, height: s.height, ...display });
+  tex.family = 'image';
+  tex.archetype = s.style === 'halftone' ? 'halftone' : s.method;
+  tex.name = `image-${tex.archetype}`;
+  return tex;
+}
+
+/* The same, for a source that has to be decoded first — a URL, an SVG
+   document as a string, a File from an upload, a Blob. */
+export async function ditherImageFrom(source, options = {}) {
+  return ditherImage(await loadLuma(source, options), options);
+}
+
 /* Every generated texture carries the three things a bookmark needs to grow
    it again: its family, its seed, and the archetype the seed resolved to. */
 function tag(tex, family, seed, archetype) {
@@ -275,6 +311,12 @@ export {
   generateIconSpec,
   generateDitherIconSpec,
   generateCompositionSpec,
+  imageSpec,
+  loadLuma,
+  toLuma,
+  ditherMethods,
+  imageStyles,
+  alphaModes,
   iconShapeNames,
   seamlessSize,
   archetypes,

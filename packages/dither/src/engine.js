@@ -138,6 +138,309 @@ function thresholdField(kind, W, H) {
   }
 }
 
+/* ── Resampling an image onto the dot grid ────────────────────────────
+   An image mask is the one place the engine takes pixels IN rather than
+   inventing them, so it needs a little machinery: resample the source onto
+   the field's cell grid, adjust the tone, and reduce it to one bit per
+   cell. The result depends on the render size, which is only known here, so
+   it is computed at compile time and memoised against the source. */
+
+const imageCache = new WeakMap();
+
+function cacheFor(source) {
+  let store = imageCache.get(source);
+  if (!store) {
+    store = new Map();
+    imageCache.set(source, store);
+  }
+  // A texture re-rendered at a few sizes/palettes is normal; a runaway set
+  // of keys is not. Keep the cache small rather than unbounded.
+  if (store.size > 12) store.clear();
+  return store;
+}
+
+/* Error-diffusion kernels, as [dx, dy, weight]. Atkinson deliberately
+   spreads only ¾ of the error, which is why the classic Mac look has that
+   blown-out, crunchy contrast; Floyd–Steinberg and Jarvis conserve it. */
+const DIFFUSION = {
+  floyd: [[1, 0, 7 / 16], [-1, 1, 3 / 16], [0, 1, 5 / 16], [1, 1, 1 / 16]],
+  atkinson: [[1, 0, 1 / 8], [2, 0, 1 / 8], [-1, 1, 1 / 8], [0, 1, 1 / 8], [1, 1, 1 / 8], [0, 2, 1 / 8]],
+  jarvis: [
+    [1, 0, 7 / 48], [2, 0, 5 / 48],
+    [-2, 1, 3 / 48], [-1, 1, 5 / 48], [0, 1, 7 / 48], [1, 1, 5 / 48], [2, 1, 3 / 48],
+    [-2, 2, 1 / 48], [-1, 2, 3 / 48], [0, 2, 5 / 48], [1, 2, 3 / 48], [2, 2, 1 / 48],
+  ],
+  sierra: [[1, 0, 2 / 4], [-1, 1, 1 / 4], [0, 1, 1 / 4]],
+};
+
+/* A deterministic value hash — noise without an RNG, so the same image
+   dithers the same way on every render. */
+function hash01(x, y) {
+  let n = (x * 374761393 + y * 668265263) | 0;
+  n = (n ^ (n >>> 13)) * 1274126177;
+  return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+}
+
+const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+
+/* Resample the source's luminance onto a `cols × rows` grid of cells and
+   turn it into TONE — the amount of ink a cell wants, 0…1.
+
+   Sampling is an area average over the source rectangle each cell covers,
+   which is what makes a screenshot legible after it has been reduced to a
+   few thousand dots: a row of 1px text strokes becomes a grey, not a
+   coin-flip. Alpha is averaged too, so a cut-out logo keeps a clean edge. */
+function resampleTone(spec, W, H, cell, cols, rows) {
+  const src = spec.source;
+  const SW = src.width;
+  const SH = src.height;
+  const lum = src.data;
+  const alp = src.alpha;
+  const pad = spec.pad == null ? 1 : spec.pad; // what lies outside the image
+  const fit = spec.fit || 'cover';
+
+  // Source pixels per output pixel. `cover` fills the frame and crops;
+  // `contain` fits the whole image in and pads; `fill` stretches.
+  let kx;
+  let ky;
+  if (fit === 'fill') {
+    kx = SW / W;
+    ky = SH / H;
+  } else {
+    const k = fit === 'contain' ? Math.max(SW / W, SH / H) : Math.min(SW / W, SH / H);
+    kx = k;
+    ky = k;
+  }
+  const ox = SW / 2 - (W / 2) * kx; // source x at output x = 0
+  const oy = SH / 2 - (H / 2) * ky;
+
+  const lumGrid = new Float32Array(cols * rows); // composited over `pad`
+  const ownGrid = new Float32Array(cols * rows); // the colour under the alpha
+  const covGrid = new Float32Array(cols * rows); // how much of the cell is there
+
+  for (let cy = 0; cy < rows; cy++) {
+    const v0 = oy + cy * cell * ky;
+    const v1 = oy + (cy + 1) * cell * ky;
+    let j0 = Math.floor(v0);
+    let j1 = Math.ceil(v1);
+    if (j1 <= j0) j1 = j0 + 1;
+    const jy0 = Math.max(0, Math.min(SH, j0));
+    const jy1 = Math.max(0, Math.min(SH, j1));
+
+    for (let cx = 0; cx < cols; cx++) {
+      const u0 = ox + cx * cell * kx;
+      const u1 = ox + (cx + 1) * cell * kx;
+      let i0 = Math.floor(u0);
+      let i1 = Math.ceil(u1);
+      if (i1 <= i0) i1 = i0 + 1;
+      const ix0 = Math.max(0, Math.min(SW, i0));
+      const ix1 = Math.max(0, Math.min(SW, i1));
+
+      const total = (i1 - i0) * (j1 - j0);
+      let sumLA = 0; // Σ luminance × alpha
+      let sumA = 0; // Σ alpha (out-of-bounds samples count as alpha 0)
+      for (let sy = jy0; sy < jy1; sy++) {
+        const row = sy * SW;
+        for (let sx = ix0; sx < ix1; sx++) {
+          const a = alp ? alp[row + sx] : 1;
+          sumLA += lum[row + sx] * a;
+          sumA += a;
+        }
+      }
+      const i = cy * cols + cx;
+      const cov = sumA / total; // 0 = nothing there, 1 = fully opaque
+      const own = sumA > 1e-6 ? sumLA / sumA : pad; // the colour under the alpha
+      lumGrid[i] = own * cov + pad * (1 - cov); // composited over the pad
+      ownGrid[i] = own;
+      covGrid[i] = cov;
+    }
+  }
+
+  /* Which luminance the tone is read from depends on how alpha is handled.
+
+       flatten — the composited value. Transparency is just paler ink, and
+                 the empty area is `pad`, which still takes the ink floor.
+       cutout  — the shape's OWN colour, cut hard at half coverage. A black
+                 mark at 20% alpha is still black; it is either in or out.
+       shadow  — the shape's own colour too, but the ink is scaled by
+                 coverage at the end, so a soft shadow prints as a faint
+                 field that fades to genuinely nothing. */
+  const mode = spec.alpha || 'flatten';
+  const base = mode === 'flatten' ? lumGrid : ownGrid;
+
+  // Auto levels: stretch the picture's own range to full black-to-white
+  // before any other adjustment. A screenshot of a light UI otherwise sits
+  // entirely in the top eighth of the range, where the difference between a
+  // white card and the grey behind it is a rounding error — and 1 bit has
+  // no rounding errors to spare.
+  //
+  // The ends are taken at a PERCENTILE, not at the extremes, so a 20px
+  // black icon cannot claim the whole shadow end of the range on behalf of
+  // an image that is otherwise all highlight. That is the difference
+  // between a plate with structure and a plate with a speck on it.
+  if (spec.autoLevels) {
+    const clip = typeof spec.autoLevels === 'number' ? spec.autoLevels : 0.02;
+    const BINS = 256;
+    const hist = new Uint32Array(BINS);
+    let n = 0;
+    for (let i = 0; i < base.length; i++) {
+      if (covGrid[i] < 0.5) continue; // ignore empty area
+      hist[Math.min(BINS - 1, Math.max(0, Math.round(base[i] * (BINS - 1))))]++;
+      n++;
+    }
+    if (n > 0) {
+      const want = Math.floor(n * clip);
+      let lo = 0;
+      let hi = BINS - 1;
+      for (let c = 0, b = 0; b < BINS; b++) {
+        c += hist[b];
+        if (c > want) { lo = b; break; }
+      }
+      for (let c = 0, b = BINS - 1; b >= 0; b--) {
+        c += hist[b];
+        if (c > want) { hi = b; break; }
+      }
+      const l0 = lo / (BINS - 1);
+      const l1 = hi / (BINS - 1);
+      if (l1 - l0 > 0.02) {
+        const span = l1 - l0;
+        for (let i = 0; i < base.length; i++) base[i] = (base[i] - l0) / span;
+      }
+    }
+  }
+
+  const gamma = spec.gamma == null ? 1 : spec.gamma;
+  const contrast = spec.contrast == null ? 1 : spec.contrast;
+  const brightness = spec.brightness == null ? 0 : spec.brightness;
+  const invert = !!spec.invert;
+  const steps = spec.steps > 1 ? Math.round(spec.steps) : 0;
+  const range = spec.range;
+  const rlo = range ? range[0] : 0;
+  const rspan = range ? range[1] - range[0] : 1;
+
+  const tone = new Float32Array(cols * rows);
+  for (let i = 0; i < tone.length; i++) {
+    let l = clamp01(base[i]);
+    if (gamma !== 1) l = Math.pow(l, gamma);
+    if (contrast !== 1 || brightness !== 0) l = clamp01((l - 0.5) * contrast + 0.5 + brightness);
+    // Tone is INK, so by default the dark parts of the picture get the dots.
+    // `invert` hands the dots to the light parts instead — which is what a
+    // dark surface wants, where a dot is a light mark on a dark ground.
+    let v = invert ? l : 1 - l;
+    // Posterise first: quantising the tone gives the hard tonal terraces of
+    // a printed plate, where a soft gradient becomes a few flat fields of
+    // dots with a visible step between them.
+    if (steps) v = Math.round(v * (steps - 1)) / (steps - 1);
+    // Then compress into the ink range. This is what turns a flat, mostly
+    // white screenshot into a plate: white paper stops meaning "no dots"
+    // and starts meaning "the faintest field", so the whole sheet carries
+    // texture and the picture reads as tonal structure within it.
+    if (range) v = rlo + v * rspan;
+    v = clamp01(v);
+    // Alpha last, so it attenuates the FINISHED ink rather than the
+    // luminance it came from. That is what lets a shadow fade all the way
+    // out: scaling the tone after the ink floor has been applied takes the
+    // floor down with it, where flattening first would leave the shadow's
+    // whole bounding area sitting at the floor.
+    if (mode === 'cutout') {
+      if (covGrid[i] < 0.5) v = 0;
+    } else if (mode === 'shadow') {
+      v *= covGrid[i];
+    }
+    tone[i] = v;
+  }
+  return tone;
+}
+
+/* Reduce a tone grid to one bit per cell. `bayer`, `threshold` and `noise`
+   decide each cell independently; the diffusion kernels carry each cell's
+   rounding error into its neighbours, which is what lets 1 bit hold an
+   apparently continuous tone. */
+function ditherTone(spec, tone, cols, rows) {
+  const bits = new Uint8Array(cols * rows);
+  const method = spec.method || 'bayer';
+  const cut = spec.threshold == null ? 0.5 : spec.threshold;
+
+  if (method === 'threshold' || method === 'noise') {
+    const noisy = method === 'noise';
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const i = y * cols + x;
+        bits[i] = tone[i] > (noisy ? hash01(x, y) : cut) ? 1 : 0;
+      }
+    }
+    return bits;
+  }
+
+  if (method === 'bayer') {
+    const order = spec.order || 4;
+    const m = bayerMatrix(order);
+    const denom = order * order;
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const i = y * cols + x;
+        bits[i] = tone[i] > (m[mod(y, order)][mod(x, order)] + 0.5) / denom ? 1 : 0;
+      }
+    }
+    return bits;
+  }
+
+  // Error diffusion. Serpentine scanning (alternate rows run right-to-left)
+  // stops the error dragging one way and drawing "worms" across flat areas.
+  const kernel = DIFFUSION[method] || DIFFUSION.floyd;
+  const buf = Float32Array.from(tone);
+  const serpentine = spec.serpentine !== false;
+  for (let y = 0; y < rows; y++) {
+    const rtl = serpentine && y % 2 === 1;
+    for (let k = 0; k < cols; k++) {
+      const x = rtl ? cols - 1 - k : k;
+      const i = y * cols + x;
+      const want = buf[i];
+      const on = want > cut ? 1 : 0;
+      bits[i] = on;
+      const err = want - on;
+      if (!err) continue;
+      for (let d = 0; d < kernel.length; d++) {
+        const dx = rtl ? -kernel[d][0] : kernel[d][0];
+        const nx = x + dx;
+        const ny = y + kernel[d][1];
+        if (nx < 0 || nx >= cols || ny >= rows) continue;
+        buf[ny * cols + nx] += err * kernel[d][2];
+      }
+    }
+  }
+  return bits;
+}
+
+/* The resampled tone and its 1-bit reduction for one image mask at one
+   render size, memoised against the source — the halftone style compiles
+   four masks over the same picture and must not resample it four times. */
+function imageMaskData(spec, W, H, cell) {
+  const cols = Math.max(1, Math.ceil(W / cell));
+  const rows = Math.max(1, Math.ceil(H / cell));
+  const store = cacheFor(spec.source);
+  const toneKey = [
+    'tone', W, H, cell, spec.fit, spec.pad, spec.gamma, spec.contrast,
+    spec.brightness, spec.autoLevels, spec.invert, spec.alpha, spec.steps,
+    spec.range ? spec.range.join(',') : '',
+  ].join('|');
+  let tone = store.get(toneKey);
+  if (!tone) {
+    tone = resampleTone(spec, W, H, cell, cols, rows);
+    store.set(toneKey, tone);
+  }
+  // `level` reads the tone directly, so a halftone never needs the bits.
+  if (spec.level != null) return { cols, rows, tone, bits: null };
+
+  const bitsKey = [toneKey, 'bits', spec.method, spec.order, spec.threshold, spec.serpentine].join('|');
+  let bits = store.get(bitsKey);
+  if (!bits) {
+    bits = ditherTone(spec, tone, cols, rows);
+    store.set(bitsKey, bits);
+  }
+  return { cols, rows, tone, bits };
+}
+
 /* ── Masks ────────────────────────────────────────────────────────────
    A mask returns 1 where dots are allowed and 0 where they are cut. Every
    stop is hard: masks gate, they never fade. An array of specs is a UNION
@@ -422,6 +725,35 @@ export function compileMask(spec, W, H, scale) {
         const by = ((Math.floor(y / cell) % 4) + 4) % 4;
         return b > (m4[by][bx] + 0.5) / 16 ? 1 : 0;
       };
+    }
+
+    /* A raster IMAGE — a photo, a screenshot, a rasterised SVG — turned
+       into square dots. The source arrives as a luminance plane (see
+       `image.js`); this mask resamples it onto the field's own cell grid,
+       area-averaging so fine detail becomes tone rather than aliasing,
+       then makes one 1-bit decision per cell.
+
+       Everything the rest of the engine promises still holds: the decision
+       is per CELL, not per pixel, so a dot is a whole square and an edge
+       stair-steps rather than being shaved. `level` returns the region
+       above a tone instead of a dithered bit, which is how the halftone
+       style stacks denser marks the darker the picture gets. */
+    case 'image': {
+      if (!spec.source || !spec.source.data) return () => 0;
+      const cell = Math.max(1, Math.round((spec.cell || 3) * s));
+      const { cols, rows, tone, bits } = imageMaskData(spec, W, H, cell);
+      const at = (x, y) => {
+        let cx = Math.floor(x / cell);
+        let cy = Math.floor(y / cell);
+        cx = cx < 0 ? 0 : cx >= cols ? cols - 1 : cx;
+        cy = cy < 0 ? 0 : cy >= rows ? rows - 1 : cy;
+        return cy * cols + cx;
+      };
+      if (spec.level != null) {
+        const lv = spec.level;
+        return (x, y) => (tone[at(x, y)] >= lv ? 1 : 0);
+      }
+      return (x, y) => bits[at(x, y)];
     }
 
     /* A single true circle at an arbitrary point — `cx`/`cy` are fractions

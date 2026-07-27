@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480">
+  <!-- A flat vector mark on TRANSPARENCY, with a soft drop shadow, for the
+       three alpha modes: `flatten` prints the empty area as paper, `cutout`
+       drops the shadow along with it, `shadow` keeps the shadow as a fading
+       field and only true transparency prints nothing. -->
+  <defs>
+    <radialGradient id="g" cx="34%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#101010"/>
+    </radialGradient>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="22"/>
+      <feOffset dy="26"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.55"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <circle cx="240" cy="222" r="172" fill="url(#g)"/>
+    <path d="M240 92 l36 94 94 36 -94 36 -36 94 -36 -94 -94 -36 94 -36z" fill="#000" opacity="0.55"/>
+  </g>
+</svg>

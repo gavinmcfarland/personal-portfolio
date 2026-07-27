@@ -65,6 +65,8 @@ new DitherTexture({
 | `generateDitherIcon(seed)` | any string/number | the same, as a square-dot halftone |
 | `generateOrganicComposition(seed)` | any string/number | an organised artwork of repeated primitives, organic detail |
 | `generateDitherComposition(seed)` | any string/number | the same arrangement, dither tones |
+| `ditherImageFrom(src)` | a URL, SVG string, File | **your own picture**, redrawn as dots |
+| `ditherImage(source)` | a loaded `<img>`, canvas, `ImageData` | the same, synchronously |
 
 All helpers take the same overrides: `{ width, height, palette, background, scale }`.
 
@@ -136,6 +138,7 @@ Set `background: null` to render onto transparency (the default for decals).
 | `{ type: 'band', axis, on, period, offset }` | repeating bands (`axis: 'x' \| 'y'`) |
 | `{ type: 'bandRange', axis, from, to, period }` | a lit strip within each period |
 | `{ type: 'linear', axis, at, side }` | one hard stop (`at` is a fraction of the field) |
+| `{ type: 'image', source, cell, method, … }` | a picture, resampled onto the cell grid and dithered (see [Images](#images--svgs)) |
 
 A mask **array** is a union — a dot survives if any sub-mask allows it.
 
@@ -329,6 +332,128 @@ the way a colour ramp does.
 generateDitherComposition('poster', { archetype: 'stacks' }).render(canvas);
 ```
 
+## Images & SVGs
+
+Every other family invents its pattern. This one takes a picture — a
+screenshot, a photo, an SVG, a canvas — and redraws it in the same grammar:
+square dots on a regular grid, one hard decision per cell.
+
+```js
+import { ditherImageFrom } from '@gavinmcfarland/dither';
+
+const tex = await ditherImageFrom('/screenshot.png', {
+  palette: 'bone',
+  cell: 3,              // dot pitch — the biggest single look control
+  method: 'atkinson',
+  autoLevels: true,
+  range: [0.12, 0.92],
+});
+tex.render(canvas);
+```
+
+`ditherImageFrom` decodes first, so it takes a URL, a `data:` URL, an SVG
+document as a string, or a `File`/`Blob` from an upload or a drop.
+`ditherImage` is the synchronous half for pixels you already hold — a loaded
+`<img>`, a canvas, an `ImageData`, or a luminance plane from `loadLuma`.
+Decode once with `loadLuma`, then re-render from it as options change; the
+decode is the expensive part, the dither is not.
+
+The picture is **resampled onto the dot grid by area average**, not point
+sampled, so a row of 1px text strokes reduces to a grey rather than to a
+coin-flip — which is what keeps a UI screenshot legible at a few thousand
+dots. And the decision is still made once per **cell**, so a dot is a whole
+square and an edge stair-steps rather than being shaved.
+
+### Options
+
+| option | what it does |
+| --- | --- |
+| `width` / `height` | output size in CSS px; give one and the other follows the aspect ratio (default 320 wide). Snapped to whole cells. |
+| `cell` | dot pitch in CSS px (default 3) |
+| `style` | `dither` (one bit per cell) or `halftone` (tone bands filled with the package's quarter/checker dots) |
+| `method` | `bayer`, `atkinson`, `floyd`, `jarvis`, `sierra`, `threshold`, `noise` |
+| `order` | Bayer matrix side — 2, 4 (the classic), 8 |
+| `autoLevels` | stretch the picture's own range to full black-to-white, ends taken at a percentile (default 2%, or pass a number) |
+| `range` | `[min, max]` ink coverage — what white and black map to |
+| `steps` | posterise the tone to N levels first |
+| `contrast` / `brightness` / `gamma` | the usual adjustments |
+| `invert` | dots stand for light instead of dark (defaults from the palette) |
+| `fit` | `cover` (default), `contain`, `fill` |
+| `alpha` | `flatten` (default), `cutout`, or `shadow` — see below |
+| `palette` / `background` / `scale` / `ink` | as everywhere else |
+
+### The two that matter
+
+**`autoLevels`** is what makes a flat UI capture work at all. A screenshot of
+a light interface sits entirely in the top eighth of the range, where the
+difference between a white card and the grey behind it is a rounding error —
+and 1 bit has no rounding errors to spare. The ends are taken at a percentile
+rather than at the extremes, so a 20px black icon cannot claim the whole
+shadow end of the range on behalf of an image that is otherwise all highlight.
+
+**`range`** decides whether the result is a *picture* or a *plate*. Left at
+its default the white paper of a screenshot means "no dots", and most of the
+sheet comes back empty — faithful, but not a texture. Set `range: [0.12,
+0.92]` and white starts meaning "the faintest field" instead: the whole sheet
+carries dots, and the picture reads as tonal structure within them, the way
+the generated fields do.
+
+`steps` adds the hard tonal terraces of a printed plate — a soft gradient
+becomes a few flat fields of dots with a visible step between them.
+
+### Method, briefly
+
+`bayer` is the ordered ramp: a fixed crosshatch, perfectly regular, the Mac
+and Game Boy look, and the only one that stays stable under a size change.
+`atkinson` is the classic Mac error-diffusion — it deliberately throws away a
+quarter of the error, which is why it blows out to crisp solid blacks and
+whites. `floyd` and `jarvis` conserve it and hold much finer gradients (Jarvis
+the smoother of the two). `sierra` is the cheap one. `threshold` is a hard
+50% cut with no dither at all, for flat vector art. `noise` scatters — the one
+place in this package where a mark is not ordered, and it looks it.
+
+Error diffusion scans serpentine (alternate rows right-to-left) so the error
+cannot drag one way and draw "worms" across a flat area. Pass
+`serpentine: false` if you want them.
+
+### SVGs and cut-outs
+
+SVGs are rasterised at 1024px on the long edge rather than at their own size,
+so a 24px icon still has real detail to average down from — raise it with
+`raster` for something very fine. A vector mark with a transparent ground
+wants `background: null` and one of the two cut-out alpha modes:
+
+```js
+const mark = await ditherImageFrom(svgString, {
+  alpha: 'shadow',   // or 'cutout'
+  background: null,
+  method: 'atkinson',
+  cell: 2,
+});
+el.style.backgroundImage = `url("${mark.toDataURL()}")`;
+```
+
+### The three alpha modes
+
+| mode | transparency is… | good for |
+| --- | --- | --- |
+| `flatten` | paper. Composited onto `pad`, so the empty area takes the ink floor like any other light passage | photos, screenshots, anything opaque |
+| `cutout` | a hard edge, cut at half coverage | flat marks and logos with no soft edges |
+| `shadow` | a fading field. Ink is scaled by coverage, so a soft edge or drop shadow survives and thins to genuinely nothing | anything with a shadow, glow or feathered edge |
+
+`cutout` is binary, which is why it discards a drop shadow along with the
+empty area — a 20%-alpha pixel is simply *out*. `shadow` keeps the same clean
+result over true transparency but lets partial coverage through in
+proportion, so a shadow prints as a thinning halo of dots.
+
+The order matters: coverage attenuates the **finished** ink, after the ink
+range has been applied. Flattening first would leave the shadow's whole
+bounding area sitting at the ink floor instead of fading out — a visible
+rectangle of dots around the mark. Scaling last takes the floor down with it.
+
+An image texture is field-relative by definition, so `toBackground()` returns
+`null` for one — there is no tile of a photograph that repeats.
+
 ## Bookmarks
 
 Every generated texture is just a **family** (`dither` / `pixels` / `retro`), a
@@ -372,7 +497,8 @@ byte-for-byte.
 pnpm --filter @gavinmcfarland/dither demo
 ```
 
-A gallery of the six fields, walls of auto-generated dither / pixel / retro
+An image dithering bench (drop your own file in, or use a sample, and work
+the controls), a gallery of the six fields, walls of auto-generated dither / pixel / retro
 patterns plus generated grounds and decals (click a tile to reseed it, ☆ to
 bookmark it), a Bookmarked row that persists across reloads, the preset grounds
 and decals, and a surface toggle between `ink` and `bone`.

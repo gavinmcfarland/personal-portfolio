@@ -58,6 +58,25 @@
   .ground-preview p { position: relative; margin: 0; color: var(--mid); font-size: .75rem; }
   .stage .decal-box { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; text-align: center; }
   .stage .decal-box canvas { position: static; }
+  /* Image dither — a control panel beside the before/after pair. */
+  .imgtool { display: grid; grid-template-columns: minmax(220px, 280px) 1fr; gap: 2rem; align-items: start; }
+  @media (max-width: 720px) { .imgtool { grid-template-columns: 1fr; } }
+  .imgctl { display: flex; flex-direction: column; gap: .75rem; }
+  .imgctl label { display: grid; grid-template-columns: 5.5rem 1fr; align-items: center; gap: .6rem; color: var(--mid); font-size: .75rem; }
+  .imgctl select, .imgctl input[type=range] { font: inherit; width: 100%; }
+  .imgctl select { color: var(--ink); background: var(--raise); border: 1px solid var(--line); padding: .25rem .4rem; font-size: .75rem; }
+  .imgctl input[type=range] { accent-color: var(--green); }
+  .imgctl .check { grid-template-columns: 5.5rem 1fr; }
+  .imgctl .check input { justify-self: start; accent-color: var(--green); }
+  .imgctl .val { color: var(--ink); }
+  .drop { border: 1px dashed var(--line); padding: 1rem; text-align: center; color: var(--mid); font-size: .75rem; cursor: pointer; }
+  .drop.over { border-color: var(--green); color: var(--ink); }
+  .samples { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .samples button { padding: .3rem .7rem; font-size: .75rem; }
+  .samples button.on { border-color: var(--green); color: var(--green); }
+  .imgout { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+  .imgout .cell img, .imgout .cell canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); }
+  .imgout .cell canvas { image-rendering: pixelated; }
 </style>
 </head>
 <body>
@@ -69,6 +88,29 @@
       <button id="surface" type="button">surface</button>
     </div>
   </header>
+
+  <h2>Images <span class="n">— a picture or an SVG, redrawn as dots</span></h2>
+  <p class="note">The one family that does not invent its pattern. A screenshot, a photo or an SVG is resampled onto the dot grid — area-averaged, so fine detail becomes tone rather than aliasing — and each cell gets one hard decision. Drop your own file in, or pick a sample.</p>
+  <div class="imgtool">
+    <div class="imgctl">
+      <div class="samples" id="img-samples"></div>
+      <div class="drop" id="img-drop">Drop an image or SVG here, or click to choose</div>
+      <input type="file" id="img-file" accept="image/*,.svg" hidden>
+      <label>style <select id="img-style"></select></label>
+      <label>method <select id="img-method"></select></label>
+      <label>fit <select id="img-fit"></select></label>
+      <label>alpha <select id="img-alpha"></select></label>
+      <label>cell <input type="range" id="img-cell" min="1" max="12" step="1"><span class="val" id="img-cell-v"></span></label>
+      <label>contrast <input type="range" id="img-contrast" min="0.4" max="3" step="0.05"><span class="val" id="img-contrast-v"></span></label>
+      <label>brightness <input type="range" id="img-brightness" min="-0.4" max="0.4" step="0.02"><span class="val" id="img-brightness-v"></span></label>
+      <label>ink floor <input type="range" id="img-lo" min="0" max="0.6" step="0.02"><span class="val" id="img-lo-v"></span></label>
+      <label>ink ceiling <input type="range" id="img-hi" min="0.4" max="1" step="0.02"><span class="val" id="img-hi-v"></span></label>
+      <label>steps <input type="range" id="img-steps" min="0" max="8" step="1"><span class="val" id="img-steps-v"></span></label>
+      <label class="check">auto levels <input type="checkbox" id="img-auto"></label>
+      <label class="check">invert <input type="checkbox" id="img-invert"></label>
+    </div>
+    <div class="imgout" id="img-out"></div>
+  </div>
 
   <h2>Bookmarked <span class="n">— saved in your browser, click ☆ on any generated tile</span></h2>
   <p class="note" id="bookmarks-empty">No bookmarks yet. Click the ☆ under any generated, pixel, or retro tile to save its seed and algorithm here — they persist across reloads.</p>
