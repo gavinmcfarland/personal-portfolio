@@ -25,8 +25,10 @@
     "dev": "vite build --watch",
     "demo": "vite --config vite.demo.config.js",
     "split-css": "node scripts/split-css.mjs",
+    "prepare": "vite build",
     "prepublishOnly": "node scripts/split-css.mjs && vite build"
   },
+  "//": "prepare runs on `pnpm install`, so dist/ (gitignored) exists on a fresh CI checkout before any consumer resolves this package",
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"

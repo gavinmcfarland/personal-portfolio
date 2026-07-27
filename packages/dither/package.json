@@ -17,8 +17,10 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "demo": "vite --config vite.demo.config.js"
+    "demo": "vite --config vite.demo.config.js",
+    "prepare": "vite build"
   },
+  "//": "prepare runs on `pnpm install`, so dist/ (gitignored) exists on a fresh CI checkout before any consumer resolves this package",
   "devDependencies": {
     "vite": "^5.4.21"
   }
