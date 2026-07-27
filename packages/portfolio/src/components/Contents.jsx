@@ -9,7 +9,7 @@ const ENTRIES = [
   { label: "Description", href: "#description", sec: "3" },
   { label: "Examples", href: "#examples", sec: "4" },
   { label: "Capabilities", href: "#capabilities", sec: "5" },
-  { label: "Scratch", href: "#playground", sec: "6" },
+  { label: "Staging", href: "#playground", sec: "6" },
   { label: "Environment", href: "#environment", sec: "7" },
   { label: "Index", href: "#index", sec: "8" },
   { label: "See also", href: "#connect", sec: "9" },

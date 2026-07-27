@@ -62,7 +62,7 @@ const GROUPS = [
   {
     letter: "S",
     entries: [
-      { t: "Scratch", href: "#playground", loc: "§6" },
+      { t: "Staging", href: "#playground", loc: "§6" },
       { t: "Svelte", href: "#capabilities", loc: "§5" },
     ],
   },
