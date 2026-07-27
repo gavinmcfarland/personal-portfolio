@@ -6,9 +6,9 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 126.84001941496456,
-        "y": 447.2294949164131,
-        "scale": 0.6020542695438432
+        "x": 116.99591149990886,
+        "y": 464.32077957453316,
+        "scale": 0.9116842293438391
       },
       "nodes": [
         {
@@ -18,7 +18,7 @@
           "y": -401.6244951555295,
           "z": 2,
           "w": 300,
-          "text": "# Askeroo\n\nThe first stateful CLI that allows back navigation. I created Askeroo after wishing more from the available prompt wizards that were avaiable. I wanted something modular and configurable for different needs."
+          "text": "# Askeroo\n\nThe first stateful CLI that allows back navigation. I created Askeroo after wishing more from the prompt wizards that were avaiable. I wanted something modular and configurable for different needs."
         },
         {
           "id": "note-0",
@@ -347,8 +347,8 @@
     }
   ],
   "viewport": {
-    "w": 760,
-    "h": 977
+    "w": 997,
+    "h": 991
   },
-  "savedAt": 1785103236650
+  "savedAt": 1785181174567
 }

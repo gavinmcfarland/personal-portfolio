@@ -1,5 +1,5 @@
 import DitherVideo from "./DitherVideo";
-import clip from "../assets/dither-source-2.webm";
+import clip from "../assets/avatar.mp4";
 
 /* The opening of the manual: NAME, then DESCRIPTION. SYNOPSIS (the invocation
    with its optional flags) still stands out of the page and is archived on
@@ -13,7 +13,26 @@ import clip from "../assets/dither-source-2.webm";
 
 /* The clip beside the name. What ships is the SOURCE recording; the dither is
    re-cut live at the size this box is, every frame (see DitherVideo.jsx), so
-   the dots stay square at 100px and would stay square at any other size. */
+   the dots stay square at 100px and would stay square at any other size.
+
+   SOURCE still means source, but not the camera's original. The master is
+   `dither-source-2.webm` — 720×540, 3.4MB, ten seconds off a webcam — and it
+   was shipped whole to draw a fifty-dot square, which is the first thing a
+   visitor waited on. What ships now is a derivative cut to the job: the same
+   centre square the `cover` fit was already showing, at the resolution the
+   dot grid can actually spend, and as H.264 rather than VP9 so the Safaris
+   that never learned to read WebM stop drawing an empty box. 50KB.
+
+   Regenerate from the master with:
+
+     ffmpeg -i src/assets/dither-source-2.webm -an \
+       -vf "crop=540:540:90:0,scale=240:240:flags=lanczos,fps=24" \
+       -c:v libx264 -profile:v baseline -pix_fmt yuv420p -crf 30 -g 48 \
+       -movflags +faststart src/assets/avatar.mp4
+
+   240 is not arbitrary: it is `raster` below, so a frame is read back at the
+   size it was stored and nothing is resampled twice. Raise one and raise the
+   other. */
 
 const Intro = () => (
   <header className="pt-(--sp-12) sm:pt-(--sp-16)">
@@ -32,6 +51,7 @@ const Intro = () => (
         method="floyd"
         fit="cover"
         fps={8}
+        raster={240}
         contrast={1.2}
         range={[0.12, 0.92]}
         autoLevels

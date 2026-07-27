@@ -46,11 +46,27 @@ const RANGE = [0.08, 0.9];
    that is not visible through a dot grid this coarse. */
 const FPS = 15;
 
+/* How much of each frame is read back, in px on the long edge, before it is
+   averaged down into cells. 480 is the engine's own default and stays the
+   default here; it is sized for a player filling a wide box, where 480 is
+   the frame and the readback is honest work.
+
+   It is worth setting on a chip. A player 100px wide at `cell` 2 decides
+   fifty dots across, and reading 480px to average them down to fifty costs
+   nine times the pixels for detail that is thrown away in the same pass —
+   every frame, for as long as the clip is on screen. Match it to the source
+   and each frame is read at the size it was stored.
+
+   Mount-time only: `grab()` closes over it when the clip opens, so unlike
+   every other option here a later change does not take. */
+const RASTER = 480;
+
 export default function DitherVideo({
   src,
   className = "",
   cell = CELL,
   fps = FPS,
+  raster = RASTER,
   method = "bayer",
   fit = "cover",
   range = RANGE,
@@ -78,6 +94,7 @@ export default function DitherVideo({
     () => ({
       cell,
       fps,
+      raster,
       method,
       fit,
       range: [lo, hi],
@@ -90,7 +107,7 @@ export default function DitherVideo({
       ...(style ? { style } : {}),
       palette: paletteFor(theme),
     }),
-    [cell, fps, method, fit, lo, hi, contrast, brightness, steps, autoLevels, background, style, theme],
+    [cell, fps, raster, method, fit, lo, hi, contrast, brightness, steps, autoLevels, background, style, theme],
   );
 
   // Retune in place. Declared first so the ref is current before the mount
