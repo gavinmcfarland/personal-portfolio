@@ -1,3 +1,6 @@
+import DitherVideo from "./DitherVideo";
+import clip from "../assets/dither-source-2.webm";
+
 /* The opening of the manual: NAME, then DESCRIPTION. SYNOPSIS (the invocation
    with its optional flags) still stands out of the page and is archived on
    /backup.
@@ -8,12 +11,33 @@
    the name alone: no `gavin —` command alias, no whatis gloss. DESCRIPTION says
    what the work is on the very next line, so a gloss here only said it twice. */
 
+/* The clip beside the name. What ships is the SOURCE recording; the dither is
+   re-cut live at the size this box is, every frame (see DitherVideo.jsx), so
+   the dots stay square at 100px and would stay square at any other size. */
+
 const Intro = () => (
   <header className="pt-(--sp-12) sm:pt-(--sp-16)">
-    <h2 id="name" className="section-label">
-      NAME
-    </h2>
-    <p className="indent rise d1">Gavin McFarland</p>
+    {/* No NAME label, and flush to the content column rather than hung at the
+        indent stop — the clip and the name are the masthead, not a section
+        body. The `id` moves here off the deleted heading so CONTENTS' §1 link
+        still lands, and takes the scroll offset the label used to carry. */}
+    <div
+      id="name"
+      className="rise d1 flex items-center gap-(--sp-4) scroll-mt-(--sp-16)"
+    >
+      <DitherVideo
+        src={clip}
+        className="size-[100px] shrink-0 -scale-x-100"
+        cell={2}
+        method="floyd"
+        fit="cover"
+        fps={8}
+        contrast={1.2}
+        range={[0.12, 0.92]}
+        autoLevels
+      />
+      <p>Gavin McFarland</p>
+    </div>
 
     <h2 id="description" className="section-label">
       DESCRIPTION

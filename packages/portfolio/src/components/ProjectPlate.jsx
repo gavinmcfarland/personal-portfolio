@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { ditherImage, loadLuma } from "@gavinmcfarland/dither";
 import { artFor } from "../data/projectArt";
 import { useTheme } from "../contexts/ThemeContext";
+import { paletteFor } from "../lib/ditherPalette";
 
 /* The abstract plate on a project row — the project's own SVG artwork (see
    src/data/projectArt.js) redrawn by @gavinmcfarland/dither as square dots on
@@ -17,33 +18,6 @@ import { useTheme } from "../contexts/ThemeContext";
    Painted into a <canvas> at that size rather than scaled from a fixed bitmap,
    so every square dot lands on a whole device pixel at any column width — the
    package's whole doctrine is that a dot is never sliced. */
-
-/* The engine paints with named inks, so the plate re-tints with the page by
-   handing it an Enamel palette rather than one of the package's own. The ink
-   STRENGTHS are the package's (`tx-solid` at ~0.7, the value the dither demo
-   renders these patterns at) so the plate reads with the contrast it was
-   picked at; only the hues are ours — bone ink on graphite, graphite on steel.
-
-   The palette also decides polarity: the package reads the surface it is
-   painting onto and, on a dark one, flips a dot to stand for a BRIGHT part of
-   the picture rather than a dark one. So the same artwork prints as a positive
-   in both themes instead of coming back as its own negative in one. */
-const PALETTES = {
-  light: {
-    bg: "#c3c8cd",
-    tx: "rgba(22, 25, 28, 0.22)",
-    "tx-strong": "rgba(22, 25, 28, 0.38)",
-    "tx-ground": "rgba(22, 25, 28, 0.10)",
-    "tx-solid": "rgba(22, 25, 28, 0.70)",
-  },
-  dark: {
-    bg: "#111110",
-    tx: "rgba(235, 231, 220, 0.22)",
-    "tx-strong": "rgba(235, 231, 220, 0.40)",
-    "tx-ground": "rgba(235, 231, 220, 0.085)",
-    "tx-solid": "rgba(235, 231, 220, 0.72)",
-  },
-};
 
 /* Dot pitch in CSS px — the biggest single look control. At 3 a 30rem plate is
    ~160 dots across: coarse enough to read as print, fine enough that the
@@ -109,7 +83,7 @@ export default function ProjectPlate({ id, className = "" }) {
         // it honest if one is ever redrawn flatter than the rest.
         autoLevels: true,
         range: RANGE,
-        palette: PALETTES[theme] || PALETTES.dark,
+        palette: paletteFor(theme),
         // Transparent, so the plate sits on the page ground the way the
         // mockup's bordered plate does.
         background: null,

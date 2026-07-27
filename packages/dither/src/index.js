@@ -24,6 +24,7 @@ import { bookmarks } from './bookmarks.js';
 import { generateCompositionSpec } from './compose.js';
 import { generateGroundLayers, groundArchetypes, generateDecalSpec, decalArchetypes, generateRetroDecalSpec, generateIconSpec, generateDitherIconSpec, iconShapeNames } from './furniture.js';
 import { imageSpec, loadLuma, toLuma, openCamera, ditherMethods, imageStyles, alphaModes } from './image.js';
+import { ditherVideo, DitherVideoPlayer, openVideo, record, download, pickVideoMime, extensionFor } from './video.js';
 import { seedLabel } from './rng.js';
 
 const isBrowser = typeof document !== 'undefined';
@@ -263,6 +264,20 @@ export async function ditherImageFrom(source, options = {}) {
   return ditherImage(await loadLuma(source, options), options);
 }
 
+/* ── Video ────────────────────────────────────────────────────────────
+   The image family, moving. `record` takes a clip off the camera (or bakes
+   the dithered canvas itself into a file); `ditherVideo` plays a clip back
+   as dots, live, at whatever size the box it is mounted in happens to be —
+   so one clip serves a thumbnail and a full-bleed header, both crisp,
+   because the dot grid is re-cut rather than scaled.
+
+   ```js
+   const take = record(await openCamera(), { seconds: 4 });
+   const clip = await take.done;                 // { blob, url, extension … }
+
+   ditherVideo(clip.url, { cell: 3, palette: 'ink' }).mount(box);
+   ``` */
+
 /* Every generated texture carries the three things a bookmark needs to grow
    it again: its family, its seed, and the archetype the seed resolved to. */
 function tag(tex, family, seed, archetype) {
@@ -315,6 +330,13 @@ export {
   loadLuma,
   toLuma,
   openCamera,
+  ditherVideo,
+  DitherVideoPlayer,
+  openVideo,
+  record,
+  download,
+  pickVideoMime,
+  extensionFor,
   ditherMethods,
   imageStyles,
   alphaModes,

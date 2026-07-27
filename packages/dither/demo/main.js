@@ -1,4 +1,4 @@
-import { field, ground, decal, generate, pixels, retro, generateGround, generateDecal, generateRetroDecal, generateIcon, generateDitherIcon, generateOrganicComposition, generateDitherComposition, regenerate, bookmarks, fieldMeta, grounds, decals, ditherImage, loadLuma, openCamera, ditherMethods, imageStyles, alphaModes } from '../src/index.js';
+import { field, ground, decal, generate, pixels, retro, generateGround, generateDecal, generateRetroDecal, generateIcon, generateDitherIcon, generateOrganicComposition, generateDitherComposition, regenerate, bookmarks, fieldMeta, grounds, decals, ditherImage, loadLuma, openCamera, ditherMethods, imageStyles, alphaModes, ditherVideo, record, download, pickVideoMime } from '../src/index.js';
 
 /* Which surface — the dark terminal or the printed "bone" sheet. Every
    texture re-tints from this one value, exactly as the CSS does. */
@@ -378,6 +378,14 @@ function takeFile(file) {
   loadImageSource(file, url);
 }
 
+/* Every control below tunes the still AND anything the video section is
+   looping — they are the same options, so the sliders stay the one place the
+   look is decided. */
+function optionsChanged() {
+  drawImage();
+  syncVideo();
+}
+
 function bindImageControls() {
   fillSelect($('img-style'), imageStyles, imageOpts.style);
   fillSelect($('img-method'), ditherMethods, imageOpts.method);
@@ -394,14 +402,14 @@ function bindImageControls() {
     el.addEventListener('input', () => {
       imageOpts[key] = parseFloat(el.value);
       sync();
-      drawImage();
+      optionsChanged();
     });
     sync();
   };
 
-  $('img-style').addEventListener('change', (e) => { imageOpts.style = e.target.value; drawImage(); });
-  $('img-method').addEventListener('change', (e) => { imageOpts.method = e.target.value; drawImage(); });
-  $('img-fit').addEventListener('change', (e) => { imageOpts.fit = e.target.value; drawImage(); });
+  $('img-style').addEventListener('change', (e) => { imageOpts.style = e.target.value; optionsChanged(); });
+  $('img-method').addEventListener('change', (e) => { imageOpts.method = e.target.value; optionsChanged(); });
+  $('img-fit').addEventListener('change', (e) => { imageOpts.fit = e.target.value; optionsChanged(); });
   range('img-cell', 'cell', (v) => `${v}px`);
   range('img-contrast', 'contrast', (v) => v.toFixed(2));
   range('img-brightness', 'brightness', (v) => (v > 0 ? '+' : '') + v.toFixed(2));
@@ -410,10 +418,10 @@ function bindImageControls() {
   range('img-steps', 'steps', (v) => (v > 1 ? `${v} levels` : 'off'));
 
   $('img-auto').checked = imageOpts.autoLevels;
-  $('img-auto').addEventListener('change', (e) => { imageOpts.autoLevels = e.target.checked; drawImage(); });
+  $('img-auto').addEventListener('change', (e) => { imageOpts.autoLevels = e.target.checked; optionsChanged(); });
   // Unchecked means "let the palette decide", which is the useful default.
-  $('img-invert').addEventListener('change', (e) => { imageOpts.invert = e.target.checked ? true : undefined; drawImage(); });
-  $('img-alpha').addEventListener('change', (e) => { imageOpts.alpha = e.target.value; drawImage(); });
+  $('img-invert').addEventListener('change', (e) => { imageOpts.invert = e.target.checked ? true : undefined; optionsChanged(); });
+  $('img-alpha').addEventListener('change', (e) => { imageOpts.alpha = e.target.value; optionsChanged(); });
 
   const drop = $('img-drop');
   const file = $('img-file');
@@ -429,6 +437,278 @@ function bindImageControls() {
 
   drawSampleButtons();
   loadImageSource(SAMPLES[0].src, SAMPLES[0].src);
+}
+
+/* ── Video ────────────────────────────────────────────────────────────
+   A take off the camera, kept as its SOURCE clip and re-dithered live at
+   three sizes at once. The three boxes are the argument: one file, three
+   different pixel dimensions, and the dots come out the same size in all of
+   them, because each player cuts its own grid at its own size rather than
+   scaling a picture of somebody else's.
+
+   The look is not a separate set of controls — it is `imageOpts`, the same
+   object the still above reads, so tuning the sliders retunes the loops. */
+
+const vidOpts = { seconds: 4, fps: 15 };
+
+/* The three cuts, coarsest last so the banner leads. */
+const VIDEO_CUTS = [
+  { className: 'vidbox vid-banner', label: 'banner — full width' },
+  { className: 'vidbox vid-square', label: '200 × 200' },
+  { className: 'vidbox vid-chip', label: '96px, round' },
+];
+
+let clip = null; // { url, blob, extension, seconds }
+let players = [];
+let take = null; // a recording in progress
+let takeTimer = 0;
+// Held rather than looked up: showClip() empties the host, which detaches it.
+const vidEmpty = $('vid-empty');
+
+/* Everything `ditherImage` is being given upstairs, plus the playback-only
+   options. `alpha` is forced to flatten: a camera frame has no transparency,
+   and a cutout mode would only throw away the darks. */
+function videoOptions() {
+  return {
+    style: imageOpts.style,
+    method: imageOpts.method,
+    fit: imageOpts.fit,
+    cell: imageOpts.cell,
+    contrast: imageOpts.contrast,
+    brightness: imageOpts.brightness,
+    range: [imageOpts.lo, imageOpts.hi],
+    steps: imageOpts.steps,
+    autoLevels: imageOpts.autoLevels,
+    invert: imageOpts.invert,
+    alpha: 'flatten',
+    palette,
+    fps: vidOpts.fps,
+  };
+}
+
+function syncVideo() {
+  const opts = videoOptions();
+  for (const p of players) p.update(opts);
+  writeSnippet();
+}
+
+function tearDownPlayers() {
+  for (const p of players) p.destroy();
+  players = [];
+}
+
+/* Mount the current clip into the three boxes. */
+function showClip() {
+  tearDownPlayers();
+  const host = $('vid-out');
+  host.replaceChildren();
+  if (!clip) {
+    host.append(vidEmpty);
+    return;
+  }
+
+  const opts = videoOptions();
+  const row = document.createElement('div');
+  row.className = 'vid-row';
+
+  VIDEO_CUTS.forEach((cut, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const box = document.createElement('div');
+    box.className = cut.className;
+    const cap = document.createElement('p');
+    cap.className = 'cap';
+    cap.innerHTML = `<b>${cut.label}</b>`;
+    cell.append(box, cap);
+    (i === 0 ? host : row).append(cell);
+    players.push(ditherVideo(clip.url, opts).mount(box));
+  });
+
+  host.append(row);
+  writeSnippet();
+}
+
+function setStatus(text) {
+  $('vid-status').textContent = text;
+}
+
+/* ── Taking one ─────────────────────────────────────────────────────── */
+async function startTake() {
+  // The camera is the source; open it if the Images section has not.
+  if (!camera) {
+    await startCamera();
+    if (!camera) return; // denied, or no device — startCamera has said so
+  }
+
+  let handle;
+  try {
+    handle = record(camera, { seconds: vidOpts.seconds, fps: vidOpts.fps });
+  } catch (err) {
+    setStatus(err.message);
+    return;
+  }
+  take = handle;
+  drawVideoActions();
+
+  takeTimer = setInterval(() => setStatus(`Recording… ${handle.elapsed().toFixed(1)}s`), 100);
+
+  try {
+    const result = await handle.done;
+    if (clip) clip.revoke();
+    clip = result;
+    setStatus(`${result.seconds.toFixed(1)}s · ${(result.blob.size / 1024).toFixed(0)} KB · .${result.extension}`);
+    showClip();
+  } catch (err) {
+    setStatus(`Recording failed — ${err.message}`);
+  } finally {
+    clearInterval(takeTimer);
+    take = null;
+    drawVideoActions();
+    drawVideoExports();
+  }
+}
+
+/* A clip that was never recorded here — a file off disk. Same path from
+   here on: it is only ever a source of frames. */
+function takeVideoFile(file) {
+  if (!file) return;
+  if (clip) clip.revoke();
+  const url = URL.createObjectURL(file);
+  const named = /\.([a-z0-9]{2,4})$/i.exec(file.name);
+  clip = {
+    url,
+    blob: file,
+    extension: named ? named[1].toLowerCase() : 'webm',
+    seconds: 0,
+    revoke: () => URL.revokeObjectURL(url),
+  };
+  setStatus(`${file.name} · ${(file.size / 1024).toFixed(0)} KB`);
+  showClip();
+  drawVideoExports();
+}
+
+/* ── Exports ────────────────────────────────────────────────────────── */
+
+/* Bake the effect into a file. Only worth it where something else has to
+   play the clip and cannot run the engine — an email, a slide, a CMS. It
+   fixes the dot grid at the banner's current size, which is exactly the
+   limitation the live player exists to avoid, so it says so. */
+async function bakeClip() {
+  const player = players[0];
+  if (!player) return;
+  const seconds = clip.seconds || player.video.duration || 4;
+  player.video.currentTime = 0;
+  const handle = record(player.canvas, { seconds, fps: vidOpts.fps });
+  setStatus(`Baking one pass at ${player.width}×${player.height}…`);
+  const baked = await handle.done;
+  download(baked.blob, `dither-baked.${baked.extension}`);
+  baked.revoke();
+  setStatus(`Baked ${baked.seconds.toFixed(1)}s at ${player.width}×${player.height} — fixed dots, do not resize.`);
+}
+
+function drawVideoActions() {
+  const host = $('vid-actions');
+  host.replaceChildren();
+
+  const rec = document.createElement('button');
+  rec.type = 'button';
+  if (take) {
+    rec.textContent = 'stop';
+    rec.className = 'vid-rec';
+    rec.addEventListener('click', () => take.stop());
+  } else {
+    rec.textContent = camera ? `record ${vidOpts.seconds}s` : `camera · record ${vidOpts.seconds}s`;
+    rec.addEventListener('click', startTake);
+  }
+  host.append(rec);
+
+  const pick = document.createElement('button');
+  pick.type = 'button';
+  pick.textContent = 'use a video file';
+  pick.addEventListener('click', () => $('vid-file').click());
+  host.append(pick);
+}
+
+function drawVideoExports() {
+  const host = $('vid-exports');
+  host.replaceChildren();
+  if (!clip) return;
+
+  const src = document.createElement('button');
+  src.type = 'button';
+  src.textContent = `download source .${clip.extension}`;
+  src.title = 'The clip itself — this is the one to put in the portfolio';
+  src.addEventListener('click', () => download(clip.blob, `dither-source.${clip.extension}`));
+
+  const baked = document.createElement('button');
+  baked.type = 'button';
+  baked.textContent = 'download baked';
+  baked.title = 'The dots themselves, as a video — fixed size, for players that cannot run the engine';
+  baked.addEventListener('click', bakeClip);
+
+  host.append(src, baked);
+}
+
+/* The code that puts this clip on a page, with the settings as tuned. */
+function writeSnippet() {
+  const el = $('vid-snippet');
+  if (!clip) {
+    el.hidden = true;
+    return;
+  }
+  const o = videoOptions();
+  const props = [
+    `src={clip}`,
+    `cell={${o.cell}}`,
+    `method="${o.method}"`,
+    o.style !== 'dither' ? `style="${o.style}"` : '',
+    `fit="${o.fit}"`,
+    `fps={${o.fps}}`,
+    `contrast={${o.contrast}}`,
+    o.brightness ? `brightness={${o.brightness}}` : '',
+    `range={[${o.range[0]}, ${o.range[1]}]}`,
+    o.steps ? `steps={${o.steps}}` : '',
+    o.autoLevels ? `autoLevels` : '',
+  ].filter(Boolean);
+
+  el.hidden = false;
+  el.textContent = [
+    `import DitherVideo from "../components/DitherVideo";`,
+    `import clip from "../assets/dither/my-take.${clip.extension}";`,
+    ``,
+    `<DitherVideo`,
+    ...props.map((p) => `  ${p}`),
+    `  className="w-full aspect-[16/5]"`,
+    `/>`,
+  ].join('\n');
+}
+
+function bindVideoControls() {
+  // Null means no MediaRecorder at all; an empty string means it will record
+  // but would not say what in, which is fine.
+  if (pickVideoMime() === null) {
+    setStatus('This browser cannot record video (no MediaRecorder) — you can still drop a video file in.');
+  }
+
+  const range = (id, key, fmt, after) => {
+    const el = $(id);
+    const out = $(id + '-v');
+    el.value = vidOpts[key];
+    const sync = () => { out.textContent = fmt(vidOpts[key]); };
+    el.addEventListener('input', () => {
+      vidOpts[key] = parseFloat(el.value);
+      sync();
+      if (after) after();
+    });
+    sync();
+  };
+  range('vid-seconds', 'seconds', (v) => `${v}s`, drawVideoActions);
+  range('vid-fps', 'fps', (v) => `${v}/s`, syncVideo);
+
+  $('vid-file').addEventListener('change', (e) => takeVideoFile(e.target.files[0]));
+
+  drawVideoActions();
+  drawVideoExports();
 }
 
 /* ── Orchestration ───────────────────────────────────────────────────── */
@@ -459,6 +739,7 @@ function drawSeeded() {
 
 function drawAll() {
   drawImage();
+  syncVideo();
   drawBookmarks();
   drawFields();
   drawSeeded();
@@ -493,4 +774,5 @@ document.getElementById('surface').addEventListener('click', () => {
 });
 
 bindImageControls();
+bindVideoControls();
 drawAll();

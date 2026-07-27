@@ -489,6 +489,107 @@ rectangle of dots around the mark. Scaling last takes the floor down with it.
 An image texture is field-relative by definition, so `toBackground()` returns
 `null` for one — there is no tile of a photograph that repeats.
 
+## Video
+
+The image family, moving: record a clip, then loop it back as dots — live, at
+whatever size the box it is mounted in happens to be.
+
+```js
+import { openCamera, record, ditherVideo } from '@gavinmcfarland/dither';
+
+const take = record(await openCamera(), { seconds: 4 });
+const clip = await take.done;    // { blob, url, mime, extension, seconds, revoke }
+
+ditherVideo(clip.url, { cell: 3, palette: 'ink' }).mount(box);
+```
+
+### Keep the source, not the dots
+
+The clip that gets kept is the **source** — the camera's own frames — and the
+dither is re-cut on every frame at the element's current size. That is the
+whole design, and the reason not to just record the dithered canvas to a file:
+
+- **Any size, one file.** A recording of the effect is a bitmap of square
+  dots, and a bitmap of square dots is the one thing that cannot be resized.
+  Scale it up and every dot blurs or doubles unevenly; scale it down and the
+  grid moirés against itself. Re-cutting means a 96px chip and a full-bleed
+  banner take the same clip and come out with the dots the *same size* in
+  both.
+- **It follows the page.** Palette, dot pitch, contrast, method — all of it is
+  live, so the texture flips with the theme. A baked file cannot.
+- **It is smaller.** A 480p source clip compresses; a screenful of hard-edged
+  1-bit noise defeats an inter-frame codec.
+
+`ditherVideo` takes everything `ditherImage` takes, meaning the same thing,
+plus:
+
+| option | | |
+| --- | --- | --- |
+| `fps` | `15` | repaint ceiling. A 1-bit texture reads as film at twelve; sixty costs four times as much for a difference you cannot see through a dot grid |
+| `scale` | `1` | device-pixel ratio. One is right for the `dither` style, whose mark fills the whole cell: there is no sub-cell detail to lose, so a canvas at CSS size shown through `image-rendering: pixelated` is identical to one rendered at 2× and costs a quarter as much. Raise it for `halftone`, whose marks *do* have structure inside the cell |
+| `autoplay` | `true` | pause when scrolled out of view or the tab is hidden — nothing is dithered while nobody is looking |
+| `respectReducedMotion` | `true` | under `prefers-reduced-motion`, paint one frame and hold it |
+| `loop` | `true` | |
+| `onFrame` | | called after each paint |
+
+The player:
+
+```js
+const player = ditherVideo(src, opts);
+player.mount(host);            // fills the host, follows it as it resizes
+player.resize(w, h);           // …or size it yourself
+player.update({ palette });    // retune in place — no re-decode
+player.start(); player.stop();
+player.destroy();
+await player.ready;            // resolves once the clip has loaded
+player.canvas;  player.video;  // the canvas it paints, the <video> it reads
+```
+
+Use `bayer` (the default). Its threshold map is fixed in space, so a cell that
+did not change keeps its dot; an error-diffusion kernel decides each cell from
+the error carried out of the one before it, so a hair of movement re-decides
+the whole grid and the texture **boils** — dots crawling in passages that never
+moved. The same fixedness is what lets one clip be cut at any size and stay
+recognisably itself.
+
+### Recording
+
+`record(source, opts)` takes a camera handle, a `<canvas>`, a `<video>` or any
+`MediaStream`:
+
+```js
+const take = record(await openCamera(), { seconds: 4, fps: 30 });
+take.elapsed();                  // seconds so far, for a counter
+take.stop();                     // or let `seconds` end it
+const clip = await take.done;
+download(clip.blob, `take.${clip.extension}`);
+```
+
+The container is whatever the browser will write — Chrome and Firefox give you
+WebM, Safari gives you MP4 — so `clip.extension` is what to name the file, and
+both play anywhere a `<video>` does. `pickVideoMime()` returns the chosen type,
+or `null` if the browser cannot record at all.
+
+Pointing `record` at a **player's own canvas** bakes the effect into a file
+instead. That is the right call only when something that cannot run the engine
+has to play it — an email, a slide, a CMS — because it fixes the dot grid at
+one size, which is the whole limitation the live player exists to avoid.
+
+```js
+const baked = await record(player.canvas, { seconds: 4 }).done;
+```
+
+### Playing a clip you already have
+
+`openVideo` is the video twin of `loadLuma` — it returns the same
+`{ video, grab, stop }` shape `openCamera` does, so a file and a device are
+interchangeable everywhere downstream:
+
+```js
+const clip = await openVideo('/take.webm');
+ditherImage(clip.grab(), { cell: 3 }).render(canvas);   // one frame, as a still
+```
+
 ## Bookmarks
 
 Every generated texture is just a **family** (`dither` / `pixels` / `retro`), a
@@ -533,7 +634,14 @@ pnpm --filter @gavinmcfarland/dither demo
 ```
 
 An image dithering bench (drop your own file in, use a sample, or turn on the
-camera, and work the controls), a gallery of the six fields, walls of auto-generated dither / pixel / retro
+camera, and work the controls), a video bench that records a take off that same
+camera and loops it back at three sizes at once, a gallery of the six fields,
+walls of auto-generated dither / pixel / retro
 patterns plus generated grounds and decals (click a tile to reseed it, ☆ to
 bookmark it), a Bookmarked row that persists across reloads, the preset grounds
 and decals, and a surface toggle between `ink` and `bone`.
+
+The video bench shares the image bench's controls, so the sliders tune the
+still and the loops together. It offers two downloads: the **source** clip —
+the one to put in a project — and a **baked** one, for the cases where the
+engine cannot run.
