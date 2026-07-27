@@ -97,7 +97,10 @@ const Projects = () => (
           {/* TEMP: plates commented out — restore the grid classes below with
               `grid gap-4 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-10`
               when the <ProjectPlate> goes back in. */}
-          <div className="mt-(--sp-1) flex items-center justify-between gap-4 pl-4">
+          {/* Hangs at `--stop`, the same three-character step the section body
+              takes off its flush <h2> — so an entry's summary sits under its
+              title exactly as a section's body sits under its heading. */}
+          <div className="mt-(--sp-1) flex items-center justify-between gap-4 pl-(--stop)">
             {/* <ProjectPlate id={p.id} className="h-[10rem] lg:h-[13rem]" /> */}
             <p className="min-w-0 max-w-measure text-muted">{p.summary}</p>
             <Chevron />
