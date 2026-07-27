@@ -26,12 +26,16 @@ const ProjectPage = lazy(() => import("./pages/ProjectPage"));
 const CollisionDemoPage = lazy(() => import("./pages/CollisionDemoPage"));
 // const CV = lazy(() => import("./pages/CV")); // CV page disabled — not public yet
 const PrivatePage = lazy(() => import("./pages/PrivatePage"));
-const ExamplesIndex = lazy(() => import("./pages/examples/ExamplesIndex"));
-const CaseStudy = lazy(() => import("./pages/examples/CaseStudy"));
-const Changelog = lazy(() => import("./pages/examples/Changelog"));
-const Colophon = lazy(() => import("./pages/examples/Colophon"));
+// The /examples/* prototype pages are disabled — the files are kept, but
+// nothing routes to them. Re-enable by restoring these imports and the routes
+// below.
+// const ExamplesIndex = lazy(() => import("./pages/examples/ExamplesIndex"));
+// const CaseStudy = lazy(() => import("./pages/examples/CaseStudy"));
+// const Changelog = lazy(() => import("./pages/examples/Changelog"));
+// const Colophon = lazy(() => import("./pages/examples/Colophon"));
 const Backup = lazy(() => import("./pages/Backup"));
-const Specimen = lazy(() => import("./pages/Specimen"));
+// Specimen disabled alongside /examples/* — page kept, route removed.
+// const Specimen = lazy(() => import("./pages/Specimen"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 /* Resolve the :id param to a project, or render the 404 page. Draft projects
@@ -176,16 +180,19 @@ function App() {
                 <Routes location={overlayLoc}>
                   <Route path="/projects/:id" element={<ProjectRoute />} />
                   <Route path="/responsive" element={<CollisionDemoPage />} />
-                  <Route path="/examples" element={<ExamplesIndex />} />
-                  <Route path="/examples/plugma" element={<CaseStudy />} />
-                  <Route path="/examples/changelog" element={<Changelog />} />
-                  <Route path="/examples/colophon" element={<Colophon />} />
+                  {/* /examples/* disabled — pages kept, routes removed, so
+                    these paths fall through to Not Found below. Re-enable by
+                    restoring the imports above and these routes. */}
+                  {/* <Route path="/examples" element={<ExamplesIndex />} /> */}
+                  {/* <Route path="/examples/plugma" element={<CaseStudy />} /> */}
+                  {/* <Route path="/examples/changelog" element={<Changelog />} /> */}
+                  {/* <Route path="/examples/colophon" element={<Colophon />} /> */}
                   {/* Unlisted archive of seven Home sections — nothing links
                     here, and the page is noindex. */}
                   <Route path="/backup" element={<Backup />} />
-                  {/* Unlisted reference sheet for the Enamel system — also
-                    noindex. Nothing links here either. */}
-                  <Route path="/specimen" element={<Specimen />} />
+                  {/* Unlisted reference sheet for the Enamel system. Disabled
+                    — page kept, route removed. */}
+                  {/* <Route path="/specimen" element={<Specimen />} /> */}
                   {/* CV page disabled — not public yet. Re-enable by restoring
                     the import above and this route. */}
                   {/* <Route path="/cv" element={<CV />} /> */}
