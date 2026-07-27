@@ -367,6 +367,19 @@ p + .footnotes {
   margin-top: var(--sp-4);
 }
 
+/* The line that closes the page — roff's page footer, where the source and date
+   sit under the last section. 11px and faint: the smallest, quietest register on
+   the site, a step below the footnotes. No rule above it; the space does that
+   work, the same way every other group here is separated by distance alone — the
+   same step a section head takes at sm+, since it closes the document rather
+   than opening another group. Flush to the content column, not hung at the
+   indent stop: it belongs to no section, so it has no head to hang from. */
+.colophon {
+  margin-top: var(--sp-16);
+  font-size: var(--text-1);
+  color: var(--faint);
+}
+
 /* Section heading — a man-page section name: uppercase, tracked, monospace, and
    flush to the content column while its body hangs at the indent stop.
 

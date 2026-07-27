@@ -136,6 +136,13 @@ const Home = () => {
       </p>
 
       <Connect />
+
+      {/* Closes the page the way a man page closes: a single quiet line, flush
+          to the content column since it belongs to no section. The year is read
+          at render so it never goes stale. */}
+      <p className="colophon reveal">
+        © {new Date().getFullYear()} Gavin McFarland
+      </p>
     </main>
   </>
   );
