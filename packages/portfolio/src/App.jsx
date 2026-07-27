@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import {
   Routes,
   Route,
@@ -10,18 +10,29 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import ThemeToggle from "./components/ThemeToggle";
 import CanvasMaximizeToggle from "./components/CanvasMaximizeToggle";
 import Home from "./pages/Home";
-import ProjectPage from "./pages/ProjectPage";
-import CollisionDemoPage from "./pages/CollisionDemoPage";
-// import CV from "./pages/CV"; // CV page disabled — not public yet
-import PrivatePage from "./pages/PrivatePage";
-import ExamplesIndex from "./pages/examples/ExamplesIndex";
-import CaseStudy from "./pages/examples/CaseStudy";
-import Changelog from "./pages/examples/Changelog";
-import Colophon from "./pages/examples/Colophon";
-import Backup from "./pages/Backup";
-import Specimen from "./pages/Specimen";
-import NotFound from "./pages/NotFound";
 import { visibleProjects } from "./data/projects";
+
+/* Home is the only page that loads with the app. Everything below renders in
+   the sliding panel (or, for a private page, replaces the document), and none
+   of it is mounted until a route asks for it — so none of it needs to be in
+   the bundle that Home is waiting on. Several of these pull the canvas engine
+   in with them, which is why the split is worth more than the page weights
+   suggest.
+
+   Imported as `lazy` rather than eagerly: the panel already mounts on a
+   frame delay and slides for 340ms, so a chunk fetched on the same click
+   normally arrives while it is still moving. */
+const ProjectPage = lazy(() => import("./pages/ProjectPage"));
+const CollisionDemoPage = lazy(() => import("./pages/CollisionDemoPage"));
+// const CV = lazy(() => import("./pages/CV")); // CV page disabled — not public yet
+const PrivatePage = lazy(() => import("./pages/PrivatePage"));
+const ExamplesIndex = lazy(() => import("./pages/examples/ExamplesIndex"));
+const CaseStudy = lazy(() => import("./pages/examples/CaseStudy"));
+const Changelog = lazy(() => import("./pages/examples/Changelog"));
+const Colophon = lazy(() => import("./pages/examples/Colophon"));
+const Backup = lazy(() => import("./pages/Backup"));
+const Specimen = lazy(() => import("./pages/Specimen"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 /* Resolve the :id param to a project, or render the 404 page. Draft projects
    are excluded from `visibleProjects`, so their URLs return Not Found too. */
@@ -95,9 +106,11 @@ function App() {
   if (location.pathname.startsWith("/private/")) {
     return (
       <ThemeProvider>
-        <Routes>
-          <Route path="/private/:id" element={<PrivatePage />} />
-        </Routes>
+        <Suspense fallback={null}>
+          <Routes>
+            <Route path="/private/:id" element={<PrivatePage />} />
+          </Routes>
+        </Suspense>
       </ThemeProvider>
     );
   }
@@ -155,24 +168,30 @@ function App() {
                   viewport), so it slides in and out with the page — and it
                   stays pinned to the corner while the panel's content scrolls. */}
               <ThemeToggle className="fixed right-[22px] top-[max(22px,calc(env(safe-area-inset-top)+12px))] z-50" />
-              <Routes location={overlayLoc}>
-                <Route path="/projects/:id" element={<ProjectRoute />} />
-                <Route path="/responsive" element={<CollisionDemoPage />} />
-                <Route path="/examples" element={<ExamplesIndex />} />
-                <Route path="/examples/plugma" element={<CaseStudy />} />
-                <Route path="/examples/changelog" element={<Changelog />} />
-                <Route path="/examples/colophon" element={<Colophon />} />
-                {/* Unlisted archive of seven Home sections — nothing links
+              {/* The panel is what the reader is watching arrive, so an empty
+                  one for the frames a chunk takes reads as the slide, not as a
+                  gap. A spinner here would announce a wait that is usually
+                  over before it could finish appearing. */}
+              <Suspense fallback={null}>
+                <Routes location={overlayLoc}>
+                  <Route path="/projects/:id" element={<ProjectRoute />} />
+                  <Route path="/responsive" element={<CollisionDemoPage />} />
+                  <Route path="/examples" element={<ExamplesIndex />} />
+                  <Route path="/examples/plugma" element={<CaseStudy />} />
+                  <Route path="/examples/changelog" element={<Changelog />} />
+                  <Route path="/examples/colophon" element={<Colophon />} />
+                  {/* Unlisted archive of seven Home sections — nothing links
                     here, and the page is noindex. */}
-                <Route path="/backup" element={<Backup />} />
-                {/* Unlisted reference sheet for the Enamel system — also
+                  <Route path="/backup" element={<Backup />} />
+                  {/* Unlisted reference sheet for the Enamel system — also
                     noindex. Nothing links here either. */}
-                <Route path="/specimen" element={<Specimen />} />
-                {/* CV page disabled — not public yet. Re-enable by restoring
+                  <Route path="/specimen" element={<Specimen />} />
+                  {/* CV page disabled — not public yet. Re-enable by restoring
                     the import above and this route. */}
-                {/* <Route path="/cv" element={<CV />} /> */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+                  {/* <Route path="/cv" element={<CV />} /> */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </div>
           </>
         )}

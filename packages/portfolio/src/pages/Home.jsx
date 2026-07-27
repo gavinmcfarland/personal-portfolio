@@ -1,4 +1,4 @@
-import { Canvas } from "@gavinmcfarland/canvas";
+import DeferredCanvas from "../components/DeferredCanvas";
 import {
   boardSaver,
   publishedBoard,
@@ -95,7 +95,7 @@ const Home = () => {
         className="indent reveal overflow-hidden rounded-2xl border border-line"
         style={{ height: "min(70vh, 520px)" }}
       >
-        <Canvas
+        <DeferredCanvas
           fit="contain"
           initialView="fit"
           fullscreenButton="document"

@@ -34,23 +34,39 @@ export const ThemeProvider = ({ children }) => {
     return 'system';
   });
 
-  const resolved = mode === 'system' ? getSystemTheme() : mode;
+  /* The OS setting is state, not something read during render. It used to be
+     read inline — `mode === 'system' ? getSystemTheme() : mode` — with the
+     media-query listener calling applyTheme() directly. That kept the CLASS
+     in step with the OS but never told React, so `resolved` was only ever
+     recomputed when `mode` changed. Everything styled by CSS followed the
+     system; everything that reads the theme THROUGH React did not, and went
+     on using the palette from before the switch.
 
-  // Apply theme and persist whenever mode changes
+     The dithered textures are the visible casualty — they are painted, not
+     styled, and take their inks from `theme` — so a Mac switching to light at
+     dawn left a bone-on-graphite avatar sitting on a paper-white page until
+     the next reload. Holding it in state means one source of truth for both. */
+  const [systemTheme, setSystemTheme] = useState(getSystemTheme);
+
+  const resolved = mode === 'system' ? systemTheme : mode;
+
+  // Track the OS setting whatever the mode is: cheap, and it means switching
+  // back to `system` already knows the answer rather than reading it late.
   useEffect(() => {
-    applyTheme(mode === 'system' ? getSystemTheme() : mode);
-    localStorage.setItem('theme-mode', mode);
-  }, [mode]);
-
-  // Listen for OS theme changes when in system mode
-  useEffect(() => {
-    if (mode !== 'system') return;
-
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => applyTheme(getSystemTheme());
+    const handler = (e) => setSystemTheme(e.matches ? 'dark' : 'light');
     mq.addEventListener('change', handler);
+    // The OS may have changed between the first render and this effect.
+    setSystemTheme(getSystemTheme());
     return () => mq.removeEventListener('change', handler);
-  }, [mode]);
+  }, []);
+
+  // Apply the resolved theme — so an OS switch moves the class too — and
+  // persist the mode, which is the only part that is a preference.
+  useEffect(() => {
+    applyTheme(resolved);
+    localStorage.setItem('theme-mode', mode);
+  }, [resolved, mode]);
 
   // Cycle: system → light → dark → system
   const toggleTheme = useCallback(() => {

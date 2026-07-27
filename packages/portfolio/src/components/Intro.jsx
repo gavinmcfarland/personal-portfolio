@@ -1,5 +1,12 @@
 import DitherVideo from "./DitherVideo";
-import clip from "../assets/avatar.mp4";
+import clipUrl from "../assets/avatar.mp4";
+
+/* The clip, already downloading before this module existed — vite-plugin-clip-
+   warmup puts a <video> pointed at it in <head>, so the fetch runs alongside
+   the bundle instead of waiting behind it. Take the element if it is there;
+   the URL still works on its own, and is what dither falls back to. */
+const clip =
+  (typeof window !== "undefined" && window.__mastheadClip) || clipUrl;
 
 /* The opening of the manual: NAME, then DESCRIPTION. SYNOPSIS (the invocation
    with its optional flags) still stands out of the page and is archived on

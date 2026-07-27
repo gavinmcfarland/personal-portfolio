@@ -5,6 +5,12 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { canvasSave } from "./vite-plugin-canvas-save.js";
+import { clipWarmup } from "./vite-plugin-clip-warmup.js";
+
+// The masthead clip, named here so its fetch can start with the CSS instead
+// of after the bundle. Keep in step with the import in Intro.jsx.
+const MASTHEAD_CLIP = "src/assets/avatar.mp4";
+const MASTHEAD_CLIP_GLOBAL = "__mastheadClip";
 
 // Consume the canvas package as source so its JSX is transformed by
 // @vitejs/plugin-react (a symlinked node_modules dep would be skipped). Exact
@@ -29,5 +35,11 @@ export default defineConfig(({ command }) => ({
 			{ find: /^@gavinmcfarland\/canvas\/styles\.css$/, replacement: canvasCss },
 		],
 	},
-	plugins: [...editorOnly(command), tailwindcss(), react(), canvasSave()],
+	plugins: [
+		...editorOnly(command),
+		tailwindcss(),
+		react(),
+		canvasSave(),
+		clipWarmup({ file: MASTHEAD_CLIP, globalName: MASTHEAD_CLIP_GLOBAL }),
+	],
 }));
