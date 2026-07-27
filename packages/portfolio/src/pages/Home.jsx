@@ -119,10 +119,11 @@ const Home = () => {
         Background
       </h2>
       <p className="indent reveal max-w-measure text-muted">
-        I&rsquo;ve spent over 12 years working as a freelance designer,
-        partnering with organisations across the public and private sectors on
-        product design, user research, and engineering projects. You can read my
-        full professional history on{" "}
+        I&rsquo;ve spent over 12 years helping organisations across the public
+        and private sectors solve problems through product design, user research,
+        and engineering. Along the way, I&rsquo;ve worked with clients including
+        Amazon, American Express, NatWest, and Lovable. You can read my full
+        professional history on{" "}
         <a
           href="https://www.linkedin.com/in/gavinmcfarland"
           target="_blank"
