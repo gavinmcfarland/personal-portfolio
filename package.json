@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter portfolio dev",
-    "build": "pnpm --filter portfolio build",
+    "build": "pnpm --filter \"portfolio...\" build",
     "canvas:demo": "pnpm --filter @gavinmcfarland/canvas demo",
     "dither:demo": "pnpm --filter @gavinmcfarland/dither demo",
     "dither:build": "pnpm --filter @gavinmcfarland/dither build",
