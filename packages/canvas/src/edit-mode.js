@@ -14,8 +14,11 @@ const GLOBAL_MODE_KEY = 'canvas-global-mode';
 const MODE_EVENT = 'canvas:mode';
 
 /* ── Global edit/view mode ──────────────────────────────────────── */
+/* View mode is the DEFAULT: a first visit (no stored key) — or storage being
+   unavailable — must mount read-only, so a fresh load never lands in edit mode.
+   Only an explicit 'edit' written by setGlobalReadOnly opts into editing. */
 export function getGlobalReadOnly() {
-  try { return localStorage.getItem(GLOBAL_MODE_KEY) === 'view'; } catch { return false; }
+  try { return localStorage.getItem(GLOBAL_MODE_KEY) !== 'edit'; } catch { return true; }
 }
 
 export function setGlobalReadOnly(ro) {
