@@ -84,7 +84,7 @@ const Home = () => {
       <Projects />
 
       <h2 id="playground" className="section-label reveal">
-        Scratch
+        Scratch pad
       </h2>
       <p className="lede indent reveal max-w-measure text-muted">
         These are things I&rsquo;m currently working on. New ideas, experiments,
