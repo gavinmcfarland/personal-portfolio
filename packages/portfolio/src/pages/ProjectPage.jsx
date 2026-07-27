@@ -22,7 +22,10 @@ export default function ProjectPage({ project }) {
         className={`group shrink-0 items-center gap-1 font-sans text-3 font-medium text-muted transition-colors duration-200 hover:text-ink sm:text-4 ${visibility}`}
       >
         {label}
-        <ArrowUpRight className="h-3.5 w-3.5 text-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
+        {/* Sized and coloured like the Back arrow across the row: h-4 w-4, and
+            no colour of its own so it inherits the link's muted ink rather than
+            sitting a step fainter than its own label. */}
+        <ArrowUpRight className="h-4 w-4 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
       </a>
     );
 
