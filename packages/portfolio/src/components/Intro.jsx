@@ -39,7 +39,7 @@ const Intro = () => (
       <p>Gavin McFarland</p>
     </div>
 
-    <h2 id="description" className="section-label">
+    <h2 id="description" className="section-label rise d1">
       DESCRIPTION
     </h2>
     {/* Both paragraphs carry the same `rise d1` delay, so they still come up as
