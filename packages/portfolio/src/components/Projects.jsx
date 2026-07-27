@@ -69,8 +69,9 @@ const Projects = () => (
       Examples
     </h2>
     <p className="lede indent reveal max-w-measure text-muted">
-      A selection of work, designed and built end to end. Each began as a
-      recurring problem rather than an idea &mdash; run one to read the full case.
+      A selection of work I&rsquo;ve designed and built end-to-end. Each one
+      reflects a problem I wanted to solve and the craft that went into making it
+      feel effortless to use.
     </p>
 
     <div className="indent reveal space-y-(--sp-1)">

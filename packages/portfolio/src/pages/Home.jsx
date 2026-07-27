@@ -87,11 +87,9 @@ const Home = () => {
         Scratch
       </h2>
       <p className="lede indent reveal max-w-measure text-muted">
-        <span className="prompt">$</span> gavin{" "}
-        <span className="flag not-italic text-muted">--scratch</span> &mdash; an
-        interactive board of what has my attention right now: ideas, experiments
-        and features, often here long before they become finished work. Pan,
-        zoom, and leave a note.
+        These are things I&rsquo;m currently working on. New ideas, experiments,
+        tools, and features often appear here long before they become polished
+        projects. It&rsquo;s a snapshot of what has my attention right now.
       </p>
       <div
         className="indent reveal overflow-hidden rounded-2xl border border-line"
@@ -116,6 +114,25 @@ const Home = () => {
           onUnfurl={unfurlLink}
         />
       </div>
+
+      <h2 id="background" className="section-label reveal">
+        Background
+      </h2>
+      <p className="indent reveal max-w-measure text-muted">
+        I&rsquo;ve spent over 12 years working as a freelance designer,
+        partnering with organisations across the public and private sectors on
+        product design, user research, and engineering projects. You can read my
+        full professional history on{" "}
+        <a
+          href="https://www.linkedin.com/in/gavinmcfarland"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="xref"
+        >
+          LinkedIn
+        </a>
+        .
+      </p>
 
       <Connect />
     </main>

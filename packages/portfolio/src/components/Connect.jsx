@@ -5,6 +5,7 @@
 
 const socials = [
   { label: "github", href: "https://github.com/gavinmcfarland", sec: 1 },
+  { label: "figma", href: "https://www.figma.com/@gavinmcfarland", sec: 7 },
   { label: "x", href: "https://x.com/gavinmcfarland", sec: 7 },
   { label: "linkedin", href: "https://www.linkedin.com/in/gavinmcfarland", sec: 7 },
 ];
