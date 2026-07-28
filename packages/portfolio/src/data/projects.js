@@ -86,9 +86,8 @@ export const projects = [
 		id: 'table-creator',
 		title: 'Table Creator',
 		kind: 'plugin',
-		draft: true,
 		summary: 'A Figma plugin for creating and maintaining complex data tables on the canvas, with dynamic content and bulk edits.',
-		tagline: 'A Figma plugin that generates tables from component templates and keeps them editable as rows, columns and cells.',
+		tagline: 'A Figma plugin that generates tables from component templates and keeps them editable as rows, columns and cells. Over 800K users on the Figma Community.',
 		tech: ['TypeScript', 'Figma API', 'Svelte'],
 		role: 'Creator',
 		year: '2022',
@@ -96,13 +95,13 @@ export const projects = [
 		linkLabel: 'Figma Community',
 		description: [
 			'Tables in Figma are slow to build and hard to keep consistent, because a change to one column has to be repeated in every row. Table Creator generates a table from a component template, taking the number of columns and rows, the table and cell sizes, cell alignment and whether a header is included.',
-			'Existing tables stay editable: rows and columns can be inserted or selected, the axes switched, column resizing toggled, and every table updated when its template changes. A table can also be detached from its template.',
+			'Existing tables stay editable: rows and columns can be inserted or selected, the axes switched, column resizing toggled, and every table updated when its template changes. A Detached Cells setting creates cells detached from the component, so any content can be dropped into an individual cell.',
 		],
 		highlights: [
 			'Tables generated from component templates',
 			'Insert and select rows and columns; switch the axes',
 			'Update existing tables when a template changes',
-			'Detach a table from its template',
+			'Detached Cells mode for custom per-cell content',
 		],
 	},
 	{
