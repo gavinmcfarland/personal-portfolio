@@ -2667,29 +2667,50 @@ export function CanvasProvider({
        this canvas actually embeds, where <body> holds a single app-root
        element that always intersects the viewport and so can never be skipped.
 
-       What remains is purely per-pixel work, which cannot move a box:
-       shadows and backdrop-filters, the most expensive effects to raster and
-       the least missed mid-motion.
+       What remains is purely per-pixel work, which cannot move a box: shadows,
+       the most expensive effect to raster and the least missed mid-motion.
 
        Deliberately NOT stripped, following awenate: `filter` and
        `mix-blend-mode`. Both are load-bearing for real documents — filter
        drives duotone and grayscale treatments (stripping flashes the raw
        image), blend modes let overlays composite (stripping makes them opaque
-       and hides what's underneath). */
-    const ZOOM_OPTS = `<script data-cv-zoom-opts="2">(() => {
-  let style = null;
-  const ensure = () => {
-    if (style) return;
-    style = document.createElement('style');
-    style.textContent =
-      'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
-      'box-shadow:none!important;text-shadow:none!important;backdrop-filter:none!important}';
-    (document.head || document.documentElement).appendChild(style);
-  };
+       and hides what's underneath).
+
+       ── backdrop-filter is removed OUTRIGHT, not just during the gesture ──
+
+       An element with a backdrop-filter is composited into its own render
+       surface. That surface is rasterized once and then GPU-scaled by the
+       ancestor transform — and the ancestor here is the board's world, in the
+       PARENT document. So the element never re-rasters at the board's scale,
+       while every unfiltered element around it does. The result is one subtree
+       that stays permanently soft, at every zoom level, in a document that is
+       otherwise crisp. Restoring the filter at the end of a gesture just
+       restores the blur, which is why this can't be gesture-scoped.
+
+       Nothing is lost that the reader can see: the frost samples a backdrop
+       that is itself part of the scaled board, so it was already being
+       resampled. A document whose design leans on frosted glass will read
+       flatter — the trade is a flat panel against a permanently blurry one.
+
+       Inline styles carry it in practice (an exported document that
+       serialises computed styles writes backdrop-filter onto every element
+       that had one), so `!important` is required to win. */
+    const ZOOM_OPTS = `<script data-cv-zoom-opts="3">(() => {
+  const css =
+    // Always: see the note in CanvasProvider.jsx — a composited filter surface
+    // inside a scaled iframe can never re-raster with the board.
+    '*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
+    // During a zoom gesture only: paint-level savings, no layout effect.
+    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
+    'box-shadow:none!important;text-shadow:none!important}';
+  const style = document.createElement('style');
+  style.textContent = css;
+  const attach = () => (document.head || document.documentElement).appendChild(style);
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
   addEventListener('message', (e) => {
     const d = e.data;
     if (!d || d.type !== 'canvas-zoom') return;
-    ensure();
     document.documentElement.classList.toggle('cv-zooming', !!d.active);
   });
 })()</` + 'script>';
@@ -2705,7 +2726,7 @@ export function CanvasProvider({
        exactly the documents most likely to be re-ingested.) */
     const BRIDGE = [
       { marker: 'data-cv-theme-sync', version: '1', script: THEME_SYNC },
-      { marker: 'data-cv-zoom-opts', version: '2', script: ZOOM_OPTS },
+      { marker: 'data-cv-zoom-opts', version: '3', script: ZOOM_OPTS },
     ];
 
     /* Inject the bridge at the end of <head> — after the document's own styles

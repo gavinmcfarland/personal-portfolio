@@ -304,20 +304,19 @@
     apply(boot[1] === 'dark');
     addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
   }
-})()</script><script data-cv-zoom-opts="2">(() => {
-  let style = null;
-  const ensure = () => {
-    if (style) return;
-    style = document.createElement('style');
-    style.textContent =
-      'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
-      'box-shadow:none!important;text-shadow:none!important;backdrop-filter:none!important}';
-    (document.head || document.documentElement).appendChild(style);
-  };
+})()</script><script data-cv-zoom-opts="3">(() => {
+  const css =
+    '*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
+    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
+    'box-shadow:none!important;text-shadow:none!important}';
+  const style = document.createElement('style');
+  style.textContent = css;
+  const attach = () => (document.head || document.documentElement).appendChild(style);
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
   addEventListener('message', (e) => {
     const d = e.data;
     if (!d || d.type !== 'canvas-zoom') return;
-    ensure();
     document.documentElement.classList.toggle('cv-zooming', !!d.active);
   });
 })()</script></head><body style="background-color:rgb(255, 255, 255);border-block-end-color:rgba(0, 0, 0, 0.898);border-block-start-color:rgba(0, 0, 0, 0.898);border-bottom-color:rgba(0, 0, 0, 0.898);border-inline-end-color:rgba(0, 0, 0, 0.898);border-inline-start-color:rgba(0, 0, 0, 0.898);border-left-color:rgba(0, 0, 0, 0.898);border-right-color:rgba(0, 0, 0, 0.898);border-top-color:rgba(0, 0, 0, 0.898);box-sizing:border-box;caret-color:rgb(0, 123, 229);color:rgba(0, 0, 0, 0.898);column-rule-color:rgba(0, 0, 0, 0.898);line-height:1.45454;margin-block-end:0px;margin-block-start:0px;margin-bottom:0px;margin-inline-end:0px;margin-inline-start:0px;margin-left:0px;margin-right:0px;margin-top:0px;outline-color:rgba(0, 0, 0, 0.898);overflow-block:hidden;overflow-inline:hidden;overflow-x:hidden;overflow-y:hidden;position:relative;row-rule-color:rgba(0, 0, 0, 0.898);scrollbar-color:rgb(230, 230, 230) rgba(0, 0, 0, 0);text-decoration-color:rgba(0, 0, 0, 0.898);text-emphasis-color:rgba(0, 0, 0, 0.898);user-select:none;-webkit-text-fill-color:rgba(0, 0, 0, 0.898);-webkit-text-stroke-color:rgba(0, 0, 0, 0.898);" data-h="0">

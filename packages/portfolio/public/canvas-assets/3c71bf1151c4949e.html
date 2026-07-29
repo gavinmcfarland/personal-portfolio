@@ -8214,20 +8214,19 @@
     apply(boot[1] === 'dark');
     addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
   }
-})()</script><script data-cv-zoom-opts="2">(() => {
-  let style = null;
-  const ensure = () => {
-    if (style) return;
-    style = document.createElement('style');
-    style.textContent =
-      'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
-      'box-shadow:none!important;text-shadow:none!important;backdrop-filter:none!important}';
-    (document.head || document.documentElement).appendChild(style);
-  };
+})()</script><script data-cv-zoom-opts="3">(() => {
+  const css =
+    '*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
+    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
+    'box-shadow:none!important;text-shadow:none!important}';
+  const style = document.createElement('style');
+  style.textContent = css;
+  const attach = () => (document.head || document.documentElement).appendChild(style);
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
   addEventListener('message', (e) => {
     const d = e.data;
     if (!d || d.type !== 'canvas-zoom') return;
-    ensure();
     document.documentElement.classList.toggle('cv-zooming', !!d.active);
   });
 })()</script></head><body style="background-color:rgb(195, 200, 205);border-block-end-color:currentcolor;border-block-end-style:solid;border-block-end-width:0px;border-block-start-color:currentcolor;border-block-start-style:solid;border-block-start-width:0px;border-bottom-color:currentcolor;border-bottom-style:solid;border-bottom-width:0px;border-inline-end-color:currentcolor;border-inline-end-style:solid;border-inline-end-width:0px;border-inline-start-color:currentcolor;border-inline-start-style:solid;border-inline-start-width:0px;border-left-color:currentcolor;border-left-style:solid;border-left-width:0px;border-right-color:currentcolor;border-right-style:solid;border-right-width:0px;border-top-color:currentcolor;border-top-style:solid;border-top-width:0px;box-sizing:border-box;caret-color:rgb(22, 25, 28);color:rgb(22, 25, 28);column-rule-color:currentcolor;font-size:14px;line-height:1.7;margin-block-end:0px;margin-block-start:0px;margin-bottom:0px;margin-inline-end:0px;margin-inline-start:0px;margin-left:0px;margin-right:0px;margin-top:0px;outline-color:currentcolor;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;text-rendering:optimizelegibility;text-size-adjust:100%;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-tap-highlight-color:rgba(0, 0, 0, 0);-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;" data-h="88">

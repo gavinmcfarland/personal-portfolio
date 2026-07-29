@@ -52,10 +52,17 @@
   /* Shape tokens (theme-independent — declared once, inherited by dark mode).
      --cv-radius: object/card corner radius. --cv-ui-radius: chrome panel radius.
      --cv-ui-blur: backdrop frost on the floating panels. Override to reshape the
-     whole board without touching a selector. */
+     whole board without touching a selector.
+
+     --cv-ui-frost is the whole backdrop-filter value, not just the radius, so a
+     skin can set it to `none` and actually remove the filter. Turning
+     --cv-ui-blur down to 0 does not: the saturate() alone still puts the panel
+     in its own filtered render surface, which costs the same whether or not the
+     blur radius is zero. (See enamel.css, which wants no frost at all.) */
   --cv-radius: 6px;
   --cv-ui-radius: 16px;
   --cv-ui-blur: 14px;
+  --cv-ui-frost: blur(var(--cv-ui-blur)) saturate(1.4);
   /* Sticky-note paper palette (theme-independent — coloured paper reads the same
      on a dark board). Override a --cv-note-<hue> to reskin notes; the picker
      swatches follow the same tokens. Each hue pairs a paper + an ink. */
@@ -1265,8 +1272,8 @@
 /* ── UI chrome ────────────────────────────────────────────────── */
 .canvas-root .cv-panel {
   background: var(--cv-ui-bg);
-  backdrop-filter: blur(var(--cv-ui-blur)) saturate(1.4);
-  -webkit-backdrop-filter: blur(var(--cv-ui-blur)) saturate(1.4);
+  backdrop-filter: var(--cv-ui-frost);
+  -webkit-backdrop-filter: var(--cv-ui-frost);
   border: 1px solid var(--cv-ui-border);
   border-radius: var(--cv-ui-radius);
   box-shadow: var(--cv-shadow);
@@ -1567,8 +1574,8 @@
   border-radius: 12px;
   border: 1px solid var(--cv-fab-border, rgba(0, 0, 0, 0.1));
   background: var(--cv-fab-bg, rgba(255, 255, 255, 0.82));
-  backdrop-filter: blur(14px) saturate(1.4);
-  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: var(--cv-ui-frost);
+  -webkit-backdrop-filter: var(--cv-ui-frost);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06),
     0 8px 24px rgba(0, 0, 0, 0.09);
 }
@@ -1646,8 +1653,8 @@
   border-radius: 999px;
   border: 1px solid var(--cv-np-border, rgba(0, 0, 0, 0.1));
   background: var(--cv-np-bg, rgba(255, 255, 255, 0.82));
-  backdrop-filter: blur(14px) saturate(1.4);
-  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: var(--cv-ui-frost);
+  -webkit-backdrop-filter: var(--cv-ui-frost);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06),
     0 8px 24px rgba(0, 0, 0, 0.09);
 }
@@ -1698,8 +1705,8 @@
   border-radius: 10px;
   color: var(--cv-muted);
   background: var(--cv-ui-bg);
-  backdrop-filter: blur(14px) saturate(1.4);
-  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: var(--cv-ui-frost);
+  -webkit-backdrop-filter: var(--cv-ui-frost);
   border: 1px solid var(--cv-ui-border);
   box-shadow: var(--cv-shadow);
 }

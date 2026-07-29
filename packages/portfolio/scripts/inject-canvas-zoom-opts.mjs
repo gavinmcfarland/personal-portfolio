@@ -26,27 +26,32 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ASSET_DIR = path.join(path.resolve(__dirname, '..'), 'public/canvas-assets');
 
 const MARKER = 'data-cv-zoom-opts';
-const VERSION = '2';
+const VERSION = '3';
 const CURRENT = `${MARKER}="${VERSION}"`;
 /* v2 dropped v1's `contain: layout paint` / `content-visibility: auto` rules:
    all of contain:layout, contain:paint and content-visibility:auto make the
    element a containing block for `position: fixed` descendants, so a document
    with a fixed header visibly reflowed for the duration of every zoom. What's
-   left is per-pixel only and cannot move a box. */
+   left is per-pixel only and cannot move a box.
+
+   v3 moved backdrop-filter removal out of the gesture and made it permanent: a
+   backdrop-filter element is composited into its own render surface, which the
+   board's transform GPU-scales instead of re-rasterizing, so it stays soft at
+   every zoom level while the rest of the document stays crisp. See the long
+   note beside ZOOM_OPTS in CanvasProvider.jsx. */
 const ZOOM_OPTS = `<script ${CURRENT}>(() => {
-  let style = null;
-  const ensure = () => {
-    if (style) return;
-    style = document.createElement('style');
-    style.textContent =
-      'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
-      'box-shadow:none!important;text-shadow:none!important;backdrop-filter:none!important}';
-    (document.head || document.documentElement).appendChild(style);
-  };
+  const css =
+    '*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
+    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
+    'box-shadow:none!important;text-shadow:none!important}';
+  const style = document.createElement('style');
+  style.textContent = css;
+  const attach = () => (document.head || document.documentElement).appendChild(style);
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
   addEventListener('message', (e) => {
     const d = e.data;
     if (!d || d.type !== 'canvas-zoom') return;
-    ensure();
     document.documentElement.classList.toggle('cv-zooming', !!d.active);
   });
 })()</` + 'script>';

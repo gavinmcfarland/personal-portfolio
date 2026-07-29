@@ -40,7 +40,7 @@ stripped and replaced (`injectBridge` in `src/CanvasProvider.jsx`).
 | Marker | Purpose |
 |---|---|
 | `data-cv-theme-sync="1"` | Applies the host's light/dark theme. Rewrites the document's `prefers-color-scheme` media rules and toggles a `dark` class on `<html>`. Boot theme arrives in the URL hash (`#cv-theme=dark`) so the first paint is already correct; later flips arrive as `postMessage`. |
-| `data-cv-zoom-opts="2"` | Listens for `{ type: 'canvas-zoom', active }` and toggles a `cv-zooming` class on `<html>`, gating a stylesheet that disables `box-shadow`, `text-shadow` and `backdrop-filter` for the duration of a zoom gesture. |
+| `data-cv-zoom-opts="3"` | Two rules. Permanently disables `backdrop-filter` (see below — a composited surface can't re-rasterize with the board). And listens for `{ type: 'canvas-zoom', active }`, toggling a `cv-zooming` class on `<html>` that disables `box-shadow` / `text-shadow` for the duration of a zoom gesture. |
 
 **If your generator emits a block carrying the current marker and version
 itself, the canvas leaves it alone.** That's the supported way to own this
@@ -122,6 +122,47 @@ element is the natural carrier:
 ```html
 <meta name="cv-zoom" content="containment-safe">
 ```
+
+## The other constraint: nothing composited can re-rasterize
+
+The board scales its world with a CSS transform, and leaves it un-promoted so
+the browser re-rasterizes at the live scale — that's what keeps embedded
+documents crisp at any zoom.
+
+An element that is **composited into its own render surface** opts out of that.
+Its surface is rasterized once and then GPU-scaled by the ancestor transform, so
+it never re-rasters at the board's scale. In a document that is otherwise sharp,
+that one subtree stays permanently soft — at *every* zoom level, not just during
+a gesture. It reads as "this element didn't re-render and everything around it
+did", which is exactly how it was first reported.
+
+`backdrop-filter` is the common way to trip this, and it does so even when the
+effect is invisible. A real export carried:
+
+```css
+backdrop-filter: blur(0px) saturate(1.4)
+```
+
+— zero blur, because the source skin had turned it off via a custom property,
+but `saturate()` alone still forces the surface. **Turning the radius to `0` does
+not avoid the cost; only `none` does.**
+
+The canvas now strips `backdrop-filter` from every embedded document
+unconditionally (zoom-opts v3), so this is handled — but it means a document
+leaning on frosted glass will render flat. If the generator can avoid emitting
+`backdrop-filter` at all, the document keeps full control of its own appearance.
+
+Other properties that create a render surface and will behave the same way:
+`filter`, `opacity` below 1, `mix-blend-mode`, `will-change: transform`, and 3D
+transforms. The canvas deliberately does **not** strip `filter` or
+`mix-blend-mode` — they're load-bearing for real designs — so a generator that
+emits them on fine-detail content should expect that content to stay soft.
+
+In the profiled export, `backdrop-filter` appeared on **13 elements, all as
+inline styles** (none in the stylesheets, none with `!important`). Inline is
+worth noting: it means the value was baked at capture time from a computed
+style, and no amount of changing the *source* stylesheet afterwards affects the
+exported copy.
 
 ## A third thing: `content-visibility` needs sections to skip
 
@@ -212,6 +253,9 @@ Deduplication is worth doing regardless, on file-size grounds alone.
 If you only do one thing, do the deduplication — it is mechanical, risk-free,
 and removes 28% of the file.
 
+0. **Stop emitting `backdrop-filter`.** Already worked around in the canvas, but
+   it's the generator's to own — see the compositing section. Anything composited
+   stays soft at every zoom level.
 1. **Deduplicate `<style>` blocks by content hash.** −1.05 MB, no rendering change.
 2. **Emit the page as several top-level `<body>` sections** rather than one root
    div, with a truthful `contain-intrinsic-size` on each. Prerequisite for
