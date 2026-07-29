@@ -264,6 +264,13 @@ ancestor mechanism. The whole look lives in one stylesheet,
 npm run demo   # → http://localhost:5178  (Vite, consumes the package from source)
 ```
 
+## Further reading
+
+- [EMBEDDED-HTML.md](EMBEDDED-HTML.md) — what the canvas injects into a dropped
+  HTML document, the `canvas-zoom` message contract, and what a document (or the
+  tool that generates it) can do to make zooming cheaper. Read this before
+  changing `injectBridge` or the zoom paint mode.
+
 ## Build
 
 ```bash

@@ -425,6 +425,48 @@ function loadInitial({ base, initialState, editable, storageKey, homeId, managed
    multiplies by this. */
 const nodeScale = (el) => +el.dataset.scale || 1;
 
+/* A node's on-board footprint, [w, h] in world units.
+
+   offsetWidth/offsetHeight are LAYOUT reads: taken after a style write they
+   force the browser to flush layout synchronously. The view-sync path does
+   exactly that — applyView writes the world transform, then syncChrome /
+   syncScrollbars / syncMinimap measure nodes — so every frame of a zoom glide
+   paid for a full layout of the world subtree. With a heavy HTML node in the
+   tree (a dropped document is a real iframe with its own document to lay out)
+   that read alone can dominate the frame.
+
+   The fix is the one awenate uses (`awenate-zoom-gesture`, message-handler.js):
+   a node's footprint is expressed in WORLD units, and the world transform is
+   what a pan/zoom changes — so these reads cannot return a new value during a
+   gesture. `cache` is a Map installed for the life of one gesture and dropped
+   at its end, when a fresh measurement re-syncs anything that did change
+   underneath (a lazy image landing, an auto-height node settling). */
+const nodeBox = (el, cache) => {
+  const hit = cache && cache.box.get(el);
+  if (hit) return hit;
+  const sc = nodeScale(el);
+  const box = [el.offsetWidth * sc, el.offsetHeight * sc];
+  if (cache) cache.box.set(el, box);
+  return box;
+};
+
+/* The grid dividers need the node's resolved gaps and padding, in world units.
+   getComputedStyle is a style-recalc read and belongs to the same gesture
+   window as nodeBox — none of these values can change while only the world
+   transform is moving. */
+const nodeGridMetrics = (el, cache) => {
+  const hit = cache && cache.css.get(el);
+  if (hit) return hit;
+  const cs = getComputedStyle(el);
+  const m = {
+    gapX: parseFloat(cs.columnGap) || 0, gapY: parseFloat(cs.rowGap) || 0,
+    padL: parseFloat(cs.paddingLeft) || 0, padT: parseFloat(cs.paddingTop) || 0,
+    padR: parseFloat(cs.paddingRight) || 0, padB: parseFloat(cs.paddingBottom) || 0,
+  };
+  if (cache) cache.css.set(el, m);
+  return m;
+};
+
 const EMPTY_BASE = { nodes: [], shapes: [], brand: {} };
 
 export function CanvasProvider({
@@ -643,6 +685,10 @@ export function CanvasProvider({
   const actionRef = useRef(null);
   const zoomRAF = useRef(0);
   const waTimer = useRef(0);
+  /* Measurement cache for the life of one pan/zoom gesture, else null — see
+     nodeBox. Installed by beginGesture, dropped by endGesture. */
+  const geomCache = useRef(null);
+  const zoomPaintMode = useRef(false); // are the HTML nodes' documents in cheap paint mode?
   const saveT = useRef(0);
   const lastHoverScale = useRef(active0.view.scale || 1); // scale at the last applyView, to tell pan from zoom
   const panKey = useRef(false);
@@ -863,16 +909,76 @@ export function CanvasProvider({
       reflowRAF.current = requestAnimationFrame(() => { reflowRAF.current = 0; reflowObjects(); });
     }
 
+    /* ── Gesture window ───────────────────────────────────────────
+       A gesture is a stretch of frames during which the world moves but nothing
+       in it changes, which lets two costs be suspended for the duration. They
+       have different scopes, so they're tracked separately (as they are in
+       awenate, which sends `awenate-zoom-gesture` for the first on any gesture
+       and `awenate-zoom-paint-opts` for the second on zoom edges only):
+
+         • Layout — suspended on ANY pan or zoom. Node footprints are cached
+           (see nodeBox) instead of being re-measured after every transform
+           write. Nothing about a node's world-space box depends on where the
+           camera is, so this holds for panning just as well.
+         • Paint, inside HTML nodes — suspended on the ZOOM GLIDE ONLY. A
+           dropped document is a live iframe with its own render tree, and the
+           glide deliberately leaves the world un-promoted so every frame
+           re-rasterizes crisply (see zoomLoop) — which means repainting that
+           whole document, per frame. A pan (and a pinch) instead promotes the
+           world to its own layer and composites on the GPU: nothing repaints,
+           so there is nothing to optimise, and stripping shadows there would
+           only make them visibly blink off as the board slides.
+
+       Both are released at the end of the gesture, and the release re-measures
+       and repaints — so anything that did settle underneath (a lazy image, an
+       auto-height node) is picked up exactly once, at rest. */
+    function beginGesture() {
+      if (geomCache.current) return;
+      geomCache.current = { box: new Map(), css: new Map() };
+    }
+    /* Drop the cached measurements without closing the gesture. For the case
+       the "nothing changes during a gesture" premise doesn't cover: the content
+       model itself mutating mid-glide. Next read re-measures. */
+    function invalidateGeom() {
+      const c = geomCache.current; if (!c) return;
+      c.box.clear(); c.css.clear(); delete c.bounds;
+    }
+    function endGesture() {
+      if (!geomCache.current) return;
+      geomCache.current = null;
+      // Fresh measurements now that the cache is gone: re-align the chrome,
+      // scrollbars and minimap with whatever the content actually settled at.
+      syncChrome(); syncScrollbars(); syncMinimap();
+    }
+    /* Put every embedded document into (or out of) cheap paint mode. The
+       handler is baked into each document at ingest — see ZOOM_OPTS. */
+    function postZoomPaintMode(active) {
+      if (zoomPaintMode.current === active) return;
+      zoomPaintMode.current = active;
+      const root = rootRef.current; if (!root) return;
+      for (const f of root.querySelectorAll('.cv-html-frame')) {
+        if (f.contentWindow) f.contentWindow.postMessage({ type: 'canvas-zoom', active }, '*');
+      }
+    }
+
     /* smooth zoom glide */
     function markActive() {
       const w = worldRef.current; if (!w) return;
       w.style.willChange = 'transform';
+      beginGesture();
       clearTimeout(waTimer.current);
-      waTimer.current = setTimeout(() => { w.style.willChange = 'auto'; }, 280);
+      waTimer.current = setTimeout(() => {
+        w.style.willChange = 'auto';
+        // A zoom glide runs its own gesture window; only end one here if the
+        // pan/pinch that opened it is the last thing still holding it.
+        if (!zoomRAF.current) endGesture();
+      }, 280);
     }
     function stopZoomLoop() {
       if (zoomRAF.current) { cancelAnimationFrame(zoomRAF.current); zoomRAF.current = 0; }
       if (worldRef.current) worldRef.current.style.willChange = 'auto';
+      postZoomPaintMode(false);
+      endGesture();
     }
     function snapView() { viewRef.x = targetRef.x; viewRef.y = targetRef.y; viewRef.scale = targetRef.scale; applyView(); }
     function zoomLoop() {
@@ -883,6 +989,8 @@ export function CanvasProvider({
       viewRef.y += (targetRef.y - viewRef.y) * L;
       const done = Math.abs(targetRef.scale - viewRef.scale) < ZOOM.doneScale &&
         Math.abs(targetRef.x - viewRef.x) < ZOOM.donePan && Math.abs(targetRef.y - viewRef.y) < ZOOM.donePan;
+      // Land the view first, then close the gesture — stopZoomLoop's release
+      // re-measures against the final transform, not the second-to-last frame.
       if (done) { snapView(); stopZoomLoop(); return; }
       // Keep the world un-promoted (will-change: auto) through the glide so the
       // browser re-rasterizes it crisply at the current scale on every frame,
@@ -895,6 +1003,8 @@ export function CanvasProvider({
       clearTimeout(waTimer.current);
       // Un-promoted layer → every zoomLoop frame paints fresh at the live scale.
       if (worldRef.current) worldRef.current.style.willChange = 'auto';
+      beginGesture();
+      postZoomPaintMode(true);
       if (!zoomRAF.current) zoomRAF.current = requestAnimationFrame(zoomLoop);
     }
     function freezeView() { stopZoomLoop(); targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = viewRef.scale; }
@@ -938,8 +1048,8 @@ export function CanvasProvider({
     function worldRectOf(sel) {
       if (sel.kind === 'node') {
         const n = nodeEls.get(sel.id); if (!n) return null;
-        const sc = nodeScale(n);
-        return [+n.dataset.x, +n.dataset.y, n.offsetWidth * sc, n.offsetHeight * sc];
+        const [w, h] = nodeBox(n, geomCache.current);
+        return [+n.dataset.x, +n.dataset.y, w, h];
       }
       const el = shapeEls.get(sel.id); if (!el) return null;
       const bb = el.getBBox();
@@ -993,8 +1103,8 @@ export function CanvasProvider({
       if (suppressed) { hov.style.display = 'none'; return; }
       const el = nodeEls.get(id);
       if (!el) { hov.style.display = 'none'; return; }
-      const sc = nodeScale(el);
-      const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth * sc, h = el.offsetHeight * sc;
+      const x = +el.dataset.x, y = +el.dataset.y;
+      const [w, h] = nodeBox(el, geomCache.current);
       const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s;
       hov.style.display = 'block';
       hov.style.left = (sx - 4) + 'px'; hov.style.top = (sy - 4) + 'px';
@@ -1015,8 +1125,8 @@ export function CanvasProvider({
       const geom = gridGeomRef.current;
       const el = geom ? nodeEls.get(geom.id) : null;
       if (!geom || !el || S.readOnly) { wrap.style.display = 'none'; return; }
-      const sc = nodeScale(el);
-      const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth * sc, h = el.offsetHeight * sc;
+      const x = +el.dataset.x, y = +el.dataset.y;
+      const [w, h] = nodeBox(el, geomCache.current);
       const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s, sw = w * s, sh = h * s;
       wrap.style.display = 'block';
       const totalC = geom.colFr.reduce((a, b) => a + b, 0) || 1;
@@ -1027,10 +1137,10 @@ export function CanvasProvider({
       // gap, not at the plain fraction split of the whole box — otherwise it drifts
       // off the gap as the tracks become unequal. Read the live gap/padding and
       // place each divider at its gap centre.
-      const cs = getComputedStyle(el);
-      const gapX = (parseFloat(cs.columnGap) || 0) * s, gapY = (parseFloat(cs.rowGap) || 0) * s;
-      const padL = (parseFloat(cs.paddingLeft) || 0) * s, padT = (parseFloat(cs.paddingTop) || 0) * s;
-      const padR = (parseFloat(cs.paddingRight) || 0) * s, padB = (parseFloat(cs.paddingBottom) || 0) * s;
+      const cs = nodeGridMetrics(el, geomCache.current);
+      const gapX = cs.gapX * s, gapY = cs.gapY * s;
+      const padL = cs.padL * s, padT = cs.padT * s;
+      const padR = cs.padR * s, padB = cs.padB * s;
       const trackW = sw - padL - padR - gapX * (cols - 1);
       const trackH = sh - padT - padB - gapY * (rows - 1);
       // Match the selection outline, which sits SEL_PAD px outside the node rect
@@ -1172,9 +1282,9 @@ export function CanvasProvider({
       const fill = cs.getPropertyValue('--cv-minimap-node').trim() || 'rgba(120,120,130,.45)';
       const frame = cs.getPropertyValue('--cv-minimap-frame').trim() || 'rgba(120,120,130,.7)';
       nodeEls.forEach((n) => {
-        const sc = nodeScale(n);
+        const [bw, bh] = nodeBox(n, geomCache.current);
         const x = toX(+n.dataset.x), y = toY(+n.dataset.y);
-        const w = Math.max(1, n.offsetWidth * sc * k), h = Math.max(1, n.offsetHeight * sc * k);
+        const w = Math.max(1, bw * k), h = Math.max(1, bh * k);
         if (n.dataset.type === 'frame') { ctx.strokeStyle = frame; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1); }
         else { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); }
       });
@@ -1781,12 +1891,19 @@ export function CanvasProvider({
     }
 
     /* ── Fit / fly-to ─────────────────────────────────────────── */
+    /* The world-space extent of everything on the active page. Called from the
+       view-sync path (scrollbars, minimap) on every frame, so the whole result
+       — not just the individual measurements — is memoised for the gesture:
+       content bounds are in world units and a pan/zoom moves the camera, not
+       the content. */
     function bounds() {
+      const cache = geomCache.current;
+      if (cache && cache.bounds !== undefined) return cache.bounds;
       let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9, any = false;
       nodeEls.forEach((n) => {
         any = true;
-        const sc = nodeScale(n);
-        const x = +n.dataset.x, y = +n.dataset.y, w = n.offsetWidth * sc, h = n.offsetHeight * sc;
+        const [w, h] = nodeBox(n, cache);
+        const x = +n.dataset.x, y = +n.dataset.y;
         minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x + w); maxY = Math.max(maxY, y + h);
       });
       S.shapes.forEach((s) => {
@@ -1795,7 +1912,9 @@ export function CanvasProvider({
         const ys = s.type === 'pen' ? s.points.map((p) => p[1]) : [s.y1, s.y2];
         minX = Math.min(minX, ...xs); maxX = Math.max(maxX, ...xs); minY = Math.min(minY, ...ys); maxY = Math.max(maxY, ...ys);
       });
-      return any ? { minX, minY, maxX, maxY } : null;
+      const b = any ? { minX, minY, maxX, maxY } : null;
+      if (cache) cache.bounds = b;
+      return b;
     }
     function fitAll(animate = true) {
       const b = bounds(); if (!b) return;
@@ -2485,7 +2604,7 @@ export function CanvasProvider({
        and toggles a `dark` class on <html> for scripts/styles that want it.
        Compound queries (`(prefers-color-scheme: dark) and (max-width: …)`)
        lose their other conditions once flipped — acceptable for demo docs. */
-    const THEME_SYNC = `<script data-cv-theme-sync>(() => {
+    const THEME_SYNC = `<script data-cv-theme-sync="1">(() => {
   const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
   const walk = (rules, dark) => {
     for (const r of rules) {
@@ -2520,17 +2639,93 @@ export function CanvasProvider({
     addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
   }
 })()</` + 'script>';
+    /* Zoom paint-mode bridge, the second half of the injected pair. Adapted
+       from awenate's `awenate-zoom-paint-opts` handler (see its
+       CANVAS_ZOOM_RASTERIZATION.md).
+
+       The board zooms by scaling the world, and deliberately leaves it
+       un-promoted so the browser re-rasterizes crisply every frame (see
+       zoomLoop). For a plain node that is cheap. For an HTML node it means
+       re-painting a whole embedded document per frame — and a document with a
+       lot of DOM is where the glide falls apart. So for the duration of the
+       gesture the document is put in a cheaper paint mode.
+
+       THE RULE THIS MODE MUST OBEY: it may change how the document paints,
+       never how it lays out. A zoom that quietly reflows the content it is
+       zooming is worse than a slow one.
+
+       That rules out the containment half of awenate's version — `contain:
+       layout paint` on <body> and `content-visibility: auto` on its children.
+       All three of `contain: layout`, `contain: paint` and
+       `content-visibility: auto` make the element a containing block for
+       `position: fixed` descendants: applying them re-anchors every fixed
+       header, nav or floating control in the document from the iframe viewport
+       to the contained box, so it visibly jumps the moment a zoom starts and
+       jumps back when it ends. `content-visibility` also brings
+       `contain-intrinsic-size`, whose placeholder height replaces the real one
+       for anything not yet rendered — and it earns nothing on the documents
+       this canvas actually embeds, where <body> holds a single app-root
+       element that always intersects the viewport and so can never be skipped.
+
+       What remains is purely per-pixel work, which cannot move a box:
+       shadows and backdrop-filters, the most expensive effects to raster and
+       the least missed mid-motion.
+
+       Deliberately NOT stripped, following awenate: `filter` and
+       `mix-blend-mode`. Both are load-bearing for real documents — filter
+       drives duotone and grayscale treatments (stripping flashes the raw
+       image), blend modes let overlays composite (stripping makes them opaque
+       and hides what's underneath). */
+    const ZOOM_OPTS = `<script data-cv-zoom-opts="2">(() => {
+  let style = null;
+  const ensure = () => {
+    if (style) return;
+    style = document.createElement('style');
+    style.textContent =
+      'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
+      'box-shadow:none!important;text-shadow:none!important;backdrop-filter:none!important}';
+    (document.head || document.documentElement).appendChild(style);
+  };
+  addEventListener('message', (e) => {
+    const d = e.data;
+    if (!d || d.type !== 'canvas-zoom') return;
+    ensure();
+    document.documentElement.classList.toggle('cv-zooming', !!d.active);
+  });
+})()</` + 'script>';
+
+    /* The two halves of the bridge, each stamped with the version of the script
+       it carries. Bump a version whenever its script changes: ingest replaces
+       any older copy it finds rather than leaving it in place, so a document
+       that already passed through an earlier build of the canvas — an asset
+       re-dropped onto the board, an exported document imported back — is
+       upgraded instead of silently keeping stale behaviour. (That mattered
+       once already: v1 of the zoom half reflowed documents with fixed-position
+       elements, and a skip-if-present check would have preserved the bug on
+       exactly the documents most likely to be re-ingested.) */
+    const BRIDGE = [
+      { marker: 'data-cv-theme-sync', version: '1', script: THEME_SYNC },
+      { marker: 'data-cv-zoom-opts', version: '2', script: ZOOM_OPTS },
+    ];
+
     /* Inject the bridge at the end of <head> — after the document's own styles
        (so the boot apply() sees them) yet before the body renders (else after
-       the head/html open tag, else prepended). Skipped when the document
-       already carries one (re-ingesting an exported asset). */
-    function injectThemeSync(html) {
-      if (html.includes('data-cv-theme-sync')) return html;
-      const close = /<\/head\s*>/i.exec(html);
-      if (close) return html.slice(0, close.index) + THEME_SYNC + html.slice(close.index);
-      const m = /<head[^>]*>/i.exec(html) || /<html[^>]*>/i.exec(html);
-      if (m) return html.slice(0, m.index + m[0].length) + THEME_SYNC + html.slice(m.index + m[0].length);
-      return THEME_SYNC + html;
+       the head/html open tag, else prepended). A half already at the current
+       version is left untouched, so re-ingesting a current asset is a no-op. */
+    function injectBridge(html) {
+      let out = html;
+      for (const { marker, version, script } of BRIDGE) {
+        if (out.includes(`${marker}="${version}"`)) continue;
+        // Any older copy goes first. The emitted script bodies contain no
+        // literal `</script>`, so the non-greedy match is exactly the block.
+        out = out.replace(new RegExp(`<script ${marker}[^>]*>[\\s\\S]*?</script\\s*>`, 'i'), '');
+        const close = /<\/head\s*>/i.exec(out);
+        if (close) { out = out.slice(0, close.index) + script + out.slice(close.index); continue; }
+        const m = /<head[^>]*>/i.exec(out) || /<html[^>]*>/i.exec(out);
+        if (m) { out = out.slice(0, m.index + m[0].length) + script + out.slice(m.index + m[0].length); continue; }
+        out = script + out;
+      }
+      return out;
     }
     /* Drop an HTML document as a live iframe node, centred on the cursor. HTML
        has no intrinsic size, so the box starts at a desktop-ish default and
@@ -2541,9 +2736,10 @@ export function CanvasProvider({
     async function addHtmlFromFile(file, wx, wy) {
       if (!EDITABLE || S.readOnly || !isHtmlFile(file)) return;
       try {
-        // The stored copy carries the theme-sync bridge (and a text/html type —
-        // files synthesized from pasted text arrive typed, drag sources may not).
-        const typed = new Blob([injectThemeSync(await readText(file))], { type: 'text/html' });
+        // The stored copy carries the host bridge — theme sync + zoom paint mode
+        // (and a text/html type — files synthesized from pasted text arrive
+        // typed, drag sources may not).
+        const typed = new Blob([injectBridge(await readText(file))], { type: 'text/html' });
         let src;
         if (onUploadHtml) {
           src = await onUploadHtml(file, await readDataUrl(typed));
@@ -2862,7 +3058,7 @@ export function CanvasProvider({
 
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
-      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, startZoomLoop, snapView, syncChrome, syncScrollbars, scrollDrag, redrawMinimap, scheduleMinimap, syncMinimap, minimapCenterAt, minimapDrag, reframeOnResize, reflowObjects, scheduleReflow, hideSelChrome, placeSel, setHover, setGridEditGeom,
+      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, invalidateGeom, startZoomLoop, snapView, syncChrome, syncScrollbars, scrollDrag, redrawMinimap, scheduleMinimap, syncMinimap, minimapCenterAt, minimapDrag, reframeOnResize, reflowObjects, scheduleReflow, hideSelChrome, placeSel, setHover, setGridEditGeom,
       selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, snapResize, setSnapGuides,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
@@ -3017,6 +3213,7 @@ export function CanvasProvider({
      an object shifts the content bounds without touching the view. Layout
      effect so the DOM (node sizes) is committed before we read it. */
   useLayoutEffect(() => {
+    eng.invalidateGeom(); // the content model moved under any in-flight gesture
     eng.syncScrollbars();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, shapes, reflow]);

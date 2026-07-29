@@ -704,9 +704,17 @@
    a card anyway. (The iframe element's color-scheme is kept in sync with the
    document's by Html.jsx: a mismatch makes the browser force an opaque
    canvas.) A device frame restores the card look — see .framed below. */
+/* `contain: paint` promises the browser nothing inside paints outside this
+   box. overflow:hidden already guarantees that visually, but the containment
+   keyword is what the compositor reads: it bounds the interest rect it
+   computes for the subtree, so a document's own scroll extent can't inflate
+   the tile budget of the world around it at deep zoom-out. (awenate's
+   2026-04-28 fix for "stutter when zooming in past 400% after zooming out
+   below 50%" was exactly this declaration on its iframe wrapper.) */
 .canvas-root .cv-node.cv-html {
   border-radius: var(--cv-radius);
   overflow: hidden;
+  contain: paint;
   background: transparent;
 }
 .canvas-root .cv-node.cv-html .cv-html-frame {
