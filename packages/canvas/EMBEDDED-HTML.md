@@ -40,7 +40,7 @@ stripped and replaced (`injectBridge` in `src/CanvasProvider.jsx`).
 | Marker | Purpose |
 |---|---|
 | `data-cv-theme-sync="1"` | Applies the host's light/dark theme. Rewrites the document's `prefers-color-scheme` media rules and toggles a `dark` class on `<html>`. Boot theme arrives in the URL hash (`#cv-theme=dark`) so the first paint is already correct; later flips arrive as `postMessage`. |
-| `data-cv-zoom-opts="3"` | Two rules. Permanently disables `backdrop-filter` (see below — a composited surface can't re-rasterize with the board). And listens for `{ type: 'canvas-zoom', active }`, toggling a `cv-zooming` class on `<html>` that disables `box-shadow` / `text-shadow` for the duration of a zoom gesture. |
+| `data-cv-zoom-opts="4"` | Listens for `{ type: 'canvas-zoom', active, scale }` and sets two classes on `<html>`: `cv-zooming` while a gesture runs (disables `box-shadow` / `text-shadow`), and `cv-flat` while zoomed in past 1:1 or mid-gesture (disables `backdrop-filter` — see below). |
 
 **If your generator emits a block carrying the current marker and version
 itself, the canvas leaves it alone.** That's the supported way to own this
@@ -147,10 +147,19 @@ backdrop-filter: blur(0px) saturate(1.4)
 but `saturate()` alone still forces the surface. **Turning the radius to `0` does
 not avoid the cost; only `none` does.**
 
-The canvas now strips `backdrop-filter` from every embedded document
-unconditionally (zoom-opts v3), so this is handled — but it means a document
-leaning on frosted glass will render flat. If the generator can avoid emitting
-`backdrop-filter` at all, the document keeps full control of its own appearance.
+Removing and re-applying the filter does not help. It recreates the surface, but
+at the same ~1:1 raster scale — which is why a gesture-scoped strip (zoom-opts
+v2) still left the element soft once the board settled. There is no way to hand
+the child compositor the parent's effective scale.
+
+So the canvas gates it on scale instead (zoom-opts v4). A ~1:1 raster is fine at
+or below 100% and visibly soft above it, so `backdrop-filter` renders normally at
+or below 1:1 and is disabled past it. A frosted design reads as intended when the
+board is viewed as a whole, and flattens rather than blurs when a reader zooms in
+to inspect detail — which is exactly when sharpness beats decoration.
+
+If the generator can avoid emitting `backdrop-filter` at all, the document keeps
+full control of its own appearance at every zoom level.
 
 Other properties that create a render surface and will behave the same way:
 `filter`, `opacity` below 1, `mix-blend-mode`, `will-change: transform`, and 3D

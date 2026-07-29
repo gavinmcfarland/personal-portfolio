@@ -26,7 +26,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ASSET_DIR = path.join(path.resolve(__dirname, '..'), 'public/canvas-assets');
 
 const MARKER = 'data-cv-zoom-opts';
-const VERSION = '3';
+const VERSION = '4';
 const CURRENT = `${MARKER}="${VERSION}"`;
 /* v2 dropped v1's `contain: layout paint` / `content-visibility: auto` rules:
    all of contain:layout, contain:paint and content-visibility:auto make the
@@ -37,22 +37,36 @@ const CURRENT = `${MARKER}="${VERSION}"`;
    v3 moved backdrop-filter removal out of the gesture and made it permanent: a
    backdrop-filter element is composited into its own render surface, which the
    board's transform GPU-scales instead of re-rasterizing, so it stays soft at
-   every zoom level while the rest of the document stays crisp. See the long
-   note beside ZOOM_OPTS in CanvasProvider.jsx. */
-const ZOOM_OPTS = `<script ${CURRENT}>(() => {
-  const css =
-    '*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
+   every zoom level while the rest of the document stays crisp.
+
+   v4 gates that removal on the board's scale rather than removing it outright,
+   so a document whose design needs frosted glass keeps it at the zoom levels
+   where it renders correctly (at or below 1:1). See the long note beside
+   ZOOM_OPTS in CanvasProvider.jsx. */
+const ZOOM_OPTS = `<script data-cv-zoom-opts="4">(() => {
+  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
+  var css =
+    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
+    // it is also the single biggest per-frame paint saving).
+    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
+    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
+    // Gesture only: paint-level savings that cannot move a box.
     'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
     'box-shadow:none!important;text-shadow:none!important}';
-  const style = document.createElement('style');
+  var style = document.createElement('style');
   style.textContent = css;
-  const attach = () => (document.head || document.documentElement).appendChild(style);
+  var attach = function () { (document.head || document.documentElement).appendChild(style); };
   if (document.head || document.documentElement) attach();
   else addEventListener('DOMContentLoaded', attach);
-  addEventListener('message', (e) => {
-    const d = e.data;
+  // Flat until told otherwise: a host too old to send a scale gets the safe,
+  // never-blurry rendering rather than an unannounced regression.
+  document.documentElement.classList.add('cv-flat');
+  addEventListener('message', function (e) {
+    var d = e.data;
     if (!d || d.type !== 'canvas-zoom') return;
+    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
     document.documentElement.classList.toggle('cv-zooming', !!d.active);
+    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
   });
 })()</` + 'script>';
 

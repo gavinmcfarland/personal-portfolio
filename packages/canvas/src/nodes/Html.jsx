@@ -47,12 +47,21 @@ function useThemeSync(frameRef) {
 }
 
 function HtmlNode({ node }) {
-  const { htmlActiveId } = useCanvas();
+  const { htmlActiveId, eng } = useCanvas();
   const { setRef, dataProps, style } = useRegister(node);
   const src = useMediaSrc(node.src);
   const live = htmlActiveId === node.id;
   const frameRef = useRef(null);
   const postTheme = useThemeSync(frameRef);
+  /* On load, hand the document both pieces of host state it can't infer: the
+     theme, and the board's current zoom (which decides whether its
+     backdrop-filters render — see ZOOM_OPTS). The zoom broadcast only fires on
+     gesture edges, so without this seed a document on a board nobody zooms
+     never hears anything. */
+  const onLoad = useCallback(() => {
+    postTheme();
+    eng.postZoomStateTo(frameRef.current);
+  }, [postTheme, eng]);
 
   // Boot theme, carried in the URL hash so the injected sync script can apply
   // it before the document's first paint — the message path only lands after
@@ -95,7 +104,7 @@ function HtmlNode({ node }) {
             sandbox="allow-scripts"
             title={node.name || 'HTML'}
             loading="lazy"
-            onLoad={postTheme}
+            onLoad={onLoad}
             style={{ colorScheme: bootTheme.current }}
           />
           {!live && <div className="cv-html-shield" />}

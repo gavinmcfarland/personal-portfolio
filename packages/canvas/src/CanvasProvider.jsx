@@ -688,7 +688,7 @@ export function CanvasProvider({
   /* Measurement cache for the life of one pan/zoom gesture, else null — see
      nodeBox. Installed by beginGesture, dropped by endGesture. */
   const geomCache = useRef(null);
-  const zoomPaintMode = useRef(false); // are the HTML nodes' documents in cheap paint mode?
+  const zoomPaintMode = useRef(null); // last { active, scale } posted to the HTML nodes' documents
   const saveT = useRef(0);
   const lastHoverScale = useRef(active0.view.scale || 1); // scale at the last applyView, to tell pan from zoom
   const panKey = useRef(false);
@@ -949,16 +949,35 @@ export function CanvasProvider({
       // Fresh measurements now that the cache is gone: re-align the chrome,
       // scrollbars and minimap with whatever the content actually settled at.
       syncChrome(); syncScrollbars(); syncMinimap();
+      // A pinch changes the scale without ever running the zoom loop, so the
+      // settled scale has to be republished here too (deduped by postZoomState).
+      postZoomState(false);
     }
-    /* Put every embedded document into (or out of) cheap paint mode. The
-       handler is baked into each document at ingest — see ZOOM_OPTS. */
-    function postZoomPaintMode(active) {
-      if (zoomPaintMode.current === active) return;
-      zoomPaintMode.current = active;
+    /* Tell every embedded document the board's gesture state and settled scale.
+       The handler is baked into each document at ingest — see ZOOM_OPTS, which
+       explains what each is used for. Deduped: identical state is not re-posted,
+       and a scale change under half a percent isn't worth a message. */
+    function postZoomState(active) {
+      const scale = viewRef.scale;
+      const last = zoomPaintMode.current;
+      if (last && last.active === active && Math.abs(last.scale - scale) < 0.005) return;
+      zoomPaintMode.current = { active, scale };
       const root = rootRef.current; if (!root) return;
       for (const f of root.querySelectorAll('.cv-html-frame')) {
-        if (f.contentWindow) f.contentWindow.postMessage({ type: 'canvas-zoom', active }, '*');
+        if (f.contentWindow) f.contentWindow.postMessage({ type: 'canvas-zoom', active, scale }, '*');
       }
+    }
+    /* Seed one freshly loaded frame. The broadcast above only fires on gesture
+       edges, so a document that mounts on a board nobody has touched would sit
+       in its safe default (frost off) forever — and a board is usually opened,
+       looked at, and never zoomed. Called from Html.jsx's onLoad. */
+    function postZoomStateTo(frame) {
+      if (!frame || !frame.contentWindow) return;
+      const last = zoomPaintMode.current;
+      frame.contentWindow.postMessage(
+        { type: 'canvas-zoom', active: !!(last && last.active), scale: viewRef.scale },
+        '*'
+      );
     }
 
     /* smooth zoom glide */
@@ -977,7 +996,7 @@ export function CanvasProvider({
     function stopZoomLoop() {
       if (zoomRAF.current) { cancelAnimationFrame(zoomRAF.current); zoomRAF.current = 0; }
       if (worldRef.current) worldRef.current.style.willChange = 'auto';
-      postZoomPaintMode(false);
+      postZoomState(false);
       endGesture();
     }
     function snapView() { viewRef.x = targetRef.x; viewRef.y = targetRef.y; viewRef.scale = targetRef.scale; applyView(); }
@@ -1004,7 +1023,7 @@ export function CanvasProvider({
       // Un-promoted layer → every zoomLoop frame paints fresh at the live scale.
       if (worldRef.current) worldRef.current.style.willChange = 'auto';
       beginGesture();
-      postZoomPaintMode(true);
+      postZoomState(true);
       if (!zoomRAF.current) zoomRAF.current = requestAnimationFrame(zoomLoop);
     }
     function freezeView() { stopZoomLoop(); targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = viewRef.scale; }
@@ -2676,42 +2695,59 @@ export function CanvasProvider({
        image), blend modes let overlays composite (stripping makes them opaque
        and hides what's underneath).
 
-       ── backdrop-filter is removed OUTRIGHT, not just during the gesture ──
+       ── backdrop-filter is scale-gated, not gesture-gated ──
 
        An element with a backdrop-filter is composited into its own render
-       surface. That surface is rasterized once and then GPU-scaled by the
-       ancestor transform — and the ancestor here is the board's world, in the
-       PARENT document. So the element never re-rasters at the board's scale,
-       while every unfiltered element around it does. The result is one subtree
-       that stays permanently soft, at every zoom level, in a document that is
-       otherwise crisp. Restoring the filter at the end of a gesture just
-       restores the blur, which is why this can't be gesture-scoped.
+       surface, and that surface rasterizes at roughly 1:1 and is then GPU-scaled
+       by the ancestor transform — which here is the board's world, in the PARENT
+       document. The child compositor never learns the board's effective scale,
+       so the element does not re-raster with it while every unfiltered element
+       around it does: one subtree stays soft in a document that is otherwise
+       crisp.
 
-       Nothing is lost that the reader can see: the frost samples a backdrop
-       that is itself part of the scaled board, so it was already being
-       resampled. A document whose design leans on frosted glass will read
-       flatter — the trade is a flat panel against a permanently blurry one.
+       This cannot be fixed by removing and re-applying the filter at the end of
+       a gesture. That does recreate the surface, but it comes back at the same
+       1:1 raster scale — which is why a gesture-scoped strip (v2) still left the
+       element soft once the board settled.
 
-       Inline styles carry it in practice (an exported document that
-       serialises computed styles writes backdrop-filter onto every element
-       that had one), so `!important` is required to win. */
-    const ZOOM_OPTS = `<script data-cv-zoom-opts="3">(() => {
-  const css =
-    // Always: see the note in CanvasProvider.jsx — a composited filter surface
-    // inside a scaled iframe can never re-raster with the board.
-    '*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
-    // During a zoom gesture only: paint-level savings, no layout effect.
+       So the rule is about scale, not motion. A ~1:1 raster is fine at or below
+       100% (downsampling a too-detailed texture looks correct) and visibly soft
+       above it, where it is upscaled. FLAT_ABOVE is where the frost stops being
+       worth its softness; tune it if the crossover sits elsewhere in practice.
+
+       The upshot for a document that genuinely wants frosted glass: it gets it,
+       at the zoom levels where the design is being read as a whole. Zooming in
+       past 1:1 — which readers do to inspect detail, exactly when sharpness
+       matters more than decoration — flattens the panel instead of blurring
+       everything on it.
+
+       Inline styles carry backdrop-filter in practice (an exported document
+       that serialises computed styles writes it onto every element that had
+       one), so `!important` is required to win the cascade. */
+    const ZOOM_OPTS = `<script data-cv-zoom-opts="4">(() => {
+  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
+  var css =
+    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
+    // it is also the single biggest per-frame paint saving).
+    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
+    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
+    // Gesture only: paint-level savings that cannot move a box.
     'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
     'box-shadow:none!important;text-shadow:none!important}';
-  const style = document.createElement('style');
+  var style = document.createElement('style');
   style.textContent = css;
-  const attach = () => (document.head || document.documentElement).appendChild(style);
+  var attach = function () { (document.head || document.documentElement).appendChild(style); };
   if (document.head || document.documentElement) attach();
   else addEventListener('DOMContentLoaded', attach);
-  addEventListener('message', (e) => {
-    const d = e.data;
+  // Flat until told otherwise: a host too old to send a scale gets the safe,
+  // never-blurry rendering rather than an unannounced regression.
+  document.documentElement.classList.add('cv-flat');
+  addEventListener('message', function (e) {
+    var d = e.data;
     if (!d || d.type !== 'canvas-zoom') return;
+    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
     document.documentElement.classList.toggle('cv-zooming', !!d.active);
+    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
   });
 })()</` + 'script>';
 
@@ -3079,7 +3115,7 @@ export function CanvasProvider({
 
     return {
       viewRef, targetRef, applyView, screenToWorld, freezeView,
-      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, invalidateGeom, startZoomLoop, snapView, syncChrome, syncScrollbars, scrollDrag, redrawMinimap, scheduleMinimap, syncMinimap, minimapCenterAt, minimapDrag, reframeOnResize, reflowObjects, scheduleReflow, hideSelChrome, placeSel, setHover, setGridEditGeom,
+      zoomAt, zoomCenter, zoomTo, panBy, pinchBy, markActive, invalidateGeom, postZoomStateTo, startZoomLoop, snapView, syncChrome, syncScrollbars, scrollDrag, redrawMinimap, scheduleMinimap, syncMinimap, minimapCenterAt, minimapDrag, reframeOnResize, reflowObjects, scheduleReflow, hideSelChrome, placeSel, setHover, setGridEditGeom,
       selectNode, selectShape, deselect, isSelected, toggleSelect, moveItemsFor, snapMoveDelta, snapResize, setSnapGuides,
       placeMarquee, hideMarquee, marqueeSelect,
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
