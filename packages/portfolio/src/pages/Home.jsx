@@ -9,6 +9,7 @@ import { ACCENT } from "../theme";
 import Seo from "../components/Seo";
 import Intro from "../components/Intro";
 import Projects from "../components/Projects";
+import Writing from "../components/Writing";
 import Connect from "../components/Connect";
 import { useReveal } from "../hooks/useReveal";
 
@@ -114,6 +115,11 @@ const Home = () => {
           onUnfurl={unfurlLink}
         />
       </div>
+
+      {/* The recent entries, between what I'm building now and how I got here —
+          the writing sits between the two, and reads as the link between them.
+          Renders nothing until there is a published post. */}
+      <Writing />
 
       <h2 id="background" className="section-label reveal">
         Background

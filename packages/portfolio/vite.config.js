@@ -6,6 +6,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { canvasSave } from "./vite-plugin-canvas-save.js";
 import { clipWarmup } from "./vite-plugin-clip-warmup.js";
+import { writingIndex } from "./vite-plugin-writing-index.js";
 
 // The masthead clip, named here so its fetch can start with the CSS instead
 // of after the bundle. Keep in step with the import in Intro.jsx.
@@ -41,5 +42,6 @@ export default defineConfig(({ command }) => ({
 		react(),
 		canvasSave(),
 		clipWarmup({ file: MASTHEAD_CLIP, globalName: MASTHEAD_CLIP_GLOBAL }),
+		writingIndex(),
 	],
 }));

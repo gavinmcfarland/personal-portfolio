@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 300" width="660" height="300" role="img" aria-label="Three plates of increasing size, each filled with square dots at the same pitch">
+  <defs>
+    <!-- One tile, one pitch. Every plate below is filled from this same pattern,
+         which is the whole point of the diagram: the grid is re-cut at the size
+         the element is, so a dot is the same size at 96px as it is at 280. -->
+    <pattern id="dots" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="#767c83" />
+    </pattern>
+    <pattern id="dots-accent" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="#d4432a" />
+    </pattern>
+  </defs>
+
+  <g stroke="#767c83" stroke-width="1">
+    <rect x="20.5" y="150.5" width="96" height="96" fill="url(#dots)" />
+    <rect x="140.5" y="86.5" width="160" height="160" fill="url(#dots)" />
+    <rect x="324.5" y="20.5" width="280" height="226" fill="url(#dots-accent)" />
+  </g>
+
+  <g fill="#767c83" font-family="ui-monospace, monospace" font-size="12" letter-spacing="0.08em">
+    <text x="20" y="270">96 PX</text>
+    <text x="140" y="270">160 PX</text>
+    <text x="324" y="270">280 PX</text>
+  </g>
+</svg>

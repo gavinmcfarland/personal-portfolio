@@ -42,6 +42,71 @@ npm run preview
 
 The production files will be generated in the `dist` folder.
 
+## Writing
+
+The blog, at `/writing`. A post is a markdown file — add the file and it appears
+in the archive, on the home page's WRITING section, and at its own URL. Nothing
+else is registered by hand.
+
+```
+src/content/writing/a-post.md          → /writing/a-post
+src/content/writing/a-post/index.md    → /writing/a-post   (+ its images)
+```
+
+Frontmatter drives the listing; `title` and `date` are required.
+
+```yaml
+---
+title: Dithering video in the browser
+date: 2026-07-12
+summary: One clip, re-cut as dots at whatever size it is drawn.
+tags: [dither, performance]
+draft: true # optional
+---
+```
+
+The full authoring reference — the supported markdown subset, images, code
+sample syntax — is in
+[`src/content/writing/_README.md`](src/content/writing/_README.md), next to the
+posts.
+
+### How it is set
+
+A post opens with its title flush to the content column — a masthead, like the
+home page's, not a section body under a `NAME` label. Everything below it is a
+man page, like the rest of the site. The renderer
+([`src/lib/markdown.jsx`](src/lib/markdown.jsx)) doesn't emit generic tags — it
+emits the furniture that already exists in `app.css`: `##` becomes a
+`.section-label` (flush, uppercase, tracked, the same rank as EXAMPLES on the
+home page), paragraphs hang at the `--stop` indent, links are `.xref`, notes are
+`.footnotes`, and an archive entry is the printed contents row (`.leaders`) with
+dotted leaders running out to its date. What's genuinely new is small: a code
+panel, a figure, a list, a quote.
+
+Code samples are highlighted by the canvas package's own tokeniser, imported
+from its `./code` subpath — a leaf module with no React, no CSS and no
+dependencies, so it costs a few hundred bytes rather than pulling the canvas
+engine into a post's chunk. The `--code-*` tokens in `app.css` restate the
+canvas's enamel palette, so a sample here and a code object on a board are
+identical.
+
+### The content boundary
+
+[`vite-plugin-writing-index.js`](vite-plugin-writing-index.js) resolves the
+content directory and serves two virtual modules:
+
+- `virtual:writing-index` — frontmatter only (title, date, summary, tags, word
+  count) plus a lazy loader per post. This is what Home imports, so it must stay
+  small; a glob that read every post's markdown to get at its frontmatter would
+  put the full text of the whole archive in the first chunk.
+- `virtual:writing-post/<slug>` — one post's markdown and its images, behind a
+  dynamic import. One chunk per post, fetched when the post is opened.
+
+Because the import list is generated rather than globbed, **a draft is genuinely
+absent from a build**: no manifest entry, no chunk, no asset, and its URL falls
+through to Not Found. Under `pnpm dev` the whole directory is present, drafts
+marked with a `DRAFT` tag in the listings.
+
 ## Private pages
 
 Password-protected, full-document canvases you can share with one person via an

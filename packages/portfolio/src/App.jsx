@@ -11,6 +11,7 @@ import ThemeToggle from "./components/ThemeToggle";
 import CanvasMaximizeToggle from "./components/CanvasMaximizeToggle";
 import Home from "./pages/Home";
 import { visibleProjects } from "./data/projects";
+import { findPost } from "./data/writing";
 
 /* Home is the only page that loads with the app. Everything below renders in
    the sliding panel (or, for a private page, replaces the document), and none
@@ -24,6 +25,11 @@ import { visibleProjects } from "./data/projects";
    normally arrives while it is still moving. */
 const ProjectPage = lazy(() => import("./pages/ProjectPage"));
 const CollisionDemoPage = lazy(() => import("./pages/CollisionDemoPage"));
+/* The writing section. Two routes and, behind the post page, one lazy chunk per
+   post — see src/data/writing.js. Home carries only the archive manifest
+   (frontmatter), which is what its recent-entries list needs. */
+const WritingIndex = lazy(() => import("./pages/WritingIndex"));
+const WritingPost = lazy(() => import("./pages/WritingPost"));
 // const CV = lazy(() => import("./pages/CV")); // CV page disabled — not public yet
 const PrivatePage = lazy(() => import("./pages/PrivatePage"));
 // The /examples/* prototype pages are disabled — the files are kept, but
@@ -44,6 +50,17 @@ function ProjectRoute() {
   const { id } = useParams();
   const project = visibleProjects.find((p) => p.id === id);
   return project ? <ProjectPage project={project} /> : <NotFound />;
+}
+
+/* The same resolution for a post: drafts are absent from the built manifest's
+   visible set, so their URLs return Not Found off the deployed site and open
+   normally in dev. */
+function WritingRoute() {
+  const { slug } = useParams();
+  const post = findPost(slug);
+  // Keyed by slug so moving between posts is a remount: the previous post's
+  // body can't be on screen while the next one is still being fetched.
+  return post ? <WritingPost key={post.slug} post={post} /> : <NotFound />;
 }
 
 /* How far the sliding overlay stops from the left edge — the strip of Home left
@@ -179,6 +196,8 @@ function App() {
               <Suspense fallback={null}>
                 <Routes location={overlayLoc}>
                   <Route path="/projects/:id" element={<ProjectRoute />} />
+                  <Route path="/writing" element={<WritingIndex />} />
+                  <Route path="/writing/:slug" element={<WritingRoute />} />
                   <Route path="/responsive" element={<CollisionDemoPage />} />
                   {/* /examples/* disabled — pages kept, routes removed, so
                     these paths fall through to Not Found below. Re-enable by

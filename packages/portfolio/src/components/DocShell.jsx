@@ -11,8 +11,11 @@ import { useReveal } from "../hooks/useReveal";
    <section>, which watched its own contents; with the sections flattened away
    there is no per-section root left, so one observer here picks up every
    `.reveal` element on the page instead. */
-export default function DocShell({ children }) {
-  const ref = useReveal();
+export default function DocShell({ children, revealKey }) {
+  // `revealKey` is passed by a page whose body is fetched after it mounts (a
+  // post): changing it re-scans for `.reveal` blocks that were not there the
+  // first time. Static pages leave it undefined and are scanned once.
+  const ref = useReveal(revealKey);
   return (
     <main
       ref={ref}

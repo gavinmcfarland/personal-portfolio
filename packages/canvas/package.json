@@ -11,6 +11,7 @@
   "module": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js",
+    "./code": "./src/code.js",
     "./styles.css": "./src/styles.css",
     "./core.css": "./src/core.css",
     "./theme.css": "./src/theme.css",
@@ -29,6 +30,7 @@
     "prepublishOnly": "node scripts/split-css.mjs && vite build"
   },
   "//": "prepare runs on `pnpm install`, so dist/ (gitignored) exists on a fresh CI checkout before any consumer resolves this package",
+  "//code": "The `./code` subpath is the syntax highlighter on its own — zero dependencies, no React, no CSS. A host that wants the code object's exact token classes somewhere else on the page (the portfolio's writing section does) imports it without pulling the canvas engine into that chunk. It points at src/, not dist/, because it is a leaf module with nothing to bundle.",
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
