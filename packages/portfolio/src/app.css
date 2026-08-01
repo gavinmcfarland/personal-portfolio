@@ -360,6 +360,10 @@ body :not(.canvas-root, .canvas-root *, .route-panel) {
 }
 
 /* ── The bar — global navigation ───────────────────────────────
+   BAR: nothing renders with these classes at the moment — <SiteBar> is
+   commented out in App.jsx. The rules are kept intact so switching the bar back
+   on is a change in one file rather than a rebuild of this block.
+
    The Enamel sheet's header bar (design-mockups/12-enamel), carried over at
    `--bar` tall so the theme toggle rides in it instead of floating in the
    corner of every surface.
@@ -501,10 +505,11 @@ p + .footnotes {
     color: var(--ink);
     margin-top: var(--sp-8); /* two lines */
     margin-bottom: var(--sp-4); /* one line — was a round 1rem */
-    /* For the in-page anchors — the bar is included because it is fixed, and
-       an anchor scrolled to `--sp-16` alone would stop with its heading under
-       the bar. */
-    scroll-margin-top: calc(var(--sp-16) + var(--bar));
+    /* For the in-page anchors. BAR: while the bar is off there is nothing
+       fixed over the top of the page — with it on this is
+       `calc(var(--sp-16) + var(--bar))`, or an anchor stops with its heading
+       under the bar. */
+    scroll-margin-top: var(--sp-16);
   }
   @media (min-width: 640px) {
     .section-label {

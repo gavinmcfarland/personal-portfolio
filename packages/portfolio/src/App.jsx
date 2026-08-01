@@ -7,7 +7,11 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import SiteBar from "./components/SiteBar";
+/* The bar is off for now — component kept, nothing renders it. Re-enabling it
+   means restoring the four commented blocks marked "BAR:" below, and dropping
+   the two floating <ThemeToggle>s the bar replaces (it carries the toggle). */
+// import SiteBar from "./components/SiteBar";
+import ThemeToggle from "./components/ThemeToggle";
 import CanvasMaximizeToggle from "./components/CanvasMaximizeToggle";
 import Home from "./pages/Home";
 import { visibleProjects } from "./data/projects";
@@ -141,20 +145,24 @@ function App() {
 
   return (
     <ThemeProvider>
-      {/* The bar is fixed, so the page in normal flow clears it here. Padding
-          rather than a margin, and with border-box sizing, so `min-h-screen`
-          still means one viewport rather than one viewport plus a bar. Private
-          pages return above this branch and never carry it — they are a
-          standalone document with no site chrome. */}
-      <div className="bg-base min-h-screen pt-(--bar)">
-        <SiteBar />
+      {/* BAR: while the bar is off the page starts at the top of the viewport.
+          With it on, add `pt-(--bar)` here — the bar is fixed, so the page in
+          normal flow has to clear it. Padding rather than a margin, and with
+          border-box sizing, so `min-h-screen` still means one viewport rather
+          than one viewport plus a bar. */}
+      <div className="bg-base min-h-screen">
+        {/* BAR: <SiteBar /> */}
         {/* Home stays mounted for the life of the app: navigating into a
             project overlays it rather than unmounting it, so its scroll
             position and one-time reveal animations are preserved on return.
             `isolate` traps its content's stacking context (the footer canvas
             chrome is z-100) below the route overlay, so nothing bleeds through
-            when an overlay is open over a footer-scrolled page. */}
+            when an overlay is open over a footer-scrolled page. The theme
+            toggle lives inside the isolate too, so an opening overlay slides
+            over it rather than sitting under a corner button that never moves.
+            (BAR: with the bar on, the toggle rides in it — drop this one.) */}
         <div className="isolate">
+          <ThemeToggle />
           <Home />
         </div>
 
@@ -185,17 +193,22 @@ function App() {
               onClick={() => navigate("/")}
               className={`fixed inset-y-0 left-0 z-10 ${PEEK_WIDTH} cursor-pointer`}
             />
-            {/* Starts at `--bar`, not at 0: the bar is chrome over both
-                surfaces, so the panel slides in beneath it rather than under
-                it. Everything inside the panel — including a project page's
-                `absolute inset-0` layout, which measures the panel's padding
-                box and so would ignore padding here — is below the bar as a
-                result. */}
+            {/* BAR: with the bar on this is `bottom-0 top-(--bar)` instead of
+                `inset-y-0` — the bar is chrome over both surfaces, so the panel
+                slides in beneath it. It has to be an inset rather than padding
+                because a project page's `absolute inset-0` layout measures the
+                panel's padding box and would ignore padding here. */}
             <div
-              className={`route-panel fixed bottom-0 top-(--bar) right-0 ${PEEK_INSET} z-20 overflow-y-auto border-l border-line bg-base shadow-[-8px_0_24px_rgba(0,0,0,0.08)] transition-transform duration-340 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`route-panel fixed inset-y-0 right-0 ${PEEK_INSET} z-20 overflow-y-auto border-l border-line bg-base shadow-[-8px_0_24px_rgba(0,0,0,0.08)] transition-transform duration-340 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 open ? "translate-x-0" : "translate-x-full"
               }`}
             >
+              {/* The panel's own toggle. The panel's transform makes this
+                  `fixed` child position relative to the panel (not the
+                  viewport), so it slides in and out with the page — and it
+                  stays pinned to the corner while the panel's content scrolls.
+                  (BAR: with the bar on, drop this one too.) */}
+              <ThemeToggle className="fixed right-[22px] top-[max(22px,calc(env(safe-area-inset-top)+12px))] z-50" />
               {/* The panel is what the reader is watching arrive, so an empty
                   one for the frames a chunk takes reads as the slide, not as a
                   gap. A spinner here would announce a wait that is usually
