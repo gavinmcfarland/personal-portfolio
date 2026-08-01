@@ -14,6 +14,11 @@ const RECENT = 3;
 
 const Writing = () => {
   const recent = visiblePosts.slice(0, RECENT);
+  /* Nothing to list, no section — not an empty heading. This is also what
+     keeps a site whose posts are all drafts from shipping a WRITING heading
+     over nothing: the manifest drops drafts in a build and keeps them in dev
+     (vite-plugin-writing-index.js), so `visiblePosts` is empty in production
+     and the section disappears, while it stays on screen while you write. */
   if (recent.length === 0) return null;
 
   return (
