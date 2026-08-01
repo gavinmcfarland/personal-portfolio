@@ -9,9 +9,14 @@ const PANEL = 'flex items-center justify-center border border-line bg-surface p-
 const BUTTON =
   'flex h-7 w-7 items-center justify-center rounded-[8px] bg-transparent text-muted transition-colors duration-150 hover:bg-hover hover:text-ink';
 
-/* Minimal single-button theme cycle — system → light → dark. */
+/* Minimal single-button theme cycle — system → light → dark.
+
+   `panel` drops the enamel wrapper for a toggle that already sits on a filled
+   surface — the bar. The panel is there to lift the button off whatever it is
+   floating over; inside the bar there is nothing to lift it off. */
 const ThemeToggle = ({
   className = 'fixed right-[22px] top-[max(22px,calc(env(safe-area-inset-top)+12px))] z-50',
+  panel = true,
 }) => {
   const { mode, toggleTheme } = useTheme();
 
@@ -31,7 +36,7 @@ const ThemeToggle = ({
   };
 
   return (
-    <div className={`${PANEL} ${className}`}>
+    <div className={`${panel ? PANEL : 'flex items-center justify-center'} ${className}`}>
       <button
         onClick={toggleTheme}
         className={BUTTON}

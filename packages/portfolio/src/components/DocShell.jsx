@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, blurOnPointerClick } from "./ui";
 import { useReveal } from "../hooks/useReveal";
+import { useBackTarget } from "../contexts/NavOriginContext";
 
 /* Shared shell for the /examples/* prototype pages: the same content column as
    Home (so the man-page indent stops line up), a Back link to Home, and room at
@@ -16,6 +17,9 @@ export default function DocShell({ children, revealKey }) {
   // post): changing it re-scans for `.reveal` blocks that were not there the
   // first time. Static pages leave it undefined and are scanned once.
   const ref = useReveal(revealKey);
+  // Back goes to the list this page was opened from — /writing for a post
+  // reached from the archive, /work for one of its projects, Home otherwise.
+  const back = useBackTarget();
   return (
     <main
       ref={ref}
@@ -23,7 +27,7 @@ export default function DocShell({ children, revealKey }) {
     >
       <div className="pt-(--sp-4)">
         <Link
-          to="/"
+          to={back}
           onClick={blurOnPointerClick}
           className="group inline-flex items-center gap-2 font-sans text-4 font-medium text-muted transition-colors duration-200 hover:text-ink"
         >

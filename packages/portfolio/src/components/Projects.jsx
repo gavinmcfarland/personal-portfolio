@@ -63,6 +63,46 @@ function Chevron() {
   );
 }
 
+/* The rows on their own, so Home's EXAMPLES section and the /work page set the
+   same list rather than two lists that drift apart. Hung at the indent stop, so
+   whatever renders it supplies the flush heading above. */
+export const ProjectList = () => (
+  <div className="indent reveal space-y-(--sp-1)">
+    {projects.map((p) => (
+      <Link
+        key={p.id}
+        to={`/projects/${p.id}`}
+        className="group -mx-4 block px-4 py-3 transition-colors duration-150 hover:bg-surface"
+        onClick={blurOnPointerClick}
+      >
+        {/* Title row spans the full width, so the kind chip stays hard against
+              the entry's right edge — the chevron rides the row below it rather
+              than sitting beside the chip and insetting it. */}
+        <p className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+          <span className="font-bold text-ink transition-colors duration-150 group-hover:text-accent">
+            {p.title}
+          </span>
+          <KindTag kind={p.kind} />
+        </p>
+        {/* Plate left, description right — the entry shape from the Dither
+              sheet: a 30rem × 13rem plate, stacking above the text on narrow
+              screens where there is no room to set them side by side. */}
+        {/* TEMP: plates commented out — restore the grid classes below with
+              `grid gap-4 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-10`
+              when the <ProjectPlate> goes back in. */}
+        {/* Hangs at `--stop`, the same three-character step the section body
+              takes off its flush <h2> — so an entry's summary sits under its
+              title exactly as a section's body sits under its heading. */}
+        <div className="mt-(--sp-1) flex items-center justify-between gap-4 pl-(--stop)">
+          {/* <ProjectPlate id={p.id} className="h-[10rem] lg:h-[13rem]" /> */}
+          <p className="min-w-0 max-w-measure text-muted">{p.summary}</p>
+          <Chevron />
+        </div>
+      </Link>
+    ))}
+  </div>
+);
+
 const Projects = () => (
   <>
     <h2 id="examples" className="section-label reveal">
@@ -70,44 +110,11 @@ const Projects = () => (
     </h2>
     <p className="lede indent reveal max-w-measure text-muted">
       A selection of work I&rsquo;ve designed and built end-to-end. Each one
-      reflects a problem I wanted to solve and the craft that went into making it
-      feel effortless to use.
+      reflects a problem I wanted to solve and the craft that went into making
+      it feel effortless to use.
     </p>
 
-    <div className="indent reveal space-y-(--sp-1)">
-      {projects.map((p) => (
-        <Link
-          key={p.id}
-          to={`/projects/${p.id}`}
-          className="group -mx-4 block px-4 py-3 transition-colors duration-150 hover:bg-surface"
-          onClick={blurOnPointerClick}
-        >
-          {/* Title row spans the full width, so the kind chip stays hard against
-              the entry's right edge — the chevron rides the row below it rather
-              than sitting beside the chip and insetting it. */}
-          <p className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-            <span className="font-bold text-ink transition-colors duration-150 group-hover:text-accent">
-              {p.title}
-            </span>
-            <KindTag kind={p.kind} />
-          </p>
-          {/* Plate left, description right — the entry shape from the Dither
-              sheet: a 30rem × 13rem plate, stacking above the text on narrow
-              screens where there is no room to set them side by side. */}
-          {/* TEMP: plates commented out — restore the grid classes below with
-              `grid gap-4 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-10`
-              when the <ProjectPlate> goes back in. */}
-          {/* Hangs at `--stop`, the same three-character step the section body
-              takes off its flush <h2> — so an entry's summary sits under its
-              title exactly as a section's body sits under its heading. */}
-          <div className="mt-(--sp-1) flex items-center justify-between gap-4 pl-(--stop)">
-            {/* <ProjectPlate id={p.id} className="h-[10rem] lg:h-[13rem]" /> */}
-            <p className="min-w-0 max-w-measure text-muted">{p.summary}</p>
-            <Chevron />
-          </div>
-        </Link>
-      ))}
-    </div>
+    <ProjectList />
   </>
 );
 

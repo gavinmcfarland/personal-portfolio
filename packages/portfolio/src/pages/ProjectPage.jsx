@@ -1,8 +1,14 @@
 import { Link } from "react-router-dom";
 import Seo from "../components/Seo";
 import ProjectCanvas from "../components/ProjectCanvas";
-import { ArrowLeft, ArrowRight, ArrowUpRight, blurOnPointerClick } from "../components/ui";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  blurOnPointerClick,
+} from "../components/ui";
 import { visibleProjects } from "../data/projects";
+import { useBackTarget } from "../contexts/NavOriginContext";
 
 /* Full-screen project view. Below `lg` a compact header sits above the canvas;
    from `lg` up the same info becomes a full-height sidebar on the left, with
@@ -10,6 +16,11 @@ import { visibleProjects } from "../data/projects";
    view locks to the viewport (fixed inset-0) so nothing scrolls; you pan the
    canvas instead. */
 export default function ProjectPage({ project }) {
+  /* Back returns to the list the project was opened from — /work, or Home,
+     which lists the projects too. Walking prev/next through the section does
+     not move it. */
+  const back = useBackTarget();
+
   /* The visit link shares the top row with the back link on every breakpoint,
      sitting in the top-right corner of the header/sidebar. */
   const visitPill = (visibility, label) =>
@@ -69,7 +80,7 @@ export default function ProjectPage({ project }) {
         <div className="flex flex-col px-5 pb-10 pt-4 sm:px-8 sm:pt-6 lg:min-h-full lg:pb-[22px] lg:pt-8">
           <div className="flex items-center justify-between gap-4">
             <Link
-              to="/"
+              to={back}
               onClick={blurOnPointerClick}
               className="group inline-flex items-center gap-2 font-sans text-4 font-medium text-muted transition-colors duration-200 hover:text-ink"
             >

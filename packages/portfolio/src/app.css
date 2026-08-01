@@ -139,6 +139,14 @@
      grey; dark mode (overridden in .dark) dims with a darker grey. */
   --scrim: var(--steel-300);
 
+  /* Height of the fixed navigation bar. The Enamel sheet's bar is 2.75rem; this
+     one is a step taller because it carries the theme toggle, whose enamel panel
+     is 38px — at 44px the panel would fill the bar edge to edge. 52px leaves a
+     7px margin above and below it. Read by the page wrapper's top padding and
+     by the route panel's top inset (both in App.jsx), so the bar's height is
+     only ever measured in one place. */
+  --bar: 3.25rem;
+
   /* The four enamels as flat swatches / tags (e.g. the Work table's Kind
      column). Paired with the graphite/steel ground. */
   --tone-vermilion: var(--vermilion-500);
@@ -216,7 +224,9 @@
   --sp-6: calc(var(--lh) * 1.5); /* 35.7px  — between blocks in a section */
   --sp-8: calc(var(--lh) * 2); /* 47.6px  — sub-label top, back-link → title */
   --sp-12: calc(var(--lh) * 3); /* 71.4px  — section head top */
-  --sp-16: calc(var(--lh) * 4); /* 95.2px  — section head top (sm+), page edges */
+  --sp-16: calc(
+    var(--lh) * 4
+  ); /* 95.2px  — section head top (sm+), page edges */
 
   /* The one paragraph step — now three-quarters of a line rather than a round
      0.9rem. The old value was *narrower* than the leading, which meant a
@@ -349,6 +359,72 @@ body :not(.canvas-root, .canvas-root *, .route-panel) {
   font-variant-numeric: tabular-nums;
 }
 
+/* ── The bar — global navigation ───────────────────────────────
+   The Enamel sheet's header bar (design-mockups/12-enamel), carried over at
+   `--bar` tall so the theme toggle rides in it instead of floating in the
+   corner of every surface.
+
+   No wordmark. The mockup opens the bar with the site's name, but this site
+   says its name in the first line of its own content — a second copy in the
+   bar would only say it twice, and the row reads as navigation rather than as
+   a masthead without it.
+
+   Filled with the raised surface rather than the ground, the way the sheet's
+   bar is: on the ground colour the row read as three links floating over the
+   page rather than as a band across the top of it. The toggle inside drops its
+   own enamel panel in exchange (see ThemeToggle's `panel` prop) — a panel on a
+   panel is one fill too many. */
+.bar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 60; /* over the route panel (20) and its back-target peek (10) */
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  height: var(--bar);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.bar nav {
+  display: flex;
+  gap: 0.25rem;
+  /* Nothing here is wide enough to scroll at any width the site supports, but
+     the mockup's bar scrolls its links rather than wrapping them, and a bar
+     with a fixed height cannot wrap. */
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* The links carry their own 0.5rem of padding so the hover and current-page
+     fills extend past the word. Pulling the row back by that much sets the
+     first link's *text* on the content column rather than its fill. */
+  margin-left: -0.5rem;
+}
+.bar nav::-webkit-scrollbar {
+  display: none;
+}
+
+.bar nav a {
+  padding: 0.2rem 0.5rem;
+  font-size: var(--text-3);
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 150ms;
+}
+.bar nav a:hover {
+  color: var(--ink);
+}
+
+/* The live page is filled, not underlined — rank by fill, the system's first
+   device, applied to the system's own navigation. */
+.bar nav a[aria-current="page"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+}
+
 /* ── Man-page structure ────────────────────────────────────────
    Unix documentation discipline borrowed into the Enamel system — the register
    does the work, not new colour. A fixed indent stop hangs every section body
@@ -425,7 +501,10 @@ p + .footnotes {
     color: var(--ink);
     margin-top: var(--sp-8); /* two lines */
     margin-bottom: var(--sp-4); /* one line — was a round 1rem */
-    scroll-margin-top: var(--sp-16); /* for the in-page anchors */
+    /* For the in-page anchors — the bar is included because it is fixed, and
+       an anchor scrolled to `--sp-16` alone would stop with its heading under
+       the bar. */
+    scroll-margin-top: calc(var(--sp-16) + var(--bar));
   }
   @media (min-width: 640px) {
     .section-label {
@@ -810,7 +889,6 @@ p + .footnotes {
 .rel__tag.brk {
   color: var(--accent);
 }
-
 
 /* ── Writing ───────────────────────────────────────────────────────
    The blog, set as more of the manual. Almost none of its furniture is new: a

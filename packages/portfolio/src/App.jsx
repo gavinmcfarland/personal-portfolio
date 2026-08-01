@@ -7,7 +7,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import ThemeToggle from "./components/ThemeToggle";
+import SiteBar from "./components/SiteBar";
 import CanvasMaximizeToggle from "./components/CanvasMaximizeToggle";
 import Home from "./pages/Home";
 import { visibleProjects } from "./data/projects";
@@ -30,6 +30,9 @@ const CollisionDemoPage = lazy(() => import("./pages/CollisionDemoPage"));
    (frontmatter), which is what its recent-entries list needs. */
 const WritingIndex = lazy(() => import("./pages/WritingIndex"));
 const WritingPost = lazy(() => import("./pages/WritingPost"));
+/* The work index the bar's third link points at — the same project rows Home
+   sets under EXAMPLES, given a page of their own. */
+const Work = lazy(() => import("./pages/Work"));
 // const CV = lazy(() => import("./pages/CV")); // CV page disabled — not public yet
 const PrivatePage = lazy(() => import("./pages/PrivatePage"));
 // The /examples/* prototype pages are disabled — the files are kept, but
@@ -138,17 +141,20 @@ function App() {
 
   return (
     <ThemeProvider>
-      <div className="bg-base min-h-screen">
+      {/* The bar is fixed, so the page in normal flow clears it here. Padding
+          rather than a margin, and with border-box sizing, so `min-h-screen`
+          still means one viewport rather than one viewport plus a bar. Private
+          pages return above this branch and never carry it — they are a
+          standalone document with no site chrome. */}
+      <div className="bg-base min-h-screen pt-(--bar)">
+        <SiteBar />
         {/* Home stays mounted for the life of the app: navigating into a
             project overlays it rather than unmounting it, so its scroll
             position and one-time reveal animations are preserved on return.
             `isolate` traps its content's stacking context (the footer canvas
             chrome is z-100) below the route overlay, so nothing bleeds through
-            when an overlay is open over a footer-scrolled page. The theme
-            toggle lives inside the isolate too, so an opening overlay slides
-            over it rather than sitting under a corner button that never moves. */}
+            when an overlay is open over a footer-scrolled page. */}
         <div className="isolate">
-          <ThemeToggle />
           <Home />
         </div>
 
@@ -179,16 +185,17 @@ function App() {
               onClick={() => navigate("/")}
               className={`fixed inset-y-0 left-0 z-10 ${PEEK_WIDTH} cursor-pointer`}
             />
+            {/* Starts at `--bar`, not at 0: the bar is chrome over both
+                surfaces, so the panel slides in beneath it rather than under
+                it. Everything inside the panel — including a project page's
+                `absolute inset-0` layout, which measures the panel's padding
+                box and so would ignore padding here — is below the bar as a
+                result. */}
             <div
-              className={`route-panel fixed inset-y-0 right-0 ${PEEK_INSET} z-20 overflow-y-auto border-l border-line bg-base shadow-[-8px_0_24px_rgba(0,0,0,0.08)] transition-transform duration-340 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`route-panel fixed bottom-0 top-(--bar) right-0 ${PEEK_INSET} z-20 overflow-y-auto border-l border-line bg-base shadow-[-8px_0_24px_rgba(0,0,0,0.08)] transition-transform duration-340 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 open ? "translate-x-0" : "translate-x-full"
               }`}
             >
-              {/* The panel's own toggle. The panel's transform makes this
-                  `fixed` child position relative to the panel (not the
-                  viewport), so it slides in and out with the page — and it
-                  stays pinned to the corner while the panel's content scrolls. */}
-              <ThemeToggle className="fixed right-[22px] top-[max(22px,calc(env(safe-area-inset-top)+12px))] z-50" />
               {/* The panel is what the reader is watching arrive, so an empty
                   one for the frames a chunk takes reads as the slide, not as a
                   gap. A spinner here would announce a wait that is usually
@@ -196,6 +203,7 @@ function App() {
               <Suspense fallback={null}>
                 <Routes location={overlayLoc}>
                   <Route path="/projects/:id" element={<ProjectRoute />} />
+                  <Route path="/work" element={<Work />} />
                   <Route path="/writing" element={<WritingIndex />} />
                   <Route path="/writing/:slug" element={<WritingRoute />} />
                   <Route path="/responsive" element={<CollisionDemoPage />} />
