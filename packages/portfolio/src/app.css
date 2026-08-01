@@ -1174,6 +1174,16 @@ p + .footnotes {
   color: var(--accent);
 }
 
+/* At the locator end of a contents row (Home's WRITING list, where the tag sits
+   between the leaders and the date) it needs more air on the right than
+   `.leader`'s 0.5rem gap gives it: the tag is tracked uppercase and the date is
+   tabular, so at the shared gap the two registers read as one run. The extra
+   step is only on that side — the leaders' dots want the tag close, and the
+   tag against a title (the archive) is left alone. */
+.leader__dots + .draft-tag {
+  margin-right: 0.25rem;
+}
+
 /* ── The rhythm of a post's body ───────────────────────────────────
    Markdown carries no spacing information at all: every class the renderer
    emits was written for a page where the author chose each step by hand, so the
