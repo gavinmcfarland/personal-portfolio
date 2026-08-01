@@ -36,8 +36,12 @@ const Writing = () => {
             >
               {post.title}
             </Link>
-            {post.draft && <span className="draft-tag">Draft</span>}
             <span className="leader__dots" aria-hidden="true" />
+            {/* At the locator end of the row, not against the title: the tag is
+                a fact about the entry's status, which is what that end of a
+                contents row is for. It also stops a title and its mark being
+                read as one phrase. `.leader`'s own gap spaces it either side. */}
+            {post.draft && <span className="draft-tag">Draft</span>}
             <span className="leader__pg">{formatDate(post.date)}</span>
           </li>
         ))}

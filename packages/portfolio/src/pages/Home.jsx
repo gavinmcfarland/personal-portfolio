@@ -67,90 +67,94 @@ const Home = () => {
   // sections flattened away, <main> is the only root left that spans them all.
   const ref = useReveal();
   return (
-  <>
-    {/* Home keeps the site defaults — a generic OG card with the site name. */}
-    <Seo
-      title=""
-      description="Designer and full-stack engineer building tools and web applications. Currently freelancing and building Awenate."
-    />
-    {/* All page content lives in <main>: a flush heading per group, its body
+    <>
+      {/* Home keeps the site defaults — a generic OG card with the site name. */}
+      <Seo
+        title=""
+        description="Designer and full-stack engineer building tools and web applications. Currently freelancing and building Awenate."
+      />
+      {/* All page content lives in <main>: a flush heading per group, its body
         hung at the indent stop beside it — no wrapper between them. */}
-    <main
-      ref={ref}
-      className="mr-auto w-full max-w-5xl pb-(--sp-16) pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24"
-    >
-      {/* CONTENTS, CAPABILITIES, ENVIRONMENT and INDEX were removed from Home;
-          copies of all four live on the unlisted /backup page. */}
-      <Intro />
-      <Projects />
-
-      <h2 id="playground" className="section-label reveal">
-        Staging
-      </h2>
-      <p className="lede indent reveal max-w-measure text-muted">
-        These are things I&rsquo;m currently working on. New ideas, experiments,
-        tools, and features often appear here long before they become polished
-        projects. It&rsquo;s a snapshot of what has my attention right now.
-      </p>
-      <div
-        className="indent reveal overflow-hidden rounded-2xl border border-line"
-        style={{ height: "min(70vh, 520px)" }}
+      <main
+        ref={ref}
+        className="mr-auto w-full max-w-5xl pb-(--sp-16) pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24"
       >
-        <DeferredCanvas
-          fit="contain"
-          initialView="fit"
-          fullscreenButton="document"
-          classNames={{ root: "enamel" }}
-          accent={ACCENT}
-          editable={import.meta.env.DEV}
-          cooperativeGestures
-          base={playgroundBoard}
-          storageKey="footer-canvas-demo"
-          initialState={publishedBoard("footer-canvas-demo")}
-          onPublish={boardSaver("footer-canvas-demo")}
-          onUploadImage={uploadMedia}
-          onUploadVideo={uploadMedia}
-          onUploadAudio={uploadMedia}
-          onUploadHtml={uploadMedia}
-          onUnfurl={unfurlLink}
-        />
-      </div>
+        {/* CONTENTS, CAPABILITIES, ENVIRONMENT and INDEX were removed from Home;
+          copies of all four live on the unlisted /backup page. */}
+        <Intro />
+        <Projects />
 
-      {/* The recent entries, between what I'm building now and how I got here —
-          the writing sits between the two, and reads as the link between them.
-          Renders nothing until there is a published post. */}
-      <Writing />
+        {/* Directly under the work, because that is what it is mostly about — a
+          post is usually the account of how one of the things above was built.
+          It used to sit further down, between the staging canvas and the
+          background, where it read as a third unrelated thing rather than as
+          the notes behind the second. Renders nothing until there is a
+          published post. */}
+        <Writing />
 
-      <h2 id="background" className="section-label reveal">
-        Background
-      </h2>
-      <p className="indent reveal max-w-measure text-muted">
-        I&rsquo;ve spent over 12 years helping organisations across the public
-        and private sectors solve problems through product design, user research,
-        and engineering. Along the way, I&rsquo;ve worked with clients including
-        Amazon, American Express, NatWest, and Lovable. You can read my full
-        professional history on{" "}
-        <a
-          href="https://www.linkedin.com/in/gavinmcfarland"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="xref"
+        <h2 id="playground" className="section-label reveal">
+          Staging
+        </h2>
+        <p className="lede indent reveal max-w-measure text-muted">
+          These are things I&rsquo;m currently working on. New ideas,
+          experiments, tools, and features often appear here long before they
+          become polished projects. It&rsquo;s a snapshot of what has my
+          attention right now.
+        </p>
+        <div
+          className="indent reveal overflow-hidden rounded-2xl border border-line"
+          style={{ height: "min(70vh, 520px)" }}
         >
-          LinkedIn
-        </a>
-        .
-      </p>
+          <DeferredCanvas
+            fit="contain"
+            initialView="fit"
+            fullscreenButton="document"
+            classNames={{ root: "enamel" }}
+            accent={ACCENT}
+            editable={import.meta.env.DEV}
+            cooperativeGestures
+            base={playgroundBoard}
+            storageKey="footer-canvas-demo"
+            initialState={publishedBoard("footer-canvas-demo")}
+            onPublish={boardSaver("footer-canvas-demo")}
+            onUploadImage={uploadMedia}
+            onUploadVideo={uploadMedia}
+            onUploadAudio={uploadMedia}
+            onUploadHtml={uploadMedia}
+            onUnfurl={unfurlLink}
+          />
+        </div>
 
-      <Connect />
+        <h2 id="background" className="section-label reveal">
+          Background
+        </h2>
+        <p className="indent reveal max-w-measure text-muted">
+          I&rsquo;ve spent over 12 years helping organisations across the public
+          and private sectors solve problems through product design, user
+          research, and engineering. Along the way, I&rsquo;ve worked with
+          clients including Amazon, American Express, NatWest, and Lovable. You
+          can read my full professional history on{" "}
+          <a
+            href="https://www.linkedin.com/in/gavinmcfarland"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="xref"
+          >
+            LinkedIn
+          </a>
+          .
+        </p>
 
-      {/* Closes the page the way a man page closes: a single quiet line, flush
+        <Connect />
+
+        {/* Closes the page the way a man page closes: a single quiet line, flush
           to the content column since it belongs to no section. The year is read
           at render so it never goes stale. */}
-      <p className="colophon reveal">
-        © {new Date().getFullYear()} Gavin McFarland
-      </p>
-    </main>
-  </>
+        <p className="colophon reveal">
+          © {new Date().getFullYear()} Gavin McFarland
+        </p>
+      </main>
+    </>
   );
 };
 

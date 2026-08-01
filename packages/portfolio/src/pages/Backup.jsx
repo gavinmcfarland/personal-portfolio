@@ -27,7 +27,7 @@ const ENTRIES = [
   { label: "Name", href: "#name", sec: "1" },
   { label: "Synopsis", href: "#synopsis", sec: "2" },
   { label: "Description", href: "#description", sec: "3" },
-  { label: "Examples", href: "#examples", sec: "4" },
+  { label: "Work", href: "#work", sec: "4" },
   { label: "Capabilities", href: "#capabilities", sec: "5" },
   { label: "Staging", href: "#playground", sec: "6" },
   { label: "Environment", href: "#environment", sec: "7" },
@@ -66,7 +66,10 @@ const SKILLS = [
 
 /* ── ENVIRONMENT — from PastExperience.jsx ─────────────────────── */
 const ENV = [
-  { name: "STACK", value: "TypeScript, Svelte, Node.js, React, Vite, Figma API" },
+  {
+    name: "STACK",
+    value: "TypeScript, Svelte, Node.js, React, Vite, Figma API",
+  },
   { name: "BASED", value: "London, United Kingdom" },
   { name: "DOMAINS", value: "Finance, government, retail" },
   {
@@ -81,7 +84,7 @@ const GROUPS = [
   {
     letter: "A",
     entries: [
-      { t: "Askeroo", href: "#examples", loc: "§4" },
+      { t: "Askeroo", href: "#work", loc: "§4" },
       { t: "awenate", href: "#description", loc: "§3" },
     ],
   },
@@ -115,14 +118,14 @@ const GROUPS = [
   {
     letter: "F",
     entries: [
-      { t: "Figlet", href: "#examples", loc: "§4" },
+      { t: "Figlet", href: "#work", loc: "§4" },
       { t: "Figma", href: "#capabilities", loc: "§5" },
       { t: "freelance", href: "#description", loc: "§3" },
     ],
   },
   {
     letter: "I",
-    entries: [{ t: "Icon Preview", href: "#examples", loc: "§4" }],
+    entries: [{ t: "Icon Preview", href: "#work", loc: "§4" }],
   },
   {
     letter: "L",

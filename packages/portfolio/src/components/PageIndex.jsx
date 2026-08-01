@@ -7,14 +7,19 @@ const GROUPS = [
   {
     letter: "A",
     entries: [
-      { t: "Askeroo", href: "#examples", loc: "§4" },
+      { t: "Askeroo", href: "#work", loc: "§4" },
       { t: "awenate", href: "#description", loc: "§3" },
     ],
   },
   {
     letter: "D",
     entries: [
-      { t: "Design", href: "#capabilities", loc: "§5", subs: [{ t: "design systems", loc: "§5e" }] },
+      {
+        t: "Design",
+        href: "#capabilities",
+        loc: "§5",
+        subs: [{ t: "design systems", loc: "§5e" }],
+      },
       { t: "Description", href: "#description", loc: "§3" },
     ],
   },
@@ -36,14 +41,14 @@ const GROUPS = [
   {
     letter: "F",
     entries: [
-      { t: "Figlet", href: "#examples", loc: "§4" },
+      { t: "Figlet", href: "#work", loc: "§4" },
       { t: "Figma", href: "#capabilities", loc: "§5" },
       { t: "freelance", href: "#description", loc: "§3" },
     ],
   },
   {
     letter: "I",
-    entries: [{ t: "Icon Preview", href: "#examples", loc: "§4" }],
+    entries: [{ t: "Icon Preview", href: "#work", loc: "§4" }],
   },
   {
     letter: "L",

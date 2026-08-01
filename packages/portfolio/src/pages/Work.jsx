@@ -23,9 +23,9 @@ export default function Work() {
       <header className="pt-(--sp-8)">
         <h1 className="wordmark">work</h1>
         <p className="max-w-measure text-pretty text-muted">
-          A selection of work I&rsquo;ve designed and built end-to-end. Each one
-          reflects a problem I wanted to solve and the craft that went into
-          making it feel effortless to use.
+          A selection of things I&rsquo;ve designed and built end-to-end. Each
+          one reflects a problem I wanted to solve and the craft that went into
+          making it.
         </p>
       </header>
 

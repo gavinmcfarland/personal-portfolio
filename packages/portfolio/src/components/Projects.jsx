@@ -3,9 +3,10 @@ import { visibleProjects as projects } from "../data/projects";
 // import ProjectPlate from "./ProjectPlate"; // TEMP: plates commented out
 import { blurOnPointerClick } from "./ui";
 
-/* The work, set as a man page's EXAMPLES: each project is its name, with its kind
-   chipped out to the right and the summary hanging beneath as the description.
-   Each block links through to the project's own page. */
+/* The work, set the way a man page sets its EXAMPLES: each project is its name,
+   with its kind chipped out to the right and the summary hanging beneath as the
+   description. Each block links through to the project's own page. The section
+   is headed WORK — the layout is still the manual's, the label is not. */
 
 /* Kind chip — the four enamels as flat square swatches beside an uppercase
    label. `tone` points at a --tone-* token, so the colour flips with the
@@ -105,13 +106,18 @@ export const ProjectList = () => (
 
 const Projects = () => (
   <>
-    <h2 id="examples" className="section-label reveal">
-      Examples
+    {/* WORK, not the man page's EXAMPLES. The section outlived the metaphor:
+        there is a /work page now, the bar links to it, and a heading here that
+        called the same list something else made the site's own navigation read
+        as pointing somewhere new. The id follows the heading — /#examples is
+        gone; anything that pointed there points at #work (see Backup.jsx). */}
+    <h2 id="work" className="section-label reveal">
+      Work
     </h2>
     <p className="lede indent reveal max-w-measure text-muted">
-      A selection of work I&rsquo;ve designed and built end-to-end. Each one
+      A selection of things I&rsquo;ve designed and built end-to-end. Each one
       reflects a problem I wanted to solve and the craft that went into making
-      it feel effortless to use.
+      it.
     </p>
 
     <ProjectList />
