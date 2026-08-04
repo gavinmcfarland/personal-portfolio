@@ -661,12 +661,14 @@
   width: 200px;
   height: 140px;
 }
+/* No fill in either mode: the dashed outline is enough to read the region, and
+   a translucent wash over the board tints everything inside it. */
 .canvas-root .cv-frame .cv-frame-body {
   position: absolute;
   inset: 0;
   border: 1.6px dashed var(--cv-accent);
   border-radius: 9px;
-  background: var(--cv-accent-soft);
+  background: transparent;
   pointer-events: none;
 }
 
@@ -2963,9 +2965,6 @@
 /* SVGs don't open full-screen, so don't imply they're clickable. */
 .canvas-root[data-readonly] .cv-node.cv-image.cv-svg {
   cursor: inherit;
-}
-.canvas-root[data-readonly] .cv-frame .cv-frame-body {
-  background: transparent;
 }
 
 /* Objects marked as navigation anchors (author view only) */

@@ -343,6 +343,8 @@
   width: 200px;
   height: 140px;
 }
+/* No fill in either mode: the dashed outline is enough to read the region, and
+   a translucent wash over the board tints everything inside it. */
 .canvas-root .cv-frame .cv-frame-body {
   position: absolute;
   inset: 0;

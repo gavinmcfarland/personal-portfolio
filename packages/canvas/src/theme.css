@@ -422,10 +422,12 @@
   list-style: inherit;
 }
 /* Frame / anchor region — the box scales with zoom; its label lives in the chrome layer */
+/* No fill in either mode: the dashed outline is enough to read the region, and
+   a translucent wash over the board tints everything inside it. */
 .canvas-root .cv-frame .cv-frame-body {
   border: 1.6px dashed var(--cv-accent);
   border-radius: 9px;
-  background: var(--cv-accent-soft);
+  background: transparent;
 }
 /* Dropped image object */
 .canvas-root .cv-node.cv-image,
@@ -1835,9 +1837,6 @@
 }
 /* Read-only mode: hide authoring chrome; drag-to-pan everywhere */
 /* SVGs don't open full-screen, so don't imply they're clickable. */
-.canvas-root[data-readonly] .cv-frame .cv-frame-body {
-  background: transparent;
-}
 /* Objects marked as navigation anchors (author view only) */
 .canvas-root:not([data-readonly]) .cv-node[data-anchor="1"] {
   outline: 2px dashed var(--cv-accent);
