@@ -3200,6 +3200,30 @@
   background: var(--cv-accent-soft);
   color: var(--cv-ink);
 }
+/* Drag to reorder. The rows hold their positions for the whole gesture (the drop
+   line marks where the section lands), so the list can't shuffle under the
+   cursor and the hit test stays honest while the menu scrolls. */
+.canvas-root .cv-section-item[data-reorderable] {
+  cursor: grab;
+  /* A drag reads as a drag, not as text being swept. */
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.canvas-root .cv-section-item[data-dragging] {
+  cursor: grabbing;
+  background: var(--cv-accent-soft);
+  color: var(--cv-ink);
+  opacity: 0.5;
+}
+/* Drop line. An inset shadow rather than a border, so the row keeps its height
+   and nothing below it shifts as the target moves. */
+.canvas-root .cv-section-item[data-drop-before] {
+  box-shadow: inset 0 2px 0 -0.5px var(--cv-accent);
+}
+.canvas-root .cv-section-item[data-drop-after] {
+  box-shadow: inset 0 -2px 0 -0.5px var(--cv-accent);
+}
 .canvas-root .cv-section-num {
   font-variant-numeric: tabular-nums;
   font-size: 0.66rem;

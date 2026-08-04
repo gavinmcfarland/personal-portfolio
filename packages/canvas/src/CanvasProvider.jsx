@@ -305,7 +305,9 @@ function normalizeCrop(c) {
 }
 
 function normalizeSaved(n) {
-  const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor, ...(n.scale && +n.scale !== 1 ? { scale: +n.scale } : {}) };
+  // `order`: an explicit section position set by dragging in the page menu.
+  // Absent on sections still walked in reading order (see sectionNodes).
+  const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor, ...(Number.isFinite(+n.order) ? { order: +n.order } : {}), ...(n.scale && +n.scale !== 1 ? { scale: +n.scale } : {}) };
   if (n.type === 'frame') return { ...base, w: n.w || 200, h: n.h || 140, name: n.text || 'Section' };
   if (n.type === 'md') return { ...base, w: n.w || 340, text: n.text || '' };
   if (n.type === 'code') return { ...base, w: n.w || 420, text: n.text || '', lang: n.lang || 'js', ...(n.wrap != null ? { wrap: !!n.wrap } : {}) };
@@ -2000,6 +2002,24 @@ export function CanvasProvider({
     }
     function clearSectionFocus() { if (focusedSectionRef.current) setFocusedSectionId(null); }
 
+    /* Commit a drag-to-reorder from the page menu. `ids` is the active page's
+       whole section list in its new order; each one gets an explicit `order` so
+       the walk stops depending on where the boxes happen to sit on the board.
+       Stamping every section (not just the moved one) keeps the list off the
+       reading-order fallback entirely, so a later nudge on the board can't
+       reshuffle what the user arranged here. One patch = one undo step. */
+    function reorderSections(ids) {
+      if (!EDITABLE || S.readOnly) return;
+      const secs = sectionNodes(S.nodes);
+      const known = new Set(secs.map((n) => n.id));
+      // Ignore a stale list (a section added or deleted mid-drag): it has to name
+      // each of the page's sections exactly once.
+      if (ids.length !== secs.length || new Set(ids).size !== ids.length || ids.some((id) => !known.has(id))) return;
+      const patches = {};
+      ids.forEach((id, i) => { patches[id] = { order: i }; });
+      patchMany(patches, null);
+    }
+
     /* ── Undo / redo ──────────────────────────────────────────────
        The recorder (recordHistory, driven by an effect on nodes/shapes) captures
        one entry per committed change; undo/redo swap snapshots in and out. Text
@@ -2081,6 +2101,8 @@ export function CanvasProvider({
     function serializeNode(n) {
       const o = { id: n.id, type: n.type, x: +n.x, y: +n.y, z: n.z };
       if (n.anchor) o.anchor = 1;
+      // Explicit section position from a page-menu drag (0 is a real value).
+      if (Number.isFinite(n.order)) o.order = n.order;
       // A per-object scale multiplier (K tool / right-click). Omitted at 1×.
       if (n.scale && n.scale !== 1) o.scale = Math.round(n.scale * 10000) / 10000;
       if (n.type === 'sticky') { o.color = n.color; o.text = n.text; }
@@ -3206,7 +3228,7 @@ export function CanvasProvider({
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, setNodeScale, deleteSelected, deleteTarget,
       copySelected, cutSelected, cutTarget, paste, pasteAt, pasteFromMenu, hasClipboard, systemClipIsMine, duplicateSelected, duplicateTarget, duplicateItemsAt,
-      setTool, setMode, setCanvasBg, toggleGrid, fitAll, flyTo, goToSection, stepSection, clearSectionFocus, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
+      setTool, setMode, setCanvasBg, toggleGrid, fitAll, flyTo, goToSection, stepSection, clearSectionFocus, reorderSections, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,

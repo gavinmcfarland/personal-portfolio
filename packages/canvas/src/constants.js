@@ -24,11 +24,39 @@ export const GRID = 28;
 
 export const clampScale = (s) => Math.min(ZOOM.max, Math.max(ZOOM.min, s));
 
-/* Section anchors on a board, in navigation order: frames and anchored nodes,
-   top-to-bottom (ties left-to-right). Shared by the page/section menu and the
-   keyboard section stepper so both agree on what "next section" means. */
-export const sectionNodes = (nodes) =>
-	nodes.filter((n) => n.type === 'frame' || n.anchor).sort((a, b) => a.y - b.y || a.x - b.x);
+/* On-board height of a section, for grouping sections into rows. Auto-height
+   nodes (text, markdown, links) carry no `h` — they band on their top edge alone. */
+const sectionH = (n) => (+n.h > 0 ? +n.h : 0) * (+n.scale > 0 ? +n.scale : 1);
+/* Vertical slack (world px) for the row test, so sections whose tops differ by a
+   hair still share a row even when neither carries a height. */
+const ROW_EPS = 24;
+
+/* Section anchors on a board, in navigation order: frames and anchored nodes.
+   Shared by the page/section menu and the keyboard section stepper so both agree
+   on what "next section" means.
+
+   Sections dragged into an explicit order in the page menu carry an `order` and
+   lead the list in it. Everything else falls back to reading order: rows top to
+   bottom, left to right within a row. Sorting on `y` alone (what this used to do)
+   let a few px of vertical jitter scramble sections laid out side by side — a
+   row placed by eye is never pixel-aligned, so a horizontal board came out
+   shuffled. Grouping into rows first makes the walk follow the layout. */
+export const sectionNodes = (nodes) => {
+	const secs = nodes.filter((n) => n.type === 'frame' || n.anchor);
+	const ranked = secs
+		.filter((n) => Number.isFinite(n.order))
+		.sort((a, b) => a.order - b.order || a.y - b.y || a.x - b.x);
+	const rows = [];
+	let floor = 0; // deepest midline of the row being built
+	for (const n of secs.filter((n) => !Number.isFinite(n.order)).sort((a, b) => a.y - b.y || a.x - b.x)) {
+		// A section joins the row above until its top clears that row's deepest
+		// midline: a genuinely stacked section does, a jittery neighbour doesn't.
+		const mid = n.y + Math.max(sectionH(n) / 2, ROW_EPS);
+		if (!rows.length || n.y >= floor) { rows.push([n]); floor = mid; }
+		else { rows[rows.length - 1].push(n); floor = Math.max(floor, mid); }
+	}
+	return [...ranked, ...rows.flatMap((r) => r.sort((a, b) => a.x - b.x || a.y - b.y))];
+};
 
 export const DRAW_TOOLS = ['pen', 'line', 'arrow', 'rect', 'ellipse'];
 /* Shapes with an interior that can take a fill colour. */
