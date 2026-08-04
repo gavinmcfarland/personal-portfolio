@@ -569,6 +569,7 @@ export function CanvasProvider({
   const [ctxMenu, setCtxMenu] = useState(null); // {x,y,target:{kind,id}}
   const [fullscreen, setFullscreen] = useState(null); // { id, index } of the media asset shown in the lightbox
   const [gridEditId, setGridEditId] = useState(null); // media node whose grid proportions are being edited
+  const [renameFrameId, setRenameFrameId] = useState(null); // frame whose label is being renamed inline (double-click or the context menu's Rename)
   const [htmlActiveId, setHtmlActiveId] = useState(null); // html node whose iframe is live (receives pointer events)
   /* The section the user last navigated to (frame-label arrow or the page/section
      menu). It anchors the arrow-key shortcut that steps to the neighbouring
@@ -1917,7 +1918,7 @@ export function CanvasProvider({
       // longer auto-unlocks scroll-to-pan (the user clicks the board to engage),
       // and returning to view mode drops back to the lock button / page-scroll.
       setEngaged(false);
-      if (ro) { deselect(); setCtxMenu(null); setGridEditId(null); setToolState((t) => (t === 'select' || t === 'hand' ? t : 'select')); }
+      if (ro) { deselect(); setCtxMenu(null); setGridEditId(null); setRenameFrameId(null); setToolState((t) => (t === 'select' || t === 'hand' ? t : 'select')); }
       if (EDITABLE && broadcast) setGlobalReadOnly(ro);
     }
 
@@ -2055,7 +2056,7 @@ export function CanvasProvider({
     function applyHistorySnapshot(snap) {
       history.restoring = true;
       setNodes(snap.nodes); setShapes(snap.shapes);
-      deselect(); setEditingId(null); setCtxMenu(null); setGridEditId(null); setFullscreen(null);
+      deselect(); setEditingId(null); setCtxMenu(null); setGridEditId(null); setRenameFrameId(null); setFullscreen(null);
     }
     function undo() {
       if (!EDITABLE || S.readOnly) return;
@@ -2258,7 +2259,7 @@ export function CanvasProvider({
       freezeView();
       snapshotActive();
       const t = pageData[id];
-      deselect(); setEditingId(null); setCtxMenu(null); setFullscreen(null); setGridEditId(null); setFocusedSectionId(null);
+      deselect(); setEditingId(null); setCtxMenu(null); setFullscreen(null); setGridEditId(null); setRenameFrameId(null); setFocusedSectionId(null);
       setNodes(t.nodes); setShapes(t.shapes);
       viewRef.x = t.view.x; viewRef.y = t.view.y; viewRef.scale = t.view.scale;
       targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = viewRef.scale;
@@ -3109,6 +3110,17 @@ export function CanvasProvider({
       setGridEditId(id);
     }
     function exitGridEdit() { setGridEditId(null); }
+    /* ── Renaming a section (frame) label ─────────────────────────
+       Swaps the on-board frame label for a text input. Lives here rather than in
+       the label so both entry points — double-clicking the label and the context
+       menu's Rename — drive the same state. */
+    function startRenameFrame(id) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || n.type !== 'frame') return;
+      setRenameFrameId(id);
+    }
+    function stopRenameFrame() { setRenameFrameId(null); }
     /* ── HTML node activation ─────────────────────────────────────
        While an html node is "live" its shield drops and the sandboxed iframe
        receives pointer events directly (see nodes/Html.jsx). Works in view mode
@@ -3200,7 +3212,7 @@ export function CanvasProvider({
       addLinkFromUrl, pasteLink, openLink,
       isHtmlFile, addHtmlFromFile, setHtmlActive, openHtml,
       recordingSupported, startRecording, stopRecording, cancelRecording,
-      openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startEditing, stopEditing, formatText, setChrome,
+      openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startRenameFrame, stopRenameFrame, startEditing, stopEditing, formatText, setChrome,
       recordHistory, undo, redo,
       nextZ, backZ,
     };
@@ -3488,7 +3500,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     isPrimaryCanvas,
-    publishState, recording, fullscreen, gridEditId, htmlActiveId, focusedSectionId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
+    publishState, recording, fullscreen, gridEditId, renameFrameId, htmlActiveId, focusedSectionId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls, minimap: MINIMAP.on, MINIMAP, minimapEls,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,

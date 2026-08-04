@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useCanvas } from './CanvasProvider';
 import { resolveGrid } from './nodes/common';
 import { frameBarH } from './constants';
@@ -106,11 +106,12 @@ function GridDividers() {
 }
 
 /* Screen-space frame label: title, drag handle, jump-to button. Positioned by
-   the engine's syncChrome() via the frameLabelEls map. Double-click renames it
-   inline with a text input, mirroring the page-tab rename UI. */
+   the engine's syncChrome() via the frameLabelEls map. Double-clicking it — or
+   picking Rename from its right-click menu — renames it inline with a text
+   input, mirroring the page-tab rename UI. */
 function FrameLabel({ node }) {
-  const { frameLabelEls, readOnly, eng, actionRef, nodeEls, setCtxMenu } = useCanvas();
-  const [renaming, setRenaming] = useState(false);
+  const { frameLabelEls, readOnly, eng, actionRef, nodeEls, setCtxMenu, renameFrameId } = useCanvas();
+  const renaming = renameFrameId === node.id;
   const inputRef = useRef(null);
 
   const setRef = useCallback(
@@ -127,7 +128,7 @@ function FrameLabel({ node }) {
   const commit = () => {
     const v = inputRef.current ? inputRef.current.value.trim() || 'Section' : '';
     eng.updateNode(node.id, { name: v });
-    setRenaming(false);
+    eng.stopRenameFrame();
   };
 
   const onPointerDown = (e) => {
@@ -170,7 +171,8 @@ function FrameLabel({ node }) {
           onBlur={commit}
           onKeyDown={(e) => {
             if (e.key === 'Enter') commit();
-            if (e.key === 'Escape') setRenaming(false);
+            // Discards the edit: the input unmounts, which doesn't fire onBlur.
+            if (e.key === 'Escape') eng.stopRenameFrame();
           }}
         />
       </div>
@@ -182,7 +184,7 @@ function FrameLabel({ node }) {
       ref={setRef}
       className="cv-frame-label"
       onPointerDown={onPointerDown}
-      onDoubleClick={(e) => { if (readOnly) return; e.stopPropagation(); setRenaming(true); }}
+      onDoubleClick={(e) => { if (readOnly) return; e.stopPropagation(); eng.startRenameFrame(node.id); }}
       onContextMenu={(e) => {
         if (readOnly) return;
         e.preventDefault();
