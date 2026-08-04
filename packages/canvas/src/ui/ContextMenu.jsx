@@ -1,9 +1,32 @@
-import { useEffect } from 'react';
-import { Maximize, Scaling, AppWindow, Puzzle, Terminal, SquareX, Expand, ExternalLink, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Pencil, Trash2, Sun, Moon, MessageSquareText } from 'lucide-react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Maximize, Scaling, AppWindow, Puzzle, Terminal, SquareX, Expand, ExternalLink, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Pencil, Trash2, Sun, Moon, MessageSquareText, RectangleHorizontal, ChevronRight } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
+import { FRAME_RATIOS, atRatio } from '../constants';
 
 export default function ContextMenu() {
   const { ctxMenu, setCtxMenu, nodes, selected, gridHidden, eng, rootRef } = useCanvas();
+  // Which row's flyout is open. Only one ever is, so a single id is enough.
+  const [submenu, setSubmenu] = useState(null);
+  const menuRef = useRef(null);
+  // Close any flyout when the menu itself opens somewhere new — a stale one
+  // would otherwise be hanging open the moment the new menu appears.
+  useEffect(() => { setSubmenu(null); }, [ctxMenu]);
+
+  /* Pull the menu back inside the board if it hangs off the bottom.
+     `place()` below clamps against a GUESSED height, because where the menu
+     goes has to be decided before it exists — and the guess is short for the
+     longer menus (a frame's, a media node's), which then run past the board
+     edge with their last items unreachable. Measuring once it is on screen is
+     the only way to know, so this corrects the guess rather than replacing it:
+     the first paint is already in the right place for every menu that fits. */
+  useLayoutEffect(() => {
+    const el = menuRef.current;
+    if (!el || !ctxMenu) return;
+    const board = rootRef?.current;
+    const bottom = board ? board.clientHeight : window.innerHeight;
+    const over = el.offsetTop + el.offsetHeight - bottom;
+    if (over > 0) el.style.top = `${Math.max(0, el.offsetTop - over)}px`;
+  }, [ctxMenu, submenu, rootRef]);
 
   useEffect(() => {
     if (!ctxMenu) return undefined;
@@ -32,12 +55,17 @@ export default function ContextMenu() {
   const bw = rect ? rect.width : innerWidth;
   const bh = rect ? rect.height : innerHeight;
   const place = (w, h) => ({ left: Math.max(0, Math.min(localX, bw - w)), top: Math.max(0, Math.min(localY, bh - h)) });
+  // A flyout opens to the right of the menu unless there isn't room for it
+  // there, in which case it opens to the left. Both widths are the CSS ones.
+  const MENU_W = 190;
+  const SUB_W = 168;
+  const flipSub = place(MENU_W, MENU_W).left + MENU_W + SUB_W > bw;
 
   // Right-click on empty canvas: the only action is Paste, dropped at the click
   // point captured when the menu opened.
   if (target.kind === 'canvas') {
     return (
-      <div className="cv-panel" data-open="" data-cv-part="context-menu" style={place(190, 120)}>
+      <div ref={menuRef} className="cv-panel" data-open="" data-cv-part="context-menu" style={place(190, 120)}>
         <button onClick={run(() => eng.pasteFromMenu(target.wx, target.wy))}>
           <ClipboardPaste />
           Paste here
@@ -104,12 +132,63 @@ export default function ContextMenu() {
   );
 
   return (
-    <div className="cv-panel" data-open="" data-cv-part="context-menu" style={place(190, 190)}>
+    <div ref={menuRef} className="cv-panel" data-open="" data-cv-part="context-menu" style={place(190, 190)}>
       {isFrame && (
         <button onClick={run(() => eng.startRenameFrame(node.id))}>
           <Pencil />
           Rename
         </button>
+      )}
+      {/* Reshape the section to a screen ratio. A flyout rather than eight rows
+          inline: the ratios are one decision, and unfolded they would be most
+          of the menu. Opens on hover like a native submenu, and on click too,
+          so it also works from a touch device where there is no hover. */}
+      {isFrame && (
+        <div
+          className="cv-ctxsub"
+          onPointerEnter={() => setSubmenu('aspect')}
+          onPointerLeave={() => setSubmenu(null)}
+        >
+          <button
+            data-active={submenu === 'aspect' ? '' : undefined}
+            // Opens, never toggles. On a hover device the pointer entering the
+            // row has already opened it, so a toggle here would close it on the
+            // very click meant to open it; leaving the row is how it closes.
+            onClick={() => setSubmenu('aspect')}
+          >
+            <RectangleHorizontal />
+            Aspect ratio
+            <ChevronRight className="cv-ctxsub-caret" />
+          </button>
+          {submenu === 'aspect' && (
+            <div className="cv-panel cv-ctxsub-menu" data-flip={flipSub ? '' : undefined}>
+              {FRAME_RATIOS.map((r) => (
+                <button
+                  key={r.label}
+                  // Marks the ratio the frame is already at, so the menu says
+                  // what shape it currently is as well as what it could be.
+                  data-active={atRatio(node, r.ratio) ? '' : undefined}
+                  onClick={run(() => eng.setFrameAspect(node.id, r.ratio))}
+                >
+                  {/* A box drawn at the ratio itself — quicker to read at a
+                      glance than the numbers, and unambiguous about which way
+                      round 9:16 goes. */}
+                  <span className="cv-ratio-slot" aria-hidden="true">
+                    <span
+                      className="cv-ratio-box"
+                      style={
+                        r.ratio >= 1
+                          ? { width: '100%', height: `${100 / r.ratio}%` }
+                          : { height: '100%', width: `${100 * r.ratio}%` }
+                      }
+                    />
+                  </span>
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       )}
       {isSection && (
         <>

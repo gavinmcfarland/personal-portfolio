@@ -1859,6 +1859,40 @@
 .canvas-root [data-cv-part="context-menu"] .cv-ctxsep {
   height: 1px;
 }
+/* Submenu row + its flyout. The row is the anchor, so the flyout is positioned
+   against it rather than the menu — it lines up with whichever row opened it
+   however many rows precede it. The two sit edge to edge (no gap) so the
+   pointer can cross from one to the other without the flyout closing. */
+.canvas-root [data-cv-part="context-menu"] .cv-ctxsub {
+  position: relative;
+}
+.canvas-root [data-cv-part="context-menu"] .cv-ctxsub-menu {
+  position: absolute;
+  top: -6px;
+  left: 100%;
+  z-index: 1;
+  width: 168px;
+  /* Two columns: eight ratios in a single column would be taller than the menu
+     they hang off and could run past the bottom of the board. */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+/* No room to the right — open to the left of the menu instead. */
+.canvas-root [data-cv-part="context-menu"] .cv-ctxsub-menu[data-flip] {
+  left: auto;
+  right: 100%;
+}
+/* A fixed square each ratio box is drawn inside, so the labels line up in a
+   column whatever shape sits next to them. */
+.canvas-root [data-cv-part="context-menu"] .cv-ratio-slot {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 /* Scale row: label + inline numeric field, laid out like a menu item. */
 .canvas-root [data-cv-part="context-menu"] .cv-ctxscale {
   display: flex;

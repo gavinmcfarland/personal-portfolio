@@ -285,6 +285,11 @@ board as it does on the remote. Both ends also carry a page switcher for jumping
 straight to one. (Outside present mode the arrow keys still stay on the active page
 — crossing pages by accident while editing would be startling.)
 
+Right-clicking a frame also offers **Aspect ratio** — 21:9 through 9:16 — for sizing
+a section to whatever it will be shown on. The reshape preserves the frame's area
+and its centre, so it stands a section on its end rather than growing it off the
+board, and the content inside stays framed.
+
 Each section carries **speaker notes** — right-click a frame → *Add speaker notes…*.
 They live on the node, so they undo and save like anything else, and they are never
 drawn on the board: the only things that read them are the notes drawer and the

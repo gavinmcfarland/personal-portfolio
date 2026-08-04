@@ -3177,6 +3177,32 @@ export function CanvasProvider({
       setRenameFrameId(id);
     }
     function stopRenameFrame() { setRenameFrameId(null); }
+    /* ── Frame aspect ratio ───────────────────────────────────────
+       Reshape a section to a named ratio (16:9, 1:1, 9:16…).
+
+       Area is preserved rather than width, and the frame keeps its CENTRE
+       rather than its top-left. Both fall out of what a frame is here: it
+       doesn't own the objects inside it — dragging one leaves its contents
+       behind — so it is a boundary drawn around content that stays put.
+       Growing from the centre keeps that content framed. Preserving area
+       keeps the footprint on the board stable, which matters most on the
+       reshape that would otherwise be worst: 16:9 → 9:16 with the width held
+       turns a wide frame into one three times taller than the board, where
+       preserving area simply stands it on its end. */
+    function setFrameAspect(id, ratio) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || n.type !== 'frame' || !(ratio > 0)) return;
+      const w0 = n.w || 200;
+      const h0 = n.h || 140;
+      const area = w0 * h0;
+      // Clamped to the same floor a resize drag enforces, so a ratio can't
+      // produce a frame the handles would refuse to make.
+      const w = Math.max(60, Math.round(Math.sqrt(area * ratio)));
+      const h = Math.max(40, Math.round(w / ratio));
+      updateNode(id, { w, h, x: Math.round(n.x + (w0 - w) / 2), y: Math.round(n.y + (h0 - h) / 2) });
+    }
+
     /* ── Speaker notes ────────────────────────────────────────────
        What the presenter says over a section. Held on the frame node so it
        rides the normal patch → history → autosave → publish path, but never
@@ -3391,7 +3417,7 @@ export function CanvasProvider({
       isHtmlFile, addHtmlFromFile, setHtmlActive, openHtml,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startRenameFrame, stopRenameFrame, startEditing, stopEditing, formatText, setChrome,
-      openSectionNotes, closeSectionNotes, setSectionNotes, deck,
+      openSectionNotes, closeSectionNotes, setSectionNotes, deck, setFrameAspect,
       startPresenting, stopPresenting, applyPresentCmd, stepDeck, goToDeckEntry,
       recordHistory, undo, redo,
       nextZ, backZ,

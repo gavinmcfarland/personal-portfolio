@@ -78,6 +78,30 @@ export const sectionLabel = (node) => {
 	return txt ? txt.slice(0, 32) : node.type.charAt(0).toUpperCase() + node.type.slice(1);
 };
 
+/* Aspect ratios offered for a frame, widest first so the list reads as one
+   sweep from ultrawide through square to portrait. Screen ratios only: a frame
+   is a section of a talk, so what it wants to match is a projector, a laptop
+   lid or a phone held upright — not a paper size. */
+export const FRAME_RATIOS = [
+	{ label: '21:9', ratio: 21 / 9 },
+	{ label: '16:9', ratio: 16 / 9 },
+	{ label: '16:10', ratio: 16 / 10 },
+	{ label: '3:2', ratio: 3 / 2 },
+	{ label: '4:3', ratio: 4 / 3 },
+	{ label: '1:1', ratio: 1 },
+	{ label: '4:5', ratio: 4 / 5 },
+	{ label: '9:16', ratio: 9 / 16 },
+];
+
+/* Whether a frame already sits at a ratio, within half a percent — enough
+   slack that the rounding setFrameAspect does still reads back as a match, and
+   tight enough that a hand-dragged frame doesn't claim to be 16:9. */
+export const atRatio = (node, ratio) => {
+	const w = node.w || 0;
+	const h = node.h || 0;
+	return h > 0 && Math.abs(w / h - ratio) / ratio < 0.005;
+};
+
 export const DRAW_TOOLS = ['pen', 'line', 'arrow', 'rect', 'ellipse'];
 /* Shapes with an interior that can take a fill colour. */
 export const FILLABLE_SHAPES = ['rect', 'ellipse'];
