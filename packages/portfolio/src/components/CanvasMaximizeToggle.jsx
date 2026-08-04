@@ -13,15 +13,22 @@ export default function CanvasMaximizeToggle() {
 
   useEffect(() => {
     const sync = () =>
-      setMaximized(!!document.querySelector(".canvas-root[data-cv-fullbleed]"));
+      setMaximized(
+        // A presenting board is full-bleed too, but the room is watching it —
+        // a theme button floating in the corner of a talk is one more thing on
+        // screen that isn't the slide.
+        !!document.querySelector(
+          ".canvas-root[data-cv-fullbleed]:not([data-cv-presenting])",
+        ),
+      );
     sync(); // catch a canvas already maximised on mount
-    // The canvas sets/removes `data-cv-fullbleed` as it toggles the overlay; the
-    // root stays within <body> either way, so watching that attribute is enough.
+    // The canvas sets/removes these as it toggles the overlay; the root stays
+    // within <body> either way, so watching the attributes is enough.
     const observer = new MutationObserver(sync);
     observer.observe(document.body, {
       subtree: true,
       attributes: true,
-      attributeFilter: ["data-cv-fullbleed"],
+      attributeFilter: ["data-cv-fullbleed", "data-cv-presenting"],
     });
     return () => observer.disconnect();
   }, []);

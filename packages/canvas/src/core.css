@@ -1675,6 +1675,117 @@
   width: 1px;
   align-self: stretch;
 }
+/* ── Speaker notes drawer ────────────────────────────────────────
+   Top-right panel holding the words that go over the section the presenter is
+   standing on. Deliberately docked opposite the minimap (bottom-right) and
+   clear of the toolbar (bottom-centre), since all three can be open at once.
+   Never visible in view mode, and never on the board — only the presenter and
+   their phone ever read these. */
+.canvas-root [data-cv-part="notes-drawer"] {
+  right: 22px;
+  top: 76px;
+  width: min(360px, calc(100% - 44px));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.canvas-root .cv-notes-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.canvas-root .cv-notes-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.canvas-root .cv-notes-btn {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+.canvas-root .cv-notes-btn svg {
+  width: 15px;
+  height: 15px;
+}
+.canvas-root .cv-notes-area {
+  height: 190px;
+  resize: vertical;
+}
+/* A section carrying notes gets a dot on its board label, so the deck shows at
+   a glance which parts have been written and which are still bare. */
+.canvas-root .cv-frame-label[data-notes]::after {
+  width: 5px;
+  height: 5px;
+  flex: none;
+}
+/* ── Present mode ────────────────────────────────────────────────
+   The board is full-bleed and every other panel is gone; this is the only
+   thing left over it. It fades out once the presenter stops moving, so what
+   the room sees settles down to just the board. Pointer events stay on while
+   faded — a click lands on the button under the cursor rather than being
+   swallowed by the fade. */
+.canvas-root .cv-present {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.canvas-root .cv-present-bar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  max-width: min(560px, 90vw);
+}
+.canvas-root .cv-present-btn {
+  height: 34px;
+  min-width: 34px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+.canvas-root .cv-present-btn svg {
+  width: 17px;
+  height: 17px;
+}
+.canvas-root .cv-present-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.canvas-root .cv-present-remote {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 236px;
+}
+.canvas-root .cv-present-remote-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+.canvas-root .cv-present-qr {
+  width: 200px;
+  height: 200px;
+}
+.canvas-root .cv-present-remote-url {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
 /* ── Minimap ─────────────────────────────────────────────────────
    Bottom-right overview panel. Sits inboard of the edge so it clears the
    synthetic scrollbars when both are enabled. The low-fi content is a <canvas>

@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, useRef, useState, useEffect, useLayoutEffect, useSyncExternalStore } from 'react';
-import { ZOOM, PAN, GRID, frameBarH, clampScale, sectionNodes } from './constants';
+import { ZOOM, PAN, GRID, frameBarH, clampScale, sectionNodes, sectionLabel } from './constants';
 import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
 import { RICH_COMMANDS, sanitizeRich, isRichHtml } from './rich-text';
 import { getGlobalReadOnly, setGlobalReadOnly, subscribeMode, allocOwnerId, joinOwners, setActiveCanvas, subscribeOwner, primaryOwner } from './edit-mode';
@@ -308,7 +308,10 @@ function normalizeSaved(n) {
   // `order`: an explicit section position set by dragging in the page menu.
   // Absent on sections still walked in reading order (see sectionNodes).
   const base = { id: n.id, type: n.type, x: n.x, y: n.y, z: n.z, anchor: !!n.anchor, ...(Number.isFinite(+n.order) ? { order: +n.order } : {}), ...(n.scale && +n.scale !== 1 ? { scale: +n.scale } : {}) };
-  if (n.type === 'frame') return { ...base, w: n.w || 200, h: n.h || 140, name: n.text || 'Section' };
+  // `notes`: speaker notes, shown only in the notes drawer and on the phone
+  // remote — never painted on the board. Stripped from published boards at
+  // build time (see vite-plugin-canvas-notes.js), so it is often absent here.
+  if (n.type === 'frame') return { ...base, w: n.w || 200, h: n.h || 140, name: n.text || 'Section', notes: n.notes || '' };
   if (n.type === 'md') return { ...base, w: n.w || 340, text: n.text || '' };
   if (n.type === 'code') return { ...base, w: n.w || 420, text: n.text || '', lang: n.lang || 'js', ...(n.wrap != null ? { wrap: !!n.wrap } : {}) };
   if (n.type === 'sticky') return { ...base, color: n.color || 'yellow', text: n.text || '' };
@@ -502,6 +505,7 @@ export function CanvasProvider({
   onUploadHtml = null,
   onUnfurl = null, // optional (url) => { url, title, description, image, siteName, favicon } for pasted-link cards
   onChange = null,
+  presentRelay = null, // optional transport that lets a second device drive the board while presenting: { publish({room,deck,index}), subscribe(room, onCmd) => unsubscribe, link(room) => Promise<{url}> }. Absent = present mode still works, just without a remote.
   theme = null, // optional { mode, toggle } — renders a theme button in the top bar
   accent = null, // theme/accent colour: a single CSS colour, or { light, dark } per theme (default: purple)
   fit = 'contain', // 'contain' fills the parent box; 'fullscreen' covers the browser viewport
@@ -579,6 +583,14 @@ export function CanvasProvider({
   const [gridEditId, setGridEditId] = useState(null); // media node whose grid proportions are being edited
   const [renameFrameId, setRenameFrameId] = useState(null); // frame whose label is being renamed inline (double-click or the context menu's Rename)
   const [htmlActiveId, setHtmlActiveId] = useState(null); // html node whose iframe is live (receives pointer events)
+  const [notesEditId, setNotesEditId] = useState(null); // frame whose speaker notes are open in the notes drawer
+  /* Present mode: the board is the room's screen. View-only, chrome gone, full
+     bleed, parked on a section. `presentRoom` is the short code the phone
+     remote joins on — held here (not derived) so a reload during a talk can
+     restore the same code and the phone in the presenter's hand stays live. */
+  const [presenting, setPresenting] = useState(false);
+  const [presentRoom, setPresentRoom] = useState('');
+  const wasEditing = useRef(false); // mode to hand back when the talk ends
   /* The section the user last navigated to (frame-label arrow or the page/section
      menu). It anchors the arrow-key shortcut that steps to the neighbouring
      section; null means no section is focused and the arrows stay with the page.
@@ -754,6 +766,9 @@ export function CanvasProvider({
   S.bgStrength = bgStrength;
   S.gridHidden = gridHidden;
   S.reflow = reflow;
+  S.presenting = presenting;
+  S.presentRoom = presentRoom;
+  S.notesEditId = notesEditId;
 
   /* ── Engine (defined once; reads fresh state via refs/S) ─────── */
   const eng = useMemo(() => {
@@ -1928,7 +1943,7 @@ export function CanvasProvider({
       // longer auto-unlocks scroll-to-pan (the user clicks the board to engage),
       // and returning to view mode drops back to the lock button / page-scroll.
       setEngaged(false);
-      if (ro) { deselect(); setCtxMenu(null); setGridEditId(null); setRenameFrameId(null); setToolState((t) => (t === 'select' || t === 'hand' ? t : 'select')); }
+      if (ro) { deselect(); setCtxMenu(null); setGridEditId(null); setRenameFrameId(null); setNotesEditId(null); setToolState((t) => (t === 'select' || t === 'hand' ? t : 'select')); }
       if (EDITABLE && broadcast) setGlobalReadOnly(ro);
     }
 
@@ -2115,7 +2130,7 @@ export function CanvasProvider({
       if (n.scale && n.scale !== 1) o.scale = Math.round(n.scale * 10000) / 10000;
       if (n.type === 'sticky') { o.color = n.color; o.text = n.text; }
       else if (n.type === 'tblock') { o.text = n.text; if (n.html) o.html = n.html; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; if (n.font) o.font = n.font; if (n.align && n.align !== 'left') o.align = n.align; }
-      else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
+      else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; if (n.notes) o.notes = n.notes; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
       else if (n.type === 'code') { o.w = n.w; o.text = n.text; o.lang = n.lang; if (n.wrap != null) o.wrap = n.wrap ? 1 : 0; }
       else if (n.type === 'image' || n.type === 'video') {
@@ -2300,7 +2315,7 @@ export function CanvasProvider({
       freezeView();
       snapshotActive();
       const t = pageData[id];
-      deselect(); setEditingId(null); setCtxMenu(null); setFullscreen(null); setGridEditId(null); setRenameFrameId(null); setFocusedSectionId(null);
+      deselect(); setEditingId(null); setCtxMenu(null); setFullscreen(null); setGridEditId(null); setRenameFrameId(null); setNotesEditId(null); setFocusedSectionId(null);
       setNodes(t.nodes); setShapes(t.shapes);
       viewRef.x = t.view.x; viewRef.y = t.view.y; viewRef.scale = t.view.scale;
       targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = viewRef.scale;
@@ -3162,6 +3177,106 @@ export function CanvasProvider({
       setRenameFrameId(id);
     }
     function stopRenameFrame() { setRenameFrameId(null); }
+    /* ── Speaker notes ────────────────────────────────────────────
+       What the presenter says over a section. Held on the frame node so it
+       rides the normal patch → history → autosave → publish path, but never
+       drawn on the board: the only readers are the notes drawer here and the
+       phone remote. Published boards have it stripped at build time. */
+    function openSectionNotes(id) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || (n.type !== 'frame' && !n.anchor)) return;
+      setNotesEditId(id);
+    }
+    function closeSectionNotes() { setNotesEditId(null); }
+    function setSectionNotes(id, notes) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || (n.notes || '') === notes) return; // no-op writes would each land as an undo step
+      updateNode(id, { notes });
+    }
+    /* The presenter's running order: every section on every page, flattened in
+       navigation order, with its label and notes. The notes drawer, the present
+       overlay and the phone remote all read the deck from here so they can
+       never disagree about what section 3 is. */
+    function deck() {
+      return S.pages.flatMap((p) => {
+        // The active page's nodes are live state; a parked page reads the last
+        // snapshot it was switched away from (same split as the page menu).
+        const pageNodes = p.id === S.activePageId ? S.nodes : (pageData[p.id] ? pageData[p.id].nodes : []);
+        return sectionNodes(pageNodes).map((n) => ({
+          id: n.id,
+          pageId: p.id,
+          pageName: p.name || '',
+          label: sectionLabel(n),
+          notes: n.notes || '',
+        }));
+      });
+    }
+    /* ── Present mode ─────────────────────────────────────────────
+       The board becomes the room's screen: full bleed, chrome gone, view-only
+       (a stray keystroke must not draw on a slide in front of an audience),
+       parked on the first section so the arrow keys step from the off.
+
+       The room code is stashed per board in sessionStorage. A reload mid-talk
+       is exactly when you least want to re-pair a phone, and a code that
+       survives it means the remote just reconnects on its own. */
+    function presentRoomFor() {
+      const key = `cv-present-room:${storageKey}`;
+      try {
+        const held = sessionStorage.getItem(key);
+        if (held) return held;
+      } catch { /* storage unavailable — fall through to a fresh code */ }
+      // No I/O/0/1: this gets read off a screen and typed on a phone.
+      const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      const bytes = new Uint8Array(4);
+      crypto.getRandomValues(bytes);
+      for (const b of bytes) code += alphabet[b % alphabet.length];
+      try { sessionStorage.setItem(key, code); } catch { /* not fatal: the code just won't survive a reload */ }
+      return code;
+    }
+    function startPresenting() {
+      if (S.presenting) return;
+      setPresentRoom(presentRoomFor());
+      setNotesEditId(null);
+      wasEditing.current = !S.readOnly; // to hand back on exit
+      setMode(true); // view-only for the duration, whatever mode we came from
+      setFullBleed(true);
+      setPresenting(true);
+      // The initial fly is deferred to an effect, not fired here: going full
+      // bleed resizes the container, and reframeOnResize re-anchors the view
+      // after the layout settles — which would land on top of a fly started
+      // now and leave the board sitting on the whole board zoomed out.
+    }
+    function stopPresenting() {
+      if (!S.presenting) return;
+      setPresenting(false);
+      setFullBleed(false);
+      // Hand the board back as it was found. Presenting from a board you were
+      // editing and landing in view mode afterwards reads as the talk having
+      // changed something, which it hasn't.
+      if (wasEditing.current) { wasEditing.current = false; setMode(false); }
+    }
+    /* Drive the board from the phone. `goto` carries a section id, which may
+       live on another page — goToSection handles the switch. Anything the
+       remote does lands here and nowhere else, so the board stays the single
+       writer of "where we are". */
+    function applyPresentCmd(cmd, id) {
+      if (cmd === 'next') { if (!stepSection(1)) firstSection(); return; }
+      if (cmd === 'prev') { if (!stepSection(-1)) firstSection(); return; }
+      if (cmd === 'goto' && id) {
+        const page = S.pages.find((p) => (p.id === S.activePageId ? S.nodes : (pageData[p.id] ? pageData[p.id].nodes : [])).some((n) => n.id === id));
+        goToSection(page && page.id !== S.activePageId ? page.id : null, id);
+      }
+    }
+    /* stepSection is a no-op with nothing focused; a remote tap that early in a
+       talk should still move the board rather than appear broken. */
+    function firstSection() {
+      const secs = sectionNodes(S.nodes);
+      if (secs.length) goToSection(null, secs[0].id);
+    }
+
     /* ── HTML node activation ─────────────────────────────────────
        While an html node is "live" its shield drops and the sandboxed iframe
        receives pointer events directly (see nodes/Html.jsx). Works in view mode
@@ -3254,6 +3369,8 @@ export function CanvasProvider({
       isHtmlFile, addHtmlFromFile, setHtmlActive, openHtml,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startRenameFrame, stopRenameFrame, startEditing, stopEditing, formatText, setChrome,
+      openSectionNotes, closeSectionNotes, setSectionNotes, deck,
+      startPresenting, stopPresenting, applyPresentCmd,
       recordHistory, undo, redo,
       nextZ, backZ,
     };
@@ -3341,6 +3458,60 @@ export function CanvasProvider({
      One entry per change (bursts of typing coalesce, see recordHistory). Keyed
      on the model only — selection/view changes aren't undoable. */
   useEffect(() => { eng.recordHistory(nodes, shapes, activePageId); }, [nodes, shapes, activePageId, eng]);
+
+  /* ── Land on the first section once the full-bleed layout settles ──
+     Entering present mode grows the container to the whole viewport, and the
+     resize handler re-anchors the view once that has happened. Flying before
+     then gets overwritten, so wait two frames: one for the portal move and
+     the browser's layout, one for the resize observer that follows it. Only
+     when nothing is focused already — resuming a talk should stay put. */
+  useEffect(() => {
+    if (!presenting) return undefined;
+    let r2 = 0;
+    const r1 = requestAnimationFrame(() => {
+      r2 = requestAnimationFrame(() => {
+        if (focusedSectionId) { eng.flyTo(focusedSectionId); return; }
+        const secs = sectionNodes(nodes);
+        if (secs.length) eng.goToSection(null, secs[0].id);
+      });
+    });
+    return () => { cancelAnimationFrame(r1); cancelAnimationFrame(r2); };
+    // Deliberately only on the transition into present mode — re-running this
+    // on every node edit would yank the view back to section 1 mid-talk.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presenting]);
+
+  /* ── Present remote: publish where we are, accept where to go ──
+     Runs only while presenting, and only if the host supplied a relay. Two
+     halves, deliberately asymmetric:
+
+     Publishing is a plain effect on the deck and the focused section, so every
+     move the board makes — arrow key, section menu, or a command that arrived
+     from the phone — reaches the remote by the same path. There is no separate
+     "tell the phone" call to forget at a call site.
+
+     Receiving hands commands straight to the engine, which moves the board,
+     which re-publishes. So the phone never sets the position itself: it asks,
+     and learns the answer from the next publish. A dropped event costs nothing
+     but a beat, where a phone that tracked its own index would drift. */
+  useEffect(() => {
+    if (!presenting || !presentRelay || !presentRoom) return undefined;
+    const list = eng.deck();
+    const index = list.findIndex((s) => s.id === focusedSectionId);
+    presentRelay.publish({
+      room: presentRoom,
+      deck: list,
+      index,
+      board: storageKey,
+      title: (init.brand && init.brand.title) || '',
+    });
+    return undefined;
+  }, [presenting, presentRelay, presentRoom, focusedSectionId, nodes, activePageId, eng, storageKey, init.brand]);
+
+  useEffect(() => {
+    if (!presenting || !presentRelay || !presentRoom) return undefined;
+    return presentRelay.subscribe(presentRoom, (msg) => eng.applyPresentCmd(msg.cmd, msg.id));
+  }, [presenting, presentRelay, presentRoom, eng]);
 
   /* ── Background auto-publish on content changes ──────────────
      Persists edits through the host adapter without a save button. Keyed on
@@ -3541,7 +3712,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     isPrimaryCanvas,
-    publishState, recording, fullscreen, gridEditId, renameFrameId, htmlActiveId, focusedSectionId, pages, activePageId, pageData, bgColor, bgStrength, gridHidden, reflow, collide: COLLIDE,
+    publishState, recording, fullscreen, gridEditId, renameFrameId, notesEditId, htmlActiveId, focusedSectionId, presenting, presentRoom, presentRelay, pages, activePageId, pageData, bgColor, bgStrength, gridHidden, reflow, collide: COLLIDE,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls, minimap: MINIMAP.on, MINIMAP, minimapEls,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,

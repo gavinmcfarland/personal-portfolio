@@ -269,7 +269,37 @@ function MyToolbar() {
 ```
 
 Slots: `TopBar`, `Toolbar`, `ZoomControls`, `SaveStatus`, `Recorder`, `ContextMenu`,
-`Lightbox`. Objects are swapped the same way through `nodeTypes`.
+`Lightbox`, `NotesDrawer`, `PresentBar`. Objects are swapped the same way through
+`nodeTypes`.
+
+## Presenting
+
+Any board with sections can be presented: **Present** in the top bar takes it full
+bleed, hides every panel, drops to view-only and parks on the first section. `←`/`→`
+(and `space` / `PageUp` / `PageDown`, so a clicker works) step through the running
+order; `Esc` ends it and hands the board back in the mode it was found in.
+
+Each section carries **speaker notes** — right-click a frame → *Add speaker notes…*.
+They live on the node, so they undo and save like anything else, and they are never
+drawn on the board: the only things that read them are the notes drawer and the
+remote.
+
+A **phone remote** is optional and needs a transport, since the canvas has no server
+of its own. Pass `presentRelay`:
+
+```jsx
+<Canvas editable presentRelay={{
+  publish: ({ room, deck, index }) => {…},   // board → listeners
+  subscribe: (room, onCmd) => unsubscribe,   // listeners → board ('next' | 'prev' | 'goto')
+  link: async (room) => ({ url }),           // the address to show as a QR code
+}} />
+```
+
+Without it, present mode still works — the phone button just isn't offered. The
+board is the only writer of the position: a remote sends a command and learns where
+it landed from the next `publish`, so the two can never disagree about the current
+section. See `vite-plugin-present.js` in the portfolio for a dev-server relay built
+on Server-Sent Events.
 
 ### Worked example — a completely bespoke skin
 

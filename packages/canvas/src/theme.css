@@ -1879,6 +1879,156 @@
   margin: 4px 3px;
   background: var(--cv-line);
 }
+/* ── Speaker notes drawer ────────────────────────────────────────
+   Top-right panel holding the words that go over the section the presenter is
+   standing on. Deliberately docked opposite the minimap (bottom-right) and
+   clear of the toolbar (bottom-centre), since all three can be open at once.
+   Never visible in view mode, and never on the board — only the presenter and
+   their phone ever read these. */
+.canvas-root [data-cv-part="notes-drawer"] {
+  padding: 8px;
+}
+.canvas-root .cv-notes-head {
+  padding: 0 2px 0 6px;
+}
+.canvas-root .cv-notes-count {
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--cv-faint);
+}
+.canvas-root .cv-notes-title {
+  text-overflow: ellipsis;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--cv-ink);
+}
+.canvas-root .cv-notes-btn {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--cv-muted);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.canvas-root .cv-notes-btn:hover:not(:disabled) {
+  background: var(--cv-accent-soft);
+  color: var(--cv-ink);
+}
+.canvas-root .cv-notes-btn:disabled {
+  opacity: 0.35;
+}
+.canvas-root .cv-notes-btn svg {
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.canvas-root .cv-notes-area {
+  padding: 8px 10px;
+  border: 1px solid var(--cv-line);
+  border-radius: 10px;
+  background: var(--cv-surface);
+  color: var(--cv-ink);
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.canvas-root .cv-notes-area:focus {
+  outline: 2px solid var(--cv-accent);
+  outline-offset: -1px;
+}
+.canvas-root .cv-notes-area::placeholder {
+  color: var(--cv-faint);
+}
+/* A section carrying notes gets a dot on its board label, so the deck shows at
+   a glance which parts have been written and which are still bare. */
+.canvas-root .cv-frame-label[data-notes]::after {
+  content: "";
+  border-radius: 50%;
+  background: var(--cv-accent);
+}
+/* ── Present mode ────────────────────────────────────────────────
+   The board is full-bleed and every other panel is gone; this is the only
+   thing left over it. It fades out once the presenter stops moving, so what
+   the room sees settles down to just the board. Pointer events stay on while
+   faded — a click lands on the button under the cursor rather than being
+   swallowed by the fade. */
+.canvas-root .cv-present {
+  transition: opacity 0.4s ease;
+}
+.canvas-root .cv-present[data-idle] {
+  opacity: 0;
+}
+.canvas-root .cv-present-bar {
+  padding: 6px;
+}
+.canvas-root .cv-present-btn {
+  padding: 0 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--cv-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.canvas-root .cv-present-btn:hover {
+  background: var(--cv-accent-soft);
+  color: var(--cv-ink);
+}
+.canvas-root .cv-present-btn[data-active] {
+  background: var(--cv-accent);
+  color: #fff;
+}
+.canvas-root .cv-present-btn svg {
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.canvas-root .cv-present-pos {
+  padding-left: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cv-ink);
+}
+.canvas-root .cv-present-of {
+  color: var(--cv-faint);
+  font-weight: 600;
+}
+.canvas-root .cv-present-label {
+  text-overflow: ellipsis;
+  padding: 0 8px;
+  font-size: 0.8rem;
+  color: var(--cv-muted);
+}
+.canvas-root .cv-present-remote {
+  padding: 12px;
+}
+.canvas-root .cv-present-remote-head {
+  padding-left: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cv-ink);
+}
+.canvas-root .cv-present-qr {
+  border-radius: 8px;
+  /* The encoder paints black on transparent; a dark board would swallow it. */
+  background: #fff;
+}
+.canvas-root .cv-present-remote-url {
+  font-size: 0.68rem;
+  color: var(--cv-muted);
+  text-align: center;
+}
+.canvas-root .cv-present-remote-hint {
+  font-size: 0.68rem;
+  color: var(--cv-faint);
+  text-align: center;
+}
 /* ── Minimap ─────────────────────────────────────────────────────
    Bottom-right overview panel. Sits inboard of the edge so it clears the
    synthetic scrollbars when both are enabled. The low-fi content is a <canvas>

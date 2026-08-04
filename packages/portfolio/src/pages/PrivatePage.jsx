@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Canvas } from "@gavinmcfarland/canvas";
 import ThemeToggle from "../components/ThemeToggle";
 import Seo from "../components/Seo";
-import { uploadMedia, unfurlLink } from "../data/canvasBoards";
+import { uploadMedia, unfurlLink, presentRelay } from "../data/canvasBoards";
 import { ACCENT } from "../theme";
 import { decryptBoard, encryptBoard } from "../lib/privateCrypto";
 
@@ -116,6 +116,7 @@ export default function PrivatePage() {
           onUploadAudio={uploadMedia}
           onUploadHtml={uploadMedia}
           onUnfurl={unfurlLink}
+          presentRelay={presentRelay}
         />
       </div>
     );

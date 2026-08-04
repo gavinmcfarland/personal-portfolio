@@ -183,6 +183,9 @@ function FrameLabel({ node }) {
     <div
       ref={setRef}
       className="cv-frame-label"
+      // Marks a section that has speaker notes written (a dot, via CSS). Only
+      // while editing — a visitor has no use for the author's rehearsal state.
+      data-notes={!readOnly && node.notes ? '' : undefined}
       onPointerDown={onPointerDown}
       onDoubleClick={(e) => { if (readOnly) return; e.stopPropagation(); eng.startRenameFrame(node.id); }}
       onContextMenu={(e) => {

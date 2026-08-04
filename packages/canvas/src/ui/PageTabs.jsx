@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
-import { cx, sectionNodes } from '../constants';
+import { cx, sectionNodes, sectionLabel } from '../constants';
 
 const RENAME_ICON = <Pencil />;
 const DELETE_ICON = <Trash2 />;
@@ -10,25 +10,6 @@ const DELETE_ICON = <Trash2 />;
 /* Vertical travel (px) before a press on a section row becomes a reorder drag
    rather than a click that jumps to it. */
 const DRAG_SLOP = 4;
-
-/* Display name for a section anchor: frame name, first markdown heading, or the
-   node's text/type as a fallback. */
-function sectionLabel(node) {
-  if (node.type === 'frame') return (node.name || '').trim() || 'Untitled';
-  if (node.type === 'md') {
-    const first = (node.text || '')
-      .split('\n')
-      .map((l) => l.replace(/^#+\s*/, '').trim())
-      .find(Boolean);
-    return first ? first.slice(0, 32) : 'Markdown';
-  }
-  if (node.type === 'code') {
-    const first = (node.text || '').split('\n').map((l) => l.trim()).find(Boolean);
-    return first ? first.slice(0, 32) : 'Code';
-  }
-  const txt = (node.text || '').replace(/\s+/g, ' ').trim();
-  return txt ? txt.slice(0, 32) : node.type.charAt(0).toUpperCase() + node.type.slice(1);
-}
 
 /* Page + section navigator rendered as a dropdown inside the top bar. The trigger
    shows the active page; the menu lists every page with its sections nested

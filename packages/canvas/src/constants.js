@@ -58,6 +58,26 @@ export const sectionNodes = (nodes) => {
 	return [...ranked, ...rows.flatMap((r) => r.sort((a, b) => a.x - b.x || a.y - b.y))];
 };
 
+/* Display name for a section anchor: frame name, first markdown heading, or the
+   node's text/type as a fallback. Shared by the page/section menu, the speaker
+   notes drawer and the phone remote, so one section reads the same everywhere. */
+export const sectionLabel = (node) => {
+	if (node.type === 'frame') return (node.name || '').trim() || 'Untitled';
+	if (node.type === 'md') {
+		const first = (node.text || '')
+			.split('\n')
+			.map((l) => l.replace(/^#+\s*/, '').trim())
+			.find(Boolean);
+		return first ? first.slice(0, 32) : 'Markdown';
+	}
+	if (node.type === 'code') {
+		const first = (node.text || '').split('\n').map((l) => l.trim()).find(Boolean);
+		return first ? first.slice(0, 32) : 'Code';
+	}
+	const txt = (node.text || '').replace(/\s+/g, ' ').trim();
+	return txt ? txt.slice(0, 32) : node.type.charAt(0).toUpperCase() + node.type.slice(1);
+};
+
 export const DRAW_TOOLS = ['pen', 'line', 'arrow', 'rect', 'ellipse'];
 /* Shapes with an interior that can take a fill colour. */
 export const FILLABLE_SHAPES = ['rect', 'ellipse'];

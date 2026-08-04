@@ -5,6 +5,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { canvasSave } from "./vite-plugin-canvas-save.js";
+import { canvasNotes } from "./vite-plugin-canvas-notes.js";
+import { present } from "./vite-plugin-present.js";
 import { clipWarmup } from "./vite-plugin-clip-warmup.js";
 import { writingIndex } from "./vite-plugin-writing-index.js";
 
@@ -41,7 +43,13 @@ export default defineConfig(({ command }) => ({
 		tailwindcss(),
 		react(),
 		canvasSave(),
+		canvasNotes(),
+		present(),
 		clipWarmup({ file: MASTHEAD_CLIP, globalName: MASTHEAD_CLIP_GLOBAL }),
 		writingIndex(),
 	],
+	// Listen on every interface so the phone remote can reach the dev server
+	// over the LAN. Vite prints the Network URL on boot, and /__present/link
+	// hands the same address to the presenter for its QR code.
+	server: { host: true },
 }));

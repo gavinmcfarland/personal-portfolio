@@ -48,6 +48,46 @@ export const uploadMedia = import.meta.env.DEV
     }
   : undefined;
 
+/* presentRelay adapter: lets a phone on the same network drive a presenting
+   board, through the dev server's in-memory relay (vite-plugin-present.js).
+
+   Dev only, and for a harder reason than the others: the deployed site is a
+   static build with no server to hold the session. Presenting happens off
+   `pnpm dev` on the laptop in the room, which is the machine the phone can
+   reach anyway. Without this adapter present mode still works — it just has no
+   remote, and the presenter drives with the arrow keys.
+
+   Fire-and-forget on publish: a failed POST means the phone misses one update
+   and catches the next. Retrying, or surfacing an error mid-talk, would be
+   worse than the beat it costs. */
+export const presentRelay = import.meta.env.DEV
+  ? {
+      publish: (state) => {
+        fetch('/__present/publish', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(state),
+        }).catch(() => {});
+      },
+      /* EventSource, not fetch-polling: it reconnects by itself when the laptop
+         sleeps or the Wi-Fi blips, which during a talk is the whole point. */
+      subscribe: (room, onCmd) => {
+        const es = new EventSource(`/__present/events?room=${encodeURIComponent(room)}`);
+        const handle = (e) => {
+          try { onCmd(JSON.parse(e.data)); } catch { /* malformed frame — skip it */ }
+        };
+        es.addEventListener('cmd', handle);
+        return () => es.close();
+      },
+      link: async (room) => {
+        const res = await fetch(`/__present/link?room=${encodeURIComponent(room)}`);
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+        return out;
+      },
+    }
+  : undefined;
+
 /* onUnfurl adapter: resolve a pasted link's OG metadata via the dev endpoint,
    which bakes its image into a committed asset. Dev only — the resolved data is
    stored in the node, so published boards render link cards without it. */

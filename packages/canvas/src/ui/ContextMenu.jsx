@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Maximize, Scaling, AppWindow, Puzzle, Terminal, SquareX, Expand, ExternalLink, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Pencil, Trash2, Sun, Moon } from 'lucide-react';
+import { Maximize, Scaling, AppWindow, Puzzle, Terminal, SquareX, Expand, ExternalLink, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Pencil, Trash2, Sun, Moon, MessageSquareText } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
 export default function ContextMenu() {
@@ -56,6 +56,9 @@ export default function ContextMenu() {
   // A frame is a section: its label is the name shown in the page/section menu,
   // so renaming it inline is the first thing on offer here.
   const isFrame = node && node.type === 'frame';
+  // Speaker notes hang off anything the presenter can navigate to, which is a
+  // frame or any anchored node — the same test sectionNodes() walks.
+  const isSection = node && (node.type === 'frame' || node.anchor);
   const count = target.kind === 'multi' ? selected.length : 1;
   // A media node opens full-screen unless it's a lone SVG (vector art shown full
   // size on the board already); a grid of two+ assets always opens the gallery.
@@ -103,10 +106,16 @@ export default function ContextMenu() {
   return (
     <div className="cv-panel" data-open="" data-cv-part="context-menu" style={place(190, 190)}>
       {isFrame && (
+        <button onClick={run(() => eng.startRenameFrame(node.id))}>
+          <Pencil />
+          Rename
+        </button>
+      )}
+      {isSection && (
         <>
-          <button onClick={run(() => eng.startRenameFrame(node.id))}>
-            <Pencil />
-            Rename
+          <button onClick={run(() => eng.openSectionNotes(node.id))}>
+            <MessageSquareText />
+            {node.notes ? 'Edit speaker notes…' : 'Add speaker notes…'}
           </button>
           <div className="cv-ctxsep" />
         </>

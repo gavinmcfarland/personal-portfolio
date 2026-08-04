@@ -4,6 +4,7 @@ import {
   publishedBoard,
   uploadMedia,
   unfurlLink,
+  presentRelay,
 } from "../data/canvasBoards";
 import { ACCENT } from "../theme";
 
@@ -89,6 +90,7 @@ export default function ProjectCanvas({ project }) {
       onUploadAudio={uploadMedia}
       onUploadHtml={uploadMedia}
       onUnfurl={unfurlLink}
+      presentRelay={presentRelay}
     />
   );
 }

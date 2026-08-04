@@ -14,6 +14,8 @@ import DefaultLightbox from './ui/Lightbox';
 import DefaultBottomDock from './ui/BottomDock';
 import DefaultNowPlayingBar from './ui/NowPlayingBar';
 import DefaultMinimap from './ui/Minimap';
+import DefaultNotesDrawer from './ui/NotesDrawer';
+import DefaultPresentBar from './ui/PresentBar';
 
 /* Recolour the custom edit caret (the inline-SVG cursor) to a given accent, with
    a contrasting outline so it stays legible over the board — white on light
@@ -52,7 +54,7 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, bgStrength, gridHidden, accent, classNames, components, fullscreenButton, fullBleed, maximized, maximizedRef, SCROLLBARS, scrollEls, minimap } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, bgStrength, gridHidden, accent, classNames, components, fullscreenButton, fullBleed, maximized, maximizedRef, SCROLLBARS, scrollEls, minimap, presenting } = ctx;
   // Chrome slots: a consumer's `components` entry replaces the built-in piece;
   // an explicit `null` hides it. Each piece reads state via useCanvas(), so a
   // replacement needs no props. `key in obj` (not truthiness) so `null` hides.
@@ -68,6 +70,8 @@ export default function Canvas() {
   const BottomDock = slot('BottomDock', DefaultBottomDock);
   const NowPlaying = slot('NowPlaying', DefaultNowPlayingBar);
   const Minimap = slot('Minimap', DefaultMinimap);
+  const NotesDrawer = slot('NotesDrawer', DefaultNotesDrawer);
+  const PresentBar = slot('PresentBar', DefaultPresentBar);
   // Cooperative gestures only apply in view mode; while editing the board keeps
   // full gesture control. `readOnly` (reactive) drives the CSS attribute/render;
   // the imperative handlers read the live `S.readOnly` instead. Suspended while
@@ -837,6 +841,19 @@ export default function Canvas() {
     };
 
     const onKeyDown = (e) => {
+      /* Presenting: the board covers the screen, so it owns the keyboard
+         outright — no hover gate, and no falling through to the tool
+         shortcuts below (a stray `f` must not drop a frame onto a slide).
+         Space and PageDown advance alongside the arrows, because that is what
+         every clicker in every room emits. */
+      if (S.presenting) {
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        if (e.key === 'Escape') { e.preventDefault(); eng.stopPresenting(); return; }
+        const fwd = e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.code === 'Space';
+        const back = e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp';
+        if (fwd || back) { e.preventDefault(); eng.applyPresentCmd(fwd ? 'next' : 'prev'); }
+        return;
+      }
       // Only act when this canvas is engaged — the pointer is over it, or it was
       // the last thing the user interacted with (clicked a tool / the board) and
       // they haven't since clicked elsewhere on the host page. That keeps an
@@ -1130,6 +1147,10 @@ export default function Canvas() {
       ref={rootRef}
       data-fit={fit}
       data-cv-fullbleed={fullBleed ? '' : undefined}
+      // Presenting is full bleed too, but a host that floats its own controls
+      // over a maximised board needs to tell the two apart: during a talk the
+      // screen belongs to the board alone.
+      data-cv-presenting={presenting ? '' : undefined}
       data-coop={coopView && !engaged ? '' : undefined}
       data-engaged={CLICK_TO_INTERACT && engaged ? '' : undefined}
       data-cv-accent={accent ? accentId : undefined}
@@ -1145,7 +1166,9 @@ export default function Canvas() {
       </div>
       {centerGuides && !readOnly && <div className="cv-center-lines" aria-hidden="true" />}
       <Chrome />
-      {ui && (
+      {/* Presenting hides every panel: the room is looking at the board, not at
+          the tools that built it. The present bar replaces the lot. */}
+      {ui && !presenting && (
         <>
           {TopBar && <TopBar />}
           {/* One fixed, page-wide dock (Edit toggle + tools bar) shared by every
@@ -1154,12 +1177,14 @@ export default function Canvas() {
           {EDITABLE && BottomDock && <BottomDock accentId={accentId} />}
           {EDITABLE && Toolbar && <Toolbar />}
           {EDITABLE && Recorder && <Recorder />}
+          {EDITABLE && NotesDrawer && <NotesDrawer />}
           {ZoomControls && <ZoomControls />}
           {minimap && Minimap && <Minimap />}
           {ContextMenu && <ContextMenu />}
           {SaveStatus && <SaveStatus />}
         </>
       )}
+      {presenting && PresentBar && <PresentBar />}
       {Lightbox && <Lightbox />}
       {/* Page-wide "now playing" bar — ungated by `ui`/`editable` since sounds play
           in view/published boards. Portals to <body>; only the elected host paints. */}

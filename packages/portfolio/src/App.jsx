@@ -39,6 +39,11 @@ const WritingPost = lazy(() => import("./pages/WritingPost"));
 const Work = lazy(() => import("./pages/Work"));
 // const CV = lazy(() => import("./pages/CV")); // CV page disabled — not public yet
 const PrivatePage = lazy(() => import("./pages/PrivatePage"));
+/* The phone remote for a presenting board. Its own standalone document like
+   /private/*, and for a sharper reason: it must not pull Home — or the canvas
+   engine behind it — onto a phone whose only job is showing a paragraph of
+   notes and two buttons. */
+const RemotePage = lazy(() => import("./pages/RemotePage"));
 // The /examples/* prototype pages are disabled — the files are kept, but
 // nothing routes to them. Re-enable by restoring these imports and the routes
 // below.
@@ -137,6 +142,20 @@ function App() {
         <Suspense fallback={null}>
           <Routes>
             <Route path="/private/:id" element={<PrivatePage />} />
+          </Routes>
+        </Suspense>
+      </ThemeProvider>
+    );
+  }
+
+  /* Same treatment for the presenter's phone remote — a standalone document
+     with nothing of the site behind it. */
+  if (location.pathname.startsWith("/remote/")) {
+    return (
+      <ThemeProvider>
+        <Suspense fallback={null}>
+          <Routes>
+            <Route path="/remote/:room" element={<RemotePage />} />
           </Routes>
         </Suspense>
       </ThemeProvider>

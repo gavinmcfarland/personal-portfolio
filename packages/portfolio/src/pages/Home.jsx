@@ -4,6 +4,7 @@ import {
   publishedBoard,
   uploadMedia,
   unfurlLink,
+  presentRelay,
 } from "../data/canvasBoards";
 import { ACCENT } from "../theme";
 import Seo from "../components/Seo";
@@ -122,6 +123,7 @@ const Home = () => {
             onUploadAudio={uploadMedia}
             onUploadHtml={uploadMedia}
             onUnfurl={unfurlLink}
+            presentRelay={presentRelay}
           />
         </div>
 

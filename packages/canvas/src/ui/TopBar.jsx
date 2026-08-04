@@ -1,4 +1,4 @@
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon, Monitor, Play } from "lucide-react";
 import { useCanvas } from "../CanvasProvider";
 import { cx } from "../constants";
 import PageTabs from "./PageTabs";
@@ -15,7 +15,7 @@ const THEME = {
 };
 
 export default function TopBar() {
-  const { brand, readOnly, EDITABLE, theme, pages, nodes, classNames } = useCanvas();
+  const { brand, readOnly, EDITABLE, theme, pages, nodes, classNames, eng } = useCanvas();
   const mode = theme?.mode;
   const toggleTheme = theme?.toggle;
   const th = THEME[mode] || THEME.system;
@@ -35,6 +35,18 @@ export default function TopBar() {
     <div className={cx("cv-ui cv-panel", classNames?.topbar)} data-cv-part="topbar">
       <PageTabs />
       {EDITABLE && !readOnly && <BgColorMenu />}
+      {/* Present: only where there is a running order to walk. Editable boards
+          only — a visitor to the published site is reading, not presenting. */}
+      {EDITABLE && hasSections && (
+        <button
+          className="cv-chip"
+          title="Present this board (Esc to exit)"
+          onClick={() => eng.startPresenting()}
+        >
+          <Play />
+          Present
+        </button>
+      )}
       {theme && (
         <button
           className="cv-chip"
