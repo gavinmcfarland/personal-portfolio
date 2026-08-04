@@ -52,7 +52,7 @@ function buildAccentCss(sel, accent) {
 
 export default function Canvas() {
   const ctx = useCanvas();
-  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, gridHidden, accent, classNames, components, fullscreenButton, fullBleed, maximized, maximizedRef, SCROLLBARS, scrollEls, minimap } = ctx;
+  const { rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, eng, actionRef, S, nodeEls, shapeEls, panKey, setDraft, setCtxMenu, setEngaged, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, readOnly, fit, ui, bgColor, bgStrength, gridHidden, accent, classNames, components, fullscreenButton, fullBleed, maximized, maximizedRef, SCROLLBARS, scrollEls, minimap } = ctx;
   // Chrome slots: a consumer's `components` entry replaces the built-in piece;
   // an explicit `null` hides it. Each piece reads state via useCanvas(), so a
   // replacement needs no props. `key in obj` (not truthiness) so `null` hides.
@@ -139,8 +139,15 @@ export default function Canvas() {
   /* A chosen board colour is exposed as `--bg-pick`; canvas.css blends it a
      short way into the base (`--bg-base`) the way a shape fill composites over
      the board, so the same value reads soft in light mode and dark-tinted (no
-     light hue) in dark mode. See the `[data-cv-bg="custom"]` rule. */
-  const bgStyle = bgColor ? { '--cv-bg-pick': bgColor } : undefined;
+     light hue) in dark mode. See the `[data-cv-bg="custom"]` rule.
+     A board that sets its own strength overrides `--bg-tint` inline, so that one
+     number holds in both themes (at 100% the pick lands literally). Left unset,
+     the per-theme token decides. */
+  const bgStyle = bgColor
+    ? (bgStrength == null
+        ? { '--cv-bg-pick': bgColor }
+        : { '--cv-bg-pick': bgColor, '--cv-bg-tint': `${bgStrength}%` })
+    : undefined;
 
   /* Per-instance accent override. A unique attribute scopes the injected rules to
      this board so several canvases with different accents can share a page. */

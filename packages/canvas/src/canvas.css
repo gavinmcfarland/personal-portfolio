@@ -2817,9 +2817,14 @@
   top: calc(100% + 10px);
   left: 0;
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+.canvas-root .cv-bg-menu-row {
+  display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px;
 }
 .canvas-root .cv-chip .cv-chip-swatch {
   width: 13px;
@@ -2866,6 +2871,71 @@
   cursor: default;
   padding: 0;
   border: 0;
+}
+/* Type or paste any value the system picker can't be bothered with. Sits under
+   the swatch row and stays in step with it — either control drives the board. */
+.canvas-root .cv-bg-hex {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--cv-ui-border);
+  border-radius: 6px;
+  background: var(--cv-surface);
+}
+.canvas-root .cv-bg-hex:focus-within {
+  border-color: var(--cv-accent);
+}
+.canvas-root .cv-bg-hex-hash {
+  font-family: var(--cv-sans);
+  font-size: 0.8rem;
+  opacity: 0.5;
+  user-select: none;
+}
+.canvas-root .cv-bg-hex-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--cv-ink);
+  font-family: var(--cv-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  padding: 0;
+}
+.canvas-root .cv-bg-hex-input:focus {
+  outline: none;
+}
+.canvas-root .cv-bg-hex-input::placeholder {
+  opacity: 0.45;
+}
+/* Strength: how far the pick blends into the board base (`--bg-tint`). */
+.canvas-root .cv-bg-strength {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.canvas-root .cv-bg-strength[data-off] {
+  opacity: 0.4;
+}
+.canvas-root .cv-bg-strength input {
+  flex: 1;
+  min-width: 0;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  cursor: default;
+  accent-color: var(--cv-accent);
+}
+.canvas-root .cv-bg-strength-val {
+  width: 34px;
+  text-align: right;
+  font-family: var(--cv-sans);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.6;
+  user-select: none;
 }
 
 /* Read-only mode: hide authoring chrome; drag-to-pan everywhere */

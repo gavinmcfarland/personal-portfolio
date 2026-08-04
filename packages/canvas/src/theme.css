@@ -1786,6 +1786,53 @@
   padding: 0;
   border: 0;
 }
+/* Type or paste any value the system picker can't be bothered with. Sits under
+   the swatch row and stays in step with it — either control drives the board. */
+.canvas-root .cv-bg-hex {
+  padding: 0 8px;
+  border: 1px solid var(--cv-ui-border);
+  border-radius: 6px;
+  background: var(--cv-surface);
+}
+.canvas-root .cv-bg-hex:focus-within {
+  border-color: var(--cv-accent);
+}
+.canvas-root .cv-bg-hex-hash {
+  font-family: var(--cv-sans);
+  font-size: 0.8rem;
+  opacity: 0.5;
+}
+.canvas-root .cv-bg-hex-input {
+  border: 0;
+  background: transparent;
+  color: var(--cv-ink);
+  font-family: var(--cv-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  padding: 0;
+}
+.canvas-root .cv-bg-hex-input:focus {
+  outline: none;
+}
+.canvas-root .cv-bg-hex-input::placeholder {
+  opacity: 0.45;
+}
+/* Strength: how far the pick blends into the board base (`--bg-tint`). */
+.canvas-root .cv-bg-strength[data-off] {
+  opacity: 0.4;
+}
+.canvas-root .cv-bg-strength input {
+  margin: 0;
+  padding: 0;
+  accent-color: var(--cv-accent);
+}
+.canvas-root .cv-bg-strength-val {
+  text-align: right;
+  font-family: var(--cv-sans);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.6;
+}
 /* Read-only mode: hide authoring chrome; drag-to-pan everywhere */
 /* SVGs don't open full-screen, so don't imply they're clickable. */
 .canvas-root[data-readonly] .cv-frame .cv-frame-body {
@@ -1977,6 +2024,22 @@
 .canvas-root .cv-section-item[data-focused] {
   background: var(--cv-accent-soft);
   color: var(--cv-ink);
+}
+/* Drag to reorder. The rows hold their positions for the whole gesture (the drop
+   line marks where the section lands), so the list can't shuffle under the
+   cursor and the hit test stays honest while the menu scrolls. */
+.canvas-root .cv-section-item[data-dragging] {
+  background: var(--cv-accent-soft);
+  color: var(--cv-ink);
+  opacity: 0.5;
+}
+/* Drop line. An inset shadow rather than a border, so the row keeps its height
+   and nothing below it shifts as the target moves. */
+.canvas-root .cv-section-item[data-drop-before] {
+  box-shadow: inset 0 2px 0 -0.5px var(--cv-accent);
+}
+.canvas-root .cv-section-item[data-drop-after] {
+  box-shadow: inset 0 -2px 0 -0.5px var(--cv-accent);
 }
 .canvas-root .cv-section-num {
   font-variant-numeric: tabular-nums;

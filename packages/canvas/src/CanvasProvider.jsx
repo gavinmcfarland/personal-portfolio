@@ -374,13 +374,18 @@ function buildFromSaved(base, raw, homeId, managedTypes) {
   });
   const activePageId = raw.activePage && pagesData[raw.activePage] ? raw.activePage : pagesMeta[0].id;
   const bgColor = typeof raw.bgColor === 'string' ? raw.bgColor : null;
+  // How far the picked colour blends into the board base, 0–100. Absent (null)
+  // means "whatever the theme's own tint is", which is the pre-slider behaviour.
+  const bgStrength = typeof raw.bgStrength === 'number' && raw.bgStrength >= 0 && raw.bgStrength <= 100
+    ? raw.bgStrength
+    : null;
   const gridHidden = raw.gridHidden === true;
   // The container size the saved views were framed at, so a load at a different
   // size can reframe the pan/zoom to be relative to the current container (see
   // the boot effect). Absent on boards saved before this was recorded.
   const vp = raw.viewport;
   const savedViewport = vp && vp.w > 0 && vp.h > 0 ? { w: vp.w, h: vp.h } : null;
-  return { pagesMeta, pagesData, activePageId, bgColor, gridHidden, brand: base.brand, hadSaved: true, savedViewport };
+  return { pagesMeta, pagesData, activePageId, bgColor, bgStrength, gridHidden, brand: base.brand, hadSaved: true, savedViewport };
 }
 
 function freshState(base, homeId) {
@@ -389,6 +394,7 @@ function freshState(base, homeId) {
     pagesData: { [homeId]: { nodes: base.nodes, shapes: base.shapes, view: defaultView() } },
     activePageId: homeId,
     bgColor: null,
+    bgStrength: null,
     gridHidden: false,
     brand: base.brand,
     hadSaved: false,
@@ -584,6 +590,7 @@ export function CanvasProvider({
   const [fullBleed, setFullBleed] = useState(false); // `fullscreenButton="document"` overlay: covers the document's viewport (portaled to body so an ancestor transform can't trap it)
   const [nativeFullscreen, setNativeFullscreen] = useState(false); // this canvas owns the browser Fullscreen API (via `fullscreenButton` native mode)
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
+  const [bgStrength, setBgStrength] = useState(init.bgStrength ?? null); // how far that colour blends in, 0–100 (null = the theme's own tint)
   const [gridHidden, setGridHidden] = useState(init.gridHidden || false); // board-wide dot-grid toggle (false = grid shown)
   const [reflow, setReflow] = useState(null); // Map<id,{x,y}> of derived positions from the collision resolver (null = objects at authored positions). Not persisted.
   const [publishState, setPublishState] = useState('idle'); // idle|saving|done|error
@@ -744,6 +751,7 @@ export function CanvasProvider({
   S.pages = pages;
   S.activePageId = activePageId;
   S.bgColor = bgColor;
+  S.bgStrength = bgStrength;
   S.gridHidden = gridHidden;
   S.reflow = reflow;
 
@@ -2194,6 +2202,9 @@ export function CanvasProvider({
       });
       const snap = { version: 2, activePage: S.activePageId, pages: out };
       if (S.bgColor) snap.bgColor = S.bgColor;
+      // Only meaningful alongside a picked colour — drop it otherwise so a board
+      // back on the theme default serializes exactly as it did before.
+      if (S.bgColor && S.bgStrength != null) snap.bgStrength = S.bgStrength;
       if (S.gridHidden) snap.gridHidden = true;
       // Record the container size these views were framed at, so a later load
       // can reframe the pan/zoom relative to whatever size the board opens at.
@@ -2210,10 +2221,18 @@ export function CanvasProvider({
       snap.savedAt = Date.now();
       return snap;
     }
-    /* Board-wide background colour override; null restores the theme default. */
+    /* Board-wide background colour override; null restores the theme default
+       (and with it the tint strength, which means nothing without a colour). */
     function setCanvasBg(color) {
       if (!EDITABLE) return;
       setBgColor(color || null);
+      if (!color) setBgStrength(null);
+    }
+    /* How far the picked colour blends into the board base, 0–100. null hands
+       the decision back to the theme (light and dark tint by different amounts). */
+    function setCanvasBgStrength(pct) {
+      if (!EDITABLE) return;
+      setBgStrength(pct == null ? null : Math.max(0, Math.min(100, Number(pct) || 0)));
     }
     /* Board-wide dot-grid visibility. Off hides the background dots everywhere
        (edit + view); the setting is saved with the board. */
@@ -3228,7 +3247,7 @@ export function CanvasProvider({
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, setNodeScale, deleteSelected, deleteTarget,
       copySelected, cutSelected, cutTarget, paste, pasteAt, pasteFromMenu, hasClipboard, systemClipIsMine, duplicateSelected, duplicateTarget, duplicateItemsAt,
-      setTool, setMode, setCanvasBg, toggleGrid, fitAll, flyTo, goToSection, stepSection, clearSectionFocus, reorderSections, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
+      setTool, setMode, setCanvasBg, setCanvasBgStrength, toggleGrid, fitAll, flyTo, goToSection, stepSection, clearSectionFocus, reorderSections, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
@@ -3312,7 +3331,7 @@ export function CanvasProvider({
   }, []);
 
   /* ── Keep chrome + persistence in sync with the model ───────── */
-  useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, gridHidden, eng]);
+  useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, bgStrength, gridHidden, eng]);
 
   /* Reflow is a display-only overlay (derived positions, never persisted): keep
      the screen-space chrome aligned to it, but don't schedule a save/publish. */
@@ -3331,7 +3350,7 @@ export function CanvasProvider({
   useEffect(() => {
     if (!didAutoPublishMount.current) { didAutoPublishMount.current = true; return; }
     eng.schedulePublish();
-  }, [nodes, shapes, pages, activePageId, bgColor, gridHidden, eng]);
+  }, [nodes, shapes, pages, activePageId, bgColor, bgStrength, gridHidden, eng]);
 
   /* ── Boot: apply the initial view (fit if nothing was saved, or if the
      embedder asked for a framed overview via initialView='fit') ──
@@ -3522,7 +3541,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     isPrimaryCanvas,
-    publishState, recording, fullscreen, gridEditId, renameFrameId, htmlActiveId, focusedSectionId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
+    publishState, recording, fullscreen, gridEditId, renameFrameId, htmlActiveId, focusedSectionId, pages, activePageId, pageData, bgColor, bgStrength, gridHidden, reflow, collide: COLLIDE,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls, minimap: MINIMAP.on, MINIMAP, minimapEls,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,

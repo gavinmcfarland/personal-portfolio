@@ -1553,6 +1553,11 @@
   top: calc(100% + 10px);
   left: 0;
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.canvas-root .cv-bg-menu-row {
+  display: flex;
   align-items: center;
   gap: 6px;
 }
@@ -1581,6 +1586,37 @@
   position: absolute;
   inset: -4px;
   cursor: default;
+}
+/* Type or paste any value the system picker can't be bothered with. Sits under
+   the swatch row and stays in step with it — either control drives the board. */
+.canvas-root .cv-bg-hex {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+}
+.canvas-root .cv-bg-hex-hash {
+  user-select: none;
+}
+.canvas-root .cv-bg-hex-input {
+  flex: 1;
+  min-width: 0;
+}
+/* Strength: how far the pick blends into the board base (`--bg-tint`). */
+.canvas-root .cv-bg-strength {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.canvas-root .cv-bg-strength input {
+  flex: 1;
+  min-width: 0;
+  height: 16px;
+  cursor: default;
+}
+.canvas-root .cv-bg-strength-val {
+  width: 34px;
+  user-select: none;
 }
 /* Read-only mode: hide authoring chrome; drag-to-pan everywhere */
 .canvas-root[data-readonly] [data-cv-part="toolbar"],
@@ -1770,6 +1806,21 @@
   cursor: default;
 }
 /* The section the viewer last jumped to — the one ↑/↓ steps from. */
+/* Drag to reorder. The rows hold their positions for the whole gesture (the drop
+   line marks where the section lands), so the list can't shuffle under the
+   cursor and the hit test stays honest while the menu scrolls. */
+.canvas-root .cv-section-item[data-reorderable] {
+  cursor: grab;
+  /* A drag reads as a drag, not as text being swept. */
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.canvas-root .cv-section-item[data-dragging] {
+  cursor: grabbing;
+}
+/* Drop line. An inset shadow rather than a border, so the row keeps its height
+   and nothing below it shifts as the target moves. */
 .canvas-root .cv-section-num {
   width: 14px;
   flex: none;
