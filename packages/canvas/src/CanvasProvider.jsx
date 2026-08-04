@@ -2,6 +2,7 @@
 import { createContext, useContext, useMemo, useRef, useState, useEffect, useLayoutEffect, useSyncExternalStore } from 'react';
 import { ZOOM, PAN, GRID, frameBarH, clampScale } from './constants';
 import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
+import { RICH_COMMANDS, sanitizeRich, isRichHtml } from './rich-text';
 import { getGlobalReadOnly, setGlobalReadOnly, subscribeMode, allocOwnerId, joinOwners, setActiveCanvas, subscribeOwner, primaryOwner } from './edit-mode';
 
 /* Default localStorage key for the dev autosave. Override with the `storageKey`
@@ -320,8 +321,11 @@ function normalizeSaved(n) {
   const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
   const ff = n.font ? { font: n.font } : null; // serif | sans | mono | script
   const al = n.align && n.align !== 'left' ? { align: n.align } : null; // left | center | right
-  if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs, ...ff, ...al }; // resized tblock wraps at its width
-  return { ...base, text: n.text || '', ...fs, ...ff, ...al }; // tblock
+  // Formatted text keeps its markup alongside the plain mirror; unformatted
+  // blocks (and every block saved before rich text) carry `text` alone.
+  const rt = n.html ? { html: String(n.html) } : null;
+  if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs, ...ff, ...al, ...rt }; // resized tblock wraps at its width
+  return { ...base, text: n.text || '', ...fs, ...ff, ...al, ...rt }; // tblock
 }
 
 /* Merge a saved node list over the data-derived base for the home page. Nodes of
@@ -1981,10 +1985,11 @@ export function CanvasProvider({
       return history.byPage[pageId] || (history.byPage[pageId] = { undo: [], redo: [], base: null, coalesceKey: null });
     }
     /* If the transition from `base` to the current model changes nothing but one
-       node's `text` — or, while that node is being edited, its `x` (a hugging
-       centre/right-aligned text block re-anchors as typing changes its width) —
-       return a stable key for that node so successive keystrokes collapse into
-       one history entry; otherwise null (each change stands alone). */
+       node's text (`text`, and the `html` mirror that moves with it) — or, while
+       that node is being edited, its `x` (a hugging centre/right-aligned text
+       block re-anchors as typing changes its width) — return a stable key for
+       that node so successive keystrokes collapse into one history entry;
+       otherwise null (each change stands alone). */
     function coalesceKeyFor(base, curNodes, curShapes) {
       if (base.shapes !== curShapes || base.nodes.length !== curNodes.length) return null;
       const bMap = new Map(base.nodes.map((n) => [n.id, n]));
@@ -1997,11 +2002,12 @@ export function CanvasProvider({
       if (!changed) return null;
       const [b, n] = changed;
       if (b.type !== n.type) return null;
-      for (const k in b) { if (k !== 'text' && k !== 'x' && b[k] !== n[k]) return null; }
-      for (const k in n) { if (k !== 'text' && k !== 'x' && b[k] !== n[k]) return null; }
+      const TEXTUAL = (k) => k === 'text' || k === 'html' || k === 'x';
+      for (const k in b) { if (!TEXTUAL(k) && b[k] !== n[k]) return null; }
+      for (const k in n) { if (!TEXTUAL(k) && b[k] !== n[k]) return null; }
       // A bare x change only coalesces mid-edit (the re-anchor shift); outside
       // editing it's a drag and stands alone.
-      if (b.text === n.text && (b.x === n.x || S.editingId !== n.id)) return null;
+      if (b.text === n.text && b.html === n.html && (b.x === n.x || S.editingId !== n.id)) return null;
       return 'text:' + n.id;
     }
     function recordHistory(curNodes, curShapes, pageId) {
@@ -2053,7 +2059,7 @@ export function CanvasProvider({
       // A per-object scale multiplier (K tool / right-click). Omitted at 1×.
       if (n.scale && n.scale !== 1) o.scale = Math.round(n.scale * 10000) / 10000;
       if (n.type === 'sticky') { o.color = n.color; o.text = n.text; }
-      else if (n.type === 'tblock') { o.text = n.text; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; if (n.font) o.font = n.font; if (n.align && n.align !== 'left') o.align = n.align; }
+      else if (n.type === 'tblock') { o.text = n.text; if (n.html) o.html = n.html; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; if (n.font) o.font = n.font; if (n.align && n.align !== 'left') o.align = n.align; }
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
       else if (n.type === 'code') { o.w = n.w; o.text = n.text; o.lang = n.lang; if (n.wrap != null) o.wrap = n.wrap ? 1 : 0; }
@@ -3110,6 +3116,49 @@ export function CanvasProvider({
     function startEditing(id) { setEditingId(id); }
     function stopEditing() { setEditingId(null); }
 
+    /* Apply an inline format (bold / italic / underline / strikethrough) or a
+       list command to a text block, from the properties panel.
+
+       While the block is being edited the command lands on the live selection —
+       the panel's buttons cancel their mousedown, so the caret never leaves the
+       text. With the block merely selected there's no caret to work from, so the
+       command applies to the whole block: focus it, select everything, run the
+       command, hand focus straight back. Either way the result is read back off
+       the DOM and committed, so a format is one undoable step like any edit.
+
+       execCommand is deprecated but unreplaced: it's the only cross-browser way
+       to run these edits inside contentEditable and keep native undo intact. */
+    function formatText(id, cmd) {
+      if (!EDITABLE || S.readOnly) return;
+      const command = RICH_COMMANDS[cmd];
+      if (!command) return;
+      const wrap = nodeEls.get(id);
+      const el = wrap && wrap.querySelector('.cv-txt');
+      if (!el) return;
+      const live = S.editingId === id;
+      const wasEditable = el.contentEditable;
+      el.contentEditable = 'true';
+      if (!live) {
+        el.focus({ preventScroll: true });
+        const r = document.createRange();
+        r.selectNodeContents(el);
+        const sel = getSelection();
+        sel.removeAllRanges();
+        sel.addRange(r);
+      }
+      try { document.execCommand('styleWithCSS', false, false); } catch { /* not supported */ }
+      document.execCommand(command);
+      const html = sanitizeRich(el.innerHTML);
+      if (!live) {
+        el.innerHTML = html; // the block isn't being edited — leave it as stored
+        el.contentEditable = wasEditable;
+        el.blur();           // the node's own blur-commit writes the same values back
+        const sel = getSelection();
+        if (sel) sel.removeAllRanges();
+      }
+      updateNode(id, { text: el.innerText, html: isRichHtml(html) ? html : undefined });
+    }
+
     /* Chrome elements register themselves here (avoids mutating context). */
     function setChrome(name, el) { chromeRef.current[name] = el; }
 
@@ -3127,7 +3176,7 @@ export function CanvasProvider({
       addLinkFromUrl, pasteLink, openLink,
       isHtmlFile, addHtmlFromFile, setHtmlActive, openHtml,
       recordingSupported, startRecording, stopRecording, cancelRecording,
-      openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startEditing, stopEditing, setChrome,
+      openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startEditing, stopEditing, formatText, setChrome,
       recordHistory, undo, redo,
       nextZ, backZ,
     };

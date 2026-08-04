@@ -3,9 +3,11 @@ import {
   MousePointer2, Hand, StickyNote, Type, FileCode, Code, Pen, Anchor,
   Slash, ArrowUpRight, Square, Circle, Mic,
   AlignLeft, AlignCenter, AlignRight, GripVertical,
+  Bold, Italic, Underline, Strikethrough, List, ListOrdered,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, themeInk, cx } from '../constants';
+import { richState } from '../rich-text';
 
 /* Vector shape tools grouped behind a single dropdown button in the toolbar. */
 const SHAPE_TOOLS = [
@@ -20,6 +22,27 @@ const ALIGNS = [
   ['center', 'Align centre', <AlignCenter />],
   ['right', 'Align right', <AlignRight />],
 ];
+
+/* Inline formats and lists for text blocks. Keys match rich-text's RICH_COMMANDS
+   (the engine maps them to the underlying editing commands). */
+const FORMATS = [
+  ['bold', 'Bold', <Bold />, '⌘B'],
+  ['italic', 'Italic', <Italic />, '⌘I'],
+  ['underline', 'Underline', <Underline />, '⌘U'],
+  ['strike', 'Strikethrough', <Strikethrough />, null],
+  ['ul', 'Bulleted list', <List />, '- '],
+  ['ol', 'Numbered list', <ListOrdered />, '1. '],
+];
+
+/* What a click on each format button would toggle right now, read live off the
+   caret / selection in the block being edited. */
+function liveFormatState() {
+  const q = (c) => { try { return document.queryCommandState(c); } catch { return false; } };
+  return {
+    bold: q('bold'), italic: q('italic'), underline: q('underline'),
+    strike: q('strikeThrough'), ul: q('insertUnorderedList'), ol: q('insertOrderedList'),
+  };
+}
 
 const TOOLS = [
   { t: 'select', label: 'Select / Move', key: 'V', icon: <MousePointer2 /> },
@@ -135,7 +158,7 @@ function Swatches() {
   const {
     tool, noteColor, textFont, strokeColor, fillColor,
     setNoteColor, setTextFont, setStrokeColor, setFillColor,
-    selected, nodes, shapes, eng, classNames,
+    selected, nodes, shapes, editingId, eng, classNames,
   } = useCanvas();
   const panelRef = useRef(null);
   const dragRef = useRef(null);
@@ -184,6 +207,19 @@ function Swatches() {
   const showFont = tool === 'text' || editingTexts;
   const showStroke = DRAW_TOOLS.includes(tool) || editingShapes;
   const showFill = FILLABLE_SHAPES.includes(tool) || fillableSel.length > 0;
+
+  // Which format buttons light up. A block that's actually being edited reports
+  // whatever the caret sits in, so it has to be re-read on every selection move;
+  // a block that's only selected reports what covers all of its text.
+  const liveTextId = selTexts.some((n) => n.id === editingId) ? editingId : null;
+  const [, bumpSel] = useState(0);
+  useEffect(() => {
+    if (!liveTextId) return undefined;
+    const onSel = () => bumpSel((v) => v + 1);
+    document.addEventListener('selectionchange', onSel);
+    return () => document.removeEventListener('selectionchange', onSel);
+  }, [liveTextId]);
+  const fmt = liveTextId ? liveFormatState() : richState(commonValue(selTexts, (n) => n.html || ''));
 
   if (!showNote && !showFont && !showStroke && !showFill) return <div className={cx('cv-ui cv-panel', classNames?.properties)} data-cv-part="properties" />;
 
@@ -259,6 +295,25 @@ function Swatches() {
               onClick={() => pickFont(name)}
             >
               {label}
+            </button>
+          ))}
+        </div>
+      )}
+      {editingTexts && (
+        <div className="cv-swatch-row">
+          {FORMATS.map(([key, label, icon, hint]) => (
+            <button
+              key={key}
+              className="cv-fmt-btn"
+              data-active={fmt && fmt[key] ? '' : undefined}
+              title={hint ? `${label} (${hint})` : label}
+              // Cancelling the mousedown keeps focus — and the caret — in the
+              // text being edited, so the command applies to the live selection
+              // instead of a block the user just blurred.
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => selTexts.forEach((n) => eng.formatText(n.id, key))}
+            >
+              {icon}
             </button>
           ))}
         </div>

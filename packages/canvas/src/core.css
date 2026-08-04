@@ -331,6 +331,10 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+/* Rich text inside a text block: the small authored subset (bold / italic /
+   underline / strikethrough + bulleted & numbered lists). Markers sit outside
+   the item so a hugging block's text stays flush with the rest of the board,
+   and the list's own indent is what carries the bullet. */
 .canvas-root .cv-node[data-editing="1"] {
   cursor: text;
 }
@@ -1356,6 +1360,19 @@
   cursor: default;
 }
 .canvas-root .cv-align-btn svg {
+  width: 15px;
+  height: 15px;
+}
+/* Inline-format & list buttons for text blocks — same chip as the align row. */
+.canvas-root .cv-fmt-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+.canvas-root .cv-fmt-btn svg {
   width: 15px;
   height: 15px;
 }

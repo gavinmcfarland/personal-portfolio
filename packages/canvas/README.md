@@ -94,6 +94,28 @@ regions — they neither push nor get pushed.
 Built-in node types: `sticky`, `tblock` (text), `md` (markdown), `code`, `frame`,
 `image`, `video`, `sound`, `link`, `html`, plus freehand `shape`s.
 
+### Text blocks
+
+Text blocks carry light formatting: **bold**, *italic*, underline and
+strikethrough, plus bulleted and numbered lists. The properties panel shows a
+format row whenever a text block is selected — with the block open for editing
+the buttons apply to the current selection (and light up to match the caret),
+and with it merely selected they apply to the whole block. The browser's own
+`⌘B` / `⌘I` / `⌘U` work while editing too.
+
+Lists also format themselves as you type: opening a line with `- `, `* `, `+ `,
+`1. ` or `1) ` drops the marker and turns the line into a real list item, with
+Enter continuing the list and a second Enter leaving it.
+
+Formatting is stored as an `html` field on the node, alongside the `text` field
+that stays the plain-text mirror (page labels, clipboard, search all read
+`text`). Only blocks that actually carry formatting get an `html` — snapshots
+authored before rich text, and blocks the user never formats, save exactly as
+they did before. The markup is restricted to a small subset — `strong`, `em`,
+`u`, `s`, `ul`, `ol`, `li`, `br`, `div`, with no attributes at all — and every
+string is sanitised down to that subset on load, on paste and on commit, so a
+snapshot can be treated as data rather than trusted markup.
+
 In edit mode the top bar shows a background-colour picker (presets or a custom
 colour) that recolours the whole board; the choice is stored on the snapshot as
 `bgColor` and applies in read-only views too. Picking "Theme default" removes

@@ -401,6 +401,26 @@
 .canvas-root .cv-tblock .cv-txt {
   outline: none;
 }
+/* Rich text inside a text block: the small authored subset (bold / italic /
+   underline / strikethrough + bulleted & numbered lists). Markers sit outside
+   the item so a hugging block's text stays flush with the rest of the board,
+   and the list's own indent is what carries the bullet. */
+.canvas-root .cv-tblock .cv-txt ul,
+.canvas-root .cv-tblock .cv-txt ol {
+  margin: 0;
+  padding-left: 1.2em;
+  list-style-position: outside;
+}
+.canvas-root .cv-tblock .cv-txt ul {
+  list-style-type: disc;
+}
+.canvas-root .cv-tblock .cv-txt ol {
+  list-style-type: decimal;
+}
+.canvas-root .cv-tblock .cv-txt li {
+  margin: 0;
+  list-style: inherit;
+}
 /* Frame / anchor region — the box scales with zoom; its label lives in the chrome layer */
 .canvas-root .cv-frame .cv-frame-body {
   border: 1.6px dashed var(--cv-accent);
@@ -1485,6 +1505,21 @@
   border-color: rgba(255, 255, 255, 0.18);
 }
 .canvas-root .cv-align-btn[data-active] {
+  outline: 2px solid var(--cv-accent);
+  outline-offset: 1px;
+}
+/* Inline-format & list buttons for text blocks — same chip as the align row. */
+.canvas-root .cv-fmt-btn {
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: transparent;
+  color: inherit;
+}
+.dark .canvas-root .cv-fmt-btn,
+.canvas-root.dark .cv-fmt-btn {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.canvas-root .cv-fmt-btn[data-active] {
   outline: 2px solid var(--cv-accent);
   outline-offset: 1px;
 }

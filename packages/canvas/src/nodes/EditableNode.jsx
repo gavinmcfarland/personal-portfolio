@@ -1,11 +1,17 @@
 import { memo, useEffect, useRef } from 'react';
 import { useCanvas } from '../CanvasProvider';
 import { useRegister } from './common';
+import { sanitizeRich, isRichHtml, applyListShortcut } from '../rich-text';
 
 /* Sticky notes & free text blocks — uncontrolled contentEditable so React never
    fights the caret. Text commits to the model on blur. Empty text blocks
    self-delete (they'd be invisible); empty stickies stay — the note itself is
-   a visible object the user placed. */
+   a visible object the user placed.
+
+   Text blocks are rich: they carry bold / italic / underline / strikethrough and
+   lists (see rich-text.js), typed with the browser's own ⌘B/⌘I/⌘U, applied from
+   the properties panel, or auto-formatted from a "- " / "1. " line opener.
+   Stickies stay plain — they're a label on a note, not a document. */
 function EditableNode({ node }) {
   const { editingId, readOnly, eng, nodeEls, actionRef } = useCanvas();
   const { setRef, dataProps, style } = useRegister(node);
@@ -13,6 +19,7 @@ function EditableNode({ node }) {
   const editing = editingId === node.id;
   const hug = node.w == null;
   const align = node.align || 'left';
+  const rich = node.type !== 'sticky';
 
   // Watch the node's size for two jobs. While editing: keep the selection
   // outline in sync as the text grows/shrinks the node (text isn't committed to
@@ -43,9 +50,14 @@ function EditableNode({ node }) {
     return () => ro.disconnect();
   }, [editing, hug, align, eng, nodeEls, actionRef, node.id, node.x, node.scale]);
 
-  // Seed the text exactly once; the DOM owns it thereafter.
+  // Seed the text exactly once; the DOM owns it thereafter. A formatted block
+  // seeds from its (re-sanitised) HTML — the stored markup is already clean, but
+  // a snapshot is just JSON and may have been authored or edited anywhere.
   useEffect(() => {
-    if (txtRef.current) txtRef.current.textContent = node.text || '';
+    const txt = txtRef.current;
+    if (!txt) return;
+    if (rich && node.html) txt.innerHTML = sanitizeRich(node.html);
+    else txt.textContent = node.text || '';
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -54,6 +66,10 @@ function EditableNode({ node }) {
     if (!txt) return;
     if (editing) {
       txt.contentEditable = 'true';
+      // Make the browser's own ⌘B/⌘I/⌘U emit <b>/<i>/<u> rather than inline
+      // styles, which the sanitiser would strip along with every other
+      // attribute — the formatting would appear to type and then vanish.
+      try { document.execCommand('styleWithCSS', false, false); } catch { /* not supported */ }
       txt.focus();
       const r = document.createRange();
       r.selectNodeContents(txt);
@@ -67,10 +83,39 @@ function EditableNode({ node }) {
   }, [editing]);
 
   const commit = () => {
-    const text = txtRef.current ? txtRef.current.textContent : '';
+    const txt = txtRef.current;
+    // `innerText` reads the text as laid out, so line breaks and list items each
+    // land on their own line whichever way the browser represented them.
+    const text = txt ? (rich ? txt.innerText : txt.textContent) : '';
     if (text.trim() === '' && node.type !== 'sticky') { eng.removeNode(node.id); eng.stopEditing(); return; }
-    eng.updateNode(node.id, { text });
+    if (rich && txt) {
+      const html = sanitizeRich(txt.innerHTML);
+      txt.innerHTML = html; // keep the live DOM identical to what we store
+      eng.updateNode(node.id, { text, html: isRichHtml(html) ? html : undefined });
+    } else {
+      eng.updateNode(node.id, { text });
+    }
     eng.stopEditing();
+  };
+
+  /* Paste never brings foreign markup in as-is: rich blocks take the sanitised
+     subset of the pasted HTML, everything else takes plain text. */
+  const onPaste = (e) => {
+    const cd = e.clipboardData;
+    if (!cd) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const html = rich ? sanitizeRich(cd.getData('text/html')) : '';
+    if (html) document.execCommand('insertHTML', false, html);
+    else document.execCommand('insertText', false, cd.getData('text/plain'));
+  };
+
+  /* Markdown-style list shortcuts fire off the space keystroke that closes a
+     line-opening "-" / "1." marker. */
+  const onInput = (e) => {
+    if (!rich) return;
+    const ne = e.nativeEvent;
+    if (ne.inputType === 'insertText' && ne.data === ' ') applyListShortcut(txtRef.current);
   };
 
   const onDoubleClick = (e) => {
@@ -100,7 +145,14 @@ function EditableNode({ node }) {
       style={sizedStyle}
       onDoubleClick={onDoubleClick}
     >
-      <div className="cv-txt" ref={txtRef} onBlur={commit} suppressContentEditableWarning />
+      <div
+        className="cv-txt"
+        ref={txtRef}
+        onBlur={commit}
+        onInput={onInput}
+        onPaste={onPaste}
+        suppressContentEditableWarning
+      />
     </div>
   );
 }
