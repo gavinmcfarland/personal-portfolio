@@ -443,6 +443,14 @@
   background: transparent;
   border-radius: 0;
 }
+/* A raster that turned out to carry transparency (detected on load — see
+   Media.jsx) is art too: the card would show through its alpha, so drop the
+   surface and the shadow that outlines it. Keeps the radius and the crop's
+   overflow clip, which a photo and a cut-out want alike. */
+.canvas-root .cv-node.cv-image.cv-alpha {
+  box-shadow: none;
+  background: transparent;
+}
 /* HTML document node — a dropped/pasted .html file rendered live in a sandboxed
    iframe. The iframe is inert (pointer-events:none) until the node goes live
    (double-click in edit mode / tap in view mode — see Canvas.jsx), so drags and
@@ -648,7 +656,8 @@
   box-shadow: var(--cv-shadow);
   background: var(--cv-surface);
 }
-.canvas-root .cv-node.cv-media .cv-media-cell.cv-svg {
+.canvas-root .cv-node.cv-media .cv-media-cell.cv-svg,
+.canvas-root .cv-node.cv-media .cv-media-cell.cv-alpha {
   background: transparent;
   box-shadow: none;
 }

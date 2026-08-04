@@ -688,6 +688,14 @@
   border-radius: 0;
   overflow: visible;
 }
+/* A raster that turned out to carry transparency (detected on load — see
+   Media.jsx) is art too: the card would show through its alpha, so drop the
+   surface and the shadow that outlines it. Keeps the radius and the crop's
+   overflow clip, which a photo and a cut-out want alike. */
+.canvas-root .cv-node.cv-image.cv-alpha {
+  box-shadow: none;
+  background: transparent;
+}
 .canvas-root .cv-node.cv-image img {
   display: block;
   width: 100%;
@@ -1074,7 +1082,8 @@
   box-shadow: var(--cv-shadow);
   background: var(--cv-surface);
 }
-.canvas-root .cv-node.cv-media .cv-media-cell.cv-svg {
+.canvas-root .cv-node.cv-media .cv-media-cell.cv-svg,
+.canvas-root .cv-node.cv-media .cv-media-cell.cv-alpha {
   background: transparent;
   box-shadow: none;
 }
