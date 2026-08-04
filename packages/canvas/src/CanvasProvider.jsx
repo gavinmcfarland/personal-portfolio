@@ -38,10 +38,12 @@ export const useCanvas = () => {
 const defaultView = () => ({ x: 0, y: 0, scale: 1 });
 
 // Screen-space padding (px) between a node's rect and its selection outline.
+// The box is border-box, so setting this to the border's own thickness (2px,
+// see .cv-sel) puts the stroke immediately outside the object with no gap.
 // The outline, its resize handles, and the grid-edit dividers all derive their
 // rect from this one value, so they stay concentric — change it here to move the
 // outline in/out and the handles follow automatically.
-const SEL_PAD = 4;
+const SEL_PAD = 2;
 
 /* Resolve a `resizeAnchor` spec into {ax, ay} fractions (0..1) of the viewport —
    the point that stays put when the container resizes (e.g. the browser window).
@@ -1128,8 +1130,9 @@ export function CanvasProvider({
       // always centre on the outline regardless of the pad.
       const ox = sx - SEL_PAD, oy = sy - SEL_PAD, ow = sw + SEL_PAD * 2, oh = sh + SEL_PAD * 2;
       chrome.sel.style.display = 'block';
-      // Sit SEL_PAD px outside the node rect so the 2px border hugs the object's
-      // edge, matching the hover outline (see placeHover).
+      // Sit SEL_PAD px outside the node rect — exactly the border's thickness, so
+      // the stroke's inner edge lands on the object's edge with no gap, matching
+      // the hover outline (see placeHover).
       chrome.sel.style.left = ox + 'px'; chrome.sel.style.top = oy + 'px';
       chrome.sel.style.width = ow + 'px'; chrome.sel.style.height = oh + 'px';
       /* The resize affordances only make sense for a single selected node. */
@@ -1163,9 +1166,12 @@ export function CanvasProvider({
       const x = +el.dataset.x, y = +el.dataset.y;
       const [w, h] = nodeBox(el, geomCache.current);
       const s = viewRef.scale, sx = viewRef.x + x * s, sy = viewRef.y + y * s;
+      // Grown by the hover border's own thickness (1.5px, see .cv-hov) so the
+      // stroke hugs the object's edge, like the selection outline above.
+      const HOV_PAD = 1.5;
       hov.style.display = 'block';
-      hov.style.left = (sx - 4) + 'px'; hov.style.top = (sy - 4) + 'px';
-      hov.style.width = (w * s + 8) + 'px'; hov.style.height = (h * s + 8) + 'px';
+      hov.style.left = (sx - HOV_PAD) + 'px'; hov.style.top = (sy - HOV_PAD) + 'px';
+      hov.style.width = (w * s + HOV_PAD * 2) + 'px'; hov.style.height = (h * s + HOV_PAD * 2) + 'px';
     }
     function setHover(id) {
       const next = S.readOnly || S.tool !== 'select' ? null : (id || null);
