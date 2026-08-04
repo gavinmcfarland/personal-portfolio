@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Files, List, X } from "lucide-react";
 import Seo from "../components/Seo";
 
 /* The phone in the presenter's hand.
@@ -51,9 +52,10 @@ function Notes({ text }) {
 
 export default function RemotePage() {
   const { room } = useParams();
-  const [state, setState] = useState(null); // last published {deck, index, title}
+  const [state, setState] = useState(null); // last published {deck, index, pages, activePageId, title}
   const [status, setStatus] = useState("connecting");
   const [listOpen, setListOpen] = useState(false);
+  const [pagesOpen, setPagesOpen] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const startedAt = useRef(null);
 
@@ -124,36 +126,91 @@ export default function RemotePage() {
   const index = state ? state.index : -1;
   const here = index >= 0 ? deck[index] : null;
   const next = index >= 0 && index + 1 < deck.length ? deck[index + 1] : null;
+  const pages = (state && state.pages) || [];
+  const activePageId = state && state.activePageId;
+  const multiPage = pages.length > 1;
   const mmss = `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, "0")}`;
+
+  /* Only one panel at a time — the phone has one screenful, and two overlapping
+     lists mid-talk is a way to lose your place. */
+  const openList = (v) => { setListOpen(v); if (v) setPagesOpen(false); };
+  const openPages = (v) => { setPagesOpen(v); if (v) setListOpen(false); };
 
   return (
     <main className="fixed inset-0 flex flex-col bg-base">
       <Seo title={`Remote · ${room || ""}`} noindex />
 
-      <header className="flex items-center gap-3 border-b border-line px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+      <header className="flex items-center gap-2 border-b border-line px-3 py-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
         <button
           type="button"
-          onClick={() => setListOpen((v) => !v)}
-          className="font-sans text-4 font-bold tabular-nums text-ink"
+          onClick={() => openList(!listOpen)}
+          aria-label={listOpen ? "Close section list" : "Open section list"}
+          className="flex items-center gap-1.5 rounded-lg px-2 py-2 text-muted active:bg-accent-soft"
         >
-          {index >= 0 ? index + 1 : "–"}
-          <span className="text-faint">/{deck.length || "–"}</span>
+          {listOpen ? <X className="size-4" /> : <List className="size-4" />}
+          <span className="font-sans text-4 font-bold tabular-nums text-ink">
+            {index >= 0 ? index + 1 : "–"}
+            <span className="text-faint">/{deck.length || "–"}</span>
+          </span>
         </button>
         <span className="min-w-0 flex-1 truncate font-sans text-4 text-muted">
           {state && state.title ? state.title : STATUS[status]}
         </span>
+        {/* A single-page board has nothing to switch between, so the control
+            isn't there to wonder about. */}
+        {multiPage && (
+          <button
+            type="button"
+            onClick={() => openPages(!pagesOpen)}
+            aria-label={pagesOpen ? "Close page list" : "Change page"}
+            className="rounded-lg p-2 text-muted active:bg-accent-soft"
+          >
+            {pagesOpen ? <X className="size-4" /> : <Files className="size-4" />}
+          </button>
+        )}
         <span className="font-sans text-4 tabular-nums text-faint">{mmss}</span>
       </header>
 
-      {listOpen ? (
-        /* Jump anywhere in the running order. Sections from other pages of the
-           board are in here too — goToSection switches pages on the way. */
+      {pagesOpen ? (
+        <ol className="flex-1 overflow-y-auto">
+          {pages.map((p) => {
+            const count = deck.filter((s) => s.pageId === p.id).length;
+            return (
+              <li key={p.id}>
+                <button
+                  type="button"
+                  onClick={() => { send("page", p.id); openPages(false); }}
+                  className={`flex w-full items-baseline gap-3 border-b border-line px-4 py-4 text-left ${
+                    p.id === activePageId ? "bg-accent-soft" : ""
+                  }`}
+                >
+                  <span className="min-w-0 flex-1 truncate font-sans text-5 text-ink">
+                    {p.name || "Untitled page"}
+                  </span>
+                  <span className="shrink-0 font-sans text-4 tabular-nums text-faint">
+                    {count} {count === 1 ? "section" : "sections"}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      ) : listOpen ? (
+        /* The whole running order, across every page of the board — stepping
+           crosses page boundaries too, so this list is the same deck. Page
+           headings only appear on a board that has more than one, where they
+           tell you where you are; on a single-page board they'd be noise. */
         <ol className="flex-1 overflow-y-auto">
           {deck.map((s, i) => (
             <li key={s.id}>
+              {multiPage && (i === 0 || deck[i - 1].pageId !== s.pageId) && (
+                <h2 className="sticky top-0 border-b border-line bg-base px-4 py-2 font-sans text-2 font-bold uppercase tracking-label text-faint">
+                  {s.pageName || "Untitled page"}
+                </h2>
+              )}
               <button
                 type="button"
-                onClick={() => { send("goto", s.id); setListOpen(false); }}
+                onClick={() => { send("goto", s.id); openList(false); }}
                 className={`flex w-full items-baseline gap-3 border-b border-line px-4 py-4 text-left ${
                   i === index ? "bg-accent-soft" : ""
                 }`}
@@ -188,22 +245,25 @@ export default function RemotePage() {
       )}
 
       {/* Two targets filling the width, sized for a thumb on a phone held one-
-          handed while talking. Labels rather than icons: this gets glanced at
-          in a dark room, not studied. */}
+          handed while talking — glanced at in a dark room, not studied. Same
+          chevrons the present bar uses, so the two ends of the same control
+          look like the same control. */}
       <div className="grid shrink-0 grid-cols-2 gap-px border-t border-line bg-line pb-[env(safe-area-inset-bottom)]">
         <button
           type="button"
           onClick={() => send("prev")}
-          className="bg-base py-7 font-sans text-[1.5rem] leading-none text-muted active:bg-accent-soft"
+          aria-label="Previous section"
+          className="flex items-center justify-center bg-base py-7 text-muted active:bg-accent-soft"
         >
-          ←
+          <ChevronLeft className="size-7" strokeWidth={1.8} />
         </button>
         <button
           type="button"
           onClick={() => send("next")}
-          className="bg-base py-7 font-sans text-[1.5rem] leading-none text-ink active:bg-accent-soft"
+          aria-label="Next section"
+          className="flex items-center justify-center bg-base py-7 text-ink active:bg-accent-soft"
         >
-          →
+          <ChevronRight className="size-7" strokeWidth={1.8} />
         </button>
       </div>
     </main>

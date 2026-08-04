@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Smartphone, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Files, Smartphone, X } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
-import { sectionNodes, sectionLabel } from '../constants';
 
 /* The only chrome left on screen while presenting: where we are, a way back and
    forward, the pairing code for the phone, and the way out.
@@ -64,18 +63,25 @@ function RemotePanel({ room, relay, onClose }) {
 }
 
 export default function PresentBar() {
-  const { eng, nodes, focusedSectionId, presentRoom, presentRelay } = useCanvas();
+  // `nodes` / `activePageId` aren't read directly — they're what re-renders this
+  // when the board moves, so eng.deck() below is recomputed rather than stale.
+  const { eng, nodes, activePageId, pages, focusedSectionId, presentRoom, presentRelay } = useCanvas();
   const [idle, setIdle] = useState(false);
   const [remote, setRemote] = useState(false);
+  const [pageMenu, setPageMenu] = useState(false);
 
-  const secs = sectionNodes(nodes);
-  const i = secs.findIndex((n) => n.id === focusedSectionId);
-  const here = i >= 0 ? secs[i] : null;
+  /* The deck, not this page's sections: the counter has to mean the same thing
+     here as it does on the phone, and the phone is reading the whole board. */
+  const list = eng.deck();
+  const i = list.findIndex((s) => s.id === focusedSectionId);
+  const here = i >= 0 ? list[i] : null;
+  const multiPage = pages.length > 1;
 
-  /* Fade out when the presenter stops moving the mouse — but never while the
-     pairing panel is open, which is read off the screen at a standstill. */
+  /* Fade out when the presenter stops moving the mouse — but never while a
+     panel is open, which is read off the screen at a standstill. */
+  const held = remote || pageMenu;
   useEffect(() => {
-    if (remote) { setIdle(false); return undefined; }
+    if (held) { setIdle(false); return undefined; }
     let t = setTimeout(() => setIdle(true), IDLE_MS);
     const wake = () => {
       setIdle(false);
@@ -89,24 +95,52 @@ export default function PresentBar() {
       window.removeEventListener('pointermove', wake);
       window.removeEventListener('keydown', wake);
     };
-  }, [remote]);
+  }, [held]);
 
   return (
     <div className="cv-present" data-idle={idle ? '' : undefined} data-cv-part="present">
       {remote && presentRelay && (
         <RemotePanel room={presentRoom} relay={presentRelay} onClose={() => setRemote(false)} />
       )}
+      {/* Page switcher. The deck already crosses pages as you step through it,
+          so this is for jumping straight to one — the top bar's page menu is
+          gone while presenting, and mid-talk is no time to go looking for it. */}
+      {pageMenu && multiPage && (
+        <div className="cv-present-pages cv-panel">
+          {pages.map((p) => (
+            <button
+              key={p.id}
+              className="cv-present-page"
+              data-active={p.id === activePageId ? '' : undefined}
+              onClick={() => { eng.applyPresentCmd('page', p.id); setPageMenu(false); }}
+            >
+              {p.name || 'Untitled page'}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="cv-present-bar cv-panel">
         <button className="cv-present-btn" onClick={() => eng.applyPresentCmd('prev')} aria-label="Previous section">
           <ChevronLeft />
         </button>
         <span className="cv-present-pos">
-          {i >= 0 ? i + 1 : '–'}<span className="cv-present-of">/{secs.length}</span>
+          {i >= 0 ? i + 1 : '–'}<span className="cv-present-of">/{list.length}</span>
         </span>
-        <span className="cv-present-label">{here ? sectionLabel(here) : 'No section'}</span>
+        <span className="cv-present-label">{here ? here.label : 'No section'}</span>
         <button className="cv-present-btn" onClick={() => eng.applyPresentCmd('next')} aria-label="Next section">
           <ChevronRight />
         </button>
+        {multiPage && (
+          <button
+            className="cv-present-btn"
+            data-active={pageMenu ? '' : undefined}
+            onClick={() => setPageMenu((v) => !v)}
+            aria-label="Change page"
+            title={`Page: ${(pages.find((p) => p.id === activePageId) || {}).name || '—'}`}
+          >
+            <Files />
+          </button>
+        )}
         {/* Without a relay there is nothing for a phone to connect to, so the
             button would be a promise the build can't keep. */}
         {presentRelay && (

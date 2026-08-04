@@ -279,6 +279,12 @@ bleed, hides every panel, drops to view-only and parks on the first section. `�
 (and `space` / `PageUp` / `PageDown`, so a clicker works) step through the running
 order; `Esc` ends it and hands the board back in the mode it was found in.
 
+The running order is the **whole board**, not the page in front of you: stepping off
+the end of one page continues onto the next, and the counter reads the same on the
+board as it does on the remote. Both ends also carry a page switcher for jumping
+straight to one. (Outside present mode the arrow keys still stay on the active page
+— crossing pages by accident while editing would be startling.)
+
 Each section carries **speaker notes** — right-click a frame → *Add speaker notes…*.
 They live on the node, so they undo and save like anything else, and they are never
 drawn on the board: the only things that read them are the notes drawer and the
@@ -289,17 +295,19 @@ of its own. Pass `presentRelay`:
 
 ```jsx
 <Canvas editable presentRelay={{
-  publish: ({ room, deck, index }) => {…},   // board → listeners
-  subscribe: (room, onCmd) => unsubscribe,   // listeners → board ('next' | 'prev' | 'goto')
+  publish: ({ room, deck, index, pages, activePageId }) => {…},  // board → listeners
+  subscribe: (room, onCmd) => unsubscribe,   // listeners → board
   link: async (room) => ({ url }),           // the address to show as a QR code
 }} />
 ```
 
-Without it, present mode still works — the phone button just isn't offered. The
-board is the only writer of the position: a remote sends a command and learns where
-it landed from the next `publish`, so the two can never disagree about the current
-section. See `vite-plugin-present.js` in the portfolio for a dev-server relay built
-on Server-Sent Events.
+Commands are `next`, `prev`, `goto` (a section id) and `page` (a page id). Without a
+relay, present mode still works — the phone button just isn't offered.
+
+The board is the only writer of the position: a remote sends a command and learns
+where it landed from the next `publish`, so the two can never disagree about the
+current section. See `vite-plugin-present.js` in the portfolio for a dev-server relay
+built on Server-Sent Events.
 
 ### Worked example — a completely bespoke skin
 

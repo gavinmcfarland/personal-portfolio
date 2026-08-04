@@ -2005,6 +2005,28 @@
   font-size: 0.8rem;
   color: var(--cv-muted);
 }
+.canvas-root .cv-present-pages {
+  padding: 6px;
+}
+.canvas-root .cv-present-page {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--cv-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.canvas-root .cv-present-page:hover {
+  background: var(--cv-accent-soft);
+  color: var(--cv-ink);
+}
+.canvas-root .cv-present-page[data-active] {
+  background: var(--cv-accent);
+  color: #fff;
+}
 .canvas-root .cv-present-remote {
   padding: 12px;
 }

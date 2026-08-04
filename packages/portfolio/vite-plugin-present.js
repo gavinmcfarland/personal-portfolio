@@ -125,9 +125,16 @@ export function present() {
 						const r = room(id);
 						const now = Date.now();
 						r.touched = now;
+						/* Fields are named rather than spread: this is the contract
+						   between two independently-loaded pages, and a typo on the
+						   board should fail here instead of quietly reaching the
+						   phone. Adding something the remote renders means adding
+						   it here too. */
 						r.state = {
 							deck: Array.isArray(body.deck) ? body.deck : [],
 							index: Number.isFinite(+body.index) ? +body.index : 0,
+							pages: Array.isArray(body.pages) ? body.pages : [],
+							activePageId: body.activePageId || '',
 							board: body.board || '',
 							title: body.title || '',
 							at: now,

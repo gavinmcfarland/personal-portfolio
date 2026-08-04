@@ -3258,23 +3258,45 @@ export function CanvasProvider({
       // changed something, which it hasn't.
       if (wasEditing.current) { wasEditing.current = false; setMode(false); }
     }
-    /* Drive the board from the phone. `goto` carries a section id, which may
-       live on another page — goToSection handles the switch. Anything the
-       remote does lands here and nowhere else, so the board stays the single
-       writer of "where we are". */
-    function applyPresentCmd(cmd, id) {
-      if (cmd === 'next') { if (!stepSection(1)) firstSection(); return; }
-      if (cmd === 'prev') { if (!stepSection(-1)) firstSection(); return; }
-      if (cmd === 'goto' && id) {
-        const page = S.pages.find((p) => (p.id === S.activePageId ? S.nodes : (pageData[p.id] ? pageData[p.id].nodes : [])).some((n) => n.id === id));
-        goToSection(page && page.id !== S.activePageId ? page.id : null, id);
-      }
+    /* Jump to a section anywhere on the board, switching pages if it lives on
+       another one. The deck is the lookup, so a caller never has to know which
+       page holds what. */
+    function goToDeckEntry(entry) {
+      if (!entry) return;
+      goToSection(entry.pageId !== S.activePageId ? entry.pageId : null, entry.id);
     }
-    /* stepSection is a no-op with nothing focused; a remote tap that early in a
-       talk should still move the board rather than appear broken. */
-    function firstSection() {
-      const secs = sectionNodes(S.nodes);
-      if (secs.length) goToSection(null, secs[0].id);
+    /* Step through the running order — the whole board, not just the page in
+       front of us. Outside present mode the arrow keys stay on the active page
+       (see stepSection): stepping across pages by accident while editing would
+       be startling. Presenting is the opposite case, where the deck IS the
+       talk and its page boundaries are an authoring detail the room never
+       sees, so walking off the end of one page should continue onto the next. */
+    function stepDeck(delta) {
+      const list = deck();
+      if (!list.length) return;
+      const i = list.findIndex((s) => s.id === focusedSectionRef.current);
+      // Nothing focused yet: a tap this early should still move the board
+      // rather than appear broken, so start at the top of the deck.
+      goToDeckEntry(i < 0 ? list[0] : list[(i + delta + list.length) % list.length]);
+    }
+    /* Drive the board — from the phone, or from the present bar, which speaks
+       through the same three commands so both ends can only ever do what the
+       other can. Everything lands here and nowhere else, so the board stays
+       the single writer of "where we are". */
+    function applyPresentCmd(cmd, id) {
+      if (cmd === 'next') { stepDeck(1); return; }
+      if (cmd === 'prev') { stepDeck(-1); return; }
+      if (cmd === 'goto' && id) { goToDeckEntry(deck().find((s) => s.id === id)); return; }
+      /* Change page. Landing on the page's first section rather than just
+         switching keeps the deck position meaningful — a page shown with
+         nothing focused would leave next/prev with nowhere to step from. A
+         page with no sections at all still switches; there is simply nothing
+         to land on. */
+      if (cmd === 'page' && id) {
+        const first = deck().find((s) => s.pageId === id);
+        if (first) goToDeckEntry(first);
+        else if (id !== S.activePageId) switchPage(id);
+      }
     }
 
     /* ── HTML node activation ─────────────────────────────────────
@@ -3370,7 +3392,7 @@ export function CanvasProvider({
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startRenameFrame, stopRenameFrame, startEditing, stopEditing, formatText, setChrome,
       openSectionNotes, closeSectionNotes, setSectionNotes, deck,
-      startPresenting, stopPresenting, applyPresentCmd,
+      startPresenting, stopPresenting, applyPresentCmd, stepDeck, goToDeckEntry,
       recordHistory, undo, redo,
       nextZ, backZ,
     };
@@ -3502,11 +3524,15 @@ export function CanvasProvider({
       room: presentRoom,
       deck: list,
       index,
+      // The board's pages, so the remote can offer the same page switcher the
+      // present bar has. Names only — every section already carries its pageId.
+      pages: pages.map((p) => ({ id: p.id, name: p.name || '' })),
+      activePageId,
       board: storageKey,
       title: (init.brand && init.brand.title) || '',
     });
     return undefined;
-  }, [presenting, presentRelay, presentRoom, focusedSectionId, nodes, activePageId, eng, storageKey, init.brand]);
+  }, [presenting, presentRelay, presentRoom, focusedSectionId, nodes, pages, activePageId, eng, storageKey, init.brand]);
 
   useEffect(() => {
     if (!presenting || !presentRelay || !presentRoom) return undefined;
