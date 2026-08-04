@@ -1769,6 +1769,7 @@
   height: 28px;
   cursor: default;
 }
+/* The section the viewer last jumped to — the one ↑/↓ steps from. */
 .canvas-root .cv-section-num {
   width: 14px;
   flex: none;

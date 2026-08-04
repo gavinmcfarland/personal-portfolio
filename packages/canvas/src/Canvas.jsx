@@ -861,6 +861,17 @@ export default function Canvas() {
         if (mk === 'v') return;
         if (mk === 'd') { if (!S.readOnly && S.selected.length) { e.preventDefault(); eng.duplicateSelected(); } return; }
       }
+      // Arrow keys step between sections once the user has landed on one (via a
+      // frame label's → button or the page/section menu). Sections are ordered
+      // top-to-bottom and the walk wraps at the ends. With no focused section —
+      // or only one on the page — stepSection reports back false and the keys
+      // fall through to the host page as usual — as they do while the lightbox is
+      // open, where the arrows already step through a media node's assets.
+      if (e.key.startsWith('Arrow') && !e.metaKey && !e.ctrlKey && !e.altKey && !S.fullscreen) {
+        const next = e.key === 'ArrowDown' || e.key === 'ArrowRight';
+        if (eng.stepSection(next ? 1 : -1)) e.preventDefault();
+        return;
+      }
       // `g` toggles the viewport centre crosshair — an edit-mode alignment aid, so
       // it's ignored while read-only. A stale-closure-safe functional update keeps
       // the once-bound listener correct.
@@ -881,7 +892,7 @@ export default function Canvas() {
         if (S.recording) eng.cancelRecording();
         eng.exitGridEdit();
         eng.setHtmlActive(null);
-        eng.deselect(); setCtxMenu(null); eng.stopEditing();
+        eng.deselect(); setCtxMenu(null); eng.stopEditing(); eng.clearSectionFocus();
         if (CLICK_TO_INTERACT && engagedRef.current) setEngaged(false);
       }
     };

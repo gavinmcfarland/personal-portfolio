@@ -1973,6 +1973,11 @@
   background: var(--cv-accent-soft);
   color: var(--cv-ink);
 }
+/* The section the viewer last jumped to — the one ↑/↓ steps from. */
+.canvas-root .cv-section-item[data-focused] {
+  background: var(--cv-accent-soft);
+  color: var(--cv-ink);
+}
 .canvas-root .cv-section-num {
   font-variant-numeric: tabular-nums;
   font-size: 0.66rem;

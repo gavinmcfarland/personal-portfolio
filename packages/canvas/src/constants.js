@@ -24,6 +24,12 @@ export const GRID = 28;
 
 export const clampScale = (s) => Math.min(ZOOM.max, Math.max(ZOOM.min, s));
 
+/* Section anchors on a board, in navigation order: frames and anchored nodes,
+   top-to-bottom (ties left-to-right). Shared by the page/section menu and the
+   keyboard section stepper so both agree on what "next section" means. */
+export const sectionNodes = (nodes) =>
+	nodes.filter((n) => n.type === 'frame' || n.anchor).sort((a, b) => a.y - b.y || a.x - b.x);
+
 export const DRAW_TOOLS = ['pen', 'line', 'arrow', 'rect', 'ellipse'];
 /* Shapes with an interior that can take a fill colour. */
 export const FILLABLE_SHAPES = ['rect', 'ellipse'];

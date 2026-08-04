@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, useRef, useState, useEffect, useLayoutEffect, useSyncExternalStore } from 'react';
-import { ZOOM, PAN, GRID, frameBarH, clampScale } from './constants';
+import { ZOOM, PAN, GRID, frameBarH, clampScale, sectionNodes } from './constants';
 import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
 import { RICH_COMMANDS, sanitizeRich, isRichHtml } from './rich-text';
 import { getGlobalReadOnly, setGlobalReadOnly, subscribeMode, allocOwnerId, joinOwners, setActiveCanvas, subscribeOwner, primaryOwner } from './edit-mode';
@@ -570,6 +570,14 @@ export function CanvasProvider({
   const [fullscreen, setFullscreen] = useState(null); // { id, index } of the media asset shown in the lightbox
   const [gridEditId, setGridEditId] = useState(null); // media node whose grid proportions are being edited
   const [htmlActiveId, setHtmlActiveId] = useState(null); // html node whose iframe is live (receives pointer events)
+  /* The section the user last navigated to (frame-label arrow or the page/section
+     menu). It anchors the arrow-key shortcut that steps to the neighbouring
+     section; null means no section is focused and the arrows stay with the page.
+     One setter keeps the ref (read by the window key handler) and the state (for
+     the menu's focused marker) in lockstep. */
+  const [focusedSectionId, setFocusedSectionIdState] = useState(null);
+  const focusedSectionRef = useRef(null);
+  const setFocusedSectionId = (v) => { focusedSectionRef.current = v; setFocusedSectionIdState(v); };
   const [fullBleed, setFullBleed] = useState(false); // `fullscreenButton="document"` overlay: covers the document's viewport (portaled to body so an ancestor transform can't trap it)
   const [nativeFullscreen, setNativeFullscreen] = useState(false); // this canvas owns the browser Fullscreen API (via `fullscreenButton` native mode)
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
@@ -1960,7 +1968,9 @@ export function CanvasProvider({
     }
     /* Fly to a section that may live on another page: switch to its page first,
        then fly once the target node has mounted (elements only exist for the
-       active page). */
+       active page). `pageId` may be null / the active page for a section on the
+       board already shown. Landing on a section focuses it, so the arrow keys
+       can step on from there. */
     function goToSection(pageId, id) {
       if (pageId && pageId !== S.activePageId) {
         switchPage(pageId);
@@ -1973,7 +1983,21 @@ export function CanvasProvider({
       } else {
         flyTo(id);
       }
+      setFocusedSectionId(id); // after switchPage, which clears the old page's focus
     }
+    /* Step from the focused section to its neighbour on the active page (delta
+       ±1), wrapping at the ends. A no-op unless the user has actually landed on
+       a section — that leaves the arrow keys alone everywhere else. Returns
+       whether it moved, so the key handler knows if it owns the event. */
+    function stepSection(delta) {
+      const secs = sectionNodes(S.nodes);
+      if (secs.length < 2) return false;
+      const i = secs.findIndex((n) => n.id === focusedSectionRef.current);
+      if (i < 0) return false; // no focused section (or it has since been deleted)
+      goToSection(null, secs[(i + delta + secs.length) % secs.length].id);
+      return true;
+    }
+    function clearSectionFocus() { if (focusedSectionRef.current) setFocusedSectionId(null); }
 
     /* ── Undo / redo ──────────────────────────────────────────────
        The recorder (recordHistory, driven by an effect on nodes/shapes) captures
@@ -2234,7 +2258,7 @@ export function CanvasProvider({
       freezeView();
       snapshotActive();
       const t = pageData[id];
-      deselect(); setEditingId(null); setCtxMenu(null); setFullscreen(null); setGridEditId(null);
+      deselect(); setEditingId(null); setCtxMenu(null); setFullscreen(null); setGridEditId(null); setFocusedSectionId(null);
       setNodes(t.nodes); setShapes(t.shapes);
       viewRef.x = t.view.x; viewRef.y = t.view.y; viewRef.scale = t.view.scale;
       targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = viewRef.scale;
@@ -3170,7 +3194,7 @@ export function CanvasProvider({
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, setNodeScale, deleteSelected, deleteTarget,
       copySelected, cutSelected, cutTarget, paste, pasteAt, pasteFromMenu, hasClipboard, systemClipIsMine, duplicateSelected, duplicateTarget, duplicateItemsAt,
-      setTool, setMode, setCanvasBg, toggleGrid, fitAll, flyTo, goToSection, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
+      setTool, setMode, setCanvasBg, toggleGrid, fitAll, flyTo, goToSection, stepSection, clearSectionFocus, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
@@ -3464,7 +3488,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
     isPrimaryCanvas,
-    publishState, recording, fullscreen, gridEditId, htmlActiveId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
+    publishState, recording, fullscreen, gridEditId, htmlActiveId, focusedSectionId, pages, activePageId, pageData, bgColor, gridHidden, reflow, collide: COLLIDE,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls, minimap: MINIMAP.on, MINIMAP, minimapEls,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,

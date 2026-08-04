@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
-import { cx } from '../constants';
+import { cx, sectionNodes } from '../constants';
 
 const RENAME_ICON = <Pencil />;
 const DELETE_ICON = <Trash2 />;
@@ -33,7 +33,7 @@ function sectionLabel(node) {
    page opens a menu to rename or delete it, and right-clicking a frame section
    opens a menu to rename it. New pages are added from the footer button. */
 export default function PageTabs() {
-  const { pages, activePageId, nodes, pageData, readOnly, EDITABLE, homeId: HOME_ID, eng, rootRef, classNames } = useCanvas();
+  const { pages, activePageId, nodes, pageData, focusedSectionId, readOnly, EDITABLE, homeId: HOME_ID, eng, rootRef, classNames } = useCanvas();
   const editing = EDITABLE && !readOnly;
   const [open, setOpen] = useState(false);
   const [renaming, setRenaming] = useState(null); // {scope:'page'|'section', id}
@@ -72,12 +72,8 @@ export default function PageTabs() {
 
   /* Section anchors for a page. The active page uses live state; parked pages
      read their last-snapshotted nodes (they can't be edited while inactive). */
-  const sectionsFor = (pageId) => {
-    const src = pageId === activePageId ? nodes : (pageData[pageId] ? pageData[pageId].nodes : []);
-    return src
-      .filter((n) => n.type === 'frame' || n.anchor)
-      .sort((a, b) => a.y - b.y || a.x - b.x);
-  };
+  const sectionsFor = (pageId) =>
+    sectionNodes(pageId === activePageId ? nodes : (pageData[pageId] ? pageData[pageId].nodes : []));
 
   const active = pages.find((p) => p.id === activePageId) || pages[0];
 
@@ -159,6 +155,9 @@ export default function PageTabs() {
                     <button
                       key={n.id}
                       className="cv-section-item"
+                      // The focused section is where the ↑/↓ shortcut steps from,
+                      // so the menu marks it.
+                      data-focused={p.id === activePageId && n.id === focusedSectionId ? '' : undefined}
                       title={canRename ? 'Click to go · right-click to rename' : sectionLabel(n)}
                       onClick={() => { eng.goToSection(p.id, n.id); setOpen(false); }}
                       onContextMenu={canRename ? (e) => openMenu(e, { scope: 'section', id: n.id }) : undefined}

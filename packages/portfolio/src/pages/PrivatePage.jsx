@@ -145,8 +145,31 @@ export default function PrivatePage() {
         >
           <h1 className="font-sans text-4 font-bold text-ink">Private page</h1>
           <p className="mt-(--sp-1) text-4 text-muted">Enter the password to view.</p>
+          {/* Password managers key saved credentials by (origin, username). Without a
+              username every board shares one credential for this origin, so unlocking a
+              second board reads as "you changed the password" and Chrome offers to
+              overwrite the first. Naming the board makes each one its own credential.
+              Kept in layout (not display:none) so managers actually parse it. */}
+          <input
+            type="text"
+            name="username"
+            autoComplete="username"
+            readOnly
+            tabIndex={-1}
+            aria-hidden="true"
+            value={id}
+            style={{
+              position: "absolute",
+              width: 1,
+              height: 1,
+              opacity: 0,
+              pointerEvents: "none",
+            }}
+          />
           <input
             type="password"
+            name="password"
+            autoComplete="current-password"
             autoFocus
             value={password}
             onChange={(e) => setPassword(e.target.value)}

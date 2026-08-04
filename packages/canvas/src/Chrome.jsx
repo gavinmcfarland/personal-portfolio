@@ -151,7 +151,10 @@ function FrameLabel({ node }) {
     if (!eng.isSelected('node', node.id)) eng.selectNode(node.id);
     const el = nodeEls.get(node.id);
     if (el) { el.dataset.moved = ''; el.dataset.dragging = ''; }
-    actionRef.current = { type: 'move', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, items, clickItem: { kind: 'node', id: node.id } };
+    // Alt-drag duplicates, exactly as it does when grabbing any other object on
+    // the board — the label is a frame's only grab handle (its body is
+    // pointer-events:none), so the flag has to be set here too.
+    actionRef.current = { type: 'move', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, items, clickItem: { kind: 'node', id: node.id }, dup: e.altKey };
     // NB: no setPointerCapture here — capturing the pointer retargets click/dblclick
     // away from the label and breaks double-click-to-rename. The drag is driven by
     // window-level pointermove/up handlers (see Canvas.jsx), so capture isn't needed.
@@ -192,9 +195,11 @@ function FrameLabel({ node }) {
       <span className="cv-txt">{node.name || 'Section'}</span>
       <button
         className="cv-frame-go"
-        title="Go to this section"
+        title="Go to this section (↑/↓ for the next one)"
         onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => { e.stopPropagation(); eng.flyTo(node.id); }}
+        // goToSection, not flyTo: it also focuses the section, so the arrow keys
+        // can step on to its neighbours from here.
+        onClick={(e) => { e.stopPropagation(); eng.goToSection(null, node.id); }}
       >
         →
       </button>
