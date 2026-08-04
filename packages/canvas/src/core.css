@@ -338,17 +338,12 @@
 .canvas-root .cv-node[data-editing="1"] {
   cursor: text;
 }
-/* Frame / anchor region — the box scales with zoom; its label lives in the chrome layer */
+/* Frame / anchor region — an invisible box in the world that carries the
+   region's geometry and takes the drags. Its outline and label are both drawn
+   in the chrome layer (see .cv-frame-box / .cv-frame-label). */
 .canvas-root .cv-node.cv-frame {
   width: 200px;
   height: 140px;
-}
-/* No fill in either mode: the dashed outline is enough to read the region, and
-   a translucent wash over the board tints everything inside it. */
-.canvas-root .cv-frame .cv-frame-body {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
 }
 /* Dropped image object */
 .canvas-root .cv-node.cv-image,
@@ -1041,6 +1036,17 @@
 .canvas-root .cv-sel {
   display: none;
   box-sizing: border-box;
+}
+/* A section's dashed outline. Screen-space like the rest of the chrome, so the
+   stroke (and the dash rhythm) stay put at any zoom instead of ballooning as
+   the board scales up. placeFrameBoxes() sits it on the frame's screen rect;
+   border-box keeps the dashes just inside the region, where the in-world border
+   they replaced used to sit. No fill in either mode: the outline is enough to
+   read the region, and a wash would tint everything inside it. */
+.canvas-root .cv-frame-box {
+  display: none;
+  box-sizing: border-box;
+  pointer-events: none;
 }
 /* Faint hover hint — screen-space so its thickness never scales with zoom. */
 .canvas-root .cv-hov {

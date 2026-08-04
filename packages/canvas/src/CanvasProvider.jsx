@@ -639,6 +639,7 @@ export function CanvasProvider({
   const mediaEls = useRef(new Map()).current; // id → inline <video> element (for lightbox playback hand-off)
   const shapeEls = useRef(new Map()).current; // id → shape svg child (.shape)
   const frameLabelEls = useRef(new Map()).current; // id → label element
+  const frameBoxEls = useRef(new Map()).current; // id → the frame's dashed outline in the chrome layer
   const clipboard = useRef(null); // copied [{kind,data}] items, for paste
   const pasteCount = useRef(0); // cascades each successive paste of the same clipboard
 
@@ -1229,6 +1230,29 @@ export function CanvasProvider({
         }
       }
     }
+    /* A section's dashed outline, drawn in the chrome layer rather than inside
+       the zoomed world so its stroke keeps a constant thickness at any zoom
+       (the same reason the selection outline and the frame label live here).
+       Each box tracks its frame's on-screen rect. */
+    function placeFrameBoxes() {
+      const s = viewRef.scale;
+      frameBoxEls.forEach((box, id) => {
+        const f = nodeEls.get(id);
+        if (!f) { box.style.display = 'none'; return; }
+        // Prefer the authored w/h (a frame always has them, and a resize keeps
+        // the dataset live) over offsetWidth: that's an integer, and zoom
+        // multiplies the rounding into a visible gap between the outline and the
+        // region's true edge. Falls back to a measurement if they're missing.
+        const sc = +f.dataset.scale || 1;
+        const dw = +f.dataset.w * sc, dh = +f.dataset.h * sc;
+        const [w, h] = dw > 0 && dh > 0 ? [dw, dh] : nodeBox(f, geomCache.current);
+        box.style.display = 'block';
+        box.style.left = (viewRef.x + +f.dataset.x * s) + 'px';
+        box.style.top = (viewRef.y + +f.dataset.y * s) + 'px';
+        box.style.width = w * s + 'px';
+        box.style.height = h * s + 'px';
+      });
+    }
     function syncChrome() {
       const s = viewRef.scale;
       frameLabelEls.forEach((label, id) => {
@@ -1236,6 +1260,7 @@ export function CanvasProvider({
         label.style.left = (viewRef.x + +f.dataset.x * s) + 'px';
         label.style.top = (viewRef.y + +f.dataset.y * s - 28) + 'px';
       });
+      placeFrameBoxes();
       placeHover();
       placeGridEdit();
       placeSnapGuides();
@@ -1669,7 +1694,7 @@ export function CanvasProvider({
     }
     function updateNode(id, patch) { setNodes((ns) => ns.map((n) => (n.id === id ? { ...n, ...patch } : n))); }
     function removeNode(id) {
-      nodeEls.delete(id); frameLabelEls.delete(id);
+      nodeEls.delete(id); frameLabelEls.delete(id); frameBoxEls.delete(id);
       setNodes((ns) => ns.filter((n) => n.id !== id));
     }
     function addShape(shape) {
@@ -1690,7 +1715,7 @@ export function CanvasProvider({
     function deleteItems(items) {
       const nodeIds = new Set(), shapeIds = new Set();
       items.forEach((it) => (it.kind === 'node' ? nodeIds : shapeIds).add(it.id));
-      nodeIds.forEach((id) => { nodeEls.delete(id); frameLabelEls.delete(id); });
+      nodeIds.forEach((id) => { nodeEls.delete(id); frameLabelEls.delete(id); frameBoxEls.delete(id); });
       shapeIds.forEach((id) => shapeEls.delete(id));
       if (nodeIds.size) setNodes((ns) => ns.filter((n) => !nodeIds.has(n.id)));
       if (shapeIds.size) setShapes((ss) => ss.filter((s) => !shapeIds.has(s.id)));
@@ -3779,7 +3804,7 @@ export function CanvasProvider({
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
     // refs
-    rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, worldRef, zoomLabelRef, nodeEls, mediaEls, shapeEls, frameLabelEls, actionRef, panKey, S,
+    rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, worldRef, zoomLabelRef, nodeEls, mediaEls, shapeEls, frameLabelEls, frameBoxEls, actionRef, panKey, S,
     // engine
     eng,
   };

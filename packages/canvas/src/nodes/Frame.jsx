@@ -1,8 +1,10 @@
 import { memo } from 'react';
 import { useRegister } from './common';
 
-/* Anchor / section region. The dashed box scales with zoom; its draggable label
-   is rendered in the screen-space chrome layer (see Chrome.jsx). */
+/* Anchor / section region. The node itself is an invisible box — it holds the
+   region's geometry and takes the drags/hit-tests. Both the things you SEE (the
+   dashed outline and the draggable label) are drawn in the screen-space chrome
+   layer (see Chrome.jsx), so neither thickens as the board zooms in. */
 function Frame({ node }) {
   const { setRef, dataProps, x, y, reflowed } = useRegister(node);
   const style = {
@@ -13,9 +15,7 @@ function Frame({ node }) {
     ...(reflowed ? { transition: 'transform 200ms ease' } : null),
   };
   return (
-    <div ref={setRef} className="cv-node cv-frame" {...dataProps} data-name={node.name} style={style}>
-      <div className="cv-frame-body" />
-    </div>
+    <div ref={setRef} className="cv-node cv-frame" {...dataProps} data-name={node.name} style={style} />
   );
 }
 

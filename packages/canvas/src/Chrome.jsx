@@ -105,6 +105,21 @@ function GridDividers() {
   return <div className="cv-grid-edit" ref={wrapRef}>{lines}</div>;
 }
 
+/* A section's dashed outline. It lives here, not inside the zoomed world, so
+   the stroke stays 1.6px at any zoom — the engine's placeFrameBoxes() sits it on
+   the frame's screen rect via the frameBoxEls map. Purely decorative: the frame
+   node in the world still takes every hit-test and drag. */
+function FrameBox({ node }) {
+  const { frameBoxEls } = useCanvas();
+  const setRef = useCallback(
+    (el) => {
+      if (el) frameBoxEls.set(node.id, el); else frameBoxEls.delete(node.id);
+    },
+    [node.id, frameBoxEls]
+  );
+  return <div ref={setRef} className="cv-frame-box" data-id={node.id} />;
+}
+
 /* Screen-space frame label: title, drag handle, jump-to button. Positioned by
    the engine's syncChrome() via the frameLabelEls map. Double-clicking it — or
    picking Rename from its right-click menu — renames it inline with a text
@@ -221,6 +236,8 @@ export default function Chrome() {
   const marqRef = useCallback((el) => eng.setChrome('marq', el), [eng]);
   const guidesRef = useCallback((el) => eng.setChrome('guides', el), [eng]);
 
+  const frames = nodes.filter((n) => n.type === 'frame');
+
   // Edit / resize affordances only apply to a single selected object.
   const sole = selected.length === 1 ? selected[0] : null;
   const single = sole && sole.kind === 'node' ? sole : null;
@@ -304,6 +321,9 @@ export default function Chrome() {
 
   return (
     <div className="cv-chrome">
+      {/* Section outlines first: they're the backmost chrome, so a selection
+          box or snap guide over the same edge still reads on top. */}
+      {frames.map((n) => <FrameBox key={n.id} node={n} />)}
       <div className="cv-guides" ref={guidesRef} />
       <div className="cv-hov" ref={hovRef} />
       <div className="cv-sel" ref={selRef} />
@@ -316,7 +336,7 @@ export default function Chrome() {
         ))}
       </div>
       <GridDividers />
-      {nodes.filter((n) => n.type === 'frame').map((n) => <FrameLabel key={n.id} node={n} />)}
+      {frames.map((n) => <FrameLabel key={n.id} node={n} />)}
     </div>
   );
 }
