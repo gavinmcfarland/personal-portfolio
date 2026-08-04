@@ -4,6 +4,7 @@ import { useCanvas } from './CanvasProvider';
 import { ZOOM, PAN, DRAW_TOOLS, FILLABLE_SHAPES, cx } from './constants';
 import World from './World';
 import Chrome from './Chrome';
+import { drawShapeGeom, scaleShape } from './Shape';
 import DefaultTopBar from './ui/TopBar';
 import DefaultToolbar from './ui/Toolbar';
 import DefaultZoomControls from './ui/ZoomControls';
@@ -512,6 +513,60 @@ export default function Canvas() {
         if (s.type === 'pen') s.points.push([w.x, w.y]); else { s.x2 = w.x; s.y2 = w.y; }
         setDraft({ ...s, points: s.points ? [...s.points] : undefined }); return;
       }
+      if (a.type === 'shapeResize') {
+        const el = shapeEls.get(a.id); if (!el) return;
+        // Same handle semantics as a node resize (see below): corners drive both
+        // axes, the side strips one, and the opposite edge stays anchored.
+        const fromLeft = a.corner === 'nw' || a.corner === 'sw' || a.corner === 'w';
+        const fromTop = a.corner === 'nw' || a.corner === 'ne' || a.corner === 'n';
+        const activeX = a.corner !== 'n' && a.corner !== 's';
+        const activeY = a.corner !== 'e' && a.corner !== 'w';
+        const edgeOnly = activeX !== activeY;
+        let dx = activeX ? (e.clientX - a.sx) / scale() : 0;
+        let dy = activeY ? (e.clientY - a.sy) / scale() : 0;
+        const R = a.ox + a.ow, B = a.oy + a.oh;
+        // A straight line/arrow has no extent on one axis — there's nothing to
+        // scale there, so that axis translates with the pointer instead (and can
+        // never divide by zero).
+        const flatX = a.ow < 0.01, flatY = a.oh < 0.01;
+        const center = e.altKey;
+        // Shift scales uniformly off the dominant drag axis; a side strip has
+        // only one axis to give, so it stays free.
+        const uniform = e.shiftKey && !edgeOnly && !flatX && !flatY;
+        if (!center) {
+          // Snap the dragged edge(s) to nearby objects, exactly as a node resize
+          // does — a uniform drag only snaps the axis it's following.
+          const box = { x: a.ox, y: a.oy, w: a.ow, h: a.oh };
+          let freeX = activeX, freeY = activeY;
+          if (uniform) { if (Math.abs(dx) >= Math.abs(dy)) freeY = false; else freeX = false; }
+          const ex = (fromLeft ? a.ox : R) + dx;
+          const ey = (fromTop ? a.oy : B) + dy;
+          const snap = eng.snapResize(a.id, { x: freeX ? ex : null, y: freeY ? ey : null }, box, 'shape');
+          const guides = [];
+          if (snap.x) { dx += snap.x.d; guides.push(snap.x.guide); }
+          if (snap.y) { dy += snap.y.d; guides.push(snap.y.guide); }
+          eng.setSnapGuides(guides);
+        } else eng.setSnapGuides(null);
+        const MIN = 2; // world units — shapes can go far smaller than a node
+        const wRaw = a.ow + (center ? 2 : 1) * (fromLeft ? -dx : dx);
+        const hRaw = a.oh + (center ? 2 : 1) * (fromTop ? -dy : dy);
+        let w = Math.max(MIN, wRaw), h = Math.max(MIN, hRaw);
+        if (uniform) {
+          const k = Math.abs(dx) >= Math.abs(dy) ? wRaw / a.ow : hRaw / a.oh;
+          w = Math.max(MIN, a.ow * k); h = Math.max(MIN, a.oh * k);
+        }
+        // Anchor: Alt mirrors around the box centre, otherwise the edge opposite
+        // the handle stays put. A flat axis keeps its zero extent and just follows.
+        const sx = flatX ? 1 : w / a.ow, sy = flatY ? 1 : h / a.oh;
+        const x = flatX ? (center ? a.ox : a.ox + dx) : center ? a.ox + (a.ow - w) / 2 : fromLeft ? R - w : a.ox;
+        const y = flatY ? (center ? a.oy : a.oy + dy) : center ? a.oy + (a.oh - h) / 2 : fromTop ? B - h : a.oy;
+        const patch = scaleShape(a.shape, { x0: a.ox, y0: a.oy, sx, sy, x, y });
+        // Draw the new geometry straight to the DOM (no React) and keep the patch
+        // for the commit on release — the same live-then-commit path a node takes.
+        drawShapeGeom(el, { ...a.shape, ...patch });
+        a.patch = patch;
+        eng.syncChrome(); return;
+      }
       if (a.type === 'resize') {
         const el = nodeEls.get(a.id); if (!el) return;
         // Which edges this handle drags; the opposite edge stays anchored. Corners
@@ -766,6 +821,12 @@ export default function Canvas() {
           // All draw tools except the pen snap back to select after one shape.
           if (s.type !== 'pen') { eng.setTool('select'); eng.selectShape(s.id); }
         }
+      }
+      if (a.type === 'shapeResize') {
+        eng.setSnapGuides(null);
+        // The element already shows this geometry (written live); committing the
+        // identical numbers keeps the model and the DOM in step.
+        if (a.patch) eng.updateShape(a.id, a.patch);
       }
       if (a.type === 'resize') {
         eng.setSnapGuides(null);

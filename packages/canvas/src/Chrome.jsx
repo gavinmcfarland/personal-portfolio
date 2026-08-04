@@ -213,7 +213,7 @@ function FrameLabel({ node }) {
 }
 
 export default function Chrome() {
-  const { nodes, selected, eng, actionRef, nodeEls, tool } = useCanvas();
+  const { nodes, shapes, selected, eng, actionRef, nodeEls, shapeEls, tool } = useCanvas();
 
   const selRef = useCallback((el) => eng.setChrome('sel', el), [eng]);
   const hovRef = useCallback((el) => eng.setChrome('hov', el), [eng]);
@@ -221,13 +221,29 @@ export default function Chrome() {
   const marqRef = useCallback((el) => eng.setChrome('marq', el), [eng]);
   const guidesRef = useCallback((el) => eng.setChrome('guides', el), [eng]);
 
-  // Edit / resize affordances only apply to a single selected node.
-  const single = selected.length === 1 && selected[0].kind === 'node' ? selected[0] : null;
+  // Edit / resize affordances only apply to a single selected object.
+  const sole = selected.length === 1 ? selected[0] : null;
+  const single = sole && sole.kind === 'node' ? sole : null;
+  const soleShape = sole && sole.kind === 'shape' ? sole : null;
 
   const onResizeDown = (corner) => (e) => {
-    if (e.button !== 0 || !single) return;
+    if (e.button !== 0 || (!single && !soleShape)) return;
     e.stopPropagation();
     eng.freezeView();
+    // A shape has no box of its own — its points ARE its geometry, so the drag
+    // works from the rendered bounding box (the same rect the selection outline
+    // is drawn on) and scales the points into whatever box the pointer leaves.
+    if (soleShape) {
+      const s = shapes.find((x) => x.id === soleShape.id);
+      const el = shapeEls.get(soleShape.id);
+      if (!s || !el) return;
+      const bb = el.getBBox();
+      actionRef.current = {
+        type: 'shapeResize', id: s.id, corner, sx: e.clientX, sy: e.clientY,
+        ox: bb.x, oy: bb.y, ow: bb.width, oh: bb.height, shape: s,
+      };
+      return;
+    }
     const n = nodes.find((x) => x.id === single.id);
     if (!n) return;
     // A never-resized text block has no stored width — measure its element.

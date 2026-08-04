@@ -2,6 +2,51 @@ import { memo, useCallback } from 'react';
 import { useCanvas } from './CanvasProvider';
 import { themeInk } from './constants';
 
+const r2 = (v) => Math.round(v * 100) / 100;
+
+/* The geometry attributes an SVG element needs to draw a shape, keyed by their
+   SVG attribute names — so the same values can be spread as React props (below)
+   or written straight to the live element mid-resize (see drawShapeGeom). */
+export function shapeGeom(s) {
+  if (s.type === 'pen') {
+    return { d: (s.points || []).map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ') };
+  }
+  if (s.type === 'line' || s.type === 'arrow') return { x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2 };
+  if (s.type === 'rect') {
+    return {
+      x: Math.min(s.x1, s.x2), y: Math.min(s.y1, s.y2),
+      width: Math.abs(s.x2 - s.x1), height: Math.abs(s.y2 - s.y1), rx: 4,
+    };
+  }
+  if (s.type === 'ellipse') {
+    return {
+      cx: (s.x1 + s.x2) / 2, cy: (s.y1 + s.y2) / 2,
+      rx: Math.abs(s.x2 - s.x1) / 2, ry: Math.abs(s.y2 - s.y1) / 2,
+    };
+  }
+  return null;
+}
+
+/* Write a shape's geometry straight onto its rendered SVG element — the live
+   half of a resize drag, which mutates the DOM per pointermove and only commits
+   to state on release (the same imperative path a node resize takes). */
+export function drawShapeGeom(el, s) {
+  const g = shapeGeom(s);
+  if (g) for (const k in g) el.setAttribute(k, g[k]);
+}
+
+/* A shape's points mapped through a resize: the drag's source box origin
+   (x0, y0) scaled by (sx, sy) onto a new origin (x, y). Returns the geometry
+   patch to store — the stroke width is untouched, so scaling a shape doesn't
+   thicken its line. */
+export function scaleShape(s, m) {
+  const fx = (v) => r2(m.x + (v - m.x0) * m.sx);
+  const fy = (v) => r2(m.y + (v - m.y0) * m.sy);
+  return s.type === 'pen'
+    ? { points: (s.points || []).map((p) => [fx(p[0]), fy(p[1])]) }
+    : { x1: fx(s.x1), y1: fy(s.y1), x2: fx(s.x2), y2: fy(s.y2) };
+}
+
 /* One freehand / vector drawing, rendered as its own overlaid SVG (matching the
    mockup so each shape keeps an independent z-index in the shared stack). */
 function Shape({ shape, draft }) {
@@ -29,11 +74,13 @@ function Shape({ shape, draft }) {
   // (or 'none' for a hollow shape) is the source of truth for rect/ellipse.
   const fillStyle = { fill: shape.fill && shape.fill !== 'none' ? themeInk(shape.fill) : 'none' };
 
+  // Geometry comes from the shared helper so a live resize (which writes these
+  // same attributes to the DOM) and the render can never drift apart.
+  const geom = shapeGeom(shape);
   let el = null;
   let defs = null;
   if (shape.type === 'pen') {
-    const d = shape.points.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ');
-    el = <path {...common} d={d} />;
+    el = <path {...common} {...geom} />;
   } else if (shape.type === 'line' || shape.type === 'arrow') {
     const markerId = `arw-${shape.id}`;
     if (shape.type === 'arrow') {
@@ -48,38 +95,14 @@ function Shape({ shape, draft }) {
     el = (
       <line
         {...common}
-        x1={shape.x1}
-        y1={shape.y1}
-        x2={shape.x2}
-        y2={shape.y2}
+        {...geom}
         markerEnd={shape.type === 'arrow' ? `url(#${markerId})` : undefined}
       />
     );
   } else if (shape.type === 'rect') {
-    el = (
-      <rect
-        {...common}
-        className="cv-shape cv-fillable"
-        style={fillStyle}
-        x={Math.min(shape.x1, shape.x2)}
-        y={Math.min(shape.y1, shape.y2)}
-        width={Math.abs(shape.x2 - shape.x1)}
-        height={Math.abs(shape.y2 - shape.y1)}
-        rx={4}
-      />
-    );
+    el = <rect {...common} {...geom} className="cv-shape cv-fillable" style={fillStyle} />;
   } else if (shape.type === 'ellipse') {
-    el = (
-      <ellipse
-        {...common}
-        className="cv-shape cv-fillable"
-        style={fillStyle}
-        cx={(shape.x1 + shape.x2) / 2}
-        cy={(shape.y1 + shape.y2) / 2}
-        rx={Math.abs(shape.x2 - shape.x1) / 2}
-        ry={Math.abs(shape.y2 - shape.y1) / 2}
-      />
-    );
+    el = <ellipse {...common} {...geom} className="cv-shape cv-fillable" style={fillStyle} />;
   }
 
   // The wrapper carries the z-index and the reflow transform/transition; the SVG

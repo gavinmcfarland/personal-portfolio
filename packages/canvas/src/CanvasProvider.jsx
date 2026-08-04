@@ -1135,7 +1135,7 @@ export function CanvasProvider({
       // the hover outline (see placeHover).
       chrome.sel.style.left = ox + 'px'; chrome.sel.style.top = oy + 'px';
       chrome.sel.style.width = ow + 'px'; chrome.sel.style.height = oh + 'px';
-      /* The resize affordances only make sense for a single selected node. */
+      /* The resize affordances only make sense for a single selected object. */
       const single = S.selected.length === 1 ? S.selected[0] : null;
       const nodeEl = single && single.kind === 'node' ? nodeEls.get(single.id) : null;
       const type = nodeEl ? nodeEl.dataset.type : null;
@@ -1144,13 +1144,16 @@ export function CanvasProvider({
       // which have no resize handles otherwise) — dragging a corner scales it.
       const scaling = type && S.tool === 'scale';
       const resizable = type === 'frame' || type === 'md' || type === 'code' || type === 'tblock' || type === 'image' || type === 'video' || type === 'link' || type === 'html';
-      if ((scaling || resizable) && !editing) {
+      // A shape resizes on both axes whatever the tool: its points scale with
+      // the box (the stroke keeps its width), so there's no separate scale mode.
+      const shapeSel = !!(single && single.kind === 'shape' && shapeEls.get(single.id));
+      if (shapeSel || ((scaling || resizable) && !editing)) {
         // The rz container spans the node's screen rect; CSS pins a handle to
         // each corner (see .cv-rz-h). data-mode drives which handles show + cursors.
         chrome.rz.style.display = 'block';
         chrome.rz.style.left = ox + 'px'; chrome.rz.style.top = oy + 'px';
         chrome.rz.style.width = ow + 'px'; chrome.rz.style.height = oh + 'px';
-        chrome.rz.dataset.mode = scaling ? 'scale' : (type === 'md' || type === 'code' || type === 'tblock' || type === 'link' ? 'ew' : 'xy');
+        chrome.rz.dataset.mode = shapeSel ? 'xy' : scaling ? 'scale' : (type === 'md' || type === 'code' || type === 'tblock' || type === 'link' ? 'ew' : 'xy');
       } else chrome.rz.style.display = 'none';
     }
     /* Faint hover outline for the node under the cursor (edit mode only). Drawn
@@ -1592,9 +1595,10 @@ export function CanvasProvider({
        range as { v: snapped coord, d: correction (v − cand), guide } or null;
        `box` (the pre-snap box) only sets each guide's span. The caller decides
        how to apply them — a free resize takes both, an aspect-locked one takes
-       whichever pulls least and scales the box to it. */
-    function snapResize(id, cand, box) {
-      const targets = snapTargets(new Set([id]), null);
+       whichever pulls least and scales the box to it. `kind` says which
+       collection `id` lives in, so the object being resized never attracts itself. */
+    function snapResize(id, cand, box, kind) {
+      const targets = kind === 'shape' ? snapTargets(null, new Set([id])) : snapTargets(new Set([id]), null);
       if (!targets.length) return { x: null, y: null };
       const T = SNAP_PX / viewRef.scale;
       const solve = (val, key, axis, lo, hi) => {
