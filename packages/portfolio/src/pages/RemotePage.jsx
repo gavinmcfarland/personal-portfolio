@@ -123,18 +123,28 @@ export default function RemotePage() {
     };
   }, []);
 
-  const deck = (state && state.deck) || [];
-  const index = state ? state.index : -1;
-  const here = index >= 0 ? deck[index] : null;
-  /* What the next button will actually land on. Stepping stops at the end of
-     a page, so a following section on another page isn't "next" — it's
-     somewhere you'd have to go on purpose, and previewing it would promise a
-     tap that doesn't happen. */
-  const after = index >= 0 ? deck[index + 1] : null;
-  const next = after && here && after.pageId === here.pageId ? after : null;
   const pages = (state && state.pages) || [];
   const activePageId = state && state.activePageId;
   const multiPage = pages.length > 1;
+  /* The board publishes its whole running order — every section on every page —
+     but the remote navigates one page at a time, because that's the boundary
+     next/prev keep. So the deck the presenter sees is the active page's slice
+     of it: the list to jump around in, the count in the header, and the "n of"
+     it reads against all mean the page on the screen. A board-wide count would
+     read as progress through a talk that next/prev can't walk.
+
+     Crossing to another page stays the page control's job. The full deck is
+     still what the section index is published against, and what the page
+     control counts, so both halves agree on what section 3 is. */
+  const fullDeck = (state && state.deck) || [];
+  const deck = activePageId ? fullDeck.filter((s) => s.pageId === activePageId) : fullDeck;
+  const here = state && state.index >= 0 ? fullDeck[state.index] : null;
+  const index = here ? deck.findIndex((s) => s.id === here.id) : -1;
+  /* What the next button will actually land on — the following section on this
+     page, or nothing at its end. Stepping stops there, so a section on another
+     page isn't "next": previewing it would promise a tap that doesn't happen. */
+  const next = index >= 0 ? deck[index + 1] || null : null;
+  const pageName = (pages.find((p) => p.id === activePageId) || {}).name || "";
   const mmss = `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, "0")}`;
 
   /* Start every section at the top of its notes. The pane is one scroll
@@ -194,7 +204,7 @@ export default function RemotePage() {
       {pagesOpen ? (
         <ol className="flex-1 overflow-y-auto">
           {pages.map((p) => {
-            const count = deck.filter((s) => s.pageId === p.id).length;
+            const count = fullDeck.filter((s) => s.pageId === p.id).length;
             return (
               <li key={p.id}>
                 <button
@@ -216,17 +226,17 @@ export default function RemotePage() {
           })}
         </ol>
       ) : listOpen ? (
-        /* The whole running order, across every page of the board. Stepping
-           stays on one page, so this list is wider than what next/prev reach —
-           that's the point: it's how you jump somewhere else on purpose. Page
-           headings only appear on a board that has more than one, where they
-           tell you where you are; on a single-page board they'd be noise. */
+        /* The running order for the page on the screen — the same sections
+           next/prev walk, so a jump from this list and a tap on the chevrons
+           are moves through one list rather than two. The page's name heads it
+           on a board that has more than one page, where it says which running
+           order you're reading; on a single-page board it'd be noise. */
         <ol className="flex-1 overflow-y-auto">
           {deck.map((s, i) => (
             <li key={s.id}>
-              {multiPage && (i === 0 || deck[i - 1].pageId !== s.pageId) && (
+              {multiPage && i === 0 && (
                 <h2 className="sticky top-0 border-b border-line bg-base px-4 py-2 font-sans text-2 font-bold uppercase tracking-label text-faint">
-                  {s.pageName || "Untitled page"}
+                  {pageName || "Untitled page"}
                 </h2>
               )}
               <button

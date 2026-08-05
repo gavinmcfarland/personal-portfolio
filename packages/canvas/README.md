@@ -116,6 +116,21 @@ they did before. The markup is restricted to a small subset — `strong`, `em`,
 string is sanitised down to that subset on load, on paste and on commit, so a
 snapshot can be treated as data rather than trusted markup.
 
+### Shapes
+
+Shapes (pen, line, arrow, rectangle, ellipse) draw in one of two stroke styles,
+picked from the Style row of the properties panel: `solid`, the plain vector
+line, or `sketch`, a hand-drawn double stroke — each edge inked twice, corners
+overshooting, arrowheads drawn open rather than filled. The row sets the style
+for the next shape when a draw tool is active, and restyles the selection when
+shapes are selected.
+
+The wobble is generated from a seed derived from the shape's id, so a shape
+sketches identically on every render and reload — it holds still while being
+drawn, dragged and resized — while two shapes of the same size still come out in
+different hands. Only `sketch` is written to the snapshot (as `style` on the
+shape); boards saved before the setting existed load back as solid.
+
 In edit mode the top bar shows a background-colour picker (presets or a custom
 colour) that recolours the whole board; the choice is stored on the snapshot as
 `bgColor` and applies in read-only views too. Picking "Theme default" removes
@@ -286,11 +301,15 @@ bleed, hides every panel, drops to view-only and parks on the first section. `�
 (and `space` / `PageUp` / `PageDown`, so a clicker works) step through the running
 order; `Esc` ends it and hands the board back in the mode it was found in.
 
-The running order is the **whole board**, not the page in front of you: stepping off
-the end of one page continues onto the next, and the counter reads the same on the
-board as it does on the remote. Both ends also carry a page switcher for jumping
-straight to one. (Outside present mode the arrow keys still stay on the active page
-— crossing pages by accident while editing would be startling.)
+The running order is the **page in front of you**: stepping stops at its ends rather
+than continuing onto the next page, and the counter — the same number on the board
+and on the remote — reads against that page. Crossing a page is deliberate: both ends
+carry a page switcher, and the remote's section list will jump to any section on the
+page it's showing. (Outside present mode the arrow keys stay on the active page too.)
+
+Sections fall into reading order — top to bottom, left to right across sections whose
+tops line up within a small slack. A section can also be dragged into an explicit
+position in the page menu, which pins it ahead of the rest.
 
 Right-clicking a frame also offers **Aspect ratio** — 21:9 through 9:16 — for sizing
 a section to whatever it will be shown on. The reshape preserves the frame's area

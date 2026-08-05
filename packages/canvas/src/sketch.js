@@ -17,11 +17,13 @@ const r2 = (v) => Math.round(v * 100) / 100;
 
 export const isSketch = (s) => !!s && s.style === 'sketch';
 
-/* Widest a stroke may wander from the true edge, world px. Deliberately small:
-   the double pass is what sells the look, not the size of the wobble. */
-const AMP = 1.6;
-/* How far a long edge bows away from straight, as a multiple of AMP per 200px
-   of span — a hand drawing a long line curves it, a short one barely at all. */
+/* Widest a stroke may wander from the true edge, world px — scaled off the
+   stroke width, because the doubling is what sells the look and two 3px passes
+   a pixel apart just read as one 4px line. The wobble has to clear the nib. */
+const ampFor = (s) => 1.2 + (s.width || 3) * 0.7;
+/* How far a long edge bows away from straight, as a multiple of the amplitude
+   per 200px of span — a hand drawing a long line curves it, a short one
+   barely at all. */
 const BOW = 1.4;
 /* Anchor points around an ellipse. Nine is enough for the curve through them to
    read as round while leaving each point's offset visible as a wobble. */
@@ -91,6 +93,20 @@ function stroke(x1, y1, x2, y2, r, amp) {
 /* The same edge inked twice — the whole trick of the style. */
 const doubleStroke = (x1, y1, x2, y2, r, amp) =>
   stroke(x1, y1, x2, y2, r, amp) + stroke(x1, y1, x2, y2, r, amp);
+
+/* An edge run a little past both of its corners. A hand doesn't stop dead on
+   the turn, and the crossed, gapped corners this leaves are what most reads as
+   "drawn" on a box — more than the wobble along the sides does. */
+function overshot(a, b, r, amp) {
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  if (!len) return [a[0], a[1], b[0], b[1]];
+  const ux = (b[0] - a[0]) / len, uy = (b[1] - a[1]) / len;
+  // Capped against the edge's own length so a small box doesn't come out as an
+  // asterisk of four crossed sticks.
+  const cap = Math.min(amp * 1.4, len / 8);
+  const s = r() * cap, e = r() * cap;
+  return [a[0] - ux * s, a[1] - uy * s, b[0] + ux * e, b[1] + uy * e];
+}
 
 /* A Catmull-Rom curve through `pts` as cubic Béziers. Used for the ellipse and
    the pen, where the wobble lives in the anchor points and the curve through
@@ -164,42 +180,47 @@ function arrowHead(s, r, amp) {
 /* The `d` of a shape's sketched outline — what the stroked <path> draws. */
 export function sketchStroke(s) {
   const r = rngFor(s.id);
+  const amp = ampFor(s);
   if (s.type === 'pen') {
     const pts = s.points || [];
     if (pts.length < 2) return pts.length ? `M${pts[0][0]} ${pts[0][1]}` : '';
     // A freehand stroke is already hand-drawn, so it keeps its own path — the
     // style shows as the second inking, each pass nudged off the recorded
-    // points and smoothed, the way a pen re-traced never lands twice.
-    const amp = AMP * 0.35;
+    // points and smoothed, the way a pen re-traced never lands twice. The nudge
+    // is small: at full amplitude a scribble just turns furry.
+    const a = amp * 0.25;
     let d = '';
     for (let pass = 0; pass < 2; pass++) {
-      d += curveThrough(pts.map((p) => [p[0] + dev(r, amp), p[1] + dev(r, amp)]), false);
+      d += curveThrough(pts.map((p) => [p[0] + dev(r, a), p[1] + dev(r, a)]), false);
     }
     return d;
   }
   if (s.type === 'line' || s.type === 'arrow') {
-    const d = doubleStroke(s.x1, s.y1, s.x2, s.y2, r, AMP);
-    return s.type === 'arrow' ? d + arrowHead(s, r, AMP) : d;
+    const d = doubleStroke(s.x1, s.y1, s.x2, s.y2, r, amp);
+    return s.type === 'arrow' ? d + arrowHead(s, r, amp) : d;
   }
   if (s.type === 'rect') {
-    // Each side is its own stroke, so the corners overshoot and gap the way a
-    // hand-drawn box does. (This is also why a filled rect needs the separate
-    // closed path below: four loose edges have no interior to fill.)
+    // Each side is its own stroke, run past both corners, so the box comes out
+    // crossed and gapped at the turns rather than mitred. (This is also why a
+    // filled rect needs the separate closed path below: four loose edges have
+    // no interior to fill.)
     const c = cornersOf(s);
     let d = '';
     for (let i = 0; i < 4; i++) {
-      const a = c[i], b = c[(i + 1) % 4];
-      d += doubleStroke(a[0], a[1], b[0], b[1], r, AMP);
+      const [ax, ay, bx, by] = overshot(c[i], c[(i + 1) % 4], r, amp);
+      d += doubleStroke(ax, ay, bx, by, r, amp);
     }
     return d;
   }
   if (s.type === 'ellipse') {
     const b = boxOf(s);
     const rx = b.w / 2, ry = b.h / 2;
-    const amp = Math.min(AMP, Math.min(rx, ry) / 4);
+    // A radius offset shows up twice over (both sides of the ring move), so the
+    // ellipse takes less amplitude than a straight edge to read the same.
+    const a = Math.min(amp * 0.8, Math.min(rx, ry) / 4);
     let d = '';
     for (let pass = 0; pass < 2; pass++) {
-      d += curveThrough(ellipsePoints(b.x + rx, b.y + ry, rx, ry, r, amp), true);
+      d += curveThrough(ellipsePoints(b.x + rx, b.y + ry, rx, ry, r, a), true);
     }
     return d;
   }
@@ -208,21 +229,25 @@ export function sketchStroke(s) {
 
 /* The `d` of the closed path that carries a sketched shape's fill — and, for a
    hollow one, its clickable interior (the outline alone is only hit-testable on
-   the line). Follows the shape's true edge with a hint of wobble, so it sits
-   under the outline instead of poking through it. Null for shapes with no
-   interior. */
+   the line). Follows the shape's true edge with a hint of wobble, grown by half
+   the nib so it always runs under the ink: left on the true edge, every stroke
+   that happens to bow outward would show a hairline of board between the two.
+   Null for shapes with no interior. */
 export function sketchFill(s) {
   const r = rngFor(s.id + 'f');
+  const amp = ampFor(s) * 0.4;
+  const grow = (s.width || 3) / 2;
   if (s.type === 'rect') {
-    const amp = AMP * 0.4;
-    const pts = cornersOf(s).map((p) => [r2(p[0] + dev(r, amp)), r2(p[1] + dev(r, amp))]);
+    const b = boxOf(s);
+    const c = cornersOf({ x1: b.x - grow, y1: b.y - grow, x2: b.x + b.w + grow, y2: b.y + b.h + grow });
+    const pts = c.map((p) => [r2(p[0] + dev(r, amp)), r2(p[1] + dev(r, amp))]);
     return `M${pts[0][0]} ${pts[0][1]}` + pts.slice(1).map((p) => `L${p[0]} ${p[1]}`).join('') + 'Z';
   }
   if (s.type === 'ellipse') {
     const b = boxOf(s);
     const rx = b.w / 2, ry = b.h / 2;
-    const amp = Math.min(AMP * 0.4, Math.min(rx, ry) / 8);
-    return curveThrough(ellipsePoints(b.x + rx, b.y + ry, rx, ry, r, amp), true);
+    const a = Math.min(amp, Math.min(rx, ry) / 8);
+    return curveThrough(ellipsePoints(b.x + rx, b.y + ry, rx + grow, ry + grow, r, a), true);
   }
   return null;
 }

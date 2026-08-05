@@ -24,38 +24,45 @@ export const GRID = 28;
 
 export const clampScale = (s) => Math.min(ZOOM.max, Math.max(ZOOM.min, s));
 
-/* On-board height of a section, for grouping sections into rows. Auto-height
-   nodes (text, markdown, links) carry no `h` — they band on their top edge alone. */
-const sectionH = (n) => (+n.h > 0 ? +n.h : 0) * (+n.scale > 0 ? +n.scale : 1);
-/* Vertical slack (world px) for the row test, so sections whose tops differ by a
-   hair still share a row even when neither carries a height. */
-const ROW_EPS = 24;
+/* Vertical slack (world px) within which two sections count as side by side.
+   Sized to absorb a nudge that missed a snap — not a section deliberately set
+   below another, which lands the better part of a frame's height further down.
+   Deliberately a small constant rather than anything derived from the sections'
+   heights: a board that cascades (each section a little right and a little
+   below the last, overlapping it) is laid out in reading order and has to walk
+   in reading order, and any threshold big enough to see those overlaps as rows
+   flattens the whole cascade into one. */
+const ROW_EPS = 48;
 
 /* Section anchors on a board, in navigation order: frames and anchored nodes.
-   Shared by the page/section menu and the keyboard section stepper so both agree
-   on what "next section" means.
+   Shared by the page/section menu, the keyboard section stepper and the phone
+   remote, so all three agree on what "next section" means.
 
    Sections dragged into an explicit order in the page menu carry an `order` and
-   lead the list in it. Everything else falls back to reading order: rows top to
-   bottom, left to right within a row. Sorting on `y` alone (what this used to do)
-   let a few px of vertical jitter scramble sections laid out side by side — a
-   row placed by eye is never pixel-aligned, so a horizontal board came out
-   shuffled. Grouping into rows first makes the walk follow the layout. */
+   lead the list in it. Everything else falls back to reading order: top to
+   bottom, left to right across sections whose tops line up. Sorting on `y`
+   alone let a few px of vertical jitter scramble sections laid out side by
+   side — a row placed by eye is never pixel-aligned — so sections band into a
+   row first, and a row is decided on the top edge alone: where a section starts
+   is what says whether it reads next to its neighbour or after it. Its height
+   says nothing about that, and letting it speak (as this used to) meant one
+   tall section — a frame drawn around the whole board, say — banded everything
+   it overlapped into a single row and scattered the order. */
 export const sectionNodes = (nodes) => {
 	const secs = nodes.filter((n) => n.type === 'frame' || n.anchor);
 	const ranked = secs
 		.filter((n) => Number.isFinite(n.order))
 		.sort((a, b) => a.order - b.order || a.y - b.y || a.x - b.x);
 	const rows = [];
-	let floor = 0; // deepest midline of the row being built
 	for (const n of secs.filter((n) => !Number.isFinite(n.order)).sort((a, b) => a.y - b.y || a.x - b.x)) {
-		// A section joins the row above until its top clears that row's deepest
-		// midline: a genuinely stacked section does, a jittery neighbour doesn't.
-		const mid = n.y + Math.max(sectionH(n) / 2, ROW_EPS);
-		if (!rows.length || n.y >= floor) { rows.push([n]); floor = mid; }
-		else { rows[rows.length - 1].push(n); floor = Math.max(floor, mid); }
+		// Measured against the row's own top, not the section that happens to be
+		// last in it: a run of sections each a hair below the previous would
+		// otherwise creep down the board and stay one endless row.
+		const row = rows[rows.length - 1];
+		if (row && n.y - row.top < ROW_EPS) row.items.push(n);
+		else rows.push({ top: n.y, items: [n] });
 	}
-	return [...ranked, ...rows.flatMap((r) => r.sort((a, b) => a.x - b.x || a.y - b.y))];
+	return [...ranked, ...rows.flatMap((r) => r.items.sort((a, b) => a.x - b.x || a.y - b.y))];
 };
 
 /* Display name for a section anchor: frame name, first markdown heading, or the

@@ -109,16 +109,18 @@ function RemotePanel({ room, relay, onClose }) {
 }
 
 export default function PresentBar() {
-  // `nodes` / `activePageId` aren't read directly — they're what re-renders this
-  // when the board moves, so eng.deck() below is recomputed rather than stale.
+  // `nodes` isn't read directly — it's what re-renders this when the board
+  // moves, so eng.deck() below is recomputed rather than stale.
   const { eng, nodes, activePageId, pages, focusedSectionId, presentRoom, presentRelay } = useCanvas();
   const [idle, setIdle] = useState(false);
   const [remote, setRemote] = useState(false);
   const [pageMenu, setPageMenu] = useState(false);
 
-  /* The deck, not this page's sections: the counter has to mean the same thing
-     here as it does on the phone, and the phone is reading the whole board. */
-  const list = eng.deck();
+  /* This page's slice of the deck. Stepping stops at a page's ends, so a
+     board-wide "5 of 8" would count a run the chevrons can't walk — and the
+     phone, which counts the same way, would read a different number beside the
+     same section. Crossing a page stays the page switcher's job. */
+  const list = eng.deck().filter((s) => s.pageId === activePageId);
   const i = list.findIndex((s) => s.id === focusedSectionId);
   const here = i >= 0 ? list[i] : null;
   const multiPage = pages.length > 1;
