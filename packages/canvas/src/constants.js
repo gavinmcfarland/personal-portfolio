@@ -24,15 +24,32 @@ export const GRID = 28;
 
 export const clampScale = (s) => Math.min(ZOOM.max, Math.max(ZOOM.min, s));
 
-/* Vertical slack (world px) within which two sections count as side by side.
-   Sized to absorb a nudge that missed a snap — not a section deliberately set
-   below another, which lands the better part of a frame's height further down.
-   Deliberately a small constant rather than anything derived from the sections'
-   heights: a board that cascades (each section a little right and a little
-   below the last, overlapping it) is laid out in reading order and has to walk
-   in reading order, and any threshold big enough to see those overlaps as rows
-   flattens the whole cascade into one. */
-const ROW_EPS = 48;
+/* On-board height of a section — its stored height at whatever scale it carries. */
+const sectionH = (n) => (+n.h > 0 ? +n.h : 0) * (+n.scale > 0 ? +n.scale : 1);
+
+/* Vertical slack within which two sections count as side by side, as a fraction
+   of the board's typical section height — the MEDIAN one, not each pair's own.
+
+   It has to be relative, because "these two line up" is judged by eye against
+   the sections on the screen: the same board laid out in world units twice the
+   size is misaligned by twice as much and still reads as a row. A fixed number
+   of world px is right for exactly one zoom and wrong either side of it.
+
+   And it has to be the median rather than the heights in play, so that one
+   outsized section — a frame drawn around the whole board, say — can't widen
+   the slack for everything it overlaps and band the lot into one row. */
+const ROW_SLACK = 0.15;
+/* Floor, for a board whose sections carry no height at all (anchored text
+   blocks are sized by their content): tops that differ by a hair still band. */
+const ROW_EPS_MIN = 24;
+
+/* The slack for one page's sections. Sections with no height sit the sample
+   out rather than dragging the median toward zero. */
+const rowSlack = (secs) => {
+	const hs = secs.map(sectionH).filter((h) => h > 0).sort((a, b) => a - b);
+	if (!hs.length) return ROW_EPS_MIN;
+	return Math.max(ROW_EPS_MIN, hs[hs.length >> 1] * ROW_SLACK);
+};
 
 /* Section anchors on a board, in navigation order: frames and anchored nodes.
    Shared by the page/section menu, the keyboard section stepper and the phone
@@ -44,22 +61,23 @@ const ROW_EPS = 48;
    alone let a few px of vertical jitter scramble sections laid out side by
    side — a row placed by eye is never pixel-aligned — so sections band into a
    row first, and a row is decided on the top edge alone: where a section starts
-   is what says whether it reads next to its neighbour or after it. Its height
-   says nothing about that, and letting it speak (as this used to) meant one
-   tall section — a frame drawn around the whole board, say — banded everything
-   it overlapped into a single row and scattered the order. */
+   is what says whether it reads next to its neighbour or after it. How tall
+   either of them is says nothing about that — this used to band a section into
+   the row above until it cleared that row's deepest midline, which let one tall
+   section swallow everything it overlapped (see ROW_SLACK). */
 export const sectionNodes = (nodes) => {
 	const secs = nodes.filter((n) => n.type === 'frame' || n.anchor);
 	const ranked = secs
 		.filter((n) => Number.isFinite(n.order))
 		.sort((a, b) => a.order - b.order || a.y - b.y || a.x - b.x);
+	const eps = rowSlack(secs);
 	const rows = [];
 	for (const n of secs.filter((n) => !Number.isFinite(n.order)).sort((a, b) => a.y - b.y || a.x - b.x)) {
 		// Measured against the row's own top, not the section that happens to be
 		// last in it: a run of sections each a hair below the previous would
 		// otherwise creep down the board and stay one endless row.
 		const row = rows[rows.length - 1];
-		if (row && n.y - row.top < ROW_EPS) row.items.push(n);
+		if (row && n.y - row.top < eps) row.items.push(n);
 		else rows.push({ top: n.y, items: [n] });
 	}
 	return [...ranked, ...rows.flatMap((r) => r.items.sort((a, b) => a.x - b.x || a.y - b.y))];
