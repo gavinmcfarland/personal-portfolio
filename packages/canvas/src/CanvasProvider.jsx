@@ -3512,7 +3512,7 @@ export function CanvasProvider({
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, setNodeScale, deleteSelected, deleteTarget,
       copySelected, cutSelected, cutTarget, paste, pasteAt, pasteFromMenu, hasClipboard, systemClipIsMine, duplicateSelected, duplicateTarget, duplicateItemsAt,
-      setTool, setMode, setCanvasBg, setCanvasBgStrength, toggleGrid, fitAll, flyTo, goToSection, stepSection, clearSectionFocus, reorderSections, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
+      setTool, setMode, setCanvasBg, setCanvasBgStrength, toggleGrid, fitAll, flyTo, fitViewFor, viewIsOn, sectionInView, goToSection, stepSection, clearSectionFocus, reorderSections, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
@@ -3609,17 +3609,26 @@ export function CanvasProvider({
      on the model only — selection/view changes aren't undoable. */
   useEffect(() => { eng.recordHistory(nodes, shapes, activePageId); }, [nodes, shapes, activePageId, eng]);
 
-  /* ── Land on the first section once the full-bleed layout settles ──
+  /* ── Land on a section once the full-bleed layout settles ──
      Entering present mode grows the container to the whole viewport, and the
      resize handler re-anchors the view once that has happened. Flying before
      then gets overwritten, so wait two frames: one for the portal move and
-     the browser's layout, one for the resize observer that follows it. Only
-     when nothing is focused already — resuming a talk should stay put. */
+     the browser's layout, one for the resize observer that follows it. The
+     wait is also what makes the view readable here: by now it's the reframed
+     full-bleed view, so "what's on screen" means the same thing it will mean
+     to the next keypress.
+
+     Where to land, in order: the section the board is already sitting over,
+     the section last focused, then the top of the deck. Same rule the arrow
+     keys follow (stepDeck) — pressing Present frames what you were looking at
+     rather than jumping somewhere else to start. */
   useEffect(() => {
     if (!presenting) return undefined;
     let r2 = 0;
     const r1 = requestAnimationFrame(() => {
       r2 = requestAnimationFrame(() => {
+        const here = eng.sectionInView();
+        if (here) { eng.goToSection(null, here); return; }
         if (focusedSectionId) { eng.flyTo(focusedSectionId); return; }
         const secs = sectionNodes(nodes);
         if (secs.length) eng.goToSection(null, secs[0].id);
