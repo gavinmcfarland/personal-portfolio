@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Files, Smartphone, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Copy, Files, Smartphone, X } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 
 /* The only chrome left on screen while presenting: where we are, a way back and
@@ -11,6 +11,52 @@ import { useCanvas } from '../CanvasProvider';
    spends the whole talk looking at. */
 
 const IDLE_MS = 3000;
+const COPIED_MS = 1600;
+
+/* The remote link is served over plain http on a LAN address, so the panel can
+   be looking at itself from a context the async Clipboard API refuses to run
+   in. Fall back to the old selection trick there rather than leaving the
+   button dead. */
+function copyText(text) {
+  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text);
+  return new Promise((resolve, reject) => {
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.setAttribute('readonly', '');
+    el.style.cssText = 'position:fixed;top:0;left:-9999px';
+    document.body.appendChild(el);
+    el.select();
+    const ok = document.execCommand('copy');
+    el.remove();
+    ok ? resolve() : reject(new Error('copy refused'));
+  });
+}
+
+/* The whole line is the button: the URL is small type, and a presenter reaching
+   for it mid-setup shouldn't have to hit an icon. */
+function CopyUrl({ url }) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return undefined;
+    const t = setTimeout(() => setCopied(false), COPIED_MS);
+    return () => clearTimeout(t);
+  }, [copied]);
+
+  return (
+    <button
+      type="button"
+      className="cv-present-remote-url"
+      data-copied={copied ? '' : undefined}
+      onClick={() => copyText(url).then(() => setCopied(true)).catch(() => {})}
+      title="Copy link"
+      aria-label={copied ? 'Link copied' : 'Copy link'}
+    >
+      <code>{url}</code>
+      {copied ? <Check /> : <Copy />}
+    </button>
+  );
+}
 
 /* The pairing panel. The QR encoder is imported only when the panel opens —
    it's a chunk nobody who isn't pairing a phone should have to download, and
@@ -54,7 +100,7 @@ function RemotePanel({ room, relay, onClose }) {
       {state.status === 'ready' && (
         <>
           <canvas ref={canvasRef} className="cv-present-qr" width="200" height="200" />
-          <code className="cv-present-remote-url">{state.url}</code>
+          <CopyUrl url={state.url} />
           <p className="cv-present-remote-hint">Same Wi-Fi, then scan. Room {room}.</p>
         </>
       )}

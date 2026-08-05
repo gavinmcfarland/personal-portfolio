@@ -1889,7 +1889,7 @@
 .canvas-root .cv-frame-box {
   display: none;
   box-sizing: border-box;
-  border: 1.6px dashed var(--cv-accent);
+  border: 1.6px dashed color-mix(in srgb, var(--cv-accent) 20%, transparent);
   border-radius: 9px;
   background: transparent;
   pointer-events: none;
@@ -3271,12 +3271,38 @@
   /* The encoder paints black on transparent; a dark board would swallow it. */
   background: #fff;
 }
+/* A button, but it has to read as the link it copies — so no chrome until the
+   pointer is on it. */
 .canvas-root .cv-present-remote-url {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   max-width: 100%;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
   overflow-wrap: anywhere;
   font-size: 0.68rem;
+  font-family: inherit;
   color: var(--cv-muted);
   text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.canvas-root .cv-present-remote-url:hover {
+  background: var(--cv-accent-soft);
+  color: var(--cv-ink);
+}
+.canvas-root .cv-present-remote-url[data-copied] {
+  color: var(--cv-accent);
+}
+.canvas-root .cv-present-remote-url svg {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  stroke-width: 2;
 }
 .canvas-root .cv-present-remote-hint {
   font-size: 0.68rem;

@@ -1189,7 +1189,7 @@
    they replaced used to sit. No fill in either mode: the outline is enough to
    read the region, and a wash would tint everything inside it. */
 .canvas-root .cv-frame-box {
-  border: 1.6px dashed var(--cv-accent);
+  border: 1.6px dashed color-mix(in srgb, var(--cv-accent) 20%, transparent);
   border-radius: 9px;
   background: transparent;
 }
@@ -2052,10 +2052,28 @@
   /* The encoder paints black on transparent; a dark board would swallow it. */
   background: #fff;
 }
+/* A button, but it has to read as the link it copies — so no chrome until the
+   pointer is on it. */
 .canvas-root .cv-present-remote-url {
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
   font-size: 0.68rem;
+  font-family: inherit;
   color: var(--cv-muted);
   text-align: center;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.canvas-root .cv-present-remote-url:hover {
+  background: var(--cv-accent-soft);
+  color: var(--cv-ink);
+}
+.canvas-root .cv-present-remote-url[data-copied] {
+  color: var(--cv-accent);
+}
+.canvas-root .cv-present-remote-url svg {
+  stroke-width: 2;
 }
 .canvas-root .cv-present-remote-hint {
   font-size: 0.68rem;

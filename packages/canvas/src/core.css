@@ -1801,9 +1801,21 @@
   width: 200px;
   height: 200px;
 }
+/* A button, but it has to read as the link it copies — so no chrome until the
+   pointer is on it. */
 .canvas-root .cv-present-remote-url {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   max-width: 100%;
   overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.canvas-root .cv-present-remote-url svg {
+  flex: none;
+  width: 13px;
+  height: 13px;
 }
 /* ── Minimap ─────────────────────────────────────────────────────
    Bottom-right overview panel. Sits inboard of the edge so it clears the
