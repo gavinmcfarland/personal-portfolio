@@ -102,9 +102,10 @@ export default function PresentBar() {
       {remote && presentRelay && (
         <RemotePanel room={presentRoom} relay={presentRelay} onClose={() => setRemote(false)} />
       )}
-      {/* Page switcher. The deck already crosses pages as you step through it,
-          so this is for jumping straight to one — the top bar's page menu is
-          gone while presenting, and mid-talk is no time to go looking for it. */}
+      {/* Page switcher — the only way across a page boundary while presenting,
+          now that stepping stays on the page it starts on. The top bar's page
+          menu is gone while presenting, and mid-talk is no time to go looking
+          for it. */}
       {pageMenu && multiPage && (
         <div className="cv-present-pages cv-panel">
           {pages.map((p) => (

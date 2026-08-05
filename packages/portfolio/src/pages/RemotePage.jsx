@@ -126,7 +126,12 @@ export default function RemotePage() {
   const deck = (state && state.deck) || [];
   const index = state ? state.index : -1;
   const here = index >= 0 ? deck[index] : null;
-  const next = index >= 0 && index + 1 < deck.length ? deck[index + 1] : null;
+  /* What the next button will actually land on. Stepping stops at the end of
+     a page, so a following section on another page isn't "next" — it's
+     somewhere you'd have to go on purpose, and previewing it would promise a
+     tap that doesn't happen. */
+  const after = index >= 0 ? deck[index + 1] : null;
+  const next = after && here && after.pageId === here.pageId ? after : null;
   const pages = (state && state.pages) || [];
   const activePageId = state && state.activePageId;
   const multiPage = pages.length > 1;
@@ -211,8 +216,9 @@ export default function RemotePage() {
           })}
         </ol>
       ) : listOpen ? (
-        /* The whole running order, across every page of the board — stepping
-           crosses page boundaries too, so this list is the same deck. Page
+        /* The whole running order, across every page of the board. Stepping
+           stays on one page, so this list is wider than what next/prev reach —
+           that's the point: it's how you jump somewhere else on purpose. Page
            headings only appear on a board that has more than one, where they
            tell you where you are; on a single-page board they'd be noise. */
         <ol className="flex-1 overflow-y-auto">

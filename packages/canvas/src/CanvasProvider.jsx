@@ -3374,14 +3374,14 @@ export function CanvasProvider({
       if (!entry) return;
       goToSection(entry.pageId !== S.activePageId ? entry.pageId : null, entry.id);
     }
-    /* Step through the running order — the whole board, not just the page in
-       front of us. Outside present mode the arrow keys stay on the active page
-       (see stepSection): stepping across pages by accident while editing would
-       be startling. Presenting is the opposite case, where the deck IS the
-       talk and its page boundaries are an authoring detail the room never
-       sees, so walking off the end of one page should continue onto the next. */
+    /* Step through the running order, staying on the page in front of us —
+       the same boundary the arrow keys keep outside present mode (see
+       stepSection). A page is a self-contained run: walking off the end of one
+       and landing on a page nobody chose to show is a jump the presenter
+       didn't ask for and can't easily undo mid-sentence. Crossing pages stays
+       deliberate — the page control on the remote, or a goto into the list. */
     function stepDeck(delta) {
-      const list = deck();
+      const list = deck().filter((s) => s.pageId === S.activePageId);
       if (!list.length) return;
       /* Frame before stepping. The presenter may be sitting over a section
          without being parked on it — they zoomed out to show the neighbours,
@@ -3396,8 +3396,16 @@ export function CanvasProvider({
       }
       const i = list.findIndex((s) => s.id === focusedSectionRef.current);
       // Nothing focused yet: a tap this early should still move the board
-      // rather than appear broken, so start at the top of the deck.
-      goToDeckEntry(i < 0 ? list[0] : list[(i + delta + list.length) % list.length]);
+      // rather than appear broken, so start at the top of the page.
+      if (i < 0) { goToDeckEntry(list[0]); return; }
+      /* Stop at the page's ends rather than wrapping. A wrap used to be the
+         safe option when the deck was the whole board and it could only fire
+         once, at the very end of the talk; per page it would fire at every
+         page boundary, and looping back to section one in front of a room is
+         a worse failure than a button that does nothing. */
+      const j = i + delta;
+      if (j < 0 || j >= list.length) return;
+      goToDeckEntry(list[j]);
     }
     /* Drive the board — from the phone, or from the present bar, which speaks
        through the same three commands so both ends can only ever do what the
