@@ -578,6 +578,8 @@ export function CanvasProvider({
   };
   const [noteColor, setNoteColor] = useState('yellow');
   const [textFont, setTextFont] = useState('serif'); // default font for new text blocks
+  // Default preset size (px) for new text blocks; null → the CSS default size.
+  const [textSize, setTextSize] = useState(null);
   const [strokeColor, setStrokeColor] = useState('#7C2D91');
   const [fillColor, setFillColor] = useState('none'); // default fill for new fillable shapes
   const [ctxMenu, setCtxMenu] = useState(null); // {x,y,target:{kind,id}}
@@ -755,6 +757,7 @@ export function CanvasProvider({
   S.editingId = editingId;
   S.noteColor = noteColor;
   S.textFont = textFont;
+  S.textSize = textSize;
   S.strokeColor = strokeColor;
   S.fillColor = fillColor;
   S.nodes = nodes;
@@ -3890,12 +3893,12 @@ export function CanvasProvider({
 
   const value = {
     // state
-    nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, strokeColor, fillColor, ctxMenu,
+    nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, textSize, strokeColor, fillColor, ctxMenu,
     isPrimaryCanvas,
     publishState, recording, fullscreen, gridEditId, renameFrameId, notesEditId, htmlActiveId, focusedSectionId, presenting, presentRoom, presentRelay, pages, activePageId, pageData, bgColor, bgStrength, gridHidden, reflow, collide: COLLIDE,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls, minimap: MINIMAP.on, MINIMAP, minimapEls,
     // setters used by UI
-    setDraft, setNoteColor, setTextFont, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
+    setDraft, setNoteColor, setTextFont, setTextSize, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
     // refs
     rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, worldRef, zoomLabelRef, nodeEls, mediaEls, shapeEls, frameLabelEls, frameBoxEls, actionRef, panKey, S,
     // engine

@@ -292,7 +292,9 @@ export default function Canvas() {
       eng.setTool('select'); eng.selectNode(n.id); eng.startEditing(n.id); return;
     }
     if (tool === 'text') {
-      const n = eng.addNode({ id: eng.newId('tblock'), type: 'tblock', x: w.x, y: w.y - 18, text: '', font: S.textFont });
+      // A size preset picked with the text tool active seeds the next block; left
+      // unset the block takes the stylesheet's size and stays free of a fontSize.
+      const n = eng.addNode({ id: eng.newId('tblock'), type: 'tblock', x: w.x, y: w.y - 18, text: '', font: S.textFont, ...(S.textSize != null ? { fontSize: S.textSize } : null) });
       eng.setTool('select'); eng.selectNode(n.id); eng.startEditing(n.id); return;
     }
     if (tool === 'md') {

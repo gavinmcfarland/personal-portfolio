@@ -215,7 +215,21 @@ function FrameLabel({ node }) {
       }}
     >
       <span className="cv-txt">{node.name || 'Section'}</span>
-      {!readOnly && !!node.notes && <MessageSquareText className="cv-frame-notes" />}
+      {/* The written-notes mark doubles as the way back into them: the notes for
+          a section are most often wanted while looking at that section, and the
+          context menu is a long way round from here. */}
+      {!readOnly && !!node.notes && (
+        <button
+          className="cv-frame-notes-btn"
+          title="Edit speaker notes"
+          aria-label="Edit speaker notes"
+          onPointerDown={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()} // the label's dblclick renames; this isn't a rename
+          onClick={(e) => { e.stopPropagation(); eng.openSectionNotes(node.id); }}
+        >
+          <MessageSquareText className="cv-frame-notes" />
+        </button>
+      )}
       <button
         className="cv-frame-go"
         title="Go to this section (↑/↓ for the next one)"

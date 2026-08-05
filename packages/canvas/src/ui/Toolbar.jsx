@@ -6,7 +6,7 @@ import {
   Bold, Italic, Underline, Strikethrough, List, ListOrdered,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
-import { COLORS, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, themeInk, cx } from '../constants';
+import { COLORS, DEFAULT_TEXT_SIZE, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, TEXT_SIZES, themeInk, cx } from '../constants';
 import { richState } from '../rich-text';
 
 /* Vector shape tools grouped behind a single dropdown button in the toolbar. */
@@ -156,8 +156,8 @@ const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
      rectangles/ellipses). */
 function Swatches() {
   const {
-    tool, noteColor, textFont, strokeColor, fillColor,
-    setNoteColor, setTextFont, setStrokeColor, setFillColor,
+    tool, noteColor, textFont, textSize, strokeColor, fillColor,
+    setNoteColor, setTextFont, setTextSize, setStrokeColor, setFillColor,
     selected, nodes, shapes, editingId, eng, classNames,
   } = useCanvas();
   const panelRef = useRef(null);
@@ -231,6 +231,10 @@ function Swatches() {
     if (editingTexts) selTexts.forEach((n) => eng.updateNode(n.id, { font: name }));
     else setTextFont(name);
   };
+  const pickSize = (px) => {
+    if (editingTexts) selTexts.forEach((n) => eng.updateNode(n.id, { fontSize: px }));
+    else setTextSize(px);
+  };
   const pickAlign = (dir) => selTexts.forEach((n) => eng.updateNode(n.id, { align: dir }));
   const pickStroke = (hex) => {
     if (editingShapes) selShapes.forEach((s) => eng.updateShape(s.id, { stroke: hex }));
@@ -243,6 +247,12 @@ function Swatches() {
 
   const curNote = editingStickies ? commonValue(selStickies, (n) => n.color) : noteColor;
   const curFont = editingTexts ? commonValue(selTexts, (n) => n.font || 'serif') : textFont;
+  // A block with no fontSize renders at the stylesheet's size, which is the
+  // Medium preset — so it lights up Medium rather than nothing. A cmd-drag
+  // scaled block matches no preset and lights up nothing.
+  const curSize = editingTexts
+    ? commonValue(selTexts, (n) => (n.fontSize != null ? +n.fontSize : DEFAULT_TEXT_SIZE))
+    : textSize ?? DEFAULT_TEXT_SIZE;
   const curAlign = commonValue(selTexts, (n) => n.align || 'left');
   const curStroke = editingShapes ? commonValue(selShapes, (s) => s.stroke) : strokeColor;
   const curFill = fillableSel.length
@@ -295,6 +305,24 @@ function Swatches() {
               onClick={() => pickFont(name)}
             >
               {label}
+            </button>
+          ))}
+        </div>
+      )}
+      {showFont && (
+        <div className="cv-swatch-row">
+          {TEXT_SIZES.map(([px, abbr, label]) => (
+            <button
+              key={px}
+              className="cv-size-btn"
+              data-active={curSize === px ? '' : undefined}
+              title={label}
+              // Keep focus — and the caret — in the block being edited, so a
+              // size click doesn't blur and close it.
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => pickSize(px)}
+            >
+              {abbr}
             </button>
           ))}
         </div>

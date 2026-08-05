@@ -115,6 +115,20 @@ export const FONTS = [
 	['script', 'Script'],
 ];
 
+/* Preset font sizes (px) offered for text blocks, small to huge. `fontSize` is
+   otherwise only written by the cmd-drag scale gesture, which lands on arbitrary
+   values — the presets give the common sizes one click. Medium matches the
+   1.5rem `.cv-tblock` default (at a 16px root), so an unsized block reads as
+   Medium in the picker. */
+export const TEXT_SIZES = [
+	[16, 'S', 'Small'],
+	[24, 'M', 'Medium'],
+	[36, 'L', 'Large'],
+	[56, 'XL', 'Extra large'],
+	[88, 'XXL', 'Huge'],
+];
+export const DEFAULT_TEXT_SIZE = 24;
+
 export const COLORS = {
 	note: [
 		['#FFE27A', 'yellow'],

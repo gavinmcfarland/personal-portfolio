@@ -2075,13 +2075,16 @@
   transform: translateY(-50%);
 }
 .canvas-root .cv-chrome .cv-frame-label {
+  /* The inset the controls sit in — also the spacing between them, so the
+     cluster is evenly bounded on every side (see .cv-frame-notes-btn below). */
+  --cv-frame-label-pad: 0.22rem;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   background: var(--cv-accent);
   color: #fff;
   border-radius: 8px 8px 8px 2px;
-  padding: 0.22rem 0.22rem 0.22rem 0.55rem;
+  padding: var(--cv-frame-label-pad) var(--cv-frame-label-pad) var(--cv-frame-label-pad) 0.55rem;
   font-family: var(--cv-sans);
   font-size: 0.72rem;
   font-weight: 600;
@@ -2437,6 +2440,32 @@
 .canvas-root .cv-font-btn[data-font="script"] {
   font-family: var(--cv-hand);
   font-size: 18px;
+}
+/* Preset font-size chips for text blocks (S / M / L / XL / XXL). */
+.canvas-root .cv-size-btn {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: transparent;
+  color: inherit;
+  cursor: default;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.dark .canvas-root .cv-size-btn,
+.canvas-root.dark .cv-size-btn {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.canvas-root .cv-size-btn[data-active] {
+  outline: 2px solid var(--cv-accent);
+  outline-offset: 1px;
 }
 /* Horizontal-alignment buttons for text blocks. */
 .canvas-root .cv-align-btn {
@@ -3121,8 +3150,37 @@
 
 /* A section carrying notes gets a notes icon on its board label, so the deck
    shows at a glance which parts have been written and which are still bare.
+   It's also the button that reopens those notes — bare until hovered, so it
+   still reads as a mark on the label rather than a second → button.
    currentColor, not the accent: the label is already accent-filled, so an
    accent mark would be invisible against it. */
+.canvas-root .cv-frame-label .cv-frame-notes-btn {
+  width: 19px;
+  height: 19px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  cursor: default;
+  background: transparent;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* The label's 0.5rem gap is the space between the name and its controls; the
+   two controls themselves are one cluster, spaced by the same inset the label
+   pads them with, so the run of buttons is evenly bounded all round. Cancels
+   the flex gap (0.5rem, in core.css — keep the two in step) down to it. */
+.canvas-root .cv-frame-label .cv-frame-notes-btn + .cv-frame-go {
+  margin-left: calc(var(--cv-frame-label-pad) - 0.5rem);
+}
+.canvas-root .cv-frame-label .cv-frame-notes-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+.canvas-root .cv-frame-label .cv-frame-notes-btn:hover .cv-frame-notes {
+  opacity: 1;
+}
 .canvas-root .cv-frame-label .cv-frame-notes {
   width: 13px;
   height: 13px;

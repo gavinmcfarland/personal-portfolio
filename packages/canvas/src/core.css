@@ -1362,6 +1362,15 @@
   height: 26px;
   cursor: default;
 }
+/* Preset font-size chips for text blocks (S / M / L / XL / XXL). */
+.canvas-root .cv-size-btn {
+  min-width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
 /* Horizontal-alignment buttons for text blocks. */
 .canvas-root .cv-align-btn {
   width: 26px;
@@ -1725,8 +1734,23 @@
 }
 /* A section carrying notes gets a notes icon on its board label, so the deck
    shows at a glance which parts have been written and which are still bare.
+   It's also the button that reopens those notes — bare until hovered, so it
+   still reads as a mark on the label rather than a second → button.
    currentColor, not the accent: the label is already accent-filled, so an
    accent mark would be invisible against it. */
+.canvas-root .cv-frame-label .cv-frame-notes-btn {
+  width: 19px;
+  height: 19px;
+  flex: none;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* The label's 0.5rem gap is the space between the name and its controls; the
+   two controls themselves are one cluster, spaced by the same inset the label
+   pads them with, so the run of buttons is evenly bounded all round. Cancels
+   the flex gap (0.5rem, in core.css — keep the two in step) down to it. */
 .canvas-root .cv-frame-label .cv-frame-notes {
   width: 13px;
   height: 13px;
