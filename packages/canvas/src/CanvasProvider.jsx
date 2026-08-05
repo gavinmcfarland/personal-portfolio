@@ -1815,13 +1815,16 @@ export function CanvasProvider({
     function itemData(it) {
       return it.kind === 'node' ? S.nodes.find((n) => n.id === it.id) : S.shapes.find((s) => s.id === it.id);
     }
-    /* Add a fresh copy of one node/shape offset by (dx,dy); returns its {kind,id}. */
-    function addClone(kind, data, dx, dy) {
+    /* Add a fresh copy of one node/shape offset by (dx,dy); returns its {kind,id}.
+       keepZ leaves the copy at the original's depth (alt-drag) instead of the
+       top of the stack. */
+    function addClone(kind, data, dx, dy, keepZ = false) {
+      const z = keepZ ? data.z : undefined;
       if (kind === 'node') {
-        const n = addNode({ ...data, id: newId(data.type), x: +data.x + dx, y: +data.y + dy, z: undefined });
+        const n = addNode({ ...data, id: newId(data.type), x: +data.x + dx, y: +data.y + dy, z });
         return { kind: 'node', id: n.id };
       }
-      const s = { ...data, id: newShapeId(), z: undefined };
+      const s = { ...data, id: newShapeId(), z };
       if (data.type === 'pen') s.points = data.points.map(([px, py]) => [px + dx, py + dy]);
       else { s.x1 = data.x1 + dx; s.y1 = data.y1 + dy; s.x2 = data.x2 + dx; s.y2 = data.y2 + dy; }
       addShape(s);
@@ -1829,15 +1832,24 @@ export function CanvasProvider({
     }
     /* Clone the given items offset by (dx,dy). Selects the copies unless select
        is false (alt-drag keeps the selection on the items still being dragged). */
-    function duplicateItems(items, dx = 24, dy = 24, select = true) {
-      const created = items.map((it) => { const d = itemData(it); return d ? addClone(it.kind, d, dx, dy) : null; }).filter(Boolean);
+    function duplicateItems(items, dx = 24, dy = 24, select = true, keepZ = false) {
+      const created = items.map((it) => { const d = itemData(it); return d ? addClone(it.kind, d, dx, dy, keepZ) : null; }).filter(Boolean);
       if (created.length && select) setSelectedState(created);
     }
     function duplicateSelected() { if (S.selected.length) duplicateItems([...S.selected]); }
     function duplicateTarget(target) { duplicateItems(targetsOf(target)); }
     /* Alt-drag: drop a copy at the origin the moment the drag starts, leaving the
-       originals (still selected) to be dragged away so nothing appears to vanish. */
-    function duplicateItemsAt(items, dx, dy) { duplicateItems(items, dx, dy, false); }
+       originals (still selected) to be dragged away so nothing appears to vanish.
+       The stationary copy inherits the original's depth so the stack it came from
+       looks untouched, and the items being dragged rise to the front (keeping
+       their order among themselves) — what you pull out lands on top. */
+    function duplicateItemsAt(items, dx, dy) {
+      duplicateItems(items, dx, dy, false, true);
+      items
+        .map((it) => ({ it, z: +(itemData(it)?.z ?? 0) }))
+        .sort((a, b) => a.z - b.z)
+        .forEach(({ it }) => setZ(it, nextZ()));
+    }
     /* Snapshot the current selection into the clipboard (deep-copied so later
        edits to the originals don't leak into a paste). */
     function copyItems(sel) {
