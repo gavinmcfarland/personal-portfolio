@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Files, List, X } from "lucide-react";
 import Seo from "../components/Seo";
@@ -58,6 +58,7 @@ export default function RemotePage() {
   const [pagesOpen, setPagesOpen] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const startedAt = useRef(null);
+  const notesRef = useRef(null);
 
   /* Subscribe. EventSource reconnects on its own after the screen locks or the
      Wi-Fi drops, which is the whole reason for using it — so this only has to
@@ -130,6 +131,20 @@ export default function RemotePage() {
   const activePageId = state && state.activePageId;
   const multiPage = pages.length > 1;
   const mmss = `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, "0")}`;
+
+  /* Start every section at the top of its notes. The pane is one scroll
+     container that survives the section change, so without this a long note
+     read to the bottom leaves the next section opening halfway down — the
+     presenter's first line already scrolled off. Keyed on the section rather
+     than the state, so a republish at the same position (a page rename, a
+     reconnect) doesn't yank the notes back while they're being read.
+
+     Layout effect, not effect: it has to land before the paint that swaps the
+     text in, or the new section is briefly visible at the old scroll offset. */
+  const hereId = here ? here.id : null;
+  useLayoutEffect(() => {
+    if (notesRef.current) notesRef.current.scrollTop = 0;
+  }, [hereId, index]);
 
   /* Only one panel at a time — the phone has one screenful, and two overlapping
      lists mid-talk is a way to lose your place. */
@@ -228,7 +243,7 @@ export default function RemotePage() {
           )}
         </ol>
       ) : (
-        <div className="flex-1 overflow-y-auto px-5 py-5">
+        <div ref={notesRef} className="flex-1 overflow-y-auto px-5 py-5">
           {/* The section title is confirmation, not content — the presenter can
               already see the section on the screen behind them. It sits above
               the notes as a label, and the notes get the room. */}
