@@ -187,8 +187,15 @@ every accent-derived surface (selection, active tool, frames, hover, edit caret,
 | `--cv-line` / `--cv-line-strong` | borders / dividers | `--cv-grid` / `--cv-grid-strong` | grid dots |
 | `--cv-ui-bg` / `--cv-ui-border` | chrome panels | `--cv-shadow` | elevation |
 | `--cv-radius` / `--cv-ui-radius` | object / panel corners | `--cv-ui-blur` | panel frost |
-| `--cv-sans` / `--cv-serif` / `--cv-mono` / `--cv-hand` | font families | `--cv-snap-guide` | snap guides |
+| `--cv-sans` / `--cv-serif` / `--cv-mono` / `--cv-hand` / `--cv-cursive` | font families (`--cv-hand` = sticky notes, `--cv-cursive` = the text block's Cursive option) | `--cv-snap-guide` | snap guides |
 | `--cv-note-<hue>` / `--cv-note-<hue>-ink` | sticky-note paper + ink (`yellow` `pink` `blue` `green` `purple` `orange`) | `--cv-code-<tok>` | code syntax highlight (`comment` `keyword` `string` `number` `function` `tag` `punctuation`) |
+
+The default skin names webfonts it does not bundle — Inter, Tinos, JetBrains Mono
+and Caveat. Each falls back to a system face, so nothing breaks if you load none
+of them, but `--cv-hand` / `--cv-cursive` want Caveat in particular: without it
+the handwriting drops to whatever the browser maps `cursive` to, which is formal
+calligraphy on macOS. Load it alongside the stylesheet, or point the two tokens
+at a face you already ship.
 
 Dark mode overrides the colour tokens automatically under a `.dark` ancestor (or
 `.canvas-root.dark`); shape tokens (`--cv-radius`, `--cv-ui-radius`, `--cv-ui-blur`)

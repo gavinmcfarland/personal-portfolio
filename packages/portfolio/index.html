@@ -40,9 +40,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- One family, four cuts — the same four the specimen sheet documents.
-         Chivo and Caveat were still being fetched here long after the document
-         moved to a single monospace face; nothing referenced either. -->
-    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+         Chivo went with the move to a single monospace face; nothing referenced
+         it. Caveat came back: the canvas package's --cv-hand / --cv-cursive
+         tokens do still name it, so dropping it silently fell the text block's
+         Cursive option (and sticky notes) through to the browser's generic
+         `cursive` — formal calligraphy that barely reads on a board. -->
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" />
     <title>Gavin McFarland — Designer & full-stack engineer</title>
   </head>
   <body>

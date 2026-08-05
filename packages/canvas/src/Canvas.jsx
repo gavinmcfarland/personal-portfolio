@@ -313,7 +313,7 @@ export default function Canvas() {
       return;
     }
     if (DRAW_TOOLS.includes(tool)) {
-      const s = { id: eng.newShapeId(), type: tool, stroke: S.strokeColor, width: 3 };
+      const s = { id: eng.newShapeId(), type: tool, stroke: S.strokeColor, width: 3, style: S.shapeStyle };
       if (FILLABLE_SHAPES.includes(tool)) s.fill = S.fillColor;
       if (tool === 'pen') s.points = [[w.x, w.y]];
       else { s.x1 = w.x; s.y1 = w.y; s.x2 = w.x; s.y2 = w.y; }

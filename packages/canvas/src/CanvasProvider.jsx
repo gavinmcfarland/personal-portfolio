@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, useRef, useState, useEffect, useLayoutEffect, useSyncExternalStore } from 'react';
-import { ZOOM, PAN, GRID, frameBarH, clampScale, sectionNodes, sectionLabel } from './constants';
+import { ZOOM, PAN, GRID, DEFAULT_SHAPE_STYLE, frameBarH, clampScale, sectionNodes, sectionLabel } from './constants';
 import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
 import { RICH_COMMANDS, sanitizeRich, isRichHtml } from './rich-text';
 import { getGlobalReadOnly, setGlobalReadOnly, subscribeMode, allocOwnerId, joinOwners, setActiveCanvas, subscribeOwner, primaryOwner } from './edit-mode';
@@ -582,6 +582,7 @@ export function CanvasProvider({
   const [textSize, setTextSize] = useState(null);
   const [strokeColor, setStrokeColor] = useState('#7C2D91');
   const [fillColor, setFillColor] = useState('none'); // default fill for new fillable shapes
+  const [shapeStyle, setShapeStyle] = useState(DEFAULT_SHAPE_STYLE); // stroke style ('solid' | 'sketch') for new shapes
   const [ctxMenu, setCtxMenu] = useState(null); // {x,y,target:{kind,id}}
   const [fullscreen, setFullscreen] = useState(null); // { id, index } of the media asset shown in the lightbox
   const [gridEditId, setGridEditId] = useState(null); // media node whose grid proportions are being edited
@@ -760,6 +761,7 @@ export function CanvasProvider({
   S.textSize = textSize;
   S.strokeColor = strokeColor;
   S.fillColor = fillColor;
+  S.shapeStyle = shapeStyle;
   S.nodes = nodes;
   S.shapes = shapes;
   S.fullscreen = fullscreen;
@@ -2284,6 +2286,9 @@ export function CanvasProvider({
     function serializeShape(s) {
       const o = { id: s.id, type: s.type, stroke: s.stroke, width: s.width, z: s.z };
       if (s.fill && s.fill !== 'none') o.fill = s.fill;
+      // Only the hand-drawn style is written out: a board saved before the
+      // setting existed loads back as solid, which is what it drew as.
+      if (s.style && s.style !== DEFAULT_SHAPE_STYLE) o.style = s.style;
       if (s.type === 'pen') o.points = s.points; else { o.x1 = s.x1; o.y1 = s.y1; o.x2 = s.x2; o.y2 = s.y2; }
       return o;
     }
@@ -3893,12 +3898,12 @@ export function CanvasProvider({
 
   const value = {
     // state
-    nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, textSize, strokeColor, fillColor, ctxMenu,
+    nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, textSize, strokeColor, fillColor, shapeStyle, ctxMenu,
     isPrimaryCanvas,
     publishState, recording, fullscreen, gridEditId, renameFrameId, notesEditId, htmlActiveId, focusedSectionId, presenting, presentRoom, presentRelay, pages, activePageId, pageData, bgColor, bgStrength, gridHidden, reflow, collide: COLLIDE,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls, minimap: MINIMAP.on, MINIMAP, minimapEls,
     // setters used by UI
-    setDraft, setNoteColor, setTextFont, setTextSize, setStrokeColor, setFillColor, setCtxMenu, setSelectedState, setEngaged,
+    setDraft, setNoteColor, setTextFont, setTextSize, setStrokeColor, setFillColor, setShapeStyle, setCtxMenu, setSelectedState, setEngaged,
     // refs
     rootRef, hoverInsideRef, activeInsideRef, engagedRef, viewportRef, worldRef, zoomLabelRef, nodeEls, mediaEls, shapeEls, frameLabelEls, frameBoxEls, actionRef, panKey, S,
     // engine

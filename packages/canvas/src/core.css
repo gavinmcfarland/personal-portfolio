@@ -1362,6 +1362,8 @@
   height: 26px;
   cursor: default;
 }
+/* Caveat sets condensed and small for its point size — nudge the preview up so
+   the chip reads at the same weight as the other three labels. */
 /* Preset font-size chips for text blocks (S / M / L / XL / XXL). */
 .canvas-root .cv-size-btn {
   min-width: 26px;
@@ -1383,6 +1385,20 @@
 .canvas-root .cv-align-btn svg {
   width: 15px;
   height: 15px;
+}
+/* Stroke-style chips for shapes (solid / hand drawn) — same chip as the align
+   row, a touch wider so each preview line has room to read. */
+.canvas-root .cv-style-btn {
+  width: 34px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+.canvas-root .cv-style-btn svg {
+  width: 22px;
+  height: 22px;
 }
 /* Inline-format & list buttons for text blocks — same chip as the align row. */
 .canvas-root .cv-fmt-btn {

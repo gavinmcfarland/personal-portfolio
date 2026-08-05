@@ -22,7 +22,10 @@
    also out-specifies the package's own `.dark .canvas-root` defaults). */
 
 /* Shape & type — identical in both surfaces (the doctrine: no curves, no
-   shadows, no frost; Chivo + Spline Sans Mono, notes mono via --cv-hand). */
+   shadows, no frost; Chivo + Spline Sans Mono, notes mono via --cv-hand).
+   --cv-cursive is deliberately left at the package default: it backs the text
+   block's "Cursive" option, which has to render as handwriting whatever the
+   skin does to the notes. */
 .canvas-root.enamel {
   --cv-radius: 0;
   --cv-ui-radius: 0;

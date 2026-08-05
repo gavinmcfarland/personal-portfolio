@@ -85,6 +85,21 @@
   --cv-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --cv-serif: "Tinos", "Times New Roman", Times, Georgia, serif;
   --cv-hand: "Caveat", cursive;
+  /* Handwriting for the text block's "Cursive" option. Caveat is the intended
+     face and the host is expected to load it (see the portfolio's and the
+     demo's font link) — it is NOT bundled, so the fallbacks matter: they are
+     faces drawn from real handwriting that ship with an OS (Bradley Hand on
+     macOS/iOS, Segoe Script and Ink Free on Windows), which keeps the option
+     legible for an embedder that loads no webfont at all. The generic `cursive`
+     keyword is the last resort: browsers map it to formal calligraphy that
+     barely reads on a board.
+
+     Kept separate from --cv-hand, which names the same face but backs sticky
+     notes and may be retuned by a skin — enamel maps it to mono, which used to
+     drag this option to mono with it. */
+  --cv-cursive:
+    "Caveat", "Bradley Hand", "Segoe Script", "Ink Free", "Comic Sans MS",
+    cursive;
   --cv-mono:
     "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
   /* Custom edit-mode pointer + its hover-over-object variant (inverted). */
@@ -619,7 +634,7 @@
   font-family: var(--cv-mono);
 }
 .canvas-root .cv-tblock[data-font="script"] {
-  font-family: var(--cv-hand);
+  font-family: var(--cv-cursive);
 }
 .canvas-root .cv-tblock .cv-txt {
   outline: none;
@@ -2437,8 +2452,10 @@
 .canvas-root .cv-font-btn[data-font="mono"] {
   font-family: var(--cv-mono);
 }
+/* Caveat sets condensed and small for its point size — nudge the preview up so
+   the chip reads at the same weight as the other three labels. */
 .canvas-root .cv-font-btn[data-font="script"] {
-  font-family: var(--cv-hand);
+  font-family: var(--cv-cursive);
   font-size: 18px;
 }
 /* Preset font-size chips for text blocks (S / M / L / XL / XXL). */
@@ -2491,6 +2508,32 @@
 .canvas-root .cv-align-btn svg {
   width: 15px;
   height: 15px;
+}
+/* Stroke-style chips for shapes (solid / hand drawn) — same chip as the align
+   row, a touch wider so each preview line has room to read. */
+.canvas-root .cv-style-btn {
+  width: 34px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: transparent;
+  color: inherit;
+  cursor: default;
+}
+.dark .canvas-root .cv-style-btn,
+.canvas-root.dark .cv-style-btn {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.canvas-root .cv-style-btn[data-active] {
+  outline: 2px solid var(--cv-accent);
+  outline-offset: 1px;
+}
+.canvas-root .cv-style-btn svg {
+  width: 22px;
+  height: 22px;
 }
 /* Inline-format & list buttons for text blocks — same chip as the align row. */
 .canvas-root .cv-fmt-btn {

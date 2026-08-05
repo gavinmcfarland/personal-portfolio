@@ -6,7 +6,7 @@ import {
   Bold, Italic, Underline, Strikethrough, List, ListOrdered,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
-import { COLORS, DEFAULT_TEXT_SIZE, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, TEXT_SIZES, themeInk, cx } from '../constants';
+import { COLORS, DEFAULT_SHAPE_STYLE, DEFAULT_TEXT_SIZE, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, SHAPE_STYLES, TEXT_SIZES, themeInk, cx } from '../constants';
 import { richState } from '../rich-text';
 
 /* Vector shape tools grouped behind a single dropdown button in the toolbar. */
@@ -16,6 +16,22 @@ const SHAPE_TOOLS = [
   { t: 'rect', label: 'Rectangle', key: 'R', icon: <Square /> },
   { t: 'ellipse', label: 'Ellipse', key: 'O', icon: <Circle /> },
 ];
+
+/* Stroke-style chips: each previews the line it draws — one ruled, one drawn
+   by hand — since "solid" and "hand drawn" are hard to tell apart as words but
+   obvious as two lines side by side. */
+const SHAPE_STYLE_ICONS = {
+  solid: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M4 12h16" />
+    </svg>
+  ),
+  sketch: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M4 13.4c2.6-2 4.6.6 7.2-.6s3.6-2 5.4-1c1 .6 1.6 1.3 3.4.8" />
+    </svg>
+  ),
+};
 
 const ALIGNS = [
   ['left', 'Align left', <AlignLeft />],
@@ -152,12 +168,12 @@ const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
    header to move it anywhere. Depending on context it either sets the
    defaults for the next shape/note or live-edits the current selection:
    - note tool, or a sticky note selected → note colours
-   - a draw tool active, or shapes selected → Stroke row (+ Fill row for
-     rectangles/ellipses). */
+   - a draw tool active, or shapes selected → Style + Stroke rows (+ Fill row
+     for rectangles/ellipses). */
 function Swatches() {
   const {
-    tool, noteColor, textFont, textSize, strokeColor, fillColor,
-    setNoteColor, setTextFont, setTextSize, setStrokeColor, setFillColor,
+    tool, noteColor, textFont, textSize, strokeColor, fillColor, shapeStyle,
+    setNoteColor, setTextFont, setTextSize, setStrokeColor, setFillColor, setShapeStyle,
     selected, nodes, shapes, editingId, eng, classNames,
   } = useCanvas();
   const panelRef = useRef(null);
@@ -244,6 +260,10 @@ function Swatches() {
     if (editingShapes) fillableSel.forEach((s) => eng.updateShape(s.id, { fill: hex }));
     else setFillColor(hex);
   };
+  const pickShapeStyle = (name) => {
+    if (editingShapes) selShapes.forEach((s) => eng.updateShape(s.id, { style: name }));
+    else setShapeStyle(name);
+  };
 
   const curNote = editingStickies ? commonValue(selStickies, (n) => n.color) : noteColor;
   const curFont = editingTexts ? commonValue(selTexts, (n) => n.font || 'serif') : textFont;
@@ -255,6 +275,9 @@ function Swatches() {
     : textSize ?? DEFAULT_TEXT_SIZE;
   const curAlign = commonValue(selTexts, (n) => n.align || 'left');
   const curStroke = editingShapes ? commonValue(selShapes, (s) => s.stroke) : strokeColor;
+  const curShapeStyle = editingShapes
+    ? commonValue(selShapes, (s) => s.style || DEFAULT_SHAPE_STYLE)
+    : shapeStyle;
   const curFill = fillableSel.length
     ? commonValue(fillableSel, (s) => s.fill || 'none')
     : fillColor;
@@ -357,6 +380,22 @@ function Swatches() {
               onClick={() => pickAlign(dir)}
             >
               {icon}
+            </button>
+          ))}
+        </div>
+      )}
+      {showStroke && (
+        <div className="cv-swatch-row">
+          <span className="cv-swatch-label">Style</span>
+          {SHAPE_STYLES.map(([name, label]) => (
+            <button
+              key={name}
+              className="cv-style-btn"
+              data-active={curShapeStyle === name ? '' : undefined}
+              title={label}
+              onClick={() => pickShapeStyle(name)}
+            >
+              {SHAPE_STYLE_ICONS[name]}
             </button>
           ))}
         </div>

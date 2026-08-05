@@ -7,7 +7,9 @@
   <meta name="description" content="Re-skinning the canvas to a bespoke look using only the public styling contract — no package internals touched.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,600;0,700;1,400&family=Spline+Sans+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <!-- Caveat backs the text block's Cursive option (--cv-cursive); the package
+       names it but doesn't bundle it, so the host loads it. -->
+  <link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,600;0,700;1,400&family=Spline+Sans+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
   <!-- Follow the system colour scheme: the canvas activates its dark tokens from a
        `.dark` ancestor, so mirror prefers-color-scheme onto <html> (and keep it live). -->
   <script>

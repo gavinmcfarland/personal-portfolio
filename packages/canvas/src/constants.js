@@ -106,13 +106,24 @@ export const DRAW_TOOLS = ['pen', 'line', 'arrow', 'rect', 'ellipse'];
 /* Shapes with an interior that can take a fill colour. */
 export const FILLABLE_SHAPES = ['rect', 'ellipse'];
 
+/* How a shape's stroke is drawn: the plain vector line, or the hand-drawn
+   double stroke plotted by sketch.js. Stored on the shape as `style`; a shape
+   saved before the setting existed has none and reads as 'solid'. */
+export const SHAPE_STYLES = [
+	['solid', 'Solid'],
+	['sketch', 'Hand drawn'],
+];
+export const DEFAULT_SHAPE_STYLE = 'solid';
+
 /* Font families offered for text blocks. Each key maps to a CSS design token
-   (--sans / --serif / --mono / --hand) via `.tblock[data-font="…"]` rules. */
+   (--sans / --serif / --mono / --cursive) via `.tblock[data-font="…"]` rules.
+   The `script` key is what boards have stored since day one — only its label
+   reads "Cursive", so existing text blocks keep their font. */
 export const FONTS = [
 	['sans', 'Sans'],
 	['serif', 'Serif'],
 	['mono', 'Mono'],
-	['script', 'Script'],
+	['script', 'Cursive'],
 ];
 
 /* Preset font sizes (px) offered for text blocks, small to huge. `fontSize` is

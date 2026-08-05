@@ -1,13 +1,20 @@
 import { memo, useCallback } from 'react';
 import { useCanvas } from './CanvasProvider';
 import { themeInk } from './constants';
+import { isSketch, sketchFill, sketchStroke } from './sketch';
 
 const r2 = (v) => Math.round(v * 100) / 100;
 
 /* The geometry attributes an SVG element needs to draw a shape, keyed by their
    SVG attribute names — so the same values can be spread as React props (below)
-   or written straight to the live element mid-resize (see drawShapeGeom). */
+   or written straight to the live element mid-resize (see drawShapeGeom).
+
+   A hand-drawn shape is a <path> whatever its type: its wobble can't be
+   expressed as a <rect>/<ellipse>, so the whole outline is plotted into one `d`
+   (see sketch.js). Everything downstream — hit-testing, getBBox, the live
+   resize — works off that element exactly as it does off the plain ones. */
 export function shapeGeom(s) {
+  if (isSketch(s)) return { d: sketchStroke(s) };
   if (s.type === 'pen') {
     return { d: (s.points || []).map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ') };
   }
@@ -33,6 +40,11 @@ export function shapeGeom(s) {
 export function drawShapeGeom(el, s) {
   const g = shapeGeom(s);
   if (g) for (const k in g) el.setAttribute(k, g[k]);
+  // A hand-drawn fillable shape carries its interior on a second path just
+  // before the outline (see below) — redraw that too, or the fill lags a
+  // resize by a frame's worth of drag.
+  const fillEl = el.previousElementSibling;
+  if (fillEl && fillEl.hasAttribute('data-cv-fill')) fillEl.setAttribute('d', sketchFill(s) || '');
 }
 
 /* A shape's points mapped through a resize: the drag's source box origin
@@ -79,7 +91,23 @@ function Shape({ shape, draft }) {
   const geom = shapeGeom(shape);
   let el = null;
   let defs = null;
-  if (shape.type === 'pen') {
+  if (isSketch(shape)) {
+    // The outline is one path of loose, twice-inked edges, so it has no interior
+    // to fill or click — a rect's four sides don't even meet. The fill (and the
+    // hollow shape's clickable inside, which `.cv-fillable` gives it whatever the
+    // paint) therefore rides on a closed path underneath. It carries the same
+    // data-id so a click anywhere on the shape resolves to it, and sits before
+    // the outline both to paint behind it and to be findable from it.
+    const fillD = sketchFill(shape);
+    el = (
+      <>
+        {fillD && (
+          <path className="cv-shape cv-fillable" data-cv-fill="" data-id={shape.id} d={fillD} style={fillStyle} />
+        )}
+        <path {...common} {...geom} />
+      </>
+    );
+  } else if (shape.type === 'pen') {
     el = <path {...common} {...geom} />;
   } else if (shape.type === 'line' || shape.type === 'arrow') {
     const markerId = `arw-${shape.id}`;
