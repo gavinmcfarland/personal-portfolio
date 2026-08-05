@@ -1947,12 +1947,17 @@
 .canvas-root .cv-notes-area::placeholder {
   color: var(--cv-faint);
 }
-/* A section carrying notes gets a dot on its board label, so the deck shows at
-   a glance which parts have been written and which are still bare. */
-.canvas-root .cv-frame-label[data-notes]::after {
-  content: "";
-  border-radius: 50%;
-  background: var(--cv-accent);
+/* A section carrying notes gets a notes icon on its board label, so the deck
+   shows at a glance which parts have been written and which are still bare.
+   currentColor, not the accent: the label is already accent-filled, so an
+   accent mark would be invisible against it. */
+.canvas-root .cv-frame-label .cv-frame-notes {
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.75;
 }
 /* ── Present mode ────────────────────────────────────────────────
    The board is full-bleed and every other panel is gone; this is the only

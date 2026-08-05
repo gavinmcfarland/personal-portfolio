@@ -1723,11 +1723,13 @@
   height: 190px;
   resize: vertical;
 }
-/* A section carrying notes gets a dot on its board label, so the deck shows at
-   a glance which parts have been written and which are still bare. */
-.canvas-root .cv-frame-label[data-notes]::after {
-  width: 5px;
-  height: 5px;
+/* A section carrying notes gets a notes icon on its board label, so the deck
+   shows at a glance which parts have been written and which are still bare.
+   currentColor, not the accent: the label is already accent-filled, so an
+   accent mark would be invisible against it. */
+.canvas-root .cv-frame-label .cv-frame-notes {
+  width: 13px;
+  height: 13px;
   flex: none;
 }
 /* ── Present mode ────────────────────────────────────────────────
