@@ -2018,14 +2018,62 @@ export function CanvasProvider({
       targetRef.y = (H - (b.maxY + b.minY) * s) / 2;
       if (animate) startZoomLoop(); else snapView();
     }
-    function flyTo(id) {
-      const el = nodeEls.get(id); if (!el) return;
+    /* The view that frames one node in the viewport — what flyTo lands on.
+       Split out so callers can also ASK whether we're already there (viewIsOn)
+       without re-deriving the same fit math and drifting from it. */
+    function fitViewFor(id) {
+      const el = nodeEls.get(id); if (!el) return null;
       const sc = nodeScale(el);
       const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth * sc, h = el.offsetHeight * sc;
       const W = vpW(), H = vpH(), pad = 90;
       const s = clampScale(Math.min(W / (w + pad * 2), H / (h + pad * 2)));
-      targetRef.scale = s; targetRef.x = W / 2 - (x + w / 2) * s; targetRef.y = H / 2 - (y + h / 2) * s;
+      return { scale: s, x: W / 2 - (x + w / 2) * s, y: H / 2 - (y + h / 2) * s };
+    }
+    function flyTo(id) {
+      const v = fitViewFor(id); if (!v) return;
+      targetRef.scale = v.scale; targetRef.x = v.x; targetRef.y = v.y;
       startZoomLoop();
+    }
+    /* Is the board parked on this node — i.e. is it filling the viewport the way
+       flyTo would leave it? Measured against targetRef, not the displayed frame:
+       a glide still in flight is already "on" its destination, so a second tap
+       during the animation steps onward instead of re-landing where it's headed.
+       Tolerances absorb sub-pixel drift from a resize reframe. */
+    function viewIsOn(id) {
+      const v = fitViewFor(id); if (!v) return false;
+      return Math.abs(targetRef.scale - v.scale) <= v.scale * 0.01
+        && Math.abs(targetRef.x - v.x) <= 2
+        && Math.abs(targetRef.y - v.y) <= 2;
+    }
+    /* Which section the view is sitting over, whether or not it's focused: the
+       innermost section under the viewport centre, else the one covering most of
+       the viewport (majority only — a sliver at the edge isn't "where we are").
+       Reads targetRef so it answers for where the camera is heading, matching
+       viewIsOn. Active page only; elements exist for no other. */
+    function sectionInView() {
+      const secs = sectionNodes(S.nodes);
+      const W = vpW(), H = vpH();
+      if (!secs.length || !W || !H) return null;
+      const s = targetRef.scale;
+      const vx = -targetRef.x / s, vy = -targetRef.y / s, vw = W / s, vh = H / s;
+      const cx = vx + vw / 2, cy = vy + vh / 2;
+      let hit = null, hitArea = Infinity, best = null, bestCover = 0;
+      for (const n of secs) {
+        const el = nodeEls.get(n.id); if (!el) continue;
+        const [w, h] = nodeBox(el);
+        const x = +el.dataset.x, y = +el.dataset.y;
+        if (cx >= x && cx <= x + w && cy >= y && cy <= y + h) {
+          // Sections can nest (a frame inside a frame) — the smallest one under
+          // the centre is the one the presenter means.
+          if (w * h < hitArea) { hitArea = w * h; hit = n.id; }
+          continue;
+        }
+        const ox = Math.max(0, Math.min(x + w, vx + vw) - Math.max(x, vx));
+        const oy = Math.max(0, Math.min(y + h, vy + vh) - Math.max(y, vy));
+        const cover = (ox * oy) / (vw * vh);
+        if (cover > bestCover) { bestCover = cover; best = n.id; }
+      }
+      return hit || (bestCover >= 0.5 ? best : null);
     }
     /* Fly to a section that may live on another page: switch to its page first,
        then fly once the target node has mounted (elements only exist for the
@@ -3335,6 +3383,17 @@ export function CanvasProvider({
     function stepDeck(delta) {
       const list = deck();
       if (!list.length) return;
+      /* Frame before stepping. The presenter may be sitting over a section
+         without being parked on it — they zoomed out to show the neighbours,
+         panned across, or opened the board somewhere other than a section. A
+         tap then means "show me this one properly", not "skip past it", so the
+         first tap lands on the section under the view and only the next one
+         moves on. Once parked (viewIsOn), stepping resumes as normal. */
+      const here = sectionInView();
+      if (here && !viewIsOn(here)) {
+        const entry = list.find((s) => s.id === here);
+        if (entry) { goToDeckEntry(entry); return; }
+      }
       const i = list.findIndex((s) => s.id === focusedSectionRef.current);
       // Nothing focused yet: a tap this early should still move the board
       // rather than appear broken, so start at the top of the deck.
