@@ -2040,9 +2040,7 @@ export function CanvasProvider({
       targetRef.y = (H - (b.maxY + b.minY) * s) / 2;
       if (animate) startZoomLoop(); else snapView();
     }
-    /* The view that frames one node in the viewport — what flyTo lands on.
-       Split out so callers can also ASK whether we're already there (viewIsOn)
-       without re-deriving the same fit math and drifting from it. */
+    /* The view that frames one node in the viewport — what flyTo lands on. */
     function fitViewFor(id) {
       const el = nodeEls.get(id); if (!el) return null;
       const sc = nodeScale(el);
@@ -2056,22 +2054,13 @@ export function CanvasProvider({
       targetRef.scale = v.scale; targetRef.x = v.x; targetRef.y = v.y;
       startZoomLoop();
     }
-    /* Is the board parked on this node — i.e. is it filling the viewport the way
-       flyTo would leave it? Measured against targetRef, not the displayed frame:
-       a glide still in flight is already "on" its destination, so a second tap
-       during the animation steps onward instead of re-landing where it's headed.
-       Tolerances absorb sub-pixel drift from a resize reframe. */
-    function viewIsOn(id) {
-      const v = fitViewFor(id); if (!v) return false;
-      return Math.abs(targetRef.scale - v.scale) <= v.scale * 0.01
-        && Math.abs(targetRef.x - v.x) <= 2
-        && Math.abs(targetRef.y - v.y) <= 2;
-    }
-    /* Which section the view is sitting over, whether or not it's focused: the
-       innermost section under the viewport centre, else the one covering most of
-       the viewport (majority only — a sliver at the edge isn't "where we are").
-       Reads targetRef so it answers for where the camera is heading, matching
-       viewIsOn. Active page only; elements exist for no other. */
+    /* Which section the view is sitting over, whether or not it's focused: of
+       the sections the view is actually framing (see below), the innermost one
+       under the viewport centre, else the one covering most of the viewport
+       (majority only — a sliver at the edge isn't "where we are"). Reads
+       targetRef, so a glide still in flight answers for where it is heading
+       rather than where it set off. Active page only; elements exist for no
+       other. */
     function sectionInView() {
       const secs = sectionNodes(S.nodes);
       const W = vpW(), H = vpH();
@@ -2084,9 +2073,21 @@ export function CanvasProvider({
         const el = nodeEls.get(n.id); if (!el) continue;
         const [w, h] = nodeBox(el);
         const x = +el.dataset.x, y = +el.dataset.y;
+        /* Only sections the view is actually FRAMING count. A section parked on
+           spans most of an axis (fitViewFor leaves a margin, so ~0.8 of one);
+           sections inside a frame the view is parked on span a fraction of one,
+           as does every section on a board viewed whole. Half of either axis
+           splits the two cleanly — and either axis, not area, so a wide, short
+           section framed in a tall viewport still counts as framed.
+
+           Without this, a frame drawn around a whole board could never be
+           reported: whatever section happened to lie under the middle of the
+           screen was, and taps that should have stepped the running order kept
+           diving into it instead. */
+        if (Math.max(w / vw, h / vh) < 0.5) continue;
         if (cx >= x && cx <= x + w && cy >= y && cy <= y + h) {
-          // Sections can nest (a frame inside a frame) — the smallest one under
-          // the centre is the one the presenter means.
+          // Sections can nest (a frame inside a frame) — of those framed, the
+          // smallest under the centre is the one the presenter means.
           if (w * h < hitArea) { hitArea = w * h; hit = n.id; }
           continue;
         }
@@ -3408,18 +3409,24 @@ export function CanvasProvider({
     function stepDeck(delta) {
       const list = deck().filter((s) => s.pageId === S.activePageId);
       if (!list.length) return;
-      /* Frame before stepping. The presenter may be sitting over a section
-         without being parked on it — they zoomed out to show the neighbours,
-         panned across, or opened the board somewhere other than a section. A
-         tap then means "show me this one properly", not "skip past it", so the
-         first tap lands on the section under the view and only the next one
-         moves on. Once parked (viewIsOn), stepping resumes as normal. */
+      /* Frame before stepping, but only when the view has wandered onto a
+         DIFFERENT section than the focused one — they panned across, or opened
+         the board somewhere other than where they left off. A tap then means
+         "show me this one properly", not "skip past it", so the first tap lands
+         there and only the next one moves on.
+
+         Tested on which section, not on whether the view sits exactly on it:
+         going full bleed re-anchors the view a moment after the section is
+         framed, so "exactly on it" is false for the rest of the talk. Hanging
+         the branch on that (as this did) re-framed the section already on
+         screen, and every tap after it, leaving next and prev dead. */
+      const focused = focusedSectionRef.current;
       const here = sectionInView();
-      if (here && !viewIsOn(here)) {
+      if (here && here !== focused) {
         const entry = list.find((s) => s.id === here);
         if (entry) { goToDeckEntry(entry); return; }
       }
-      const i = list.findIndex((s) => s.id === focusedSectionRef.current);
+      const i = list.findIndex((s) => s.id === focused);
       // Nothing focused yet: a tap this early should still move the board
       // rather than appear broken, so start at the top of the page.
       if (i < 0) { goToDeckEntry(list[0]); return; }
@@ -3537,7 +3544,7 @@ export function CanvasProvider({
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, setNodeScale, deleteSelected, deleteTarget,
       copySelected, cutSelected, cutTarget, paste, pasteAt, pasteFromMenu, hasClipboard, systemClipIsMine, duplicateSelected, duplicateTarget, duplicateItemsAt,
-      setTool, setMode, setCanvasBg, setCanvasBgStrength, toggleGrid, fitAll, flyTo, fitViewFor, viewIsOn, sectionInView, goToSection, stepSection, clearSectionFocus, reorderSections, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
+      setTool, setMode, setCanvasBg, setCanvasBgStrength, toggleGrid, fitAll, flyTo, fitViewFor, sectionInView, goToSection, stepSection, clearSectionFocus, reorderSections, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
