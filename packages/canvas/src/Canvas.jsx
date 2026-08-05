@@ -244,7 +244,11 @@ export default function Canvas() {
     // Scale mode (K) behaves like select for picking / moving objects; the only
     // difference is that its resize handles scale instead of resize (see Chrome).
     const selectLike = tool === 'select' || tool === 'scale';
-    if (selectLike && (nodeEl || shapeEl)) {
+    // Cmd/Ctrl-drag rubber-bands even when the press starts on top of an object:
+    // the object under the cursor is skipped so the sweep can start from inside
+    // (or over) something without grabbing and dragging it.
+    const marqueeOver = (e.metaKey || e.ctrlKey) && (nodeEl || shapeEl);
+    if (selectLike && (nodeEl || shapeEl) && !marqueeOver) {
       const kind = nodeEl ? 'node' : 'shape';
       const id = (nodeEl || shapeEl).dataset.id;
       // Shift-click adds/removes the object from the selection without dragging.
@@ -268,7 +272,11 @@ export default function Canvas() {
          tool / the wheel.) Shift keeps the existing selection as the base. */
       const base = e.shiftKey ? [...S.selected] : [];
       if (!e.shiftKey) eng.deselect();
-      actionRef.current = { type: 'marquee', sx: e.clientX, sy: e.clientY, base };
+      // Cmd-dragging off an object: that object stays out of the sweep's hits for
+      // the whole gesture, however far the band is dragged over it.
+      const skipEl = marqueeOver ? (nodeEl || shapeEl) : null;
+      const skip = skipEl ? { kind: nodeEl ? 'node' : 'shape', id: skipEl.dataset.id } : null;
+      actionRef.current = { type: 'marquee', sx: e.clientX, sy: e.clientY, base, skip };
       vp.setPointerCapture(e.pointerId);
       return;
     }
@@ -504,7 +512,7 @@ export default function Canvas() {
         const w1 = eng.screenToWorld(a.sx, a.sy), w2 = eng.screenToWorld(e.clientX, e.clientY);
         eng.marqueeSelect(
           { x: Math.min(w1.x, w2.x), y: Math.min(w1.y, w2.y), w: Math.abs(w2.x - w1.x), h: Math.abs(w2.y - w1.y) },
-          a.base
+          a.base, a.skip
         );
         return;
       }

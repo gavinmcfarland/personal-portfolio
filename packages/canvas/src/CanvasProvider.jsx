@@ -1460,12 +1460,16 @@ export function CanvasProvider({
     /* Select everything the world-space rect touches, unioned with `base` (the
        pre-existing selection when shift-dragging). Nodes and shapes count on
        intersection; frames only when fully contained, so sweeping a marquee
-       inside a large frame doesn't grab the frame itself. Runs per pointermove,
-       so skip the state write when membership hasn't changed. */
-    function marqueeSelect(rect, base) {
+       inside a large frame doesn't grab the frame itself. `skip` is the object the
+       Cmd-drag started on top of — it never joins the hits, so the sweep picks up
+       everything around it but leaves it alone. Runs per pointermove, so skip the
+       state write when membership hasn't changed. */
+    function marqueeSelect(rect, base, skip) {
       const rx1 = rect.x + rect.w, ry1 = rect.y + rect.h;
       const hits = [];
+      const skipped = (kind, id) => skip && skip.kind === kind && skip.id === id;
       nodeEls.forEach((el, id) => {
+        if (skipped('node', id)) return;
         const sc = nodeScale(el);
       const x = +el.dataset.x, y = +el.dataset.y, w = el.offsetWidth * sc, h = el.offsetHeight * sc;
         const hit = el.dataset.type === 'frame'
@@ -1474,6 +1478,7 @@ export function CanvasProvider({
         if (hit) hits.push({ kind: 'node', id });
       });
       shapeEls.forEach((el, id) => {
+        if (skipped('shape', id)) return;
         const bb = el.getBBox();
         if (bb.x < rx1 && bb.x + bb.width > rect.x && bb.y < ry1 && bb.y + bb.height > rect.y) {
           hits.push({ kind: 'shape', id });
