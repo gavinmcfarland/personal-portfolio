@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Files, List, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Files, List, Pause, Play, RotateCcw, X } from "lucide-react";
 import Seo from "../components/Seo";
 
 /* The phone in the presenter's hand.
@@ -57,7 +57,10 @@ export default function RemotePage() {
   const [listOpen, setListOpen] = useState(false);
   const [pagesOpen, setPagesOpen] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const startedAt = useRef(null);
+  const [running, setRunning] = useState(false);
+  const banked = useRef(0);     // ms counted before the current run
+  const since = useRef(null);   // Date.now() the current run began, or null when stopped
+  const armed = useRef(true);   // still waiting to auto-start on the first section change
   const notesRef = useRef(null);
 
   /* Subscribe. EventSource reconnects on its own after the screen locks or the
@@ -72,6 +75,14 @@ export default function RemotePage() {
       if (data && data.empty) { setStatus("waiting"); setState(null); return; }
       setStatus("live");
       setState(data);
+      // The talk starts when the board first lands on a section, not when the
+      // phone was paired — see the timer below. Armed here rather than in an
+      // effect on `state`, because this is the one place a position arrives.
+      if (armed.current && data.index >= 0) {
+        armed.current = false;
+        since.current = Date.now();
+        setRunning(true);
+      }
     };
     es.addEventListener("state", onState);
     es.onopen = () => setStatus((s) => (s === "lost" ? "live" : s));
@@ -95,14 +106,56 @@ export default function RemotePage() {
     [room],
   );
 
-  /* Talk timer, started by the first section change rather than by opening the
-     page — the remote is usually paired several minutes before anyone speaks. */
+  /* Talk timer.
+
+     It starts itself on the first section change rather than on opening the
+     page — the remote is usually paired several minutes before anyone speaks —
+     and from then on the presenter owns it: tap the clock to stop and start,
+     reset it back to zero between run-throughs. A talk that opens with a video,
+     or pauses for questions that don't count against the slot, is a clock the
+     presenter needs to be able to stop.
+
+     Time is banked in milliseconds and read back off Date.now() rather than
+     counted up per tick, because the interval on a phone is throttled the
+     moment the screen locks or the browser backgrounds — a tick-counting clock
+     would come back minutes short, at exactly the point in the talk where it's
+     being trusted. */
+  const readMs = () => banked.current + (since.current == null ? 0 : Date.now() - since.current);
+
   useEffect(() => {
-    if (!state || state.index < 0) return undefined;
-    if (startedAt.current == null) startedAt.current = Date.now();
-    const t = setInterval(() => setElapsed(Math.floor((Date.now() - startedAt.current) / 1000)), 1000);
+    if (!running) return undefined;
+    const tick = () => setElapsed(Math.floor(readMs() / 1000));
+    tick();
+    // Faster than the second it displays, so resuming lands on the right number
+    // straight away instead of holding the old one for up to a second.
+    const t = setInterval(tick, 250);
     return () => clearInterval(t);
-  }, [state]);
+  }, [running]);
+
+  /* Stop and start. Taking hold of the clock also disarms the auto-start, so a
+     presenter who deliberately paused doesn't have it restarted underneath them
+     by the next section change. */
+  const toggleClock = useCallback(() => {
+    if (navigator.vibrate) navigator.vibrate(8);
+    armed.current = false;
+    if (running) {
+      banked.current = readMs();
+      since.current = null;
+      setRunning(false);
+    } else {
+      since.current = Date.now();
+      setRunning(true);
+    }
+  }, [running]);
+
+  /* Back to zero, keeping whatever the clock was doing: a reset mid-run is a
+     restart, a reset while stopped stays stopped and waits. */
+  const resetClock = useCallback(() => {
+    if (navigator.vibrate) navigator.vibrate(8);
+    banked.current = 0;
+    since.current = running ? Date.now() : null;
+    setElapsed(0);
+  }, [running]);
 
   /* Keep the screen awake. Only works in a secure context, so over plain
      http://192.168.x.x it simply isn't there — the phone will dim, and that's
@@ -198,7 +251,39 @@ export default function RemotePage() {
             {pagesOpen ? <X className="size-4" /> : <Files className="size-4" />}
           </button>
         )}
-        <span className="font-sans text-4 tabular-nums text-faint">{mmss}</span>
+        {/* The clock is the button. A stopped clock reads louder than a running
+            one — a talk timer sitting at 4:12 while the presenter thinks it's
+            counting is worse than one that's plainly stopped. Reset only
+            appears once the clock is stopped with something on it, so the
+            header stays two controls wide for the whole talk and there's no
+            live button that can wipe the time with a mis-tap. */}
+        <div className="flex shrink-0 items-center">
+          {!running && elapsed > 0 && (
+            <button
+              type="button"
+              onClick={resetClock}
+              aria-label="Reset timer"
+              className="rounded-lg p-2 text-faint active:bg-accent-soft"
+            >
+              <RotateCcw className="size-4" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={toggleClock}
+            aria-label={running ? "Pause timer" : "Start timer"}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-2 active:bg-accent-soft"
+          >
+            <span className={`font-sans text-4 tabular-nums ${running ? "text-faint" : "text-muted"}`}>
+              {mmss}
+            </span>
+            {running ? (
+              <Pause className="size-3.5 shrink-0 text-faint" />
+            ) : (
+              <Play className="size-3.5 shrink-0 text-muted" />
+            )}
+          </button>
+        </div>
       </header>
 
       {pagesOpen ? (
