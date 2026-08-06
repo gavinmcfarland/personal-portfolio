@@ -1,6 +1,6 @@
 /* Browser console snippet — run this in the DevTools console of the tab whose
    IndexedDB holds your canvas recordings (i.e. your running dev server origin,
-   e.g. http://localhost:5173). It reads every blob out of the per-board
+   e.g. http://localhost:5180). It reads every blob out of the per-board
    `<storageKey>-media` databases and downloads them bundled into a single
    `canvas-media-export.json` file.
    Feed that file to scripts/migrate-canvas-media.mjs to bake the audio into

@@ -51,5 +51,11 @@ export default defineConfig(({ command }) => ({
 	// Listen on every interface so the phone remote can reach the dev server
 	// over the LAN. Vite prints the Network URL on boot, and /__present/link
 	// hands the same address to the presenter for its QR code.
-	server: { host: true },
+	//
+	// Off 5173, because every other Vite project claims that port too. Binding a
+	// wildcard host does not collide with another server's specific `[::1]` bind,
+	// so both start, `localhost` resolves to `::1`, and the other project answers
+	// with no warning from either side. strictPort turns the next such clash into
+	// a boot failure instead of a page from someone else's app.
+	server: { host: true, port: 5180, strictPort: true },
 }));
