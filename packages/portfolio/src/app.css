@@ -13,6 +13,16 @@
   --font-sans: var(--font-mono);
   --font-serif: var(--font-mono);
 
+  /* The one deliberate exception to the all-mono rule. The remote's speaker
+     notes are read off a phone held at your waist, mid-sentence, in a dim
+     room — a proportional face is faster to take in at a glance than a
+     monospace one. System stack rather than a webfont: the remote has to be
+     legible the moment it loads, on a strange network, before anything from
+     Google Fonts arrives. */
+  --font-reading:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
   /* Registered so `bg-surface` (and its `hover:` variant) are real Tailwind
      utilities. Points at the token var, so it still flips in dark mode. */
   --color-surface: var(--surface);

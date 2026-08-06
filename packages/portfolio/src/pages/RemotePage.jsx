@@ -37,12 +37,12 @@ const STATUS = {
    in a room with the lights down. */
 function Notes({ text }) {
   if (!text || !text.trim()) {
-    return <p className="text-[1rem] italic text-faint">No notes for this section.</p>;
+    return <p className="font-reading text-[1rem] italic text-faint">No notes for this section.</p>;
   }
   return (
     <div className="space-y-5">
       {text.split(/\n{2,}/).map((para, i) => (
-        <p key={i} className="whitespace-pre-wrap text-[1.3125rem] leading-[1.55] text-ink">
+        <p key={i} className="whitespace-pre-wrap font-reading text-[1.3125rem] leading-[1.55] text-ink">
           {para}
         </p>
       ))}
