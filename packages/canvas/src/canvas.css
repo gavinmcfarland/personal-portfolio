@@ -1071,6 +1071,28 @@
   width: calc(var(--cv-df-u) * 42);
 }
 
+/* Platform frames — iOS and Android. The plugin window's bar, with the
+   platform's geometric mark in the icon tile and the screen's own size set out
+   on the right. No device shell: see the note at the top of DeviceFrame.jsx. */
+.canvas-root .cv-df-bar--ios .cv-df-icon svg,
+.canvas-root .cv-df-bar--android .cv-df-icon svg {
+  /* A shade larger than the lucide glyphs beside them: both marks are solid
+     silhouettes with no stroke weight to read, so they need the extra area to
+     carry at a small tile size. */
+  width: calc(var(--cv-df-u) * 12);
+  height: calc(var(--cv-df-u) * 12);
+}
+/* Screen size, right-aligned. Tabular figures so the number doesn't jitter
+   column by column as the node is dragged out. */
+.canvas-root .cv-df-dims {
+  flex: none;
+  font-family: var(--cv-mono, ui-monospace, monospace);
+  font-size: calc(var(--cv-df-u) * 11);
+  font-variant-numeric: tabular-nums;
+  color: var(--cv-muted);
+  opacity: 0.8;
+}
+
 /* Multi-asset media grid — a node holding several images / gifs / videos laid
    out in ~√n columns, each cell cover-cropped to fill its square. Each asset is
    its own rounded, shadowed tile (the chrome lives on the cells, not the node),

@@ -18,7 +18,7 @@ export const PAN = { wheelSpeed: 1.4 }; // multiplier for scroll-wheel / trackpa
    a frame grows / shrinks the node box by this so the media keeps its size; a
    switch between styles adjusts by the delta. Kept in sync with the per-style
    `--cv-df-bar` CSS tokens in canvas.css. */
-export const FRAME_BARS = { browser: 36, plugin: 36, terminal: 36 };
+export const FRAME_BARS = { browser: 36, plugin: 36, terminal: 36, ios: 36, android: 36 };
 export const frameBarH = (style) => FRAME_BARS[style] || FRAME_BARS.browser;
 export const GRID = 28;
 

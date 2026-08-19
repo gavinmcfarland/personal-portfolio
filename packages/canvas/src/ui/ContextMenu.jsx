@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Maximize, Scaling, AppWindow, Puzzle, Terminal, SquareX, Expand, ExternalLink, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Pencil, Trash2, Sun, Moon, MessageSquareText, RectangleHorizontal, ChevronRight } from 'lucide-react';
+import { Maximize, Scaling, AppWindow, Puzzle, Terminal, Smartphone, SquareX, Expand, ExternalLink, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Pencil, Trash2, Sun, Moon, MessageSquareText, RectangleHorizontal, ChevronRight } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { FRAME_RATIOS, atRatio } from '../constants';
 
@@ -115,6 +115,14 @@ export default function ContextMenu() {
       <button data-active={node.frame === 'terminal' ? '' : undefined} onClick={run(() => eng.toggleFrame(node.id, 'terminal'))}>
         <Terminal />
         Terminal frame
+      </button>
+      <button data-active={node.frame === 'ios' ? '' : undefined} onClick={run(() => eng.toggleFrame(node.id, 'ios'))}>
+        <Smartphone />
+        iOS frame
+      </button>
+      <button data-active={node.frame === 'android' ? '' : undefined} onClick={run(() => eng.toggleFrame(node.id, 'android'))}>
+        <Smartphone />
+        Android frame
       </button>
       {node.frame && (
         <button data-active={node.frameScale ? '' : undefined} onClick={run(() => eng.toggleFrameScale(node.id))}>
