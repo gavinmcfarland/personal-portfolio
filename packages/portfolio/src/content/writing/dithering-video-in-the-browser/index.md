@@ -3,6 +3,7 @@ title: Dithering video in the browser
 date: 2026-07-12
 summary: One clip, re-cut as square dots at whatever size it happens to be drawn.
 tags: [dither, performance]
+draft: true
 ---
 
 The portrait at the top of this site is a ten-second webcam clip redrawn as
