@@ -1237,41 +1237,7 @@
 [data-h="674"][data-h]:hover{background-color:rgb(56, 56, 56) !important;z-index:100 !important;}
 [data-h="678"][data-h]:hover{background-color:rgb(56, 56, 56) !important;z-index:100 !important;}
 [data-h="684"][data-h]:hover{background-color:rgb(56, 56, 56) !important;z-index:100 !important;}
-}</style><script data-cv-theme-sync>(() => {
-  const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
-  const walk = (rules, dark) => {
-    for (const r of rules) {
-      // A rewritten rule's mediaText no longer mentions prefers-color-scheme,
-      // so membership in the flipped map must count as a match too or it
-      // would only ever flip once.
-      if (r.media && (flipped.has(r) || /prefers-color-scheme/i.test(r.media.mediaText))) {
-        if (!flipped.has(r)) flipped.set(r, /prefers-color-scheme:\s*dark/i.test(r.media.mediaText));
-        r.media.mediaText = flipped.get(r) === dark ? 'all' : 'not all';
-      } else if (r.cssRules) walk(r.cssRules, dark);
-    }
-  };
-  const apply = (dark) => {
-    document.documentElement.classList.toggle('dark', dark);
-    document.documentElement.style.colorScheme = dark ? 'dark' : 'light'; // UA defaults (bg, controls) follow too
-    for (const sheet of document.styleSheets) {
-      try { walk(sheet.cssRules, dark); } catch { /* unreadable sheet */ }
-    }
-  };
-  addEventListener('message', (e) => {
-    const d = e.data;
-    if (d && d.type === 'canvas-theme' && (d.theme === 'dark' || d.theme === 'light')) apply(d.theme === 'dark');
-  });
-  // Boot theme from the URL hash (set by the host, see nodes/Html.jsx): applied
-  // synchronously — this script sits at the end of <head>, after the document's
-  // styles but before any rendering — so the first paint is already themed; the
-  // message path only lands after load and would flash the OS theme first.
-  // Re-applied at DOMContentLoaded for any stylesheets later in the body.
-  const boot = /cv-theme=(dark|light)/.exec(location.hash || '');
-  if (boot) {
-    apply(boot[1] === 'dark');
-    addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
-  }
-})()</script><script data-cv-zoom-opts="4">(() => {
+}</style><script data-cv-zoom-opts="4">(() => {
   var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
   var css =
     // Frost off: applied while zoomed in past 1:1, and during a gesture (where
@@ -1296,6 +1262,108 @@
     document.documentElement.classList.toggle('cv-zooming', !!d.active);
     document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
   });
+})()</script><script data-cv-theme-sync="2">(() => {
+  const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
+  const walk = (rules, dark) => {
+    for (const r of rules) {
+      // A rewritten rule's mediaText no longer mentions prefers-color-scheme,
+      // so membership in the flipped map must count as a match too or it
+      // would only ever flip once.
+      if (r.media && (flipped.has(r) || /prefers-color-scheme/i.test(r.media.mediaText))) {
+        if (!flipped.has(r)) flipped.set(r, /prefers-color-scheme:\s*dark/i.test(r.media.mediaText));
+        r.media.mediaText = flipped.get(r) === dark ? 'all' : 'not all';
+      } else if (r.cssRules) walk(r.cssRules, dark);
+    }
+  };
+
+  // The board's theme, once it has said. Null until then: a document opened
+  // without a boot hash answers from the OS rather than guessing.
+  let host = null;
+
+  /* prefers-color-scheme in JavaScript.
+
+     Rewriting media rules only reaches a document that themes itself in CSS. A
+     prototype that renders from script — picking colours in JS, or setting a
+     class off matchMedia — reads the media query directly, and inside the
+     iframe that answers with the OS. Such a document ignored the board
+     entirely: it stayed on the system setting while the host sat pinned to
+     light or dark, and when the OS flipped it moved on its own rather than
+     with the page around it.
+
+     So prefers-color-scheme queries answer with the host theme instead, and
+     fire 'change' when it flips — meaning the ordinary listener a document
+     already writes is enough to follow the board, with nothing canvas-specific
+     in it. Every other query passes through to the real matchMedia untouched.
+
+     'no-preference' is left to the OS: the host is always one of light or
+     dark, so it has no honest answer for "the user expressed none". */
+  const native = window.matchMedia && window.matchMedia.bind(window);
+  const wants = (q) =>
+    /prefers-color-scheme:\s*dark/i.test(q) ? true
+    : /prefers-color-scheme:\s*light/i.test(q) ? false
+    : null;
+  // Held strongly, so a query stays live for as long as the document does —
+  // the same lifetime a real MediaQueryList has once it carries a listener.
+  const live = [];
+  if (native) window.matchMedia = (query) => {
+    const q = String(query);
+    const dark = wants(q);
+    if (dark === null) return native(q);
+    const bus = new EventTarget();
+    const mql = {
+      media: q,
+      get matches() { return host === null ? native(q).matches : host === dark; },
+      onchange: null,
+      addEventListener: (t, fn, o) => bus.addEventListener(t, fn, o),
+      removeEventListener: (t, fn, o) => bus.removeEventListener(t, fn, o),
+      // The pre-2019 spelling, still what a lot of copied snippets use.
+      addListener: (fn) => bus.addEventListener('change', fn),
+      removeListener: (fn) => bus.removeEventListener('change', fn),
+      dispatchEvent: (e) => bus.dispatchEvent(e),
+    };
+    live.push({ mql, bus, was: mql.matches });
+    return mql;
+  };
+  // Only on a real edge, like the platform: a host that re-sends the theme it
+  // already sent must not make every listener re-run.
+  const notify = () => {
+    for (const l of live) {
+      const now = l.mql.matches;
+      if (now === l.was) continue;
+      l.was = now;
+      // A MediaQueryListEvent in all the ways a listener reads one.
+      const ev = new Event('change');
+      ev.matches = now;
+      ev.media = l.mql.media;
+      if (typeof l.mql.onchange === 'function') l.mql.onchange.call(l.mql, ev);
+      l.bus.dispatchEvent(ev);
+    }
+  };
+
+  const apply = (dark) => {
+    host = dark;
+    document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.style.colorScheme = dark ? 'dark' : 'light'; // UA defaults (bg, controls) follow too
+    for (const sheet of document.styleSheets) {
+      try { walk(sheet.cssRules, dark); } catch { /* unreadable sheet */ }
+    }
+    notify();
+  };
+  addEventListener('message', (e) => {
+    const d = e.data;
+    if (d && d.type === 'canvas-theme' && (d.theme === 'dark' || d.theme === 'light')) apply(d.theme === 'dark');
+  });
+  // Boot theme from the URL hash (set by the host, see nodes/Html.jsx): applied
+  // synchronously — this script sits at the end of <head>, after the document's
+  // styles but before any rendering — so the first paint is already themed, and
+  // a body script reading matchMedia gets the board's answer on its first read
+  // rather than the OS's. The message path only lands after load.
+  // Re-applied at DOMContentLoaded for any stylesheets later in the body.
+  const boot = /cv-theme=(dark|light)/.exec(location.hash || '');
+  if (boot) {
+    apply(boot[1] === 'dark');
+    addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
+  }
 })()</script></head><body style="background-color:rgb(255, 255, 255);border-block-end-color:rgba(0, 0, 0, 0.898);border-block-start-color:rgba(0, 0, 0, 0.898);border-bottom-color:rgba(0, 0, 0, 0.898);border-inline-end-color:rgba(0, 0, 0, 0.898);border-inline-start-color:rgba(0, 0, 0, 0.898);border-left-color:rgba(0, 0, 0, 0.898);border-right-color:rgba(0, 0, 0, 0.898);border-top-color:rgba(0, 0, 0, 0.898);box-sizing:border-box;caret-color:rgb(0, 123, 229);color:rgba(0, 0, 0, 0.898);column-rule-color:rgba(0, 0, 0, 0.898);line-height:1.45454;margin-block-end:0px;margin-block-start:0px;margin-bottom:0px;margin-inline-end:0px;margin-inline-start:0px;margin-left:0px;margin-right:0px;margin-top:0px;outline-color:rgba(0, 0, 0, 0.898);overflow-block:hidden;overflow-inline:hidden;overflow-x:hidden;overflow-y:hidden;position:relative;row-rule-color:rgba(0, 0, 0, 0.898);scrollbar-color:rgb(230, 230, 230) rgba(0, 0, 0, 0);text-decoration-color:rgba(0, 0, 0, 0.898);text-emphasis-color:rgba(0, 0, 0, 0.898);user-select:none;-webkit-text-fill-color:rgba(0, 0, 0, 0.898);-webkit-text-stroke-color:rgba(0, 0, 0, 0.898);" data-h="0">
 
 <div id="dev-server" style="border-block-end-color:rgba(0, 0, 0, 0.898);border-block-start-color:rgba(0, 0, 0, 0.898);border-bottom-color:rgba(0, 0, 0, 0.898);border-inline-end-color:rgba(0, 0, 0, 0.898);border-inline-start-color:rgba(0, 0, 0, 0.898);border-left-color:rgba(0, 0, 0, 0.898);border-right-color:rgba(0, 0, 0, 0.898);border-top-color:rgba(0, 0, 0, 0.898);box-sizing:border-box;column-rule-color:rgba(0, 0, 0, 0.898);outline-color:rgba(0, 0, 0, 0.898);row-rule-color:rgba(0, 0, 0, 0.898);scrollbar-color:rgb(230, 230, 230) rgba(0, 0, 0, 0);text-decoration-color:rgba(0, 0, 0, 0.898);text-emphasis-color:rgba(0, 0, 0, 0.898);user-select:none;-webkit-text-fill-color:rgba(0, 0, 0, 0.898);-webkit-text-stroke-color:rgba(0, 0, 0, 0.898);" data-h="700"></div>

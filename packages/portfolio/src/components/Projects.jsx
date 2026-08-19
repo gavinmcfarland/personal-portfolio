@@ -12,6 +12,7 @@ import { blurOnPointerClick } from "./ui";
    label. `tone` points at a --tone-* token, so the colour flips with the
    theme (see app.css). */
 const KINDS = {
+  app: { label: "App", tone: "vermilion" },
   tool: { label: "Tool", tone: "blue" },
   library: { label: "Library", tone: "lime" },
   plugin: { label: "Plugin", tone: "teal" },

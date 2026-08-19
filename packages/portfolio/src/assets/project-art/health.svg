@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="400" viewBox="0 0 960 400">
+  <!-- Health — the four records the app keeps, laid out as one sheet. A column
+       of doses down the left, a blood pressure trace across the top, the daily
+       habit grid beneath it, and an eye chart falling away to the right. -->
+  <defs>
+    <linearGradient id="hl-ground" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c1c1c"/>
+      <stop offset="0.55" stop-color="#404040"/>
+      <stop offset="1" stop-color="#8a8a8a"/>
+    </linearGradient>
+    <linearGradient id="hl-dose" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#ededed"/>
+      <stop offset="0.5" stop-color="#787878"/>
+      <stop offset="1" stop-color="#4a4a4a"/>
+    </linearGradient>
+    <linearGradient id="hl-trace" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#6f6f6f"/>
+    </linearGradient>
+    <linearGradient id="hl-grid" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4f4f4"/>
+      <stop offset="1" stop-color="#5e5e5e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="400" fill="url(#hl-ground)"/>
+
+  <!-- the doses, one row a day, each half taken -->
+  <g fill="url(#hl-dose)">
+    <rect x="60" y="58"  width="128" height="30" rx="15"/>
+    <rect x="60" y="118" width="128" height="30" rx="15" opacity="0.86"/>
+    <rect x="60" y="178" width="128" height="30" rx="15" opacity="0.72"/>
+    <rect x="60" y="238" width="128" height="30" rx="15" opacity="0.58"/>
+    <rect x="60" y="298" width="128" height="30" rx="15" opacity="0.44"/>
+  </g>
+
+  <!-- the blood pressure readings, in the order they were taken -->
+  <path d="M264 158 L344 96 L424 134 L504 64 L584 118 L664 88 L744 142 L824 76 L904 112"
+        fill="none" stroke="url(#hl-trace)" stroke-width="16"
+        stroke-linecap="butt" stroke-linejoin="miter"/>
+  <g fill="#ffffff">
+    <rect x="492" y="52"  width="24" height="24"/>
+    <rect x="732" y="130" width="24" height="24" opacity="0.7"/>
+  </g>
+
+  <!-- the habit grid: eight days across, four habits down -->
+  <g fill="url(#hl-grid)">
+    <rect x="264" y="232" width="22" height="22"/>
+    <rect x="296" y="232" width="22" height="22" opacity="0.5"/>
+    <rect x="328" y="232" width="22" height="22"/>
+    <rect x="360" y="232" width="22" height="22"/>
+    <rect x="392" y="232" width="22" height="22" opacity="0.35"/>
+    <rect x="424" y="232" width="22" height="22"/>
+    <rect x="456" y="232" width="22" height="22" opacity="0.5"/>
+    <rect x="488" y="232" width="22" height="22"/>
+
+    <rect x="264" y="264" width="22" height="22" opacity="0.5"/>
+    <rect x="296" y="264" width="22" height="22"/>
+    <rect x="328" y="264" width="22" height="22"/>
+    <rect x="360" y="264" width="22" height="22" opacity="0.35"/>
+    <rect x="392" y="264" width="22" height="22"/>
+    <rect x="424" y="264" width="22" height="22"/>
+    <rect x="456" y="264" width="22" height="22"/>
+    <rect x="488" y="264" width="22" height="22" opacity="0.5"/>
+
+    <rect x="264" y="296" width="22" height="22"/>
+    <rect x="296" y="296" width="22" height="22" opacity="0.35"/>
+    <rect x="328" y="296" width="22" height="22" opacity="0.5"/>
+    <rect x="360" y="296" width="22" height="22"/>
+    <rect x="392" y="296" width="22" height="22"/>
+    <rect x="424" y="296" width="22" height="22" opacity="0.5"/>
+    <rect x="456" y="296" width="22" height="22"/>
+    <rect x="488" y="296" width="22" height="22"/>
+
+    <rect x="264" y="328" width="22" height="22" opacity="0.5"/>
+    <rect x="296" y="328" width="22" height="22"/>
+    <rect x="328" y="328" width="22" height="22"/>
+    <rect x="360" y="328" width="22" height="22" opacity="0.5"/>
+    <rect x="392" y="328" width="22" height="22" opacity="0.35"/>
+    <rect x="424" y="328" width="22" height="22"/>
+    <rect x="456" y="328" width="22" height="22"/>
+    <rect x="488" y="328" width="22" height="22" opacity="0.35"/>
+  </g>
+
+  <!-- the eye test, each line smaller and fainter than the last -->
+  <g fill="#ffffff">
+    <rect x="580" y="264" width="56" height="56"/>
+    <rect x="656" y="280" width="40" height="40" opacity="0.88"/>
+    <rect x="716" y="292" width="28" height="28" opacity="0.72"/>
+    <rect x="762" y="300" width="20" height="20" opacity="0.58"/>
+    <rect x="798" y="306" width="14" height="14" opacity="0.46"/>
+    <rect x="828" y="310" width="10" height="10" opacity="0.36"/>
+    <rect x="852" y="313" width="7"  height="7"  opacity="0.28"/>
+  </g>
+</svg>

@@ -103,41 +103,7 @@
 [data-h="5"]::after{inset-inline-end:285.602px !important;inset-inline-start:-142.797px !important;left:-142.797px !important;right:285.602px !important;}</style><style data-shot-state="3" media="not all">[data-h="8"]{opacity:1 !important;transform:translate(0px, 0px) !important;}
 [data-h="0"]{transform:translate(0px, 0px) !important;}
 [data-h="1"]{transform:translate(0px, 0px) !important;}
-[data-h="5"]::after{inset-inline-end:285.602px !important;inset-inline-start:-142.797px !important;left:-142.797px !important;right:285.602px !important;}</style><script data-cv-theme-sync="1">(() => {
-  const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
-  const walk = (rules, dark) => {
-    for (const r of rules) {
-      // A rewritten rule's mediaText no longer mentions prefers-color-scheme,
-      // so membership in the flipped map must count as a match too or it
-      // would only ever flip once.
-      if (r.media && (flipped.has(r) || /prefers-color-scheme/i.test(r.media.mediaText))) {
-        if (!flipped.has(r)) flipped.set(r, /prefers-color-scheme:\s*dark/i.test(r.media.mediaText));
-        r.media.mediaText = flipped.get(r) === dark ? 'all' : 'not all';
-      } else if (r.cssRules) walk(r.cssRules, dark);
-    }
-  };
-  const apply = (dark) => {
-    document.documentElement.classList.toggle('dark', dark);
-    document.documentElement.style.colorScheme = dark ? 'dark' : 'light'; // UA defaults (bg, controls) follow too
-    for (const sheet of document.styleSheets) {
-      try { walk(sheet.cssRules, dark); } catch { /* unreadable sheet */ }
-    }
-  };
-  addEventListener('message', (e) => {
-    const d = e.data;
-    if (d && d.type === 'canvas-theme' && (d.theme === 'dark' || d.theme === 'light')) apply(d.theme === 'dark');
-  });
-  // Boot theme from the URL hash (set by the host, see nodes/Html.jsx): applied
-  // synchronously — this script sits at the end of <head>, after the document's
-  // styles but before any rendering — so the first paint is already themed; the
-  // message path only lands after load and would flash the OS theme first.
-  // Re-applied at DOMContentLoaded for any stylesheets later in the body.
-  const boot = /cv-theme=(dark|light)/.exec(location.hash || '');
-  if (boot) {
-    apply(boot[1] === 'dark');
-    addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
-  }
-})()</script><script data-cv-zoom-opts="4">(() => {
+[data-h="5"]::after{inset-inline-end:285.602px !important;inset-inline-start:-142.797px !important;left:-142.797px !important;right:285.602px !important;}</style><script data-cv-zoom-opts="4">(() => {
   var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
   var css =
     // Frost off: applied while zoomed in past 1:1, and during a gesture (where
@@ -162,6 +128,108 @@
     document.documentElement.classList.toggle('cv-zooming', !!d.active);
     document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
   });
+})()</script><script data-cv-theme-sync="2">(() => {
+  const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
+  const walk = (rules, dark) => {
+    for (const r of rules) {
+      // A rewritten rule's mediaText no longer mentions prefers-color-scheme,
+      // so membership in the flipped map must count as a match too or it
+      // would only ever flip once.
+      if (r.media && (flipped.has(r) || /prefers-color-scheme/i.test(r.media.mediaText))) {
+        if (!flipped.has(r)) flipped.set(r, /prefers-color-scheme:\s*dark/i.test(r.media.mediaText));
+        r.media.mediaText = flipped.get(r) === dark ? 'all' : 'not all';
+      } else if (r.cssRules) walk(r.cssRules, dark);
+    }
+  };
+
+  // The board's theme, once it has said. Null until then: a document opened
+  // without a boot hash answers from the OS rather than guessing.
+  let host = null;
+
+  /* prefers-color-scheme in JavaScript.
+
+     Rewriting media rules only reaches a document that themes itself in CSS. A
+     prototype that renders from script — picking colours in JS, or setting a
+     class off matchMedia — reads the media query directly, and inside the
+     iframe that answers with the OS. Such a document ignored the board
+     entirely: it stayed on the system setting while the host sat pinned to
+     light or dark, and when the OS flipped it moved on its own rather than
+     with the page around it.
+
+     So prefers-color-scheme queries answer with the host theme instead, and
+     fire 'change' when it flips — meaning the ordinary listener a document
+     already writes is enough to follow the board, with nothing canvas-specific
+     in it. Every other query passes through to the real matchMedia untouched.
+
+     'no-preference' is left to the OS: the host is always one of light or
+     dark, so it has no honest answer for "the user expressed none". */
+  const native = window.matchMedia && window.matchMedia.bind(window);
+  const wants = (q) =>
+    /prefers-color-scheme:\s*dark/i.test(q) ? true
+    : /prefers-color-scheme:\s*light/i.test(q) ? false
+    : null;
+  // Held strongly, so a query stays live for as long as the document does —
+  // the same lifetime a real MediaQueryList has once it carries a listener.
+  const live = [];
+  if (native) window.matchMedia = (query) => {
+    const q = String(query);
+    const dark = wants(q);
+    if (dark === null) return native(q);
+    const bus = new EventTarget();
+    const mql = {
+      media: q,
+      get matches() { return host === null ? native(q).matches : host === dark; },
+      onchange: null,
+      addEventListener: (t, fn, o) => bus.addEventListener(t, fn, o),
+      removeEventListener: (t, fn, o) => bus.removeEventListener(t, fn, o),
+      // The pre-2019 spelling, still what a lot of copied snippets use.
+      addListener: (fn) => bus.addEventListener('change', fn),
+      removeListener: (fn) => bus.removeEventListener('change', fn),
+      dispatchEvent: (e) => bus.dispatchEvent(e),
+    };
+    live.push({ mql, bus, was: mql.matches });
+    return mql;
+  };
+  // Only on a real edge, like the platform: a host that re-sends the theme it
+  // already sent must not make every listener re-run.
+  const notify = () => {
+    for (const l of live) {
+      const now = l.mql.matches;
+      if (now === l.was) continue;
+      l.was = now;
+      // A MediaQueryListEvent in all the ways a listener reads one.
+      const ev = new Event('change');
+      ev.matches = now;
+      ev.media = l.mql.media;
+      if (typeof l.mql.onchange === 'function') l.mql.onchange.call(l.mql, ev);
+      l.bus.dispatchEvent(ev);
+    }
+  };
+
+  const apply = (dark) => {
+    host = dark;
+    document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.style.colorScheme = dark ? 'dark' : 'light'; // UA defaults (bg, controls) follow too
+    for (const sheet of document.styleSheets) {
+      try { walk(sheet.cssRules, dark); } catch { /* unreadable sheet */ }
+    }
+    notify();
+  };
+  addEventListener('message', (e) => {
+    const d = e.data;
+    if (d && d.type === 'canvas-theme' && (d.theme === 'dark' || d.theme === 'light')) apply(d.theme === 'dark');
+  });
+  // Boot theme from the URL hash (set by the host, see nodes/Html.jsx): applied
+  // synchronously — this script sits at the end of <head>, after the document's
+  // styles but before any rendering — so the first paint is already themed, and
+  // a body script reading matchMedia gets the board's answer on its first read
+  // rather than the OS's. The message path only lands after load.
+  // Re-applied at DOMContentLoaded for any stylesheets later in the body.
+  const boot = /cv-theme=(dark|light)/.exec(location.hash || '');
+  if (boot) {
+    apply(boot[1] === 'dark');
+    addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
+  }
 })()</script></head><body style="background-color:rgb(14, 13, 11);border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;box-sizing:border-box;caret-color:rgb(246, 243, 238);color:rgb(246, 243, 238);column-rule-color:currentcolor;font-family:Inter, system-ui, sans-serif;font-weight:300;margin-block-end:0px;margin-block-start:0px;margin-bottom:0px;margin-inline-end:0px;margin-inline-start:0px;margin-left:0px;margin-right:0px;margin-top:0px;outline-color:currentcolor;overflow-block:auto;overflow-inline:hidden;overflow-x:hidden;overflow-y:auto;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;" data-h="16">
 <div id="loader" style="align-items:center;background-color:rgb(14, 13, 11);border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;bottom:0px;box-sizing:border-box;column-rule-color:currentcolor;display:grid;inset-block-end:0px;inset-block-start:0px;inset-inline-end:0px;inset-inline-start:0px;justify-items:center;left:0px;opacity:0;outline-color:currentcolor;pointer-events:none;position:fixed;right:0px;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;top:0px;transition-duration:0.8s;transition-property:opacity;transition-timing-function:cubic-bezier(0.16, 1, 0.3, 1);z-index:100;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;"><div style="border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;box-sizing:border-box;column-rule-color:currentcolor;outline-color:currentcolor;row-rule-color:currentcolor;text-align:center;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;"><p style="border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;box-sizing:border-box;caret-color:rgb(184, 178, 166);color:rgb(184, 178, 166);column-rule-color:currentcolor;font-size:11.52px;letter-spacing:3.456px;margin-block-end:19.2px;margin-block-start:0px;margin-bottom:19.2px;margin-top:0px;outline-color:currentcolor;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;text-transform:uppercase;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;">Preparing the walkthrough</p><div style="background-color:rgba(246, 243, 238, 0.18);block-size:2px;border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-bottom-left-radius:2px;border-bottom-right-radius:2px;border-end-end-radius:2px;border-end-start-radius:2px;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-start-end-radius:2px;border-start-start-radius:2px;border-top-color:currentcolor;border-top-left-radius:2px;border-top-right-radius:2px;box-sizing:border-box;column-rule-color:currentcolor;height:2px;inline-size:180px;outline-color:currentcolor;overflow-block:hidden;overflow-inline:hidden;overflow-x:hidden;overflow-y:hidden;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;width:180px;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;"><i id="lbar" style="background-color:rgb(176, 154, 106);block-size:100%;border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;box-sizing:border-box;column-rule-color:currentcolor;display:block;height:100%;inline-size:100%;outline-color:currentcolor;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;transition-duration:0.2s;transition-property:width;transition-timing-function:linear;width:100%;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;"></i></div></div></div>
 <section id="scene" style="block-size: 4320px; border-block-color: currentcolor; border-color: currentcolor; border-inline-color: currentcolor; box-sizing: border-box; rule-color: currentcolor; height: 480vh; outline-color: currentcolor; position: relative; text-decoration-color: currentcolor; text-emphasis-color: currentcolor; -webkit-font-smoothing: antialiased; -webkit-locale: &quot;en&quot;; -webkit-text-fill-color: currentcolor; -webkit-text-stroke-color: currentcolor;" data-h="13">

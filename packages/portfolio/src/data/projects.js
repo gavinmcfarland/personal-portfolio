@@ -15,6 +15,26 @@
    (below) anywhere you want only the published set. */
 export const projects = [
 	{
+		id: 'health',
+		title: 'Health',
+		kind: 'app',
+		summary: 'An Android app for the health records a person keeps between appointments: medications, habits, blood pressure readings and eye tests.',
+		tagline: 'One place for the things you are asked to keep track of between appointments — doses taken, daily habits, blood pressure readings and eye tests.',
+		tech: ['Kotlin', 'Android'],
+		role: 'Creator',
+		year: '2026',
+		description: [
+			'The details that matter at a check-up are the ones recorded in between: whether a dose was taken, what the blood pressure reading was on a given morning, when the last eye test was and what it said. Those normally end up spread across a paper card, a notes app and memory.',
+			'Health keeps them together on the phone. Medications and habits are logged day by day, blood pressure readings are entered as they are taken and kept in order, and eye tests are stored with their prescriptions so the change between them is visible.',
+		],
+		highlights: [
+			'Medication doses logged day by day',
+			'Habits tracked on the same daily record',
+			'Blood pressure readings kept in order over time',
+			'Eye tests stored with their prescriptions',
+		],
+	},
+	{
 		id: 'figlet',
 		title: 'Figlet',
 		kind: 'tool',

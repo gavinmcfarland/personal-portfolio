@@ -6,25 +6,25 @@
       "id": "home",
       "name": "Home",
       "view": {
-        "x": -343.2686816743514,
-        "y": 32.115476945082335,
-        "scale": 0.41221090027061924
+        "x": 233.27327924996806,
+        "y": 186.45358300728805,
+        "scale": 0.14016517586699187
       },
       "nodes": [
         {
           "id": "n2-md",
           "type": "md",
-          "x": -213.75620397275458,
-          "y": 683.3867517363631,
-          "z": 10,
-          "w": 340,
-          "text": "What started as a tool for recreating retro icons from the early 80s and 90s, has turned into  a tool for creating 2D and 3D pixelated artwork from most eras."
+          "x": 3482.600726959229,
+          "y": 1436.5599975585938,
+          "z": 15,
+          "w": 386.0000000000002,
+          "text": "These videos were created using a Chrome extension I developed that captures snapshots of user journeys and lets them be replayed dynamically at any resolution, with responsive behaviour and media queries fully preserved."
         },
         {
           "id": "n3-video",
           "type": "video",
-          "x": -645.9576033246343,
-          "y": 117.38675173636301,
+          "x": 176.18144319947544,
+          "y": 8.903853404480216,
           "z": 9,
           "w": 659.174650096525,
           "h": 624.1147442084942,
@@ -53,6 +53,47 @@
           "type": "html",
           "x": 1785.3147247493855,
           "y": 408.57709922671086,
+          "z": 19,
+          "w": 1446.64605898545,
+          "h": 966.778971355192,
+          "src": "/canvas-assets/d2425a35af8bda24.html",
+          "name": "home-20260729-143809-430-play.html",
+          "frame": "browser"
+        },
+        {
+          "id": "n8-md",
+          "type": "md",
+          "x": 495.18144319947544,
+          "y": 675.077099226711,
+          "z": 10,
+          "w": 340,
+          "text": "What started as a tool for recreating retro icons from the early 80s and 90s, has turned into  a tool for creating 2D and 3D pixelated artwork from most eras."
+        },
+        {
+          "id": "n9-tblock",
+          "type": "tblock",
+          "x": 1785.3147247493857,
+          "y": 177.52013525331702,
+          "z": 17,
+          "text": "Live Recording Tool",
+          "fontSize": 56,
+          "font": "sans"
+        },
+        {
+          "id": "n10-tblock",
+          "type": "tblock",
+          "x": 176.18144319947544,
+          "y": -181.92213184480926,
+          "z": 16,
+          "text": "Pixelated 3D Tool",
+          "fontSize": 56,
+          "font": "sans"
+        },
+        {
+          "id": "n11-html",
+          "type": "html",
+          "x": 1785.3147247493855,
+          "y": 408.57709922671086,
           "z": 14,
           "w": 1446.64605898545,
           "h": 966.778971355192,
@@ -61,12 +102,37 @@
           "frame": "browser"
         }
       ],
-      "shapes": []
+      "shapes": [
+        {
+          "id": "s1",
+          "type": "rect",
+          "stroke": "#F5A524",
+          "width": 3,
+          "z": -2,
+          "style": "sketch",
+          "x1": 283.0990465241098,
+          "y1": 132.3371016681172,
+          "x2": 915.7190465241098,
+          "y2": 727.4971016681172
+        },
+        {
+          "id": "s2",
+          "type": "rect",
+          "stroke": "#F5A524",
+          "width": 3,
+          "z": -1,
+          "x1": 2038.08,
+          "y1": 535.57,
+          "x2": 3963.15,
+          "y2": 1506.06
+        }
+      ]
     }
   ],
+  "gridHidden": true,
   "viewport": {
-    "w": 1672,
-    "h": 1033
+    "w": 877,
+    "h": 518
   },
-  "savedAt": 1785936701415
+  "savedAt": 1787174314891
 }

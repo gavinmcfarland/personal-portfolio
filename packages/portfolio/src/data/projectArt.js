@@ -10,6 +10,7 @@
 
    Keyed by project id — see <ProjectPlate> for how one becomes dots. */
 
+import health from "../assets/project-art/health.svg?raw";
 import figlet from "../assets/project-art/figlet.svg?raw";
 import plugma from "../assets/project-art/plugma.svg?raw";
 import askeroo from "../assets/project-art/askeroo.svg?raw";
@@ -18,6 +19,7 @@ import iconPreview from "../assets/project-art/icon-preview.svg?raw";
 import layerStyles from "../assets/project-art/layer-styles.svg?raw";
 
 export const projectArt = {
+  health,
   figlet,
   plugma,
   askeroo,

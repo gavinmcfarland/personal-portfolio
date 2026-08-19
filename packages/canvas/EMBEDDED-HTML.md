@@ -39,13 +39,36 @@ stripped and replaced (`injectBridge` in `src/CanvasProvider.jsx`).
 
 | Marker | Purpose |
 |---|---|
-| `data-cv-theme-sync="1"` | Applies the host's light/dark theme. Rewrites the document's `prefers-color-scheme` media rules and toggles a `dark` class on `<html>`. Boot theme arrives in the URL hash (`#cv-theme=dark`) so the first paint is already correct; later flips arrive as `postMessage`. |
+| `data-cv-theme-sync="2"` | Applies the host's light/dark theme. Rewrites the document's `prefers-color-scheme` media rules, sets `color-scheme`, toggles a `dark` class on `<html>`, and patches `matchMedia` so prefers-color-scheme queries answer with the host theme (see below). Boot theme arrives in the URL hash (`#cv-theme=dark`) so the first paint is already correct; later flips arrive as `postMessage`. |
 | `data-cv-zoom-opts="4"` | Listens for `{ type: 'canvas-zoom', active, scale }` and sets two classes on `<html>`: `cv-zooming` while a gesture runs (disables `box-shadow` / `text-shadow`), and `cv-flat` while zoomed in past 1:1 or mid-gesture (disables `backdrop-filter` — see below). |
 
 **If your generator emits a block carrying the current marker and version
 itself, the canvas leaves it alone.** That's the supported way to own this
 behaviour — for example, to scope the effect-stripping to specific elements
 instead of universally, or to add document-specific work on the same signal.
+
+### Theming from script
+
+Rewriting media rules only reaches a document that themes itself in CSS. If your
+generator picks colours in JavaScript — a `darkMode` flag, a class set from
+`matchMedia` — read the query and **listen to it**:
+
+```js
+const scheme = matchMedia('(prefers-color-scheme: dark)');
+let dark = scheme.matches;
+scheme.addEventListener('change', (e) => { dark = e.matches; render(); });
+```
+
+Nothing canvas-specific in that, and it is what the document should do
+standalone anyway. Inside the canvas, `matchMedia` is patched so
+prefers-color-scheme queries report **the board's** theme rather than the OS, and
+fire `change` when the host flips. A document that only reads `.matches` once at
+boot still gets the right first paint, but then sits at that theme while the page
+around it changes — which is the bug this half of the bridge exists to prevent.
+
+`(prefers-color-scheme: no-preference)` is left to the real OS: the host is
+always one of light or dark, so it has no honest answer. Every other media query
+passes straight through.
 
 ### The `canvas-zoom` message
 
@@ -291,11 +314,14 @@ There is no automated check for this. To confirm a document behaves:
 
 ## Related
 
-- `src/CanvasProvider.jsx` — `injectBridge`, `THEME_SYNC`, `ZOOM_OPTS`, and the
-  gesture window (`beginGesture` / `endGesture` / `postZoomPaintMode`).
+- `src/html-bridge.js` — `THEME_SYNC`, `ZOOM_OPTS`, the version table and
+  `injectBridge`. The single definition; both the runtime and the backfill
+  script import it.
+- `src/CanvasProvider.jsx` — ingest (`addHtmlFromFile`) and the gesture window
+  (`beginGesture` / `endGesture` / `postZoomPaintMode`).
 - `src/nodes/Html.jsx` — the iframe node, sandboxing, theme messaging.
-- `packages/portfolio/scripts/inject-canvas-zoom-opts.mjs` — backfills or
-  upgrades the bridge in already-committed assets.
+- `packages/portfolio/scripts/inject-canvas-bridge.mjs` — upgrades the bridge in
+  already-committed assets.
 - `visual-code-editor/CANVAS_ZOOM_RASTERIZATION.md` — the prior art this
   approach was ported from, including the tile-memory and rasterization
   tradeoffs that apply to an Electron host but not a browser one.
