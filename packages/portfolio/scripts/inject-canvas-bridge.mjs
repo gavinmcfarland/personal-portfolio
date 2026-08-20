@@ -1,8 +1,9 @@
 /* Upgrade the canvas bridge in already-committed HTML assets.
 
-   The canvas injects a two-part bridge into every HTML document at ingest — a
-   theme-sync half and a zoom paint-mode half (see packages/canvas/src/
-   html-bridge.js). Re-ingesting an asset to pick up a newer bridge isn't an
+   The canvas injects a three-part bridge into every HTML document at ingest — a
+   theme-sync half, a zoom paint-mode half and an input half (see
+   packages/canvas/src/html-bridge.js). Re-ingesting an asset to pick up a newer
+   bridge isn't an
    option: these files are the published boards' content, and a re-drop would
    mint a new content hash and orphan every node that points at the old one.
 

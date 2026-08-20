@@ -808,6 +808,19 @@
   outline: 2px solid var(--cv-accent);
   outline-offset: 2px;
 }
+/* Shift — the escape hatch. The shield is what keeps every gesture on the board,
+   which is right until a demo has something of its own to scroll or drag: a
+   slider, a carousel, a pane with its own scrollbar. Nothing about the gesture
+   distinguishes those from a pan, so the user says which they meant. While Shift
+   is held the shield stands down and the iframe takes the pointer, so the
+   document behaves exactly as it would standalone — real hover, real :hover,
+   real scrolling. Released, the board has it back. */
+.canvas-root[data-cv-passthrough] .cv-node.cv-html .cv-html-shield {
+  pointer-events: none;
+}
+.canvas-root[data-cv-passthrough] .cv-node.cv-html .cv-html-frame {
+  pointer-events: auto;
+}
 
 /* Video playback controls — revealed on hover. Pointer events are stopped
    inside, so the bar never starts a node drag / pan / lightbox tap. */

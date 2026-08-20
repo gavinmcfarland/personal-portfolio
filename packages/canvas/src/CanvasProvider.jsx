@@ -3296,6 +3296,17 @@ export function CanvasProvider({
        too — visitors can interact with a demo. Deactivated by a press outside
        the node or Escape (see Canvas.jsx). */
     function setHtmlActive(id) { setHtmlActiveId(id || null); }
+    /* Shift held: stand the html nodes' shields down so the documents underneath
+       take the pointer themselves, for a demo's own scrolling and dragging (the
+       CSS is on data-cv-passthrough; see the note beside it). An attribute
+       rather than state — it flips on a keypress and back on release, and a
+       re-render of every html node on each edge would be a lot of work to
+       toggle one CSS rule. */
+    function setHtmlPassThrough(on) {
+      const el = rootRef.current; if (!el) return;
+      if (on) el.setAttribute('data-cv-passthrough', '');
+      else el.removeAttribute('data-cv-passthrough');
+    }
     /* Open an html node's document in a new tab (idb: refs resolve to an object
        URL first). Sync window.open where possible so popup blockers stay calm. */
     function openHtml(id) {
@@ -3379,7 +3390,7 @@ export function CanvasProvider({
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
-      isHtmlFile, addHtmlFromFile, setHtmlActive, openHtml,
+      isHtmlFile, addHtmlFromFile, setHtmlActive, setHtmlPassThrough, openHtml,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startRenameFrame, stopRenameFrame, startEditing, stopEditing, formatText, setChrome,
       openSectionNotes, closeSectionNotes, setSectionNotes, deck, setFrameAspect,

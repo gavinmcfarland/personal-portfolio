@@ -179,6 +179,257 @@
     apply(boot[1] === 'dark');
     addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
   }
+})()</script><script data-cv-input="1">(() => {
+  if (window.parent === window) return;
+  var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
+
+  // Announce this document, so the host can hand it anything it holds for it
+  // whenever the script happens to start — a lazily-loaded frame with a warm
+  // cache can be running before the host has a handler on it.
+  send({ type: 'canvas-input-hello' });
+
+  var opts = function (x, y, extra) {
+    var o = {
+      bubbles: true, cancelable: true, composed: true, view: window,
+      clientX: x, clientY: y, screenX: x, screenY: y,
+    };
+    for (var k in extra) o[k] = extra[k];
+    return o;
+  };
+
+  // ── Hover ──────────────────────────────────────────────────────────────────
+  /* The cursor's position, replayed as the enter/leave traffic a real one would
+     produce. Tracked so the transitions are emitted only on a real crossing, as
+     the platform does it: over/out bubble, enter/leave do not.
+
+     The CSS :hover pseudo-class is beyond reach here (see the note above, and
+     note that a backtick would end this script's template literal) — what it
+     drives is
+     everything a demo does in JavaScript: onMouseEnter handlers, cursor-follow
+     effects, tooltips, hover-tracked canvases. */
+  /* CSS hover, which no dispatched event can produce.
+
+     The pseudo-class follows the real cursor, and the real cursor is on the
+     board's shield — so a demo whose hover states are pure CSS would sit inert
+     under the pointer while its JavaScript hover handlers ran perfectly. The
+     events below are only half of hovering; this is the other half.
+
+     So the document's own rules are read back and re-emitted with :hover
+     swapped for a class this script controls. Specificity survives the swap
+     exactly — a pseudo-class and a class both count (0,1,0) — so a mirrored rule
+     wins and loses against everything the original did, and the sheet goes last
+     so it takes ties. Then hovering is a matter of putting that class on the
+     right elements.
+
+     Rules are read from the document's own stylesheets, which is why this works
+     at all: these are ingested documents, styled inline or from their own
+     origin. A sheet that can't be read is skipped, exactly as the theme half
+     skips it.
+
+     Rebuilt on load as well as first use — a document that adds a stylesheet
+     while it boots would otherwise mirror only what existed at the first move. */
+  var HOVER_CLASS = 'cv-hv';
+  var hoverSheet = null;
+  var collect = function (rules) {
+    var css = '';
+    for (var i = 0; i < rules.length; i++) {
+      var r = rules[i];
+      // Rebuilt from the selector and the declarations rather than patching
+      // cssText, so a ':hover' appearing inside a VALUE is left alone.
+      if (r.selectorText && r.selectorText.indexOf(':hover') !== -1 && r.style) {
+        css += r.selectorText.split(':hover').join('.' + HOVER_CLASS) + '{' + r.style.cssText + '}\n';
+      } else if (r.cssRules) {
+        var inner = collect(r.cssRules);
+        // Keep whatever wrapper this is (@media, @supports, @layer) by reusing
+        // its own prelude, so the condition still applies to the copy.
+        if (inner) css += r.cssText.slice(0, r.cssText.indexOf('{') + 1) + '\n' + inner + '}\n';
+      }
+    }
+    return css;
+  };
+  /* Cheap fingerprint of what is currently loaded — how many sheets, and how
+     many rules in each. Enough to notice a stylesheet arriving or a rule being
+     inserted, which is what a demo built with CSS-in-JS does continuously, long
+     after this script first ran. Reading a rule COUNT is cheap; reading the
+     rules themselves is not, which is why the mirror is only rebuilt when this
+     changes rather than on every move. */
+  var sheetSig = function () {
+    var sig = '';
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      try { sig += document.styleSheets[i].cssRules.length + ','; } catch (err) { sig += 'x,'; }
+    }
+    return sig;
+  };
+  var lastSig = null;
+  var buildHoverSheet = function () {
+    lastSig = sheetSig();
+    var css = '';
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      var sheet = document.styleSheets[i];
+      if (sheet.ownerNode === hoverSheet) continue;
+      try { css += collect(sheet.cssRules); } catch (err) { /* unreadable sheet */ }
+    }
+    if (!hoverSheet) {
+      hoverSheet = document.createElement('style');
+      hoverSheet.setAttribute('data-cv-hover', '');
+      (document.head || document.documentElement).appendChild(hoverSheet);
+    } else if (hoverSheet.parentNode) {
+      // Last, so a mirrored rule takes ties against the original it copies.
+      hoverSheet.parentNode.appendChild(hoverSheet);
+    }
+    hoverSheet.textContent = css;
+  };
+  addEventListener('load', function () { if (hoverSheet) buildHoverSheet(); });
+
+  /* :hover matches the whole ancestor chain, not just the innermost element, so
+     the class goes on every one of them — otherwise a rule of the form
+     ".card:hover .title" would never fire when the cursor is over the title.
+     (No backticks anywhere in here: this script lives in a template literal.) */
+  var hoverChain = [];
+  var setHoverChain = function (el) {
+    var next = [];
+    for (var n = el; n && n.nodeType === 1; n = n.parentElement) next.push(n);
+    for (var i = 0; i < hoverChain.length; i++) {
+      if (next.indexOf(hoverChain[i]) === -1) hoverChain[i].classList.remove(HOVER_CLASS);
+    }
+    for (var j = 0; j < next.length; j++) next[j].classList.add(HOVER_CLASS);
+    hoverChain = next;
+  };
+
+  var hoverEl = null;
+  var hoverEvent = function (type, el, related, x, y, bubbles) {
+    el.dispatchEvent(new PointerEvent(type, opts(x, y, {
+      bubbles: bubbles, cancelable: false, relatedTarget: related || null,
+      pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0,
+    })));
+  };
+  var mouseEvent = function (type, el, related, x, y, bubbles) {
+    el.dispatchEvent(new MouseEvent(type, opts(x, y, {
+      bubbles: bubbles, cancelable: type === 'mousemove', relatedTarget: related || null, buttons: 0,
+    })));
+  };
+  var hoverAt = function (x, y) {
+    var el = document.elementFromPoint(x, y);
+    if (!hoverSheet || sheetSig() !== lastSig) buildHoverSheet();
+    setHoverChain(el);
+    if (el !== hoverEl) {
+      var was = hoverEl;
+      hoverEl = el;
+      if (was) {
+        hoverEvent('pointerout', was, el, x, y, true);
+        mouseEvent('mouseout', was, el, x, y, true);
+        hoverEvent('pointerleave', was, el, x, y, false);
+        mouseEvent('mouseleave', was, el, x, y, false);
+      }
+      if (el) {
+        hoverEvent('pointerover', el, was, x, y, true);
+        mouseEvent('mouseover', el, was, x, y, true);
+        hoverEvent('pointerenter', el, was, x, y, false);
+        mouseEvent('mouseenter', el, was, x, y, false);
+      }
+    }
+    if (el) {
+      hoverEvent('pointermove', el, null, x, y, true);
+      mouseEvent('mousemove', el, null, x, y, true);
+    }
+  };
+  var hoverEnd = function () {
+    setHoverChain(null);
+    if (!hoverEl) return;
+    var was = hoverEl;
+    hoverEl = null;
+    hoverEvent('pointerout', was, null, -1, -1, true);
+    mouseEvent('mouseout', was, null, -1, -1, true);
+    hoverEvent('pointerleave', was, null, -1, -1, false);
+    mouseEvent('mouseleave', was, null, -1, -1, false);
+  };
+
+  // ── Tap ────────────────────────────────────────────────────────────────────
+  /* A press the board decided was not a drag, replayed as a full click at that
+     point. Untrusted events still run activation behaviour, so links follow,
+     checkboxes toggle and buttons submit. */
+  var replay = function (x, y, pointerType, detail) {
+    var el = document.elementFromPoint(x, y);
+    if (!el) return;
+    // The press implies the cursor is there; without this a demo that only
+    // reveals a control on hover would be clicked while still thinking the
+    // pointer was elsewhere.
+    hoverAt(x, y);
+    var mouse = function (type, buttons) {
+      return new MouseEvent(type, opts(x, y, { button: 0, buttons: buttons, detail: detail }));
+    };
+    var pointer = function (type, buttons) {
+      return new PointerEvent(type, opts(x, y, {
+        button: 0, buttons: buttons, detail: detail,
+        pointerId: 1, pointerType: pointerType, isPrimary: true, width: 1, height: 1,
+      }));
+    };
+    // A touch pair too, in the platform's order, for a demo that listens for
+    // touches alone. Guarded: the Touch constructor isn't everywhere, and a demo
+    // that misses these still gets the pointer and mouse events below.
+    var touch = null, t = null;
+    if (pointerType === 'touch' && window.Touch && window.TouchEvent) {
+      try {
+        t = new Touch({
+          identifier: 1, target: el,
+          clientX: x, clientY: y, screenX: x, screenY: y,
+          pageX: x + window.scrollX, pageY: y + window.scrollY,
+        });
+        touch = function (type, list) {
+          return new TouchEvent(type, {
+            bubbles: true, cancelable: true, composed: true, view: window,
+            touches: list, targetTouches: list, changedTouches: [t],
+          });
+        };
+      } catch (err) { touch = null; }
+    }
+    el.dispatchEvent(pointer('pointerdown', 1));
+    if (touch) el.dispatchEvent(touch('touchstart', [t]));
+    // Focus as a real press would: a demo that closes a popover on blur, or a
+    // field that expects the caret, depends on it.
+    var f = el.closest && el.closest('a[href],button,input,select,textarea,summary,[tabindex],[contenteditable]');
+    if (f && f.focus) { try { f.focus({ preventScroll: true }); } catch (err) { f.focus(); } }
+    /* Typing needs more than a focused field: keystrokes follow the focused
+       FRAME, and this one has never been focused — the press that would have
+       done it landed on the shield. So when a tap lands on something you type
+       into, ask the host to focus the frame; from then on real keys arrive here
+       by themselves.
+
+       Real keys, deliberately, rather than synthesised ones: an untrusted
+       KeyboardEvent carries no default action, so dispatching one fires a demo's
+       handlers but inserts no text and moves no caret — it would look like
+       typing worked while the field stayed empty. */
+    if (f && (/^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName) || f.isContentEditable)) {
+      send({ type: 'canvas-input-focus' });
+    }
+    el.dispatchEvent(mouse('mousedown', 1));
+    el.dispatchEvent(pointer('pointerup', 0));
+    if (touch) el.dispatchEvent(touch('touchend', []));
+    el.dispatchEvent(mouse('mouseup', 0));
+    el.dispatchEvent(mouse('click', 0));
+    // Exactly the second of a run, as the platform does it: a third tap keeps
+    // counting up on the click's detail but fires no further dblclick.
+    if (detail === 2) el.dispatchEvent(mouse('dblclick', 0));
+  };
+
+  /* Shift is the escape hatch, and it is the HOST that drops the shield — but
+     once a field in here has been typed into, focus is in this document and the
+     host never sees the key. So it is reported from whichever side hears it. */
+  addEventListener('keydown', function (e) {
+    if (e.key === 'Shift') send({ type: 'canvas-input-shift', on: true });
+  }, true);
+  addEventListener('keyup', function (e) {
+    if (e.key === 'Shift') send({ type: 'canvas-input-shift', on: false });
+  }, true);
+  addEventListener('blur', function () { send({ type: 'canvas-input-shift', on: false }); });
+
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d) return;
+    if (d.type === 'canvas-input-hover') { hoverAt(d.x, d.y); return; }
+    if (d.type === 'canvas-input-hover-end') { hoverEnd(); return; }
+    if (d.type === 'canvas-input-tap') replay(d.x, d.y, d.pointerType || 'mouse', d.detail || 1);
+  });
 })()</script></head><body style="background-color:rgb(255, 255, 255);border-block-end-color:rgba(0, 0, 0, 0.898);border-block-start-color:rgba(0, 0, 0, 0.898);border-bottom-color:rgba(0, 0, 0, 0.898);border-inline-end-color:rgba(0, 0, 0, 0.898);border-inline-start-color:rgba(0, 0, 0, 0.898);border-left-color:rgba(0, 0, 0, 0.898);border-right-color:rgba(0, 0, 0, 0.898);border-top-color:rgba(0, 0, 0, 0.898);box-sizing:border-box;caret-color:rgb(0, 123, 229);color:rgba(0, 0, 0, 0.898);column-rule-color:rgba(0, 0, 0, 0.898);line-height:1.45454;margin-block-end:0px;margin-block-start:0px;margin-bottom:0px;margin-inline-end:0px;margin-inline-start:0px;margin-left:0px;margin-right:0px;margin-top:0px;outline-color:rgba(0, 0, 0, 0.898);overflow-block:hidden;overflow-inline:hidden;overflow-x:hidden;overflow-y:hidden;position:relative;row-rule-color:rgba(0, 0, 0, 0.898);scrollbar-color:rgb(230, 230, 230) rgba(0, 0, 0, 0);text-decoration-color:rgba(0, 0, 0, 0.898);text-emphasis-color:rgba(0, 0, 0, 0.898);user-select:none;-webkit-text-fill-color:rgba(0, 0, 0, 0.898);-webkit-text-stroke-color:rgba(0, 0, 0, 0.898);" data-h="31">
 
 <div id="dev-server" style="border-block-end-color:rgba(0, 0, 0, 0.898);border-block-start-color:rgba(0, 0, 0, 0.898);border-bottom-color:rgba(0, 0, 0, 0.898);border-inline-end-color:rgba(0, 0, 0, 0.898);border-inline-start-color:rgba(0, 0, 0, 0.898);border-left-color:rgba(0, 0, 0, 0.898);border-right-color:rgba(0, 0, 0, 0.898);border-top-color:rgba(0, 0, 0, 0.898);box-sizing:border-box;column-rule-color:rgba(0, 0, 0, 0.898);outline-color:rgba(0, 0, 0, 0.898);row-rule-color:rgba(0, 0, 0, 0.898);scrollbar-color:rgb(230, 230, 230) rgba(0, 0, 0, 0);text-decoration-color:rgba(0, 0, 0, 0.898);text-emphasis-color:rgba(0, 0, 0, 0.898);user-select:none;-webkit-text-fill-color:rgba(0, 0, 0, 0.898);-webkit-text-stroke-color:rgba(0, 0, 0, 0.898);" data-h="13"></div>

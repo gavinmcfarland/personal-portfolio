@@ -447,6 +447,19 @@
 .canvas-root .cv-node.cv-html.cv-live .cv-html-frame {
   pointer-events: auto;
 }
+/* Shift — the escape hatch. The shield is what keeps every gesture on the board,
+   which is right until a demo has something of its own to scroll or drag: a
+   slider, a carousel, a pane with its own scrollbar. Nothing about the gesture
+   distinguishes those from a pan, so the user says which they meant. While Shift
+   is held the shield stands down and the iframe takes the pointer, so the
+   document behaves exactly as it would standalone — real hover, real :hover,
+   real scrolling. Released, the board has it back. */
+.canvas-root[data-cv-passthrough] .cv-node.cv-html .cv-html-shield {
+  pointer-events: none;
+}
+.canvas-root[data-cv-passthrough] .cv-node.cv-html .cv-html-frame {
+  pointer-events: auto;
+}
 /* Video playback controls — revealed on hover. Pointer events are stopped
    inside, so the bar never starts a node drag / pan / lightbox tap. */
 .canvas-root .cv-node.cv-video .cv-vctrl {
@@ -622,9 +635,9 @@
   /* Match the dots block: 3 dots (u·10) + 2 gaps (u·6) = u·42. */
   width: calc(var(--cv-df-u) * 42);
 }
-/* Platform frames — iOS and Android. The plugin window's bar, with a brand mark
-   in the icon tile and the screen's own size set out on the right. No device
-   shell: see the note at the top of DeviceFrame.jsx for why. */
+/* Platform frames — iOS and Android. The plugin window's bar, with the
+   platform's geometric mark in the icon tile and the screen's own size set out
+   on the right. No device shell: see the note at the top of DeviceFrame.jsx. */
 .canvas-root .cv-df-bar--ios .cv-df-icon svg,
 .canvas-root .cv-df-bar--android .cv-df-icon svg {
   /* A shade larger than the lucide glyphs beside them: both marks are solid
@@ -633,8 +646,6 @@
   width: calc(var(--cv-df-u) * 12);
   height: calc(var(--cv-df-u) * 12);
 }
-/* The Apple mark's own margin sits it low in its box; nudge it back onto the
-   optical centre of the tile. */
 /* Screen size, right-aligned. Tabular figures so the number doesn't jitter
    column by column as the node is dragged out. */
 .canvas-root .cv-df-dims {

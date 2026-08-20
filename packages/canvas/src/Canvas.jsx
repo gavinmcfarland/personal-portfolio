@@ -5,6 +5,7 @@ import { ZOOM, PAN, DRAW_TOOLS, FILLABLE_SHAPES, cx } from './constants';
 import World from './World';
 import Chrome from './Chrome';
 import { drawShapeGeom, scaleShape } from './Shape';
+import { frameOf, replayTap } from './html-input';
 import DefaultTopBar from './ui/TopBar';
 import DefaultToolbar from './ui/Toolbar';
 import DefaultZoomControls from './ui/ZoomControls';
@@ -165,6 +166,14 @@ export default function Canvas() {
    // while the space bar is held for a temporary pan) — see the cursor rules.
   const rootState = (name, on) => { const el = rootRef.current; if (!el) return; if (on) el.setAttribute('data-' + name, ''); else el.removeAttribute('data-' + name); };
 
+  /* Capture the pointer for the rest of the gesture. Tolerant of a pointer that
+     doesn't exist in this document: in view mode an html node's presses are
+     forwarded out of its sandboxed iframe and re-dispatched here as synthetic
+     events (see html-input.js), and there is no real pointer with that id to
+     capture. Nothing is lost — the bridge captures inside the iframe instead, so
+     a drag that leaves the node keeps being forwarded. */
+  const capture = (el, id) => { try { el.setPointerCapture(id); } catch { /* synthetic pointer */ } };
+
   /* Pointerdown is a React handler (correct simulated bubbling so chrome / node
      handlers can stopPropagation). Move/up are native window listeners so
      gestures keep tracking off-viewport; wheel/keys are scoped to this canvas. */
@@ -173,7 +182,8 @@ export default function Canvas() {
     const vp = viewportRef.current;
 
     // A press outside the live html node re-shields it (presses inside land in
-    // the iframe and never reach us). Applies in both edit and view mode.
+    // the iframe and never reach us). Edit mode only — view mode has no live
+    // node, the bridge inside each document governs it instead.
     if (S.htmlActiveId) {
       const hEl = nodeEls.get(S.htmlActiveId);
       if (!(hEl && hEl.contains(e.target))) eng.setHtmlActive(null);
@@ -201,14 +211,18 @@ export default function Canvas() {
       eng.freezeView();
       // Remember media / links under the pointer so a stationary tap opens them.
       // For a grid, the specific cell (data-media-idx) decides which asset opens.
+      // An html node is here for the same reason, with a different payoff: its
+      // press was forwarded out of the iframe, and if it turns out not to have
+      // moved it is handed straight back to be replayed into the document (see
+      // onUp). pointerType rides along so the replay matches the real gesture.
       const nodeUnder = e.target.closest && e.target.closest('.cv-node');
       const isMedia = nodeUnder && (nodeUnder.dataset.type === 'image' || nodeUnder.dataset.type === 'video');
       const cellEl = e.target.closest && e.target.closest('[data-media-idx]');
       const linkEl = e.target.closest && e.target.closest('.cv-node.cv-link');
       const htmlEl = e.target.closest && e.target.closest('.cv-node.cv-html');
-      actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: isMedia ? nodeUnder.dataset.id : null, imgIdx: cellEl ? +cellEl.dataset.mediaIdx : 0, linkId: linkEl ? linkEl.dataset.id : null, htmlId: htmlEl ? htmlEl.dataset.id : null };
+      actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: isMedia ? nodeUnder.dataset.id : null, imgIdx: cellEl ? +cellEl.dataset.mediaIdx : 0, linkId: linkEl ? linkEl.dataset.id : null, htmlId: htmlEl ? htmlEl.dataset.id : null, pointerType: e.pointerType };
       rootState('panning', true);
-      vp.setPointerCapture(e.pointerId);
+      capture(vp, e.pointerId);
       return;
     }
 
@@ -238,7 +252,7 @@ export default function Canvas() {
     if (spacePan || tool === 'hand') {
       actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y };
       rootState('panning', true);
-      vp.setPointerCapture(e.pointerId);
+      capture(vp, e.pointerId);
       return;
     }
     // Scale mode (K) behaves like select for picking / moving objects; the only
@@ -263,7 +277,7 @@ export default function Canvas() {
       const linkId = nodeEl && nodeEl.dataset.type === 'link' ? id : null;
       // Alt-drag leaves the originals in place and drops a copy at the release point.
       actionRef.current = { type: 'move', sx: e.clientX, sy: e.clientY, dx: 0, dy: 0, items, clickItem: { kind, id }, dup: e.altKey && !S.readOnly, linkId };
-      vp.setPointerCapture(e.pointerId);
+      capture(vp, e.pointerId);
       return;
     }
     if (selectLike) {
@@ -277,7 +291,7 @@ export default function Canvas() {
       const skipEl = marqueeOver ? (nodeEl || shapeEl) : null;
       const skip = skipEl ? { kind: nodeEl ? 'node' : 'shape', id: skipEl.dataset.id } : null;
       actionRef.current = { type: 'marquee', sx: e.clientX, sy: e.clientY, base, skip };
-      vp.setPointerCapture(e.pointerId);
+      capture(vp, e.pointerId);
       return;
     }
 
@@ -309,7 +323,7 @@ export default function Canvas() {
       const count = S.nodes.filter((x) => x.type === 'frame').length + 1;
       const n = eng.addNode({ id: eng.newId('frame'), type: 'frame', x: w.x, y: w.y, w: 1, h: 1, name: 'Section ' + count });
       actionRef.current = { type: 'frameDraw', id: n.id, ox: w.x, oy: w.y };
-      vp.setPointerCapture(e.pointerId);
+      capture(vp, e.pointerId);
       return;
     }
     if (DRAW_TOOLS.includes(tool)) {
@@ -319,7 +333,7 @@ export default function Canvas() {
       else { s.x1 = w.x; s.y1 = w.y; s.x2 = w.x; s.y2 = w.y; }
       actionRef.current = { type: 'draw', s };
       setDraft({ ...s });
-      vp.setPointerCapture(e.pointerId);
+      capture(vp, e.pointerId);
     }
   };
 
@@ -787,7 +801,11 @@ export default function Canvas() {
         rootState('panning', false);
         if (a.imgId && !a.moved) eng.openFullscreen(a.imgId, a.imgIdx || 0); // tap an image/video → full-screen
         if (a.linkId && !a.moved) eng.openLink(a.linkId);      // tap a link card → open it
-        if (a.htmlId && !a.moved) eng.setHtmlActive(a.htmlId); // tap an html demo → make it interactive
+        // Tap an html demo → the press was never a pan after all, so give it
+        // back: the bridge inside the document replays it as a click at that
+        // point. The board keeps drags, the document keeps taps — the whole
+        // trade, in one line. (See html-bridge.js.)
+        if (a.htmlId && !a.moved) replayTap(frameOf(nodeEls.get(a.htmlId)), a.sx, a.sy, a.pointerType);
       }
       if (a.type === 'move') {
         eng.setSnapGuides(null);
@@ -912,6 +930,12 @@ export default function Canvas() {
     };
 
     const onKeyDown = (e) => {
+      /* Shift hands the board's html demos back to themselves for as long as it
+         is held, so a slider or a scrollable pane inside one can be used — see
+         setHtmlPassThrough. Handled before every gate below (and never
+         preventDefault'd) because Shift is a modifier the rest of the page and
+         the board's own shortcuts still want; this only mirrors it inward. */
+      if (e.key === 'Shift' && S.readOnly) eng.setHtmlPassThrough(true);
       /* Presenting: the board covers the screen, so it owns the keyboard
          outright — no hover gate, and no falling through to the tool
          shortcuts below (a stray `f` must not drop a frame onto a slide).
@@ -993,7 +1017,11 @@ export default function Canvas() {
     };
     const onKeyUp = (e) => {
       if (e.code === 'Space') { panKey.current = false; if (S.tool !== 'hand') rootState('space', false); }
+      if (e.key === 'Shift') eng.setHtmlPassThrough(false);
     };
+    // A keyup that never comes — the tab lost focus mid-hold, or the key was
+    // released over another window — would leave the demos handed over for good.
+    const onWindowBlur = () => eng.setHtmlPassThrough(false);
     // Cmd/Ctrl+V. Gated like keydown so an embedded board never steals a paste
     // meant for the host page or a focused field. Media off the system clipboard
     // (image / gif / svg / video) drops at the viewport centre; otherwise fall
@@ -1154,6 +1182,7 @@ export default function Canvas() {
     (vp || window).addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onWindowBlur);
     window.addEventListener('paste', onPaste);
     return () => {
       window.removeEventListener('pointerdown', onDocDown, true);
@@ -1170,6 +1199,7 @@ export default function Canvas() {
       (vp || window).removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onWindowBlur);
       window.removeEventListener('paste', onPaste);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
