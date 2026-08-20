@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arc — dynamic position</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-900:#0C1016;
+    --ink-850:#11161E;
+    --ink-800:#161C26;
+    --ink-750:#1C232E;
+    --line:#28313E;
+    --line-soft:#1E2531;
+    --text:#E8EBF1;
+    --text-dim:#9AA4B4;
+    --text-faint:#6B7688;
+    --accent:#F0B429;
+    --accent-soft:rgba(240,180,41,.18);
+    --sky-0:#FDF3D9;
+    --sky-1:#FBEBC0;
+
+    --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --r-lg:20px;
+    --r-md:12px;
+    --r-sm:8px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ink-900);
+    color:var(--text);
+    font-family:var(--mono);
+    font-size:14px;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:radial-gradient(120% 80% at 50% 0%, var(--accent-soft), transparent 62%);
+    opacity:.5;
+    transition:background .35s linear;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .app{position:relative; z-index:1; max-width:1240px; margin:0 auto; padding:32px 24px 56px}
+
+  /* ---------- header ---------- */
+  .bar{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap; margin-bottom:28px}
+  .eyebrow{
+    font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--text-faint); display:block; margin-bottom:6px;
+  }
+  h1{
+    font-family:var(--display); font-weight:800; font-size:clamp(24px,3.4vw,34px);
+    letter-spacing:-.02em; margin:0; line-height:1;
+  }
+  .bar-actions{display:flex; gap:8px}
+
+  button{
+    font-family:var(--mono); font-size:12px; letter-spacing:.04em;
+    color:var(--text); background:var(--ink-800);
+    border:1px solid var(--line); border-radius:999px;
+    padding:9px 16px; cursor:pointer;
+    transition:border-color .18s, background .18s, color .18s;
+  }
+  button:hover{background:var(--ink-750); border-color:#3A4553}
+  button[aria-pressed="true"]{border-color:var(--accent); color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:4px}
+
+  /* ---------- stage ---------- */
+  .stage{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px; align-items:start}
+
+  .viewer{
+    background:var(--ink-850); border:1px solid var(--line-soft);
+    border-radius:var(--r-lg); padding:36px 36px 28px;
+  }
+
+  .specimen{position:relative; display:flex; flex-direction:column; align-items:center}
+  .glow{
+    position:absolute; width:340px; height:340px; top:-40px; border-radius:50%;
+    background:radial-gradient(circle, var(--sky-1), transparent 68%);
+    opacity:.22; filter:blur(38px); transition:background .12s linear; pointer-events:none;
+  }
+  .card{
+    position:relative;
+    width:236px; height:236px;
+    border-radius:34px;
+    background:linear-gradient(158deg, var(--sky-0), var(--sky-1));
+    display:grid; place-items:center;
+    transition:background .12s linear;
+    box-shadow:0 24px 60px -24px rgba(0,0,0,.75);
+  }
+  .card svg{width:180px; height:180px; display:block}
+
+  .readout{text-align:center; margin-top:26px}
+  .time{
+    font-family:var(--mono); font-weight:500;
+    font-size:52px; letter-spacing:-.03em; line-height:1;
+    font-variant-numeric:tabular-nums;
+  }
+  .phase{
+    font-family:var(--display); font-weight:600; font-size:17px;
+    color:var(--text-dim); margin-top:8px; letter-spacing:.01em;
+  }
+
+  /* ---------- scrubber ---------- */
+  .scrub{margin-top:34px}
+  input[type=range]{
+    -webkit-appearance:none; appearance:none;
+    width:100%; background:transparent; margin:0; cursor:grab;
+  }
+  input[type=range]:active{cursor:grabbing}
+  #slider::-webkit-slider-runnable-track{
+    height:16px; border-radius:999px;
+    background:var(--day-ramp); border:1px solid rgba(255,255,255,.09);
+  }
+  #slider::-moz-range-track{
+    height:16px; border-radius:999px;
+    background:var(--day-ramp); border:1px solid rgba(255,255,255,.09);
+  }
+  #slider::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:26px; height:26px; margin-top:-6px; border-radius:50%;
+    background:var(--accent); border:3px solid var(--ink-900);
+    box-shadow:0 0 0 1px rgba(255,255,255,.35), 0 4px 12px rgba(0,0,0,.5);
+  }
+  #slider::-moz-range-thumb{
+    width:26px; height:26px; border-radius:50%;
+    background:var(--accent); border:3px solid var(--ink-900);
+    box-shadow:0 0 0 1px rgba(255,255,255,.35), 0 4px 12px rgba(0,0,0,.5);
+  }
+  .ticks{
+    display:flex; justify-content:space-between;
+    margin-top:10px; font-size:11px; color:var(--text-faint); letter-spacing:.1em;
+  }
+  .hint{margin-top:14px; font-size:11px; color:var(--text-faint); text-align:center; letter-spacing:.03em}
+
+  /* ---------- panel ---------- */
+  .panel{
+    background:var(--ink-850); border:1px solid var(--line-soft);
+    border-radius:var(--r-lg); padding:22px;
+  }
+  .panel h2{
+    font-family:var(--mono); font-size:10px; font-weight:600;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--text-faint);
+    margin:0 0 16px;
+  }
+  .panel h2 + .ctrl{margin-top:0}
+  .panel .divide{height:1px; background:var(--line-soft); margin:22px 0}
+
+  .ctrl{margin-bottom:16px}
+  .ctrl-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px}
+  .ctrl-top label{font-size:12px; color:var(--text-dim)}
+  .ctrl-top output{font-size:12px; color:var(--text); font-variant-numeric:tabular-nums}
+  .ctrl input[type=range]::-webkit-slider-runnable-track{
+    height:3px; border-radius:2px; background:var(--line);
+  }
+  .ctrl input[type=range]::-moz-range-track{height:3px; border-radius:2px; background:var(--line)}
+  .ctrl input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:13px; height:13px; margin-top:-5px; border-radius:50%;
+    background:var(--text); border:none; box-shadow:none;
+  }
+  .ctrl input[type=range]::-moz-range-thumb{
+    width:13px; height:13px; border-radius:50%; background:var(--text); border:none; box-shadow:none;
+  }
+
+  .facts{display:grid; gap:9px}
+  .fact{display:flex; justify-content:space-between; align-items:center; font-size:12px}
+  .fact span:first-child{color:var(--text-dim)}
+  .fact span:last-child{font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:7px}
+  .sw{width:12px; height:12px; border-radius:3px; border:1px solid rgba(255,255,255,.18)}
+
+  .reset{width:100%; margin-top:18px; text-align:center}
+
+  /* ---------- reference strip ---------- */
+  .strip{margin-top:20px; background:var(--ink-850); border:1px solid var(--line-soft); border-radius:var(--r-lg); padding:22px}
+  .strip h2{
+    font-family:var(--mono); font-size:10px; font-weight:600;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--text-faint); margin:0 0 4px;
+  }
+  .strip p{margin:0 0 18px; font-size:12px; color:var(--text-faint)}
+  .cards{display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); gap:10px}
+  .ref{
+    background:none; border:none; padding:0; cursor:pointer; border-radius:var(--r-md);
+    display:flex; flex-direction:column; gap:8px; align-items:stretch;
+  }
+  .ref:hover .ref-card{transform:translateY(-3px)}
+  .ref[aria-current="true"] .ref-card{box-shadow:0 0 0 2px var(--accent)}
+  .ref-card{
+    aspect-ratio:1/1.16; border-radius:var(--r-md);
+    display:grid; place-items:center; transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .ref-card svg{width:64%; height:64%}
+  .ref-meta{text-align:center}
+  .ref-time{font-size:12px; font-variant-numeric:tabular-nums; color:var(--text)}
+  .ref-name{font-family:var(--display); font-size:11px; color:var(--text-faint); margin-top:2px}
+
+  @media (max-width:1000px){
+    .stage{grid-template-columns:1fr}
+    .cards{grid-template-columns:repeat(5,minmax(0,1fr))}
+  }
+  @media (max-width:620px){
+    .app{padding:24px 16px 40px}
+    .viewer{padding:26px 20px 22px}
+    .card{width:200px; height:200px}
+    .time{font-size:42px}
+    .cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important; animation:none !important}
+  }
+</style>
+<script data-cv-theme-sync="2">(() => {
+  const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
+  const walk = (rules, dark) => {
+    for (const r of rules) {
+      // A rewritten rule's mediaText no longer mentions prefers-color-scheme,
+      // so membership in the flipped map must count as a match too or it
+      // would only ever flip once.
+      if (r.media && (flipped.has(r) || /prefers-color-scheme/i.test(r.media.mediaText))) {
+        if (!flipped.has(r)) flipped.set(r, /prefers-color-scheme:\s*dark/i.test(r.media.mediaText));
+        r.media.mediaText = flipped.get(r) === dark ? 'all' : 'not all';
+      } else if (r.cssRules) walk(r.cssRules, dark);
+    }
+  };
+
+  // The board's theme, once it has said. Null until then: a document opened
+  // without a boot hash answers from the OS rather than guessing.
+  let host = null;
+
+  /* prefers-color-scheme in JavaScript.
+
+     Rewriting media rules only reaches a document that themes itself in CSS. A
+     prototype that renders from script — picking colours in JS, or setting a
+     class off matchMedia — reads the media query directly, and inside the
+     iframe that answers with the OS. Such a document ignored the board
+     entirely: it stayed on the system setting while the host sat pinned to
+     light or dark, and when the OS flipped it moved on its own rather than
+     with the page around it.
+
+     So prefers-color-scheme queries answer with the host theme instead, and
+     fire 'change' when it flips — meaning the ordinary listener a document
+     already writes is enough to follow the board, with nothing canvas-specific
+     in it. Every other query passes through to the real matchMedia untouched.
+
+     'no-preference' is left to the OS: the host is always one of light or
+     dark, so it has no honest answer for "the user expressed none". */
+  const native = window.matchMedia && window.matchMedia.bind(window);
+  const wants = (q) =>
+    /prefers-color-scheme:\s*dark/i.test(q) ? true
+    : /prefers-color-scheme:\s*light/i.test(q) ? false
+    : null;
+  // Held strongly, so a query stays live for as long as the document does —
+  // the same lifetime a real MediaQueryList has once it carries a listener.
+  const live = [];
+  if (native) window.matchMedia = (query) => {
+    const q = String(query);
+    const dark = wants(q);
+    if (dark === null) return native(q);
+    const bus = new EventTarget();
+    const mql = {
+      media: q,
+      get matches() { return host === null ? native(q).matches : host === dark; },
+      onchange: null,
+      addEventListener: (t, fn, o) => bus.addEventListener(t, fn, o),
+      removeEventListener: (t, fn, o) => bus.removeEventListener(t, fn, o),
+      // The pre-2019 spelling, still what a lot of copied snippets use.
+      addListener: (fn) => bus.addEventListener('change', fn),
+      removeListener: (fn) => bus.removeEventListener('change', fn),
+      dispatchEvent: (e) => bus.dispatchEvent(e),
+    };
+    live.push({ mql, bus, was: mql.matches });
+    return mql;
+  };
+  // Only on a real edge, like the platform: a host that re-sends the theme it
+  // already sent must not make every listener re-run.
+  const notify = () => {
+    for (const l of live) {
+      const now = l.mql.matches;
+      if (now === l.was) continue;
+      l.was = now;
+      // A MediaQueryListEvent in all the ways a listener reads one.
+      const ev = new Event('change');
+      ev.matches = now;
+      ev.media = l.mql.media;
+      if (typeof l.mql.onchange === 'function') l.mql.onchange.call(l.mql, ev);
+      l.bus.dispatchEvent(ev);
+    }
+  };
+
+  const apply = (dark) => {
+    host = dark;
+    document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.style.colorScheme = dark ? 'dark' : 'light'; // UA defaults (bg, controls) follow too
+    for (const sheet of document.styleSheets) {
+      try { walk(sheet.cssRules, dark); } catch { /* unreadable sheet */ }
+    }
+    notify();
+  };
+  addEventListener('message', (e) => {
+    const d = e.data;
+    if (d && d.type === 'canvas-theme' && (d.theme === 'dark' || d.theme === 'light')) apply(d.theme === 'dark');
+  });
+  // Boot theme from the URL hash (set by the host, see nodes/Html.jsx): applied
+  // synchronously — this script sits at the end of <head>, after the document's
+  // styles but before any rendering — so the first paint is already themed, and
+  // a body script reading matchMedia gets the board's answer on its first read
+  // rather than the OS's. The message path only lands after load.
+  // Re-applied at DOMContentLoaded for any stylesheets later in the body.
+  const boot = /cv-theme=(dark|light)/.exec(location.hash || '');
+  if (boot) {
+    apply(boot[1] === 'dark');
+    addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
+  }
+})()</script><script data-cv-zoom-opts="4">(() => {
+  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
+  var css =
+    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
+    // it is also the single biggest per-frame paint saving).
+    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
+    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
+    // Gesture only: paint-level savings that cannot move a box.
+    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
+    'box-shadow:none!important;text-shadow:none!important}';
+  var style = document.createElement('style');
+  style.textContent = css;
+  var attach = function () { (document.head || document.documentElement).appendChild(style); };
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
+  // Flat until told otherwise: a host too old to send a scale gets the safe,
+  // never-blurry rendering rather than an unannounced regression.
+  document.documentElement.classList.add('cv-flat');
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'canvas-zoom') return;
+    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
+    document.documentElement.classList.toggle('cv-zooming', !!d.active);
+    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
+  });
+})()</script><script data-cv-input="1">(() => {
+  if (window.parent === window) return;
+  var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
+
+  // Announce this document, so the host can hand it anything it holds for it
+  // whenever the script happens to start — a lazily-loaded frame with a warm
+  // cache can be running before the host has a handler on it.
+  send({ type: 'canvas-input-hello' });
+
+  var opts = function (x, y, extra) {
+    var o = {
+      bubbles: true, cancelable: true, composed: true, view: window,
+      clientX: x, clientY: y, screenX: x, screenY: y,
+    };
+    for (var k in extra) o[k] = extra[k];
+    return o;
+  };
+
+  // ── Hover ──────────────────────────────────────────────────────────────────
+  /* The cursor's position, replayed as the enter/leave traffic a real one would
+     produce. Tracked so the transitions are emitted only on a real crossing, as
+     the platform does it: over/out bubble, enter/leave do not.
+
+     The CSS :hover pseudo-class is beyond reach here (see the note above, and
+     note that a backtick would end this script's template literal) — what it
+     drives is
+     everything a demo does in JavaScript: onMouseEnter handlers, cursor-follow
+     effects, tooltips, hover-tracked canvases. */
+  /* CSS hover, which no dispatched event can produce.
+
+     The pseudo-class follows the real cursor, and the real cursor is on the
+     board's shield — so a demo whose hover states are pure CSS would sit inert
+     under the pointer while its JavaScript hover handlers ran perfectly. The
+     events below are only half of hovering; this is the other half.
+
+     So the document's own rules are read back and re-emitted with :hover
+     swapped for a class this script controls. Specificity survives the swap
+     exactly — a pseudo-class and a class both count (0,1,0) — so a mirrored rule
+     wins and loses against everything the original did, and the sheet goes last
+     so it takes ties. Then hovering is a matter of putting that class on the
+     right elements.
+
+     Rules are read from the document's own stylesheets, which is why this works
+     at all: these are ingested documents, styled inline or from their own
+     origin. A sheet that can't be read is skipped, exactly as the theme half
+     skips it.
+
+     Rebuilt on load as well as first use — a document that adds a stylesheet
+     while it boots would otherwise mirror only what existed at the first move. */
+  var HOVER_CLASS = 'cv-hv';
+  var hoverSheet = null;
+  var collect = function (rules) {
+    var css = '';
+    for (var i = 0; i < rules.length; i++) {
+      var r = rules[i];
+      // Rebuilt from the selector and the declarations rather than patching
+      // cssText, so a ':hover' appearing inside a VALUE is left alone.
+      if (r.selectorText && r.selectorText.indexOf(':hover') !== -1 && r.style) {
+        css += r.selectorText.split(':hover').join('.' + HOVER_CLASS) + '{' + r.style.cssText + '}\n';
+      } else if (r.cssRules) {
+        var inner = collect(r.cssRules);
+        // Keep whatever wrapper this is (@media, @supports, @layer) by reusing
+        // its own prelude, so the condition still applies to the copy.
+        if (inner) css += r.cssText.slice(0, r.cssText.indexOf('{') + 1) + '\n' + inner + '}\n';
+      }
+    }
+    return css;
+  };
+  /* Cheap fingerprint of what is currently loaded — how many sheets, and how
+     many rules in each. Enough to notice a stylesheet arriving or a rule being
+     inserted, which is what a demo built with CSS-in-JS does continuously, long
+     after this script first ran. Reading a rule COUNT is cheap; reading the
+     rules themselves is not, which is why the mirror is only rebuilt when this
+     changes rather than on every move. */
+  var sheetSig = function () {
+    var sig = '';
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      try { sig += document.styleSheets[i].cssRules.length + ','; } catch (err) { sig += 'x,'; }
+    }
+    return sig;
+  };
+  var lastSig = null;
+  var buildHoverSheet = function () {
+    lastSig = sheetSig();
+    var css = '';
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      var sheet = document.styleSheets[i];
+      if (sheet.ownerNode === hoverSheet) continue;
+      try { css += collect(sheet.cssRules); } catch (err) { /* unreadable sheet */ }
+    }
+    if (!hoverSheet) {
+      hoverSheet = document.createElement('style');
+      hoverSheet.setAttribute('data-cv-hover', '');
+      (document.head || document.documentElement).appendChild(hoverSheet);
+    } else if (hoverSheet.parentNode) {
+      // Last, so a mirrored rule takes ties against the original it copies.
+      hoverSheet.parentNode.appendChild(hoverSheet);
+    }
+    hoverSheet.textContent = css;
+  };
+  addEventListener('load', function () { if (hoverSheet) buildHoverSheet(); });
+
+  /* :hover matches the whole ancestor chain, not just the innermost element, so
+     the class goes on every one of them — otherwise a rule of the form
+     ".card:hover .title" would never fire when the cursor is over the title.
+     (No backticks anywhere in here: this script lives in a template literal.) */
+  var hoverChain = [];
+  var setHoverChain = function (el) {
+    var next = [];
+    for (var n = el; n && n.nodeType === 1; n = n.parentElement) next.push(n);
+    for (var i = 0; i < hoverChain.length; i++) {
+      if (next.indexOf(hoverChain[i]) === -1) hoverChain[i].classList.remove(HOVER_CLASS);
+    }
+    for (var j = 0; j < next.length; j++) next[j].classList.add(HOVER_CLASS);
+    hoverChain = next;
+  };
+
+  var hoverEl = null;
+  var hoverEvent = function (type, el, related, x, y, bubbles) {
+    el.dispatchEvent(new PointerEvent(type, opts(x, y, {
+      bubbles: bubbles, cancelable: false, relatedTarget: related || null,
+      pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0,
+    })));
+  };
+  var mouseEvent = function (type, el, related, x, y, bubbles) {
+    el.dispatchEvent(new MouseEvent(type, opts(x, y, {
+      bubbles: bubbles, cancelable: type === 'mousemove', relatedTarget: related || null, buttons: 0,
+    })));
+  };
+  var hoverAt = function (x, y) {
+    var el = document.elementFromPoint(x, y);
+    if (!hoverSheet || sheetSig() !== lastSig) buildHoverSheet();
+    setHoverChain(el);
+    if (el !== hoverEl) {
+      var was = hoverEl;
+      hoverEl = el;
+      if (was) {
+        hoverEvent('pointerout', was, el, x, y, true);
+        mouseEvent('mouseout', was, el, x, y, true);
+        hoverEvent('pointerleave', was, el, x, y, false);
+        mouseEvent('mouseleave', was, el, x, y, false);
+      }
+      if (el) {
+        hoverEvent('pointerover', el, was, x, y, true);
+        mouseEvent('mouseover', el, was, x, y, true);
+        hoverEvent('pointerenter', el, was, x, y, false);
+        mouseEvent('mouseenter', el, was, x, y, false);
+      }
+    }
+    if (el) {
+      hoverEvent('pointermove', el, null, x, y, true);
+      mouseEvent('mousemove', el, null, x, y, true);
+    }
+  };
+  var hoverEnd = function () {
+    setHoverChain(null);
+    if (!hoverEl) return;
+    var was = hoverEl;
+    hoverEl = null;
+    hoverEvent('pointerout', was, null, -1, -1, true);
+    mouseEvent('mouseout', was, null, -1, -1, true);
+    hoverEvent('pointerleave', was, null, -1, -1, false);
+    mouseEvent('mouseleave', was, null, -1, -1, false);
+  };
+
+  // ── Tap ────────────────────────────────────────────────────────────────────
+  /* A press the board decided was not a drag, replayed as a full click at that
+     point. Untrusted events still run activation behaviour, so links follow,
+     checkboxes toggle and buttons submit. */
+  var replay = function (x, y, pointerType, detail) {
+    var el = document.elementFromPoint(x, y);
+    if (!el) return;
+    // The press implies the cursor is there; without this a demo that only
+    // reveals a control on hover would be clicked while still thinking the
+    // pointer was elsewhere.
+    hoverAt(x, y);
+    var mouse = function (type, buttons) {
+      return new MouseEvent(type, opts(x, y, { button: 0, buttons: buttons, detail: detail }));
+    };
+    var pointer = function (type, buttons) {
+      return new PointerEvent(type, opts(x, y, {
+        button: 0, buttons: buttons, detail: detail,
+        pointerId: 1, pointerType: pointerType, isPrimary: true, width: 1, height: 1,
+      }));
+    };
+    // A touch pair too, in the platform's order, for a demo that listens for
+    // touches alone. Guarded: the Touch constructor isn't everywhere, and a demo
+    // that misses these still gets the pointer and mouse events below.
+    var touch = null, t = null;
+    if (pointerType === 'touch' && window.Touch && window.TouchEvent) {
+      try {
+        t = new Touch({
+          identifier: 1, target: el,
+          clientX: x, clientY: y, screenX: x, screenY: y,
+          pageX: x + window.scrollX, pageY: y + window.scrollY,
+        });
+        touch = function (type, list) {
+          return new TouchEvent(type, {
+            bubbles: true, cancelable: true, composed: true, view: window,
+            touches: list, targetTouches: list, changedTouches: [t],
+          });
+        };
+      } catch (err) { touch = null; }
+    }
+    el.dispatchEvent(pointer('pointerdown', 1));
+    if (touch) el.dispatchEvent(touch('touchstart', [t]));
+    // Focus as a real press would: a demo that closes a popover on blur, or a
+    // field that expects the caret, depends on it.
+    var f = el.closest && el.closest('a[href],button,input,select,textarea,summary,[tabindex],[contenteditable]');
+    if (f && f.focus) { try { f.focus({ preventScroll: true }); } catch (err) { f.focus(); } }
+    /* Typing needs more than a focused field: keystrokes follow the focused
+       FRAME, and this one has never been focused — the press that would have
+       done it landed on the shield. So when a tap lands on something you type
+       into, ask the host to focus the frame; from then on real keys arrive here
+       by themselves.
+
+       Real keys, deliberately, rather than synthesised ones: an untrusted
+       KeyboardEvent carries no default action, so dispatching one fires a demo's
+       handlers but inserts no text and moves no caret — it would look like
+       typing worked while the field stayed empty. */
+    if (f && (/^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName) || f.isContentEditable)) {
+      send({ type: 'canvas-input-focus' });
+    }
+    el.dispatchEvent(mouse('mousedown', 1));
+    el.dispatchEvent(pointer('pointerup', 0));
+    if (touch) el.dispatchEvent(touch('touchend', []));
+    el.dispatchEvent(mouse('mouseup', 0));
+    el.dispatchEvent(mouse('click', 0));
+    // Exactly the second of a run, as the platform does it: a third tap keeps
+    // counting up on the click's detail but fires no further dblclick.
+    if (detail === 2) el.dispatchEvent(mouse('dblclick', 0));
+  };
+
+  /* Shift is the escape hatch, and it is the HOST that drops the shield — but
+     once a field in here has been typed into, focus is in this document and the
+     host never sees the key. So it is reported from whichever side hears it. */
+  addEventListener('keydown', function (e) {
+    if (e.key === 'Shift') send({ type: 'canvas-input-shift', on: true });
+  }, true);
+  addEventListener('keyup', function (e) {
+    if (e.key === 'Shift') send({ type: 'canvas-input-shift', on: false });
+  }, true);
+  addEventListener('blur', function () { send({ type: 'canvas-input-shift', on: false }); });
+
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d) return;
+    if (d.type === 'canvas-input-hover') { hoverAt(d.x, d.y); return; }
+    if (d.type === 'canvas-input-hover-end') { hoverEnd(); return; }
+    if (d.type === 'canvas-input-tap') replay(d.x, d.y, d.pointerType || 'mouse', d.detail || 1);
+  });
+})()</script></head>
+<body>
+<div class="app">
+
+  <header class="bar">
+    <div>
+      <span class="eyebrow">Icon study</span>
+      <h1>Arc — dynamic position</h1>
+    </div>
+    <div class="bar-actions">
+      <button id="play" aria-pressed="false">Play day</button>
+      <button id="copy">Copy SVG</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="viewer">
+      <div class="specimen">
+        <div class="glow" aria-hidden="true"></div>
+        <div class="card" id="card">
+          <svg id="icon" viewBox="0 0 200 200" role="img" aria-labelledby="iconTitle">
+            <title id="iconTitle">Arc icon at the selected time</title>
+          </svg>
+        </div>
+        <div class="readout">
+          <div class="time" id="timeText">10:00</div>
+          <div class="phase" id="phaseText">Late morning</div>
+        </div>
+      </div>
+
+      <div class="scrub">
+        <input type="range" id="slider" min="0" max="1439" step="1" value="600"
+               aria-label="Time of day" aria-valuetext="10:00">
+        <div class="ticks" aria-hidden="true">
+          <span>00</span><span>06</span><span>12</span><span>18</span><span>24</span>
+        </div>
+        <p class="hint">Drag to scrub. Arrow keys nudge by a minute, Page Up and Page Down by an hour.</p>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <h2>Geometry</h2>
+
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="sweep">Arc sweep</label><output id="sweepOut">200°</output></div>
+        <input type="range" id="sweep" min="40" max="330" step="1" value="200">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="radius">Arc radius</label><output id="radiusOut">62</output></div>
+        <input type="range" id="radius" min="34" max="80" step="1" value="62">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="weight">Stroke weight</label><output id="weightOut">13</output></div>
+        <input type="range" id="weight" min="3" max="26" step="1" value="13">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="fade">Tail fade</label><output id="fadeOut">55%</output></div>
+        <input type="range" id="fade" min="0" max="95" step="1" value="55">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="dot">Dot size</label><output id="dotOut">15</output></div>
+        <input type="range" id="dot" min="4" max="30" step="1" value="15">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="offset">Dot offset</label><output id="offsetOut">12</output></div>
+        <input type="range" id="offset" min="0" max="45" step="1" value="12">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="rot">Rotation offset</label><output id="rotOut">0°</output></div>
+        <input type="range" id="rot" min="-180" max="180" step="1" value="0">
+      </div>
+
+      <div class="divide"></div>
+      <h2>This frame</h2>
+      <div class="facts">
+        <div class="fact"><span>Arc angle</span><span id="fAngle">180°</span></div>
+        <div class="fact"><span>Arc colour</span><span id="fArc"><i class="sw" id="swArc"></i>#F5A623</span></div>
+        <div class="fact"><span>Sky from</span><span id="fSky0"><i class="sw" id="swSky0"></i>#FDF0CE</span></div>
+        <div class="fact"><span>Sky to</span><span id="fSky1"><i class="sw" id="swSky1"></i>#FCE9B8</span></div>
+      </div>
+      <button class="reset" id="reset">Reset geometry</button>
+    </aside>
+  </main>
+
+  <footer class="strip">
+    <h2>Reference states</h2>
+    <p>The nine times from your sheet, drawn with the current geometry. Tap one to jump there.</p>
+    <div class="cards" id="strip"></div>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- colour: sRGB <-> OKLab so the ramp stays clean through dusk ---------- */
+  const toLin = c => { c/=255; return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
+  const toSrgb = c => {
+    const v = c<=0.0031308 ? c*12.92 : 1.055*Math.pow(c,1/2.4)-0.055;
+    return Math.round(Math.min(1,Math.max(0,v))*255);
+  };
+  function hexToLab(hex){
+    const n = parseInt(hex.slice(1),16);
+    const r = toLin((n>>16)&255), g = toLin((n>>8)&255), b = toLin(n&255);
+    const l = Math.cbrt(0.4122214708*r + 0.5363325363*g + 0.0514459929*b);
+    const m = Math.cbrt(0.2119034982*r + 0.6806995451*g + 0.1073969566*b);
+    const s = Math.cbrt(0.0883024619*r + 0.2817188376*g + 0.6299787005*b);
+    return [0.2104542553*l + 0.7936177850*m - 0.0040720468*s,
+            1.9779984951*l - 2.4285922050*m + 0.4505937099*s,
+            0.0259040371*l + 0.7827717662*m - 0.8086757660*s];
+  }
+  function labToHex(L,a,b){
+    const l = Math.pow(L + 0.3963377774*a + 0.2158037573*b, 3);
+    const m = Math.pow(L - 0.1055613458*a - 0.0638541728*b, 3);
+    const s = Math.pow(L - 0.0894841775*a - 1.2914855480*b, 3);
+    const R = toSrgb( 4.0767416621*l - 3.3077115913*m + 0.2309699292*s);
+    const G = toSrgb(-1.2684380046*l + 2.6097574011*m - 0.3413193965*s);
+    const B = toSrgb(-0.0041960863*l - 0.7034186147*m + 1.7076147010*s);
+    return "#" + ((1<<24) + (R<<16) + (G<<8) + B).toString(16).slice(1).toUpperCase();
+  }
+
+  /* ---------- the day ramp: arc colour + the two card-gradient stops ---------- */
+  const KEYS = [
+    { t:   0, arc:"#5B5BD6", sky:["#E7E7F8","#DEDEF5"] }, // night
+    { t: 120, arc:"#4C6BD8", sky:["#E5E8F8","#DCE1F5"] },
+    { t: 180, arc:"#4276D6", sky:["#E4EAF8","#DDE5F6"] }, // late night
+    { t: 300, arc:"#4A86DE", sky:["#E3EAF7","#E6E4F3"] }, // pre-dawn
+    { t: 342, arc:"#C06E93", sky:["#F2E4EC","#F5E2DE"] }, // first light
+    { t: 360, arc:"#F0B429", sky:["#FDF3D9","#FBEBC0"] }, // early morning
+    { t: 600, arc:"#F5A623", sky:["#FDF0CE","#FCE9B8"] }, // late morning
+    { t: 720, arc:"#F79A1F", sky:["#FDF1D6","#FBE8C4"] }, // midday
+    { t: 840, arc:"#F58220", sky:["#FDF0E0","#FBE6D0"] }, // afternoon
+    { t:1080, arc:"#EE6C1F", sky:["#FCE9DE","#F9DCCB"] }, // early evening
+    { t:1200, arc:"#E8481F", sky:["#FBE0DC","#F7D2CF"] }, // sunset
+    { t:1245, arc:"#B03A6E", sky:["#F6E0E4","#EFDCEA"] }, // afterglow
+    { t:1290, arc:"#5B3A9E", sky:["#EFE2F4","#E4DBF2"] }, // twilight
+    { t:1440, arc:"#5B5BD6", sky:["#E7E7F8","#DEDEF5"] }  // wraps to night
+  ];
+  const LAB = KEYS.map(k => ({ t:k.t, arc:hexToLab(k.arc), sky:k.sky.map(hexToLab) }));
+
+  const mixLab = (a,b,u) => [a[0]+(b[0]-a[0])*u, a[1]+(b[1]-a[1])*u, a[2]+(b[2]-a[2])*u];
+
+  function palette(min){
+    const t = ((min % 1440) + 1440) % 1440;
+    let i = 0;
+    while (i < LAB.length-2 && t >= LAB[i+1].t) i++;
+    const a = LAB[i], b = LAB[i+1];
+    const u = (t - a.t) / (b.t - a.t);
+    return {
+      arc:  labToHex(...mixLab(a.arc, b.arc, u)),
+      sky0: labToHex(...mixLab(a.sky[0], b.sky[0], u)),
+      sky1: labToHex(...mixLab(a.sky[1], b.sky[1], u))
+    };
+  }
+
+  /* ---------- phases ---------- */
+  const PHASES = [
+    [255,"Pre-dawn"], [345,"Early morning"], [510,"Late morning"], [690,"Midday"],
+    [780,"Afternoon"], [990,"Early evening"], [1140,"Sunset"], [1245,"Twilight"],
+    [1350,"Night"], [90,"Late night"]
+  ];
+  function phaseOf(min){
+    const t = ((min % 1440) + 1440) % 1440;
+    if (t >= 1350 || t < 90) return "Night";
+    for (let i = PHASES.length-1; i >= 0; i--) if (t >= PHASES[i][0]) return PHASES[i][1];
+    return "Late night";
+  }
+
+  const fmt = min => {
+    const t = ((Math.round(min) % 1440) + 1440) % 1440;
+    return String(Math.floor(t/60)).padStart(2,"0") + ":" + String(t%60).padStart(2,"0");
+  };
+
+  /* ---------- geometry ----------
+     Angles run clockwise from straight up. The arc makes one full turn per day;
+     the anchor puts it overhead through the morning and cupped below at night,
+     which is the closest continuous fit to the nine reference states.        */
+  const ANCHOR = -120;
+  const NSEG = 52;
+  const SVG_NS = "http://www.w3.org/2000/svg";
+
+  const pt = (cx,cy,r,deg) => {
+    const a = deg * Math.PI/180;
+    return [cx + r*Math.sin(a), cy - r*Math.cos(a)];
+  };
+  const smooth = x => x*x*(3-2*x);
+
+  function frame(min, g){
+    const theta = (min/1440)*360 + ANCHOR + g.rot;
+    const p = palette(min);
+    return { theta:((theta%360)+360)%360, ...p };
+  }
+
+  /* Draws arc + dot into an <svg>. Rebuilt each time — 52 short segments give the
+     tail fade the reference has, following the curve rather than a flat gradient. */
+  function draw(svg, min, g){
+    const f = frame(min, g);
+    const cx = 100, cy = 100;
+    const start = f.theta - g.sweep/2;
+    const fade = Math.max(0.001, g.fade/100);
+
+    while (svg.lastChild && svg.lastChild.nodeName !== "title") svg.removeChild(svg.lastChild);
+
+    const arc = document.createElementNS(SVG_NS,"g");
+    for (let i = 0; i < NSEG; i++){
+      const u0 = i/NSEG, u1 = (i+1)/NSEG;
+      const a0 = start + u0*g.sweep, a1 = start + (u1 + 0.35/NSEG)*g.sweep;
+      const mid = (u0+u1)/2;
+      const op = mid >= fade ? 1 : smooth(mid/fade);
+      if (op < 0.012) continue;
+      const [x0,y0] = pt(cx,cy,g.radius,a0);
+      const [x1,y1] = pt(cx,cy,g.radius,a1);
+      const seg = document.createElementNS(SVG_NS,"path");
+      seg.setAttribute("d", `M${x0.toFixed(2)} ${y0.toFixed(2)}A${g.radius} ${g.radius} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`);
+      seg.setAttribute("stroke", f.arc);
+      seg.setAttribute("stroke-width", (g.weight * (0.72 + 0.28*op)).toFixed(2));
+      seg.setAttribute("stroke-opacity", op.toFixed(3));
+      seg.setAttribute("stroke-linecap","round");
+      seg.setAttribute("fill","none");
+      arc.appendChild(seg);
+    }
+    svg.appendChild(arc);
+
+    const [dx,dy] = pt(cx, cy, g.offset, f.theta + 180);
+
+    const bloom = document.createElementNS(SVG_NS,"circle");
+    bloom.setAttribute("cx", dx.toFixed(2));
+    bloom.setAttribute("cy", dy.toFixed(2));
+    bloom.setAttribute("r", (g.dot*1.9).toFixed(2));
+    bloom.setAttribute("fill", f.arc);
+    bloom.setAttribute("opacity","0.14");
+    svg.appendChild(bloom);
+
+    const dot = document.createElementNS(SVG_NS,"circle");
+    dot.setAttribute("cx", dx.toFixed(2));
+    dot.setAttribute("cy", dy.toFixed(2));
+    dot.setAttribute("r", g.dot);
+    dot.setAttribute("fill", f.arc);
+    svg.appendChild(dot);
+
+    return f;
+  }
+
+  /* ---------- state ---------- */
+  const DEFAULTS = { sweep:200, radius:62, weight:13, fade:55, dot:15, offset:12, rot:0 };
+  const g = Object.assign({}, DEFAULTS);
+  let minute = 600;
+
+  const $ = id => document.getElementById(id);
+  const icon = $("icon"), card = $("card"), slider = $("slider");
+  const CTRLS = ["sweep","radius","weight","fade","dot","offset","rot"];
+  const UNITS = { sweep:"°", rot:"°", fade:"%" };
+
+  const REFS = [
+    360, 600, 840, 1080, 1200, 1290, 0, 180, 300
+  ];
+  const refEls = [];
+
+  function buildStrip(){
+    const wrap = $("strip");
+    REFS.forEach(t => {
+      const btn = document.createElement("button");
+      btn.className = "ref";
+      btn.type = "button";
+      const cardEl = document.createElement("div");
+      cardEl.className = "ref-card";
+      const svg = document.createElementNS(SVG_NS,"svg");
+      svg.setAttribute("viewBox","0 0 200 200");
+      svg.setAttribute("aria-hidden","true");
+      cardEl.appendChild(svg);
+      const meta = document.createElement("div");
+      meta.className = "ref-meta";
+      meta.innerHTML = `<div class="ref-time">${fmt(t)}</div><div class="ref-name">${phaseOf(t)}</div>`;
+      btn.append(cardEl, meta);
+      btn.setAttribute("aria-label", `Jump to ${fmt(t)}, ${phaseOf(t)}`);
+      btn.addEventListener("click", () => { setMinute(t); slider.focus(); });
+      wrap.appendChild(btn);
+      refEls.push({ t, btn, cardEl, svg });
+    });
+  }
+
+  function paintStrip(){
+    refEls.forEach(r => {
+      const f = draw(r.svg, r.t, g);
+      r.cardEl.style.background = `linear-gradient(158deg, ${f.sky0}, ${f.sky1})`;
+      r.btn.setAttribute("aria-current", Math.round(minute) === r.t ? "true" : "false");
+    });
+  }
+
+  function dayRamp(){
+    const stops = [];
+    for (let t = 0; t <= 1440; t += 30) stops.push(`${palette(t).arc} ${(t/1440*100).toFixed(2)}%`);
+    return `linear-gradient(90deg, ${stops.join(",")})`;
+  }
+
+  function render(){
+    const f = draw(icon, minute, g);
+    card.style.background = `linear-gradient(158deg, ${f.sky0}, ${f.sky1})`;
+    document.documentElement.style.setProperty("--accent", f.arc);
+    document.documentElement.style.setProperty("--accent-soft", f.arc + "26");
+    document.documentElement.style.setProperty("--sky-1", f.sky1);
+
+    $("timeText").textContent = fmt(minute);
+    $("phaseText").textContent = phaseOf(minute);
+    slider.setAttribute("aria-valuetext", `${fmt(minute)}, ${phaseOf(minute)}`);
+
+    $("fAngle").textContent = Math.round(f.theta) + "°";
+    $("fArc").lastChild.textContent = f.arc;
+    $("fSky0").lastChild.textContent = f.sky0;
+    $("fSky1").lastChild.textContent = f.sky1;
+    $("swArc").style.background = f.arc;
+    $("swSky0").style.background = f.sky0;
+    $("swSky1").style.background = f.sky1;
+
+    refEls.forEach(r => r.btn.setAttribute("aria-current", Math.round(minute) === r.t ? "true" : "false"));
+  }
+
+  function setMinute(m){
+    minute = ((Math.round(m) % 1440) + 1440) % 1440;
+    slider.value = minute;
+    render();
+  }
+
+  /* ---------- wiring ---------- */
+  buildStrip();
+  slider.style.setProperty("--day-ramp", dayRamp());
+
+  slider.addEventListener("input", e => { stop(); setMinute(+e.target.value); });
+  slider.addEventListener("keydown", e => {
+    if (e.key === "PageUp" || e.key === "PageDown"){
+      e.preventDefault(); stop();
+      setMinute(minute + (e.key === "PageUp" ? 60 : -60));
+    }
+  });
+
+  CTRLS.forEach(id => {
+    const el = $(id), out = $(id + "Out");
+    el.addEventListener("input", () => {
+      g[id] = +el.value;
+      out.textContent = el.value + (UNITS[id] || "");
+      render();
+      paintStrip();
+    });
+  });
+
+  $("reset").addEventListener("click", () => {
+    CTRLS.forEach(id => {
+      g[id] = DEFAULTS[id];
+      $(id).value = DEFAULTS[id];
+      $(id + "Out").textContent = DEFAULTS[id] + (UNITS[id] || "");
+    });
+    render();
+    paintStrip();
+  });
+
+  /* play */
+  let raf = null, last = 0;
+  const SPEED = 1440 / 20000; // a full day in twenty seconds
+  function tick(ts){
+    if (!last) last = ts;
+    setMinute(minute + (ts - last) * SPEED);
+    last = ts;
+    raf = requestAnimationFrame(tick);
+  }
+  function stop(){
+    if (!raf) return;
+    cancelAnimationFrame(raf); raf = null; last = 0;
+    $("play").textContent = "Play day";
+    $("play").setAttribute("aria-pressed","false");
+  }
+  $("play").addEventListener("click", () => {
+    if (raf) return stop();
+    $("play").textContent = "Pause";
+    $("play").setAttribute("aria-pressed","true");
+    raf = requestAnimationFrame(tick);
+  });
+
+  /* copy the current frame as a standalone SVG */
+  $("copy").addEventListener("click", async () => {
+    const scratch = document.createElementNS(SVG_NS,"svg");
+    draw(scratch, minute, g);
+    const body = Array.from(scratch.childNodes).map(n => n.outerHTML).join("");
+    const out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">\n`
+              + `<!-- arc icon at ${fmt(minute)} — ${phaseOf(minute)} -->\n${body}\n</svg>`;
+    const btn = $("copy");
+    try {
+      await navigator.clipboard.writeText(out);
+      btn.textContent = "Copied";
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = out; document.body.appendChild(ta); ta.select();
+      document.execCommand("copy"); ta.remove();
+      btn.textContent = "Copied";
+    }
+    setTimeout(() => { btn.textContent = "Copy SVG"; }, 1600);
+  });
+
+  render();
+  paintStrip();
+})();
+</script>
+</body>
+</html>

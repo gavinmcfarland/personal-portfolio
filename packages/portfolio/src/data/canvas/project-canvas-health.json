@@ -1,35 +1,190 @@
 {
   "version": 2,
-  "activePage": "home",
+  "activePage": "pg1",
   "pages": [
     {
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 680.0697655264115,
-        "y": 606.3302770019086,
-        "scale": 1.625984639355496
+        "x": 166.4283454613805,
+        "y": 337.20547499635353,
+        "scale": 0.14433151650441828
       },
       "nodes": [
         {
-          "id": "n1-html",
+          "id": "n2-html",
           "type": "html",
-          "x": -299.05858935965034,
-          "y": -222.95763238210995,
-          "z": 21,
-          "w": 450.1955517749827,
-          "h": 876.5377390410024,
-          "src": "/canvas-assets/035a94e4a92f4abe.html",
-          "name": "health-app.html",
+          "x": 1509.2629398945637,
+          "y": -166.82890925973953,
+          "z": 22,
+          "w": 450,
+          "h": 877,
+          "src": "/canvas-assets/15e3539a1e8363e5.html",
+          "name": "health-app-11.html",
           "frame": "android"
         }
       ],
       "shapes": []
+    },
+    {
+      "id": "pg1",
+      "name": "Day/Night Visualisation",
+      "view": {
+        "x": 647.0097586147444,
+        "y": 369.44868528674886,
+        "scale": 0.10228498074454428
+      },
+      "nodes": [
+        {
+          "id": "n14-html",
+          "type": "html",
+          "x": -3465.9278466862834,
+          "y": -879.0257888215431,
+          "z": 1,
+          "w": 800,
+          "h": 646.7360474517548,
+          "src": "/canvas-assets/cfb524279796bb63.html",
+          "name": "arc-icon-prototype.html"
+        },
+        {
+          "id": "n15-tblock",
+          "type": "tblock",
+          "x": -4196.621267591321,
+          "y": -984.2693548462182,
+          "z": 2,
+          "text": "Day/Night Visualisation",
+          "fontSize": 56,
+          "font": "script"
+        },
+        {
+          "id": "n16-md",
+          "type": "md",
+          "x": -2822.5510862399037,
+          "y": -267.5257888215431,
+          "z": 3,
+          "w": 190.76108635811934,
+          "text": "Hold **shift** to interact with the prototype."
+        },
+        {
+          "id": "n17-image",
+          "type": "image",
+          "x": -4051.6583647869284,
+          "y": -359.32890925973953,
+          "z": 4,
+          "w": 357.8237508879947,
+          "h": 574.146748357851,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/f6a6bb78656986c1.png",
+              "alt": "Screenshot 2026-08-18 at 09.39.21.png"
+            }
+          ],
+          "crop": {
+            "x": 0.0624,
+            "y": 0,
+            "w": 0.9081,
+            "h": 0.956
+          }
+        },
+        {
+          "id": "n18-md",
+          "type": "md",
+          "x": -3863.6583647869284,
+          "y": 156.67109074026047,
+          "z": 5,
+          "w": 340,
+          "text": "As the product concept started to grow it became apparent that using time as the main anchor for events struggled to communicate at a glance how far in the day an event was scheduled."
+        },
+        {
+          "id": "n19-html",
+          "type": "html",
+          "x": -2321.6407373112834,
+          "y": -555.5257888215431,
+          "z": 6,
+          "w": 800,
+          "h": 2164.488871710653,
+          "src": "/canvas-assets/3df5bb6e5779eb49.html",
+          "name": "arc-icon-day-player.html"
+        },
+        {
+          "id": "n20-md",
+          "type": "md",
+          "x": -1691.6407373112834,
+          "y": 1561.474211178457,
+          "z": 7,
+          "w": 340,
+          "text": "I continued exploring abstract visualisations, adding knobs that allowed me to tweak elements of the design."
+        },
+        {
+          "id": "n21-image",
+          "type": "image",
+          "x": -3104.5510862399037,
+          "y": 694.6750492933099,
+          "z": 8,
+          "w": 472.927334848317,
+          "h": 478,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/ed46b4c47dc3ce18.png",
+              "alt": "Screenshot 2026-08-20 at 21.34.44.png"
+            }
+          ],
+          "crop": {
+            "x": 0,
+            "y": 0,
+            "w": 1,
+            "h": 0.9967
+          }
+        },
+        {
+          "id": "n22-image",
+          "type": "image",
+          "x": -3463.976144827058,
+          "y": 392.2733730636039,
+          "z": 9,
+          "w": 473,
+          "h": 478,
+          "assets": [
+            {
+              "kind": "image",
+              "src": "/canvas-assets/967271d37ddd10d5.png",
+              "alt": "Screenshot 2026-08-20 at 21.34.34.png"
+            }
+          ]
+        },
+        {
+          "id": "n23-html",
+          "type": "html",
+          "x": -1247.6649181614446,
+          "y": -555.5257888215431,
+          "z": 10,
+          "w": 800,
+          "h": 2512.613470086319,
+          "src": "/canvas-assets/ee40dba259f60bb4.html",
+          "name": "semicircle-icon-studio-27 (1).html"
+        }
+      ],
+      "shapes": [
+        {
+          "id": "s3",
+          "type": "rect",
+          "stroke": "#2E7D32",
+          "width": 3,
+          "z": 11,
+          "style": "sketch",
+          "x1": -4265.12,
+          "y1": -1039.6,
+          "x2": -801,
+          "y2": 883.73
+        }
+      ]
     }
   ],
   "viewport": {
-    "w": 826,
-    "h": 962
+    "w": 997,
+    "h": 996
   },
-  "savedAt": 1787179390534
+  "savedAt": 1787259674786
 }

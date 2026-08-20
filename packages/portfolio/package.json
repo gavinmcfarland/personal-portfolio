@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "private:new": "node scripts/new-private-page.mjs"
+    "private:new": "node scripts/new-private-page.mjs",
+    "canvas:audit": "node scripts/audit-canvas-html.mjs"
   },
   "dependencies": {
     "@babel/plugin-syntax-jsx": "^7.28.6",

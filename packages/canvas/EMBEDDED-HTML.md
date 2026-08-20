@@ -71,6 +71,10 @@ around it changes — which is the bug this half of the bridge exists to prevent
 always one of light or dark, so it has no honest answer. Every other media query
 passes straight through.
 
+Ingest checks for this: a document that queries the media list without listening
+to it is warned about on drop and fails `pnpm canvas:audit`. See “Verifying a
+change”.
+
 ### The `canvas-zoom` message
 
 ```js
@@ -303,7 +307,21 @@ re-enable the containment mode that had to be withdrawn.
 
 ## Verifying a change
 
-There is no automated check for this. To confirm a document behaves:
+One fault is checked for you. `auditHtml` in `src/html-bridge.js` reads a
+document at ingest and warns — in the console on drop, and as a non-zero exit
+from `pnpm canvas:audit` (`packages/portfolio/scripts/audit-canvas-html.mjs`)
+over the committed assets — when it queries `prefers-color-scheme` in script but
+never listens for a change, i.e. the “Theming from script” mistake above. That
+one is worth automating because it is invisible: the document paints its first
+frame correctly and fails only when someone flips the board, so it survives
+every screenshot. Run the audit after importing or hand-editing an asset; the
+committed set is expected to stay clean.
+
+It reads source text rather than the running document, so a document that hands
+its MediaQueryList to a helper instead of binding it is reported as not
+listening. The findings are advisory — a drop is never blocked.
+
+The rest is by eye. To confirm a document behaves:
 
 1. Drop it on a board and zoom in and out across the full range.
 2. Watch anything fixed-position — a header, a floating button. It must not move
@@ -312,6 +330,8 @@ There is no automated check for this. To confirm a document behaves:
 3. Watch section boundaries for reflow as the gesture starts and ends.
 4. Confirm dark mode still follows the host's theme switcher — the theme bridge
    depends on `prefers-color-scheme` rules surviving whatever pruning you do.
+   Flip it *while the document is open*, not only before it loads: a document
+   that themes from script can pass the second test and fail this one.
 
 ## Related
 
@@ -320,13 +340,15 @@ There is no automated check for this. To confirm a document behaves:
   reading if your generator emits anything with hover states, forms or its own
   scrolling.
 - `src/html-bridge.js` — `THEME_SYNC`, `ZOOM_OPTS`, `INPUT_BRIDGE`, the version
-  table and `injectBridge`. The single definition; both the runtime and the
-  backfill script import it.
+  table, `injectBridge` and `auditHtml`. The single definition; the runtime, the
+  backfill script and the audit script all import it.
 - `src/CanvasProvider.jsx` — ingest (`addHtmlFromFile`) and the gesture window
   (`beginGesture` / `endGesture` / `postZoomPaintMode`).
 - `src/nodes/Html.jsx` — the iframe node, sandboxing, theme messaging.
 - `packages/portfolio/scripts/inject-canvas-bridge.mjs` — upgrades the bridge in
   already-committed assets.
+- `packages/portfolio/scripts/audit-canvas-html.mjs` — runs `auditHtml` over the
+  committed assets (`pnpm canvas:audit`); exits non-zero on a warning.
 - `visual-code-editor/CANVAS_ZOOM_RASTERIZATION.md` — the prior art this
   approach was ported from, including the tile-memory and rasterization
   tradeoffs that apply to an Electron host but not a browser one.

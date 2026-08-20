@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Semicircles — solid halves</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-900:#0C1016;
+    --ink-850:#11161E;
+    --ink-800:#161C26;
+    --ink-750:#1C232E;
+    --line:#28313E;
+    --line-soft:#1E2531;
+    --text:#E8EBF1;
+    --text-dim:#9AA4B4;
+    --text-faint:#6B7688;
+    --accent:#F0B429;
+
+    --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --r-lg:20px; --r-md:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ink-900); color:var(--text);
+    font-family:var(--mono); font-size:14px;
+    -webkit-font-smoothing:antialiased; min-height:100vh;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:radial-gradient(130% 70% at 50% 0%, rgba(240,180,41,.10), transparent 60%);
+  }
+  .app{position:relative; z-index:1; max-width:1400px; margin:0 auto; padding:32px 24px 64px}
+
+  .bar{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap}
+  .eyebrow{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-faint); display:block; margin-bottom:6px}
+  h1{font-family:var(--display); font-weight:800; font-size:clamp(24px,3.4vw,34px); letter-spacing:-.02em; margin:0; line-height:1}
+  .lede{color:var(--text-faint); font-size:12px; margin:10px 0 0; max-width:64ch; line-height:1.6}
+
+  .transport{
+    margin:26px 0 22px; padding:16px 18px;
+    background:var(--ink-850); border:1px solid var(--line-soft); border-radius:var(--r-lg);
+  }
+  .transport-top{display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px}
+  .play{
+    font-family:var(--mono); font-size:13px; color:var(--ink-900);
+    background:var(--accent); border:none; border-radius:999px;
+    padding:10px 22px; cursor:pointer; font-weight:500; min-width:112px;
+    transition:filter .16s;
+  }
+  .play:hover{filter:brightness(1.08)}
+  .shift-read{margin-left:auto; font-size:13px; font-variant-numeric:tabular-nums; color:var(--text-dim)}
+  .shift-read b{color:var(--text); font-weight:500}
+
+  #shift{width:100%}
+  #shift::-webkit-slider-runnable-track{height:16px; border-radius:999px; background:var(--day-ramp); border:1px solid rgba(255,255,255,.09)}
+  #shift::-moz-range-track{height:16px; border-radius:999px; background:var(--day-ramp); border:1px solid rgba(255,255,255,.09)}
+  #shift::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:24px; height:24px; margin-top:-5px; border-radius:50%;
+    background:var(--text); border:3px solid var(--ink-850); box-shadow:0 0 0 1px rgba(255,255,255,.3);
+  }
+  #shift::-moz-range-thumb{
+    width:24px; height:24px; border-radius:50%;
+    background:var(--text); border:3px solid var(--ink-850); box-shadow:0 0 0 1px rgba(255,255,255,.3);
+  }
+  .ramp-ticks{display:flex; justify-content:space-between; margin-top:8px; font-size:11px; letter-spacing:.1em; color:var(--text-faint)}
+
+  .stage{display:grid; grid-template-columns:minmax(0,1fr) 292px; gap:20px; align-items:start}
+
+  .toolbar{display:flex; gap:18px; flex-wrap:wrap; align-items:center; margin-bottom:18px}
+  .group{display:flex; align-items:center; gap:10px}
+  .group > span{font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-faint)}
+  .seg{display:flex; background:var(--ink-800); border:1px solid var(--line-soft); border-radius:999px; padding:3px}
+  .seg button{
+    font-family:var(--mono); font-size:12px; color:var(--text-dim);
+    background:none; border:none; border-radius:999px; padding:6px 13px; cursor:pointer;
+    transition:background .16s, color .16s; white-space:nowrap;
+  }
+  .seg button:hover{color:var(--text)}
+  .seg button[aria-pressed="true"]{background:var(--ink-750); color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:6px}
+
+  /* the previews sit straight on the page — no surface behind them */
+  /* The previews sit in a container that takes the backdrop's own side — light for Sky and
+     Paper, dark for Night sky and Ink — so the cards are never judged against a tone the
+     design would not actually sit on. */
+  .sheet{
+    border-radius:var(--r-lg); padding:72px 64px;
+    border:1px solid transparent;
+    transition:background .2s linear, border-color .2s linear;
+  }
+  .sheet.surf-light{background:#FFFFFF; border-color:rgba(0,0,0,.10)}
+  .sheet.surf-dark{background:#0B0E14; border-color:rgba(255,255,255,.07)}
+  /* the page shadow is tuned for a dark backdrop; on white it needs to be soft but still
+     present, since the Paper cards are themselves white and have nothing else to sit on */
+  .sheet.surf-light .tile-card{box-shadow:0 4px 14px -10px rgba(0,0,0,.30)}
+  .sheet.surf-light .row:hover{box-shadow:0 4px 14px -11px rgba(0,0,0,.28)}
+  /* Paper cards are white on a white container, so nothing separates them by value —
+     a hairline gives them back an edge without adding tone. */
+  .sheet.surf-paper .tile-card{border:1px solid #E5E5E9}
+  .sheet.surf-paper .row{border:1px solid #E5E5E9}
+  /* placed after the surface rules so it overrides them at equal specificity */
+  .sheet.no-shadow .tile-card{box-shadow:none}
+  .sheet.no-shadow .row:hover{box-shadow:none}
+
+  .grid{display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(var(--tile,146px), 1fr))}
+  .tile{position:relative; padding:0; border:none; cursor:pointer; background:none; border-radius:var(--r-md); text-align:center; transition:transform .18s ease}
+  .tile:hover{transform:translateY(-3px)}
+  .tile-card{
+    border-radius:var(--r-md); padding:14px 8px 13px;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    box-shadow:0 10px 26px -18px rgba(0,0,0,.9);
+  }
+  .tile-card svg{width:72%; max-width:104px; aspect-ratio:1; height:auto; display:block}
+  .tile-time{font-size:13px; font-weight:500; font-variant-numeric:tabular-nums; margin-top:4px}
+  .tile-phase{font-family:var(--display); font-size:11px; line-height:1.2}
+  .tile .flag{
+    position:absolute; inset:auto 0 -18px 0; font-size:10px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--accent); opacity:0; transition:opacity .16s;
+  }
+  .tile:hover .flag, .tile:focus-visible .flag{opacity:1}
+  .grid.dense{--tile:104px}
+  .grid.dense .tile-time{font-size:11px}
+  .grid.dense .tile-phase{display:none}
+
+  .rows{display:flex; flex-direction:column; gap:3px}
+  .row{
+    display:flex; align-items:center; gap:18px;
+    width:100%; padding:9px 18px 9px 12px; border:none; cursor:pointer;
+    border-radius:10px; text-align:left; font-family:var(--mono);
+    transition:transform .16s ease, box-shadow .16s ease;
+  }
+  .row:hover{transform:translateX(4px); box-shadow:0 6px 20px -12px rgba(0,0,0,.9)}
+  .row svg{width:46px; height:46px; flex:none; display:block}
+  .row-time{font-size:15px; font-weight:500; font-variant-numeric:tabular-nums; width:62px; flex:none}
+  .row-phase{font-family:var(--display); font-size:13px; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .row-meta{font-size:12px; font-variant-numeric:tabular-nums; width:56px; text-align:right; flex:none}
+  .row-hex{font-size:12px; width:96px; flex:none; display:flex; align-items:center; justify-content:flex-end; gap:8px}
+  .row-hex i{width:12px; height:12px; border-radius:3px; border:1px solid rgba(0,0,0,.18); flex:none}
+  .row-flag{font-size:10px; letter-spacing:.1em; text-transform:uppercase; width:72px; text-align:right; flex:none; opacity:0; transition:opacity .16s}
+  .row:hover .row-flag, .row:focus-visible .row-flag{opacity:.7}
+  .rows.dense .row{padding:5px 18px 5px 12px; gap:14px}
+  .rows.dense .row svg{width:34px; height:34px}
+  .rows.dense .row-phase{display:none}
+
+  .on-light .tile-time, .on-light .row-time{color:#171A20}
+  .on-light .tile-phase, .on-light .row-phase, .on-light .row-meta, .on-light .row-hex{color:#5A6270}
+  .on-light .row-flag{color:#171A20}
+  .on-dark .tile-time, .on-dark .row-time{color:#EDEFF3}
+  .on-dark .tile-phase, .on-dark .row-phase, .on-dark .row-meta, .on-dark .row-hex{color:#8A93A2}
+  .on-dark .row-flag{color:#EDEFF3}
+  .on-dark .row-hex i{border-color:rgba(255,255,255,.22)}
+
+  .panel{
+    background:var(--ink-850); border:1px solid var(--line-soft); border-radius:var(--r-lg);
+    padding:22px; position:sticky; top:24px;
+    max-height:calc(100vh - 48px); overflow:auto;
+  }
+  .panel h2{font-size:10px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--text-faint); margin:0 0 4px}
+  .panel .sub{font-size:11px; color:var(--text-faint); line-height:1.55; margin:0 0 14px}
+  .panel .seg{flex-wrap:wrap; margin-bottom:16px}
+  .ctrl{margin-bottom:15px}
+  .ctrl-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px}
+  .ctrl-top label{font-size:12px; color:var(--text-dim)}
+  .ctrl-top output{font-size:12px; font-variant-numeric:tabular-nums}
+  .panel input[type=range]{-webkit-appearance:none; appearance:none; width:100%; background:transparent; margin:0; cursor:pointer}
+  .panel input[type=range]::-webkit-slider-runnable-track{height:3px; border-radius:2px; background:var(--line)}
+  .panel input[type=range]::-moz-range-track{height:3px; border-radius:2px; background:var(--line)}
+  .panel input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:13px; height:13px; margin-top:-5px; border-radius:50%; background:var(--text); border:none}
+  .panel input[type=range]::-moz-range-thumb{width:13px; height:13px; border-radius:50%; background:var(--text); border:none}
+  .divide{height:1px; background:var(--line-soft); margin:22px 0}
+  .reset{
+    width:100%; font-family:var(--mono); font-size:12px; color:var(--text);
+    background:var(--ink-800); border:1px solid var(--line); border-radius:999px;
+    padding:9px 16px; cursor:pointer; transition:background .18s, border-color .18s;
+  }
+  .reset:hover{background:var(--ink-750); border-color:#3A4553}
+
+  input[type=range]{-webkit-appearance:none; appearance:none; background:transparent; margin:0; cursor:pointer}
+
+  @media (max-width:1000px){
+    .stage{grid-template-columns:1fr}
+    .panel{position:static; max-height:none}
+    .row-meta{display:none}
+  }
+  @media (max-width:620px){
+    .app{padding:24px 16px 40px}
+    .sheet{padding:32px 20px}
+    .grid{--tile:118px; gap:10px}
+    .row-hex{width:auto}
+    .row-hex span{display:none}
+    .row-flag{display:none}
+    .shift-read{width:100%; margin-left:0; text-align:right}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+<script data-cv-theme-sync="2">(() => {
+  const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
+  const walk = (rules, dark) => {
+    for (const r of rules) {
+      // A rewritten rule's mediaText no longer mentions prefers-color-scheme,
+      // so membership in the flipped map must count as a match too or it
+      // would only ever flip once.
+      if (r.media && (flipped.has(r) || /prefers-color-scheme/i.test(r.media.mediaText))) {
+        if (!flipped.has(r)) flipped.set(r, /prefers-color-scheme:\s*dark/i.test(r.media.mediaText));
+        r.media.mediaText = flipped.get(r) === dark ? 'all' : 'not all';
+      } else if (r.cssRules) walk(r.cssRules, dark);
+    }
+  };
+
+  // The board's theme, once it has said. Null until then: a document opened
+  // without a boot hash answers from the OS rather than guessing.
+  let host = null;
+
+  /* prefers-color-scheme in JavaScript.
+
+     Rewriting media rules only reaches a document that themes itself in CSS. A
+     prototype that renders from script — picking colours in JS, or setting a
+     class off matchMedia — reads the media query directly, and inside the
+     iframe that answers with the OS. Such a document ignored the board
+     entirely: it stayed on the system setting while the host sat pinned to
+     light or dark, and when the OS flipped it moved on its own rather than
+     with the page around it.
+
+     So prefers-color-scheme queries answer with the host theme instead, and
+     fire 'change' when it flips — meaning the ordinary listener a document
+     already writes is enough to follow the board, with nothing canvas-specific
+     in it. Every other query passes through to the real matchMedia untouched.
+
+     'no-preference' is left to the OS: the host is always one of light or
+     dark, so it has no honest answer for "the user expressed none". */
+  const native = window.matchMedia && window.matchMedia.bind(window);
+  const wants = (q) =>
+    /prefers-color-scheme:\s*dark/i.test(q) ? true
+    : /prefers-color-scheme:\s*light/i.test(q) ? false
+    : null;
+  // Held strongly, so a query stays live for as long as the document does —
+  // the same lifetime a real MediaQueryList has once it carries a listener.
+  const live = [];
+  if (native) window.matchMedia = (query) => {
+    const q = String(query);
+    const dark = wants(q);
+    if (dark === null) return native(q);
+    const bus = new EventTarget();
+    const mql = {
+      media: q,
+      get matches() { return host === null ? native(q).matches : host === dark; },
+      onchange: null,
+      addEventListener: (t, fn, o) => bus.addEventListener(t, fn, o),
+      removeEventListener: (t, fn, o) => bus.removeEventListener(t, fn, o),
+      // The pre-2019 spelling, still what a lot of copied snippets use.
+      addListener: (fn) => bus.addEventListener('change', fn),
+      removeListener: (fn) => bus.removeEventListener('change', fn),
+      dispatchEvent: (e) => bus.dispatchEvent(e),
+    };
+    live.push({ mql, bus, was: mql.matches });
+    return mql;
+  };
+  // Only on a real edge, like the platform: a host that re-sends the theme it
+  // already sent must not make every listener re-run.
+  const notify = () => {
+    for (const l of live) {
+      const now = l.mql.matches;
+      if (now === l.was) continue;
+      l.was = now;
+      // A MediaQueryListEvent in all the ways a listener reads one.
+      const ev = new Event('change');
+      ev.matches = now;
+      ev.media = l.mql.media;
+      if (typeof l.mql.onchange === 'function') l.mql.onchange.call(l.mql, ev);
+      l.bus.dispatchEvent(ev);
+    }
+  };
+
+  const apply = (dark) => {
+    host = dark;
+    document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.style.colorScheme = dark ? 'dark' : 'light'; // UA defaults (bg, controls) follow too
+    for (const sheet of document.styleSheets) {
+      try { walk(sheet.cssRules, dark); } catch { /* unreadable sheet */ }
+    }
+    notify();
+  };
+  addEventListener('message', (e) => {
+    const d = e.data;
+    if (d && d.type === 'canvas-theme' && (d.theme === 'dark' || d.theme === 'light')) apply(d.theme === 'dark');
+  });
+  // Boot theme from the URL hash (set by the host, see nodes/Html.jsx): applied
+  // synchronously — this script sits at the end of <head>, after the document's
+  // styles but before any rendering — so the first paint is already themed, and
+  // a body script reading matchMedia gets the board's answer on its first read
+  // rather than the OS's. The message path only lands after load.
+  // Re-applied at DOMContentLoaded for any stylesheets later in the body.
+  const boot = /cv-theme=(dark|light)/.exec(location.hash || '');
+  if (boot) {
+    apply(boot[1] === 'dark');
+    addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
+  }
+})()</script><script data-cv-zoom-opts="4">(() => {
+  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
+  var css =
+    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
+    // it is also the single biggest per-frame paint saving).
+    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
+    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
+    // Gesture only: paint-level savings that cannot move a box.
+    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
+    'box-shadow:none!important;text-shadow:none!important}';
+  var style = document.createElement('style');
+  style.textContent = css;
+  var attach = function () { (document.head || document.documentElement).appendChild(style); };
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
+  // Flat until told otherwise: a host too old to send a scale gets the safe,
+  // never-blurry rendering rather than an unannounced regression.
+  document.documentElement.classList.add('cv-flat');
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'canvas-zoom') return;
+    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
+    document.documentElement.classList.toggle('cv-zooming', !!d.active);
+    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
+  });
+})()</script><script data-cv-input="1">(() => {
+  if (window.parent === window) return;
+  var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
+
+  // Announce this document, so the host can hand it anything it holds for it
+  // whenever the script happens to start — a lazily-loaded frame with a warm
+  // cache can be running before the host has a handler on it.
+  send({ type: 'canvas-input-hello' });
+
+  var opts = function (x, y, extra) {
+    var o = {
+      bubbles: true, cancelable: true, composed: true, view: window,
+      clientX: x, clientY: y, screenX: x, screenY: y,
+    };
+    for (var k in extra) o[k] = extra[k];
+    return o;
+  };
+
+  // ── Hover ──────────────────────────────────────────────────────────────────
+  /* The cursor's position, replayed as the enter/leave traffic a real one would
+     produce. Tracked so the transitions are emitted only on a real crossing, as
+     the platform does it: over/out bubble, enter/leave do not.
+
+     The CSS :hover pseudo-class is beyond reach here (see the note above, and
+     note that a backtick would end this script's template literal) — what it
+     drives is
+     everything a demo does in JavaScript: onMouseEnter handlers, cursor-follow
+     effects, tooltips, hover-tracked canvases. */
+  /* CSS hover, which no dispatched event can produce.
+
+     The pseudo-class follows the real cursor, and the real cursor is on the
+     board's shield — so a demo whose hover states are pure CSS would sit inert
+     under the pointer while its JavaScript hover handlers ran perfectly. The
+     events below are only half of hovering; this is the other half.
+
+     So the document's own rules are read back and re-emitted with :hover
+     swapped for a class this script controls. Specificity survives the swap
+     exactly — a pseudo-class and a class both count (0,1,0) — so a mirrored rule
+     wins and loses against everything the original did, and the sheet goes last
+     so it takes ties. Then hovering is a matter of putting that class on the
+     right elements.
+
+     Rules are read from the document's own stylesheets, which is why this works
+     at all: these are ingested documents, styled inline or from their own
+     origin. A sheet that can't be read is skipped, exactly as the theme half
+     skips it.
+
+     Rebuilt on load as well as first use — a document that adds a stylesheet
+     while it boots would otherwise mirror only what existed at the first move. */
+  var HOVER_CLASS = 'cv-hv';
+  var hoverSheet = null;
+  var collect = function (rules) {
+    var css = '';
+    for (var i = 0; i < rules.length; i++) {
+      var r = rules[i];
+      // Rebuilt from the selector and the declarations rather than patching
+      // cssText, so a ':hover' appearing inside a VALUE is left alone.
+      if (r.selectorText && r.selectorText.indexOf(':hover') !== -1 && r.style) {
+        css += r.selectorText.split(':hover').join('.' + HOVER_CLASS) + '{' + r.style.cssText + '}\n';
+      } else if (r.cssRules) {
+        var inner = collect(r.cssRules);
+        // Keep whatever wrapper this is (@media, @supports, @layer) by reusing
+        // its own prelude, so the condition still applies to the copy.
+        if (inner) css += r.cssText.slice(0, r.cssText.indexOf('{') + 1) + '\n' + inner + '}\n';
+      }
+    }
+    return css;
+  };
+  /* Cheap fingerprint of what is currently loaded — how many sheets, and how
+     many rules in each. Enough to notice a stylesheet arriving or a rule being
+     inserted, which is what a demo built with CSS-in-JS does continuously, long
+     after this script first ran. Reading a rule COUNT is cheap; reading the
+     rules themselves is not, which is why the mirror is only rebuilt when this
+     changes rather than on every move. */
+  var sheetSig = function () {
+    var sig = '';
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      try { sig += document.styleSheets[i].cssRules.length + ','; } catch (err) { sig += 'x,'; }
+    }
+    return sig;
+  };
+  var lastSig = null;
+  var buildHoverSheet = function () {
+    lastSig = sheetSig();
+    var css = '';
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      var sheet = document.styleSheets[i];
+      if (sheet.ownerNode === hoverSheet) continue;
+      try { css += collect(sheet.cssRules); } catch (err) { /* unreadable sheet */ }
+    }
+    if (!hoverSheet) {
+      hoverSheet = document.createElement('style');
+      hoverSheet.setAttribute('data-cv-hover', '');
+      (document.head || document.documentElement).appendChild(hoverSheet);
+    } else if (hoverSheet.parentNode) {
+      // Last, so a mirrored rule takes ties against the original it copies.
+      hoverSheet.parentNode.appendChild(hoverSheet);
+    }
+    hoverSheet.textContent = css;
+  };
+  addEventListener('load', function () { if (hoverSheet) buildHoverSheet(); });
+
+  /* :hover matches the whole ancestor chain, not just the innermost element, so
+     the class goes on every one of them — otherwise a rule of the form
+     ".card:hover .title" would never fire when the cursor is over the title.
+     (No backticks anywhere in here: this script lives in a template literal.) */
+  var hoverChain = [];
+  var setHoverChain = function (el) {
+    var next = [];
+    for (var n = el; n && n.nodeType === 1; n = n.parentElement) next.push(n);
+    for (var i = 0; i < hoverChain.length; i++) {
+      if (next.indexOf(hoverChain[i]) === -1) hoverChain[i].classList.remove(HOVER_CLASS);
+    }
+    for (var j = 0; j < next.length; j++) next[j].classList.add(HOVER_CLASS);
+    hoverChain = next;
+  };
+
+  var hoverEl = null;
+  var hoverEvent = function (type, el, related, x, y, bubbles) {
+    el.dispatchEvent(new PointerEvent(type, opts(x, y, {
+      bubbles: bubbles, cancelable: false, relatedTarget: related || null,
+      pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0,
+    })));
+  };
+  var mouseEvent = function (type, el, related, x, y, bubbles) {
+    el.dispatchEvent(new MouseEvent(type, opts(x, y, {
+      bubbles: bubbles, cancelable: type === 'mousemove', relatedTarget: related || null, buttons: 0,
+    })));
+  };
+  var hoverAt = function (x, y) {
+    var el = document.elementFromPoint(x, y);
+    if (!hoverSheet || sheetSig() !== lastSig) buildHoverSheet();
+    setHoverChain(el);
+    if (el !== hoverEl) {
+      var was = hoverEl;
+      hoverEl = el;
+      if (was) {
+        hoverEvent('pointerout', was, el, x, y, true);
+        mouseEvent('mouseout', was, el, x, y, true);
+        hoverEvent('pointerleave', was, el, x, y, false);
+        mouseEvent('mouseleave', was, el, x, y, false);
+      }
+      if (el) {
+        hoverEvent('pointerover', el, was, x, y, true);
+        mouseEvent('mouseover', el, was, x, y, true);
+        hoverEvent('pointerenter', el, was, x, y, false);
+        mouseEvent('mouseenter', el, was, x, y, false);
+      }
+    }
+    if (el) {
+      hoverEvent('pointermove', el, null, x, y, true);
+      mouseEvent('mousemove', el, null, x, y, true);
+    }
+  };
+  var hoverEnd = function () {
+    setHoverChain(null);
+    if (!hoverEl) return;
+    var was = hoverEl;
+    hoverEl = null;
+    hoverEvent('pointerout', was, null, -1, -1, true);
+    mouseEvent('mouseout', was, null, -1, -1, true);
+    hoverEvent('pointerleave', was, null, -1, -1, false);
+    mouseEvent('mouseleave', was, null, -1, -1, false);
+  };
+
+  // ── Tap ────────────────────────────────────────────────────────────────────
+  /* A press the board decided was not a drag, replayed as a full click at that
+     point. Untrusted events still run activation behaviour, so links follow,
+     checkboxes toggle and buttons submit. */
+  var replay = function (x, y, pointerType, detail) {
+    var el = document.elementFromPoint(x, y);
+    if (!el) return;
+    // The press implies the cursor is there; without this a demo that only
+    // reveals a control on hover would be clicked while still thinking the
+    // pointer was elsewhere.
+    hoverAt(x, y);
+    var mouse = function (type, buttons) {
+      return new MouseEvent(type, opts(x, y, { button: 0, buttons: buttons, detail: detail }));
+    };
+    var pointer = function (type, buttons) {
+      return new PointerEvent(type, opts(x, y, {
+        button: 0, buttons: buttons, detail: detail,
+        pointerId: 1, pointerType: pointerType, isPrimary: true, width: 1, height: 1,
+      }));
+    };
+    // A touch pair too, in the platform's order, for a demo that listens for
+    // touches alone. Guarded: the Touch constructor isn't everywhere, and a demo
+    // that misses these still gets the pointer and mouse events below.
+    var touch = null, t = null;
+    if (pointerType === 'touch' && window.Touch && window.TouchEvent) {
+      try {
+        t = new Touch({
+          identifier: 1, target: el,
+          clientX: x, clientY: y, screenX: x, screenY: y,
+          pageX: x + window.scrollX, pageY: y + window.scrollY,
+        });
+        touch = function (type, list) {
+          return new TouchEvent(type, {
+            bubbles: true, cancelable: true, composed: true, view: window,
+            touches: list, targetTouches: list, changedTouches: [t],
+          });
+        };
+      } catch (err) { touch = null; }
+    }
+    el.dispatchEvent(pointer('pointerdown', 1));
+    if (touch) el.dispatchEvent(touch('touchstart', [t]));
+    // Focus as a real press would: a demo that closes a popover on blur, or a
+    // field that expects the caret, depends on it.
+    var f = el.closest && el.closest('a[href],button,input,select,textarea,summary,[tabindex],[contenteditable]');
+    if (f && f.focus) { try { f.focus({ preventScroll: true }); } catch (err) { f.focus(); } }
+    /* Typing needs more than a focused field: keystrokes follow the focused
+       FRAME, and this one has never been focused — the press that would have
+       done it landed on the shield. So when a tap lands on something you type
+       into, ask the host to focus the frame; from then on real keys arrive here
+       by themselves.
+
+       Real keys, deliberately, rather than synthesised ones: an untrusted
+       KeyboardEvent carries no default action, so dispatching one fires a demo's
+       handlers but inserts no text and moves no caret — it would look like
+       typing worked while the field stayed empty. */
+    if (f && (/^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName) || f.isContentEditable)) {
+      send({ type: 'canvas-input-focus' });
+    }
+    el.dispatchEvent(mouse('mousedown', 1));
+    el.dispatchEvent(pointer('pointerup', 0));
+    if (touch) el.dispatchEvent(touch('touchend', []));
+    el.dispatchEvent(mouse('mouseup', 0));
+    el.dispatchEvent(mouse('click', 0));
+    // Exactly the second of a run, as the platform does it: a third tap keeps
+    // counting up on the click's detail but fires no further dblclick.
+    if (detail === 2) el.dispatchEvent(mouse('dblclick', 0));
+  };
+
+  /* Shift is the escape hatch, and it is the HOST that drops the shield — but
+     once a field in here has been typed into, focus is in this document and the
+     host never sees the key. So it is reported from whichever side hears it. */
+  addEventListener('keydown', function (e) {
+    if (e.key === 'Shift') send({ type: 'canvas-input-shift', on: true });
+  }, true);
+  addEventListener('keyup', function (e) {
+    if (e.key === 'Shift') send({ type: 'canvas-input-shift', on: false });
+  }, true);
+  addEventListener('blur', function () { send({ type: 'canvas-input-shift', on: false }); });
+
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d) return;
+    if (d.type === 'canvas-input-hover') { hoverAt(d.x, d.y); return; }
+    if (d.type === 'canvas-input-hover-end') { hoverEnd(); return; }
+    if (d.type === 'canvas-input-tap') replay(d.x, d.y, d.pointerType || 'mouse', d.detail || 1);
+  });
+})()</script></head>
+<body>
+<div class="app">
+
+  <header class="bar">
+    <div>
+      <span class="eyebrow">Icon study — concept C</span>
+      <h1>Semicircles — solid halves</h1>
+      <p class="lede">No strokes. The mark is a filled disc cut into solid pieces, and the cut carries the time. Click any state to copy it as SVG.</p>
+    </div>
+  </header>
+
+  <div class="transport">
+    <div class="transport-top">
+      <button class="play" id="play" aria-pressed="false">Play</button>
+      <div class="group">
+        <span>Speed</span>
+        <div class="seg" id="speedSeg" role="group" aria-label="Playback speed">
+          <button type="button" data-speed="60000">Slow</button>
+          <button type="button" data-speed="25000">Normal</button>
+          <button type="button" data-speed="10000">Fast</button>
+        </div>
+      </div>
+      <div class="shift-read">Shifted by <b id="shiftRead">+00:00</b></div>
+    </div>
+    <input type="range" id="shift" min="0" max="1439" step="1" value="0"
+           aria-label="Shift every preview through the day" aria-valuetext="No shift">
+    <div class="ramp-ticks" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+  </div>
+
+  <div class="stage">
+    <section>
+      <div class="toolbar">
+        <div class="group">
+          <span>Cut</span>
+          <div class="seg" id="cutSeg" role="group" aria-label="How the disc is cut">
+            <button type="button" data-cut="terminator">Terminator</button>
+            <button type="button" data-cut="crescent">Crescent</button>
+            <button type="button" data-cut="tide">Tide</button>
+            <button type="button" data-cut="shutter">Shutter</button>
+            <button type="button" data-cut="horizon">Horizon</button>
+          </div>
+        </div>
+        <div class="group">
+          <span>Layout</span>
+          <div class="seg" id="layoutSeg" role="group" aria-label="Layout">
+            <button type="button" data-layout="grid">Grid</button>
+            <button type="button" data-layout="rows">Rows</button>
+          </div>
+        </div>
+        <div class="group">
+          <span>Times</span>
+          <div class="seg" id="setSeg" role="group" aria-label="Sample set">
+            <button type="button" data-set="ref">Reference</button>
+            <button type="button" data-set="3h">3h</button>
+            <button type="button" data-set="2h">2h</button>
+            <button type="button" data-set="1h">Hourly</button>
+            <button type="button" data-set="30m">Half-hourly</button>
+          </div>
+        </div>
+        <div class="group">
+          <span>Backdrop</span>
+          <div class="seg" id="bgSeg" role="group" aria-label="Backdrop">
+            <button type="button" data-bg="sky">Sky</button>
+            <button type="button" data-bg="nightsky">Night sky</button>
+            <button type="button" data-bg="paper">Paper</button>
+            <button type="button" data-bg="ink">Ink</button>
+          </div>
+        </div>
+        <div class="group">
+          <span>Shadow</span>
+          <div class="seg" id="shadowSeg" role="group" aria-label="Card shadow">
+            <button type="button" data-shadow="on">On</button>
+            <button type="button" data-shadow="off">Off</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sheet" id="sheet">
+        <div id="stack"></div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <h2>Cut</h2>
+      <p class="sub" id="cutNote">The lower half is ground. A full sun stands above it by day; at night a moon takes its place with a bite cut out.</p>
+
+      <h2>Below the horizon</h2>
+      <p class="sub" id="clipNote">The body is cut off at the horizon line — nothing of it exists below the ground.</p>
+      <div class="seg" id="clipSeg" role="group" aria-label="What happens below the horizon">
+        <button type="button" data-hclip="clip">Clipped</button>
+        <button type="button" data-hclip="behind">Behind ground</button>
+      </div>
+
+      <h2>Body</h2>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="body">Radius</label><output id="bodyOut">52</output></div>
+        <input type="range" id="body" min="26" max="76" step="1" value="52">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="contrast">Dark part</label><output id="contrastOut">26%</output></div>
+        <input type="range" id="contrast" min="0" max="100" step="1" value="26">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="crescent">Bite depth</label><output id="crescentOut">50%</output></div>
+        <input type="range" id="crescent" min="0" max="100" step="1" value="50">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="bite">Bite angle</label><output id="biteOut">52°</output></div>
+        <input type="range" id="bite" min="0" max="359" step="1" value="52">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="tilt">Moon tilt</label><output id="tiltOut">18°</output></div>
+        <input type="range" id="tilt" min="0" max="60" step="1" value="18">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="dip">Dip below</label><output id="dipOut">38%</output></div>
+        <input type="range" id="dip" min="0" max="100" step="1" value="38">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="refl">Reflection</label><output id="reflOut">0%</output></div>
+        <input type="range" id="refl" min="0" max="100" step="1" value="0">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="squash">Reflection squash</label><output id="squashOut">55%</output></div>
+        <input type="range" id="squash" min="10" max="100" step="1" value="55">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="sep">Separation</label><output id="sepOut">16</output></div>
+        <input type="range" id="sep" min="0" max="40" step="1" value="16">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="sun">Rising disc</label><output id="sunOut">44%</output></div>
+        <input type="range" id="sun" min="18" max="70" step="1" value="44">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="rot">Rotation offset</label><output id="rotOut">160°</output></div>
+        <input type="range" id="rot" min="-180" max="180" step="1" value="160">
+      </div>
+
+      <div class="divide"></div>
+
+      <h2>Handover</h2>
+      <p class="sub" id="modeNote">Sun and moon traits fade past each other independently.</p>
+      <div class="seg" id="modeSeg" role="group" aria-label="Sun to moon handover">
+        <button type="button" data-mode="cut">Cut</button>
+        <button type="button" data-mode="dissolve">Dissolve</button>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="handover">Length</label><output id="handoverOut">110 min</output></div>
+        <input type="range" id="handover" min="20" max="300" step="5" value="110">
+      </div>
+
+      <div class="divide"></div>
+
+      <h2>Finish</h2>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="flare">Warm core</label><output id="flareOut">45%</output></div>
+        <input type="range" id="flare" min="0" max="100" step="1" value="45">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><label for="glow">Glow</label><output id="glowOut">35%</output></div>
+        <input type="range" id="glow" min="0" max="100" step="1" value="35">
+      </div>
+
+      <div class="divide"></div>
+      <button class="reset" id="reset">Reset everything</button>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- colour ---------- */
+  const toLin = c => { c/=255; return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
+  const toSrgb = c => {
+    const v = c<=0.0031308 ? c*12.92 : 1.055*Math.pow(c,1/2.4)-0.055;
+    return Math.round(Math.min(1,Math.max(0,v))*255);
+  };
+  function hexToLab(hex){
+    const n = parseInt(hex.slice(1),16);
+    const r = toLin((n>>16)&255), g = toLin((n>>8)&255), b = toLin(n&255);
+    const l = Math.cbrt(0.4122214708*r + 0.5363325363*g + 0.0514459929*b);
+    const m = Math.cbrt(0.2119034982*r + 0.6806995451*g + 0.1073969566*b);
+    const s = Math.cbrt(0.0883024619*r + 0.2817188376*g + 0.6299787005*b);
+    return [0.2104542553*l + 0.7936177850*m - 0.0040720468*s,
+            1.9779984951*l - 2.4285922050*m + 0.4505937099*s,
+            0.0259040371*l + 0.7827717662*m - 0.8086757660*s];
+  }
+  function labToHex(L,a,b){
+    const l = Math.pow(L + 0.3963377774*a + 0.2158037573*b, 3);
+    const m = Math.pow(L - 0.1055613458*a - 0.0638541728*b, 3);
+    const s = Math.pow(L - 0.0894841775*a - 1.2914855480*b, 3);
+    const R = toSrgb( 4.0767416621*l - 3.3077115913*m + 0.2309699292*s);
+    const G = toSrgb(-1.2684380046*l + 2.6097574011*m - 0.3413193965*s);
+    const B = toSrgb(-0.0041960863*l - 0.7034186147*m + 1.7076147010*s);
+    return "#" + ((1<<24) + (R<<16) + (G<<8) + B).toString(16).slice(1).toUpperCase();
+  }
+  function shade(hex, dL){
+    const [L,a,b] = hexToLab(hex);
+    const k = dL > 0 ? 1 - Math.min(0.5, dL*1.6) : 1;
+    return labToHex(Math.max(0, Math.min(1, L + dL)), a*k, b*k);
+  }
+
+  /* Each moment carries the pale sky the reference sheet uses. The dark-mode surface is
+     not authored separately — it is derived from that hour's body colour, held at a fixed
+     dark lightness with its chroma pulled almost all the way out. So the surface is
+     near-neutral at every hour, with only a whisper of the time of day in it, and it is
+     dark at every hour: there is no light state anywhere in that version. */
+  const KEYS = [
+    { t:   0, arc:"#5B5BD6", sky:["#E7E7F8","#DEDEF5"] },
+    { t: 120, arc:"#4C6BD8", sky:["#E5E8F8","#DCE1F5"] },
+    { t: 180, arc:"#4276D6", sky:["#E4EAF8","#DDE5F6"] },
+    { t: 300, arc:"#4A86DE", sky:["#E3EAF7","#E6E4F3"] },
+    { t: 342, arc:"#C06E93", sky:["#F2E4EC","#F5E2DE"] },
+    { t: 360, arc:"#F0B429", sky:["#FDF3D9","#FBEBC0"] },
+    { t: 600, arc:"#F5A623", sky:["#FDF0CE","#FCE9B8"] },
+    { t: 720, arc:"#F79A1F", sky:["#FDF1D6","#FBE8C4"] },
+    { t: 840, arc:"#F58220", sky:["#FDF0E0","#FBE6D0"] },
+    { t:1080, arc:"#EE6C1F", sky:["#FCE9DE","#F9DCCB"] },
+    { t:1200, arc:"#E8481F", sky:["#FBE0DC","#F7D2CF"] },
+    { t:1245, arc:"#B03A6E", sky:["#F6E0E4","#EFDCEA"] },
+    { t:1290, arc:"#5B3A9E", sky:["#EFE2F4","#E4DBF2"] },
+    { t:1440, arc:"#5B5BD6", sky:["#E7E7F8","#DEDEF5"] }
+  ];
+  const LAB = KEYS.map(k => ({
+    t:k.t, arc:hexToLab(k.arc), sky:k.sky.map(hexToLab)
+  }));
+  const mixLab = (a,b,u) => [a[0]+(b[0]-a[0])*u, a[1]+(b[1]-a[1])*u, a[2]+(b[2]-a[2])*u];
+
+  /* how much of the hour's hue survives into the dark surface, and how light it sits */
+  const TINT = 0.13, TINT_LOW = 0.10, SURF = 0.215, SURF_LOW = 0.180, SURF_SWING = 0.030;
+
+  function palette(min){
+    const t = ((min % 1440) + 1440) % 1440;
+    let i = 0;
+    while (i < LAB.length-2 && t >= LAB[i+1].t) i++;
+    const a = LAB[i], b = LAB[i+1], u = (t - a.t) / (b.t - a.t);
+    const arcLab = mixLab(a.arc, b.arc, u);
+    /* a touch more lift around the bright part of the day, so midday is not identical
+       to deep night, but nowhere near enough to read as a light surface */
+    const n = Math.max(0, Math.min(1, (arcLab[0] - 0.44) / 0.36));
+    return {
+      arc:   labToHex(...arcLab),
+      sky0:  labToHex(...mixLab(a.sky[0], b.sky[0], u)),
+      sky1:  labToHex(...mixLab(a.sky[1], b.sky[1], u)),
+      deep0: labToHex(SURF     + SURF_SWING*n, arcLab[1]*TINT,     arcLab[2]*TINT),
+      deep1: labToHex(SURF_LOW + SURF_SWING*n, arcLab[1]*TINT_LOW, arcLab[2]*TINT_LOW)
+    };
+  }
+
+  /* Bring a body colour up to a common lightness so it reads on a dark surface. Colours
+     that are already light — the midday ambers — are left alone and keep their chroma;
+     the deep indigos and violets get lifted, with a light trim of chroma so they do not
+     turn neon on the way up. */
+  function liftForDark(hex){
+    const [L,a,b] = hexToLab(hex);
+    const lift = Math.max(0, Math.min(0.34, 0.80 - L));
+    const k = 1 - 0.28 * (lift / 0.34);
+    return labToHex(Math.min(1, L + lift), a*k, b*k);
+  }
+
+  const PHASES = [
+    [255,"Pre-dawn"], [345,"Early morning"], [510,"Late morning"], [690,"Midday"],
+    [780,"Afternoon"], [990,"Early evening"], [1140,"Sunset"], [1245,"Twilight"], [1350,"Night"]
+  ];
+  function phaseOf(min){
+    const t = ((min % 1440) + 1440) % 1440;
+    if (t >= 1350 || t < 90) return "Night";
+    if (t < 255) return "Late night";
+    for (let i = PHASES.length-1; i >= 0; i--) if (t >= PHASES[i][0]) return PHASES[i][1];
+    return "Late night";
+  }
+  const fmt = min => {
+    const t = ((Math.round(min) % 1440) + 1440) % 1440;
+    return String(Math.floor(t/60)).padStart(2,"0") + ":" + String(t%60).padStart(2,"0");
+  };
+  const smooth = x => x*x*(3-2*x);
+  const clamp01 = x => Math.max(0, Math.min(1, x));
+
+  const DAWN = 350, DUSK = 1195;
+  function dayness(min, g, mode){
+    const t = ((min % 1440) + 1440) % 1440;
+    if (mode === "cut") return (t >= DAWN && t < DUSK) ? 1 : 0;
+    const h = Math.max(1, g.handover/2);
+    if (t >= DAWN - h && t <= DAWN + h) return smooth((t - (DAWN - h)) / (2*h));
+    if (t >= DUSK - h && t <= DUSK + h) return 1 - smooth((t - (DUSK - h)) / (2*h));
+    return (t > DAWN && t < DUSK) ? 1 : 0;
+  }
+
+  /* How far through its shift the body on duty is. The sun works dawn to dusk, the
+     moon works dusk to dawn; u runs 0 to 1 across whichever shift is current. */
+  function shiftProgress(min){
+    const t = ((min % 1440) + 1440) % 1440;
+    const dayLen = DUSK - DAWN, nightLen = 1440 - dayLen;
+    if (t >= DAWN && t < DUSK) return { u:(t - DAWN) / dayLen, isDay:true };
+    return { u:((t < DAWN ? t + 1440 : t) - DUSK) / nightLen, isDay:false };
+  }
+
+  /* Height above the ground. Saturates early so the body stands clear for most of its
+     shift and only dips at the changeover. */
+  function riseHeight(min){
+    const { u } = shiftProgress(min);
+    return smooth(clamp01(Math.sin(Math.PI * u) * 1.85));
+  }
+
+  /* ---------- drawing ---------- */
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const pt = (cx,cy,r,deg) => { const a = deg*Math.PI/180; return [cx + r*Math.sin(a), cy - r*Math.cos(a)]; };
+  const el = (n, attrs) => {
+    const e = document.createElementNS(SVG_NS, n);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  };
+
+  function capPath(cx, cy, R, dir, alpha){
+    if (alpha <= 0.4) return null;
+    const a = Math.min(alpha, 179.4);
+    const [x0,y0] = pt(cx,cy,R, dir - a);
+    const [x1,y1] = pt(cx,cy,R, dir + a);
+    const large = (2*a) > 180 ? 1 : 0;
+    return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R.toFixed(2)} ${R.toFixed(2)} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z`;
+  }
+
+  function cutOffsetForShare(f, R){
+    f = clamp01(f);
+    if (f <= 0.001) return R;
+    if (f >= 0.999) return -R;
+    let lo = -R, hi = R;
+    for (let i = 0; i < 26; i++){
+      const mid = (lo + hi) / 2, x = mid / R;
+      const area = (Math.acos(x) - x*Math.sqrt(Math.max(0, 1 - x*x))) / Math.PI;
+      if (area > f) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  function phasePath(R, k){
+    const kk = Math.max(-0.985, Math.min(0.985, k));
+    const rx = Math.abs(kk) * R;
+    const sweep = kk >= 0 ? 0 : 1;
+    return `M0 ${(-R).toFixed(2)}`
+         + `A${R.toFixed(2)} ${R.toFixed(2)} 0 0 1 0 ${R.toFixed(2)}`
+         + `A${rx.toFixed(2)} ${R.toFixed(2)} 0 0 ${sweep} 0 ${(-R).toFixed(2)}Z`;
+  }
+
+  let uid = 0;
+
+  function draw(svg, min, g, opts){
+    const { mode, bg, cut, hclip } = opts;
+    const p = palette(min);
+    const d = dayness(min, g, mode);
+    const night = 1 - d;
+    const cx = 100, cy = 100;
+    const id = "u" + (++uid);
+    const gl = g.glow/100;
+    const R = g.body;
+
+    const theta = (((min/1440)*360 - 180 + g.rot) % 360 + 360) % 360;
+    const elev = Math.cos(theta * Math.PI/180);
+    const dayShare = 0.5 + 0.5*elev;
+    const quietOp = g.contrast/100;
+
+    /* Dark mode is all or nothing: on the dark sky the body always sits lighter than the
+       surface, the ground is always a silhouette, and no state is ever a light one. */
+    const isDark = (bg === "nightsky");
+    const body = isDark ? liftForDark(p.arc) : p.arc;
+    const dark = isDark ? body : shade(p.arc, -0.06);
+    /* In dark mode the ground is the same colour as the body, sitting at part opacity so
+       it reads as a dimmer version of it against the sky — which also leaves the
+       reflection room to come back brighter than the ground it lies on. */
+    const groundCol = isDark ? body : shade(p.arc, -0.06);
+    const groundOp = isDark ? Math.max(0.35, quietOp + 0.24) : Math.max(quietOp, 0.5);
+
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const defsNodes = [];
+
+    if (gl > 0.01){
+      /* the glow starts at nothing along its top edge and gathers toward the bottom,
+         so it settles under the mark rather than ringing it evenly */
+      const gr = R * 1.5;
+      const gw = el("linearGradient", {
+        id:id+"gw", gradientUnits:"userSpaceOnUse",
+        x1:"0", y1:(cy - gr).toFixed(2), x2:"0", y2:(cy + gr).toFixed(2)
+      });
+      gw.appendChild(el("stop", { offset:"0%",  "stop-color":body, "stop-opacity":"0" }));
+      gw.appendChild(el("stop", { offset:"55%", "stop-color":body, "stop-opacity":"0.34" }));
+      gw.appendChild(el("stop", { offset:"100%","stop-color":body, "stop-opacity":"1" }));
+      defsNodes.push(gw);
+      svg.appendChild(el("circle", {
+        cx, cy, r:gr.toFixed(2), fill:`url(#${id}gw)`, opacity:(0.16*gl).toFixed(3)
+      }));
+    }
+
+    let sunX = cx, sunY = cy, sunR = R;
+    if (cut === "horizon"){
+      sunR = R * (g.sun/100);
+      /* dip sets how far under the line the body sinks at the changeover */
+      const under = (sunR * 1.05) * (g.dip/100);
+      sunY = cy + under - (R*0.90 + under) * riseHeight(min);
+    }
+
+    const core = shade(body, 0.10*(g.flare/100)*d + 0.05*night);
+    const rg = el("radialGradient", { id:id+"g", cx:"38%", cy:"34%", r:"78%" });
+    rg.appendChild(el("stop", { offset:"0%", "stop-color":core }));
+    rg.appendChild(el("stop", { offset:"100%", "stop-color":body }));
+    defsNodes.push(rg);
+
+    if (cut === "horizon"){
+      const biteR = sunR * 0.88;
+      const restOff = sunR * (1.30 - 0.62*(g.crescent/100));
+      const off = sunR*1.95 + (restOff - sunR*1.95) * night;
+      const bites = off < (sunR + biteR - 0.4);
+
+      /* the lean follows the climb: tipped left at the horizon, swinging right as the
+         moon rises, and back left again on the way down */
+      const lean = 2 * riseHeight(min) - 1;
+      const biteDir = g.bite + g.tilt * lean * night;
+
+      const [bx,by] = pt(sunX, sunY, off, biteDir);
+
+      let maskAttr = {};
+      if (bites){
+        const mask = el("mask", { id:id+"m", maskUnits:"userSpaceOnUse" });
+        mask.appendChild(el("circle", { cx:sunX.toFixed(2), cy:sunY.toFixed(2), r:sunR.toFixed(2), fill:"#fff" }));
+        mask.appendChild(el("circle", { cx:bx.toFixed(2), cy:by.toFixed(2), r:biteR.toFixed(2), fill:"#000" }));
+        defsNodes.push(mask);
+        maskAttr = { mask:`url(#${id}m)` };
+      }
+
+      /* everything above the horizon line only */
+      let holderAttr = {};
+      if (hclip === "clip"){
+        const cp = el("clipPath", { id:id+"h", clipPathUnits:"userSpaceOnUse" });
+        cp.appendChild(el("rect", { x:"-20", y:"-20", width:"240", height:String(cy + 20) }));
+        defsNodes.push(cp);
+        holderAttr = { "clip-path":`url(#${id}h)` };
+      }
+
+      const defs0 = el("defs", {});
+      defsNodes.forEach(n => defs0.appendChild(n));
+      svg.appendChild(defs0);
+
+      const holder = el("g", holderAttr);
+
+      const bodyG = el("g", maskAttr);
+      bodyG.appendChild(el("circle", {
+        cx:sunX.toFixed(2), cy:sunY.toFixed(2), r:sunR.toFixed(2), fill:`url(#${id}g)`
+      }));
+      holder.appendChild(bodyG);
+      svg.appendChild(holder);
+
+      /* ground last, so it also covers anything left below the line */
+      const ground = capPath(cx, cy, R, 180, 90);
+      if (ground) svg.appendChild(el("path", { d:ground, fill:groundCol, opacity:groundOp.toFixed(3) }));
+
+      /* Reflection. Anchored to the horizon rather than mirrored in place: its top edge
+         sits on the line and the gap between body and reflection closes as the body comes
+         down, so the two meet at the horizon instead of the reflection riding up over the
+         line and being clipped away. Squash sets its depth; it carries the bite, mirrored,
+         so the moon reflects as a moon. */
+      if (g.refl > 0 && ground && sunY - sunR < cy - 0.5){
+        const s = Math.max(0.10, g.squash/100);
+        const ry = s * sunR;
+        const gap = Math.max(0, cy - (sunY + sunR)) * 0.30;
+        const top = cy + gap;
+        const rcy = top + ry;
+
+        const lg = el("linearGradient", {
+          id:id+"l", gradientUnits:"userSpaceOnUse",
+          x1:"0", y1:top.toFixed(2), x2:"0", y2:(top + 2.25*ry).toFixed(2)
+        });
+        lg.appendChild(el("stop", { offset:"0%",  "stop-color":"#fff" }));
+        lg.appendChild(el("stop", { offset:"52%", "stop-color":"#fff", "stop-opacity":"0.55" }));
+        lg.appendChild(el("stop", { offset:"100%","stop-color":"#000" }));
+        defs0.appendChild(lg);
+
+        const fade = el("mask", { id:id+"f", maskUnits:"userSpaceOnUse",
+          x:"-20", y:(top - 2).toFixed(2), width:"240", height:(2.4*ry + 4).toFixed(2) });
+        fade.appendChild(el("rect", {
+          x:"-20", y:(top - 2).toFixed(2), width:"240", height:(2.4*ry + 4).toFixed(2),
+          fill:`url(#${id}l)`
+        }));
+        defs0.appendChild(fade);
+
+        const gc = el("clipPath", { id:id+"gc", clipPathUnits:"userSpaceOnUse" });
+        gc.appendChild(el("path", { d:ground }));
+        defs0.appendChild(gc);
+
+        /* the bite, mirrored about the body's own centre and squashed to match */
+        let reflMask = {};
+        if (bites){
+          const m = el("mask", { id:id+"rm", maskUnits:"userSpaceOnUse",
+            x:"-20", y:"-20", width:"240", height:"240" });
+          m.appendChild(el("ellipse", {
+            cx:sunX.toFixed(2), cy:rcy.toFixed(2), rx:sunR.toFixed(2), ry:ry.toFixed(2), fill:"#fff"
+          }));
+          m.appendChild(el("ellipse", {
+            cx:bx.toFixed(2), cy:(rcy - s*(by - sunY)).toFixed(2),
+            rx:biteR.toFixed(2), ry:(s*biteR).toFixed(2), fill:"#000"
+          }));
+          defs0.appendChild(m);
+          reflMask = { mask:`url(#${id}rm)` };
+        }
+
+        const wrap = el("g", {
+          "clip-path":`url(#${id}gc)`, mask:`url(#${id}f)`,
+          opacity:(0.70 * g.refl/100).toFixed(3)
+        });
+        const inner = el("g", reflMask);
+        inner.appendChild(el("ellipse", {
+          cx:sunX.toFixed(2), cy:rcy.toFixed(2), rx:sunR.toFixed(2), ry:ry.toFixed(2), fill:body
+        }));
+        wrap.appendChild(inner);
+        svg.appendChild(wrap);
+      }
+
+    } else if (cut === "crescent"){
+      const thin = 0.40 + 0.58*(g.crescent/100);
+      const k = elev >= 0 ? elev : elev * thin;
+      const dPath = phasePath(R, k);
+      const xf = `translate(${cx} ${cy}) rotate(${(theta - 90).toFixed(2)})`;
+
+      const clip = el("clipPath", { id:id+"c" });
+      clip.appendChild(el("path", { d:dPath, transform:xf }));
+      defsNodes.push(clip);
+
+      const defs0 = el("defs", {});
+      defsNodes.forEach(n => defs0.appendChild(n));
+      svg.appendChild(defs0);
+
+      if (quietOp > 0.01){
+        svg.appendChild(el("circle", { cx, cy, r:R.toFixed(2), fill:dark, opacity:quietOp.toFixed(3) }));
+      }
+      svg.appendChild(el("path", { d:dPath, transform:xf, fill:`url(#${id}g)` }));
+
+    } else {
+      let litDir = theta, litAlpha = 90, quietDir = theta + 180, quietAlpha = 90;
+      let litShift = 0, quietShift = 0;
+
+      if (cut === "tide"){
+        const s = cutOffsetForShare(dayShare, R);
+        litAlpha = Math.acos(Math.max(-1, Math.min(1, s/R))) * 180/Math.PI;
+        quietAlpha = 180 - litAlpha;
+      } else if (cut === "shutter"){
+        litShift = night * g.sep * 0.5;
+        quietShift = night * g.sep * 0.5;
+      }
+      litAlpha = Math.min(litAlpha, 179.4);
+      quietAlpha = Math.min(quietAlpha, 179.4);
+
+      const [lox,loy] = pt(0, 0, litShift, litDir);
+      const litD = capPath(cx+lox, cy+loy, R, litDir, litAlpha);
+
+      const defs0 = el("defs", {});
+      defsNodes.forEach(n => defs0.appendChild(n));
+      svg.appendChild(defs0);
+
+      if (quietOp > 0.01){
+        const [ox,oy] = pt(0, 0, quietShift, quietDir);
+        const quietD = capPath(cx+ox, cy+oy, R, quietDir, quietAlpha);
+        if (quietD) svg.appendChild(el("path", { d:quietD, fill:dark, opacity:quietOp.toFixed(3) }));
+      }
+      if (litD) svg.appendChild(el("path", { d:litD, fill:`url(#${id}g)` }));
+    }
+
+    return Object.assign({ theta, d }, p, { arc: body });
+  }
+
+  /* ---------- state ---------- */
+  const DEFAULTS = {
+    body:52, contrast:26, crescent:50, bite:52, tilt:18, dip:38, refl:0, squash:55,
+    sep:16, sun:44, rot:160, handover:110, flare:45, glow:35
+  };
+  const g = Object.assign({}, DEFAULTS);
+  const CTRLS = ["body","contrast","crescent","bite","tilt","dip","refl","squash","sep","sun",
+                 "rot","handover","flare","glow"];
+  const UNITS = { contrast:"%", crescent:"%", bite:"°", tilt:"°", dip:"%", refl:"%", squash:"%",
+                  sun:"%", rot:"°", handover:" min", flare:"%", glow:"%" };
+
+  const CUT_NOTES = {
+    terminator: "A straight diameter splits the disc. The lit half faces the sun and turns once a day.",
+    crescent:   "A curved terminator: full at noon, exactly half at dawn and dusk, a thin crescent at midnight.",
+    tide:       "The cut slides across the disc so the lit area equals the share of daylight.",
+    shutter:    "The two halves slide apart after dark and close into a solid disc by day.",
+    horizon:    "The lower half is ground. A full sun stands above it by day; at night a moon takes its place with a bite cut out."
+  };
+  const CLIP_NOTES = {
+    clip:   "The body is cut off at the horizon line — nothing of it exists below the ground.",
+    behind: "The body passes behind the ground mass and shows through it."
+  };
+  const MODE_NOTES = {
+    cut:      "Hard swap at 05:50 and 19:55.",
+    dissolve: "Sun and moon traits fade past each other independently."
+  };
+
+  function step(n){ const a = []; for (let t = 0; t < 1440; t += n) a.push(t); return a; }
+  const SETS = {
+    ref: [0, 180, 300, 360, 600, 840, 1080, 1200, 1290],
+    "3h": step(180), "2h": step(120), "1h": step(60), "30m": step(30)
+  };
+
+  let layout = "grid", setKey = "ref", bgKey = "sky", mode = "dissolve", cut = "horizon", hclip = "clip";
+  let shadow = "on";
+  let shift = 0;
+  const $ = id => document.getElementById(id);
+  const stack = $("stack");
+  let cells = [];
+  const opts = () => ({ mode, bg:bgKey, cut, hclip });
+
+  function tone(node, p, wide){
+    node.classList.remove("on-light","on-dark");
+    if (bgKey === "sky"){
+      node.style.background = wide
+        ? `linear-gradient(96deg, ${p.sky0}, ${p.sky1})`
+        : `linear-gradient(158deg, ${p.sky0}, ${p.sky1})`;
+      node.classList.add("on-light");
+    } else if (bgKey === "nightsky"){
+      node.style.background = wide
+        ? `linear-gradient(96deg, ${p.deep0}, ${p.deep1})`
+        : `linear-gradient(158deg, ${p.deep0}, ${p.deep1})`;
+      node.classList.add("on-dark");
+    } else if (bgKey === "paper"){
+      node.style.background = "#FFFFFF";
+      node.classList.add("on-light");
+    } else {
+      node.style.background = "#111318";
+      node.classList.add("on-dark");
+    }
+  }
+
+  function build(){
+    stack.innerHTML = "";
+    cells = [];
+    const times = SETS[setKey];
+    const dense = times.length > 24;
+    const wrap = document.createElement("div");
+
+    if (layout === "grid"){
+      wrap.className = "grid" + (dense ? " dense" : "");
+      times.forEach(t => {
+        const btn = document.createElement("button");
+        btn.className = "tile"; btn.type = "button";
+        const cardEl = document.createElement("div");
+        cardEl.className = "tile-card";
+        const svg = el("svg", { viewBox:"0 0 200 200", "aria-hidden":"true" });
+        const time = document.createElement("div");
+        time.className = "tile-time";
+        const phase = document.createElement("div");
+        phase.className = "tile-phase";
+        cardEl.append(svg, time, phase);
+        const flag = document.createElement("span");
+        flag.className = "flag"; flag.textContent = "Copy SVG";
+        btn.append(cardEl, flag);
+        btn.addEventListener("click", () => copy(t, flag));
+        wrap.appendChild(btn);
+        cells.push({ t, svg, skin:cardEl, wide:false, btn, timeEl:time, phaseEl:phase });
+      });
+    } else {
+      wrap.className = "rows" + (dense ? " dense" : "");
+      times.forEach(t => {
+        const btn = document.createElement("button");
+        btn.className = "row"; btn.type = "button";
+        const svg = el("svg", { viewBox:"0 0 200 200", "aria-hidden":"true" });
+        const time = document.createElement("span");
+        time.className = "row-time";
+        const phase = document.createElement("span");
+        phase.className = "row-phase";
+        const meta = document.createElement("span");
+        meta.className = "row-meta";
+        const hex = document.createElement("span");
+        hex.className = "row-hex";
+        const sw = document.createElement("i");
+        const hexText = document.createElement("span");
+        hex.append(sw, hexText);
+        const flag = document.createElement("span");
+        flag.className = "row-flag"; flag.textContent = "Copy SVG";
+        btn.append(svg, time, phase, meta, hex, flag);
+        btn.addEventListener("click", () => copy(t, flag));
+        wrap.appendChild(btn);
+        cells.push({ t, svg, skin:btn, wide:true, btn, timeEl:time, phaseEl:phase, meta, sw, hexText });
+      });
+    }
+    stack.appendChild(wrap);
+    paint();
+  }
+
+  function paint(){
+    const o = opts();
+    cells.forEach(c => {
+      const t = c.t + shift;
+      const p = draw(c.svg, t, g, o);
+      tone(c.skin, p, c.wide);
+      const label = fmt(t);
+      c.timeEl.textContent = label;
+      c.phaseEl.textContent = phaseOf(t);
+      c.btn.setAttribute("aria-label", `Copy the ${label} icon as SVG`);
+      if (c.meta){
+        c.meta.textContent = Math.round(p.theta) + "°";
+        c.sw.style.background = p.arc;
+        c.hexText.textContent = p.arc;
+      }
+    });
+  }
+
+  async function copy(base, flag){
+    const t = base + shift;
+    const scratch = el("svg", {});
+    draw(scratch, t, g, opts());
+    const body = Array.from(scratch.childNodes).map(n => n.outerHTML).join("");
+    const out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">\n`
+              + `<!-- semicircle mark at ${fmt(t)} — ${phaseOf(t)}; ${cut} cut, ${mode} handover -->\n${body}\n</svg>`;
+    try { await navigator.clipboard.writeText(out); }
+    catch {
+      const ta = document.createElement("textarea");
+      ta.value = out; document.body.appendChild(ta); ta.select();
+      document.execCommand("copy"); ta.remove();
+    }
+    flag.textContent = "Copied";
+    flag.style.opacity = "1";
+    setTimeout(() => { flag.textContent = "Copy SVG"; flag.style.opacity = ""; }, 1500);
+  }
+
+  /* ---------- playback ---------- */
+  const shiftEl = $("shift"), playBtn = $("play"), shiftRead = $("shiftRead");
+  let raf = null, last = 0, msPerDay = 25000;
+
+  function setShift(v){
+    shift = ((Math.round(v) % 1440) + 1440) % 1440;
+    shiftEl.value = shift;
+    shiftRead.textContent = "+" + fmt(shift);
+    shiftEl.setAttribute("aria-valuetext", shift === 0 ? "No shift" : `Shifted by ${fmt(shift)}`);
+    paint();
+  }
+  function tick(ts){
+    if (!last) last = ts;
+    const dt = ts - last;
+    if (dt < 32){ raf = requestAnimationFrame(tick); return; }
+    last = ts;
+    setShift(shift + (dt / msPerDay) * 1440);
+    raf = requestAnimationFrame(tick);
+  }
+  function play(){
+    if (raf) return;
+    playBtn.textContent = "Pause";
+    playBtn.setAttribute("aria-pressed","true");
+    raf = requestAnimationFrame(tick);
+  }
+  function pause(){
+    if (!raf) return;
+    cancelAnimationFrame(raf); raf = null; last = 0;
+    playBtn.textContent = "Play";
+    playBtn.setAttribute("aria-pressed","false");
+  }
+  playBtn.addEventListener("click", () => raf ? pause() : play());
+  shiftEl.addEventListener("input", e => { pause(); setShift(+e.target.value); });
+  document.addEventListener("keydown", e => {
+    if (e.code !== "Space") return;
+    const tag = (document.activeElement && document.activeElement.tagName) || "";
+    if (tag === "INPUT" || tag === "BUTTON" || tag === "TEXTAREA") return;
+    e.preventDefault();
+    raf ? pause() : play();
+  });
+
+  /* ---------- wiring ---------- */
+  const stops = [];
+  for (let t = 0; t <= 1440; t += 30) stops.push(`${palette(t).arc} ${(t/1440*100).toFixed(2)}%`);
+  shiftEl.style.setProperty("--day-ramp", `linear-gradient(90deg, ${stops.join(",")})`);
+
+  function syncSeg(seg, attr, value){
+    seg.querySelectorAll("button").forEach(b =>
+      b.setAttribute("aria-pressed", b.dataset[attr] === String(value) ? "true" : "false"));
+  }
+  $("cutSeg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    cut = b.dataset.cut; syncSeg($("cutSeg"), "cut", cut);
+    $("cutNote").textContent = CUT_NOTES[cut]; paint();
+  });
+  $("clipSeg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    hclip = b.dataset.hclip; syncSeg($("clipSeg"), "hclip", hclip);
+    $("clipNote").textContent = CLIP_NOTES[hclip]; paint();
+  });
+  $("modeSeg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    mode = b.dataset.mode; syncSeg($("modeSeg"), "mode", mode);
+    $("modeNote").textContent = MODE_NOTES[mode]; paint();
+  });
+  $("speedSeg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    msPerDay = +b.dataset.speed; syncSeg($("speedSeg"), "speed", msPerDay);
+  });
+  $("layoutSeg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    layout = b.dataset.layout; syncSeg($("layoutSeg"), "layout", layout); build();
+  });
+  $("setSeg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    setKey = b.dataset.set; syncSeg($("setSeg"), "set", setKey); build();
+  });
+  /* the container takes the same side as the backdrop it is holding */
+  function applySurface(){
+    const light = (bgKey === "sky" || bgKey === "paper");
+    $("sheet").classList.toggle("surf-light", light);
+    $("sheet").classList.toggle("surf-dark", !light);
+    $("sheet").classList.toggle("surf-paper", bgKey === "paper");
+  }
+
+  function applyShadow(){
+    $("sheet").classList.toggle("no-shadow", shadow === "off");
+  }
+
+  $("shadowSeg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    shadow = b.dataset.shadow; syncSeg($("shadowSeg"), "shadow", shadow); applyShadow();
+  });
+
+  $("bgSeg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    bgKey = b.dataset.bg; syncSeg($("bgSeg"), "bg", bgKey); applySurface(); paint();
+  });
+
+  CTRLS.forEach(id => {
+    const input = $(id), out = $(id + "Out");
+    input.addEventListener("input", () => {
+      g[id] = +input.value;
+      out.textContent = input.value + (UNITS[id] || "");
+      paint();
+    });
+  });
+  $("reset").addEventListener("click", () => {
+    CTRLS.forEach(id => {
+      g[id] = DEFAULTS[id];
+      $(id).value = DEFAULTS[id];
+      $(id + "Out").textContent = DEFAULTS[id] + (UNITS[id] || "");
+    });
+    paint();
+  });
+
+  syncSeg($("cutSeg"), "cut", cut);
+  syncSeg($("clipSeg"), "hclip", hclip);
+  syncSeg($("modeSeg"), "mode", mode);
+  syncSeg($("speedSeg"), "speed", msPerDay);
+  syncSeg($("layoutSeg"), "layout", layout);
+  syncSeg($("setSeg"), "set", setKey);
+  syncSeg($("bgSeg"), "bg", bgKey);
+  syncSeg($("shadowSeg"), "shadow", shadow);
+  applySurface();
+  applyShadow();
+  $("cutNote").textContent = CUT_NOTES[cut];
+  $("clipNote").textContent = CLIP_NOTES[hclip];
+  $("modeNote").textContent = MODE_NOTES[mode];
+  build();
+  setShift(0);
+})();
+</script>
+</body>
+</html>

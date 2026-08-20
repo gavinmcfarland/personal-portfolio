@@ -516,6 +516,73 @@ export const BRIDGE = [
   { marker: 'data-cv-input', version: '1', script: INPUT_BRIDGE },
 ];
 
+/* ── Does this document actually follow the theme? ──
+
+   The theme half of the bridge can only carry the host's theme across the
+   boundary; it cannot make a document act on it. A document that themes itself
+   in CSS gets that for free — its media rules are rewritten. A document that
+   themes itself in *script* has to listen:
+
+     const scheme = matchMedia('(prefers-color-scheme: dark)');
+     let dark = scheme.matches;
+     scheme.addEventListener('change', (e) => { dark = e.matches; render(); });
+
+   One that reads `.matches` once at boot and stops there paints its first frame
+   correctly and then sits at that theme for good — which looks like a working
+   document right up until someone flips the board. That is a silent failure: it
+   survives every screenshot, and it shipped once already (the health app on
+   project-canvas-health).
+
+   So: read the document at ingest and say so. Findings are advisory and never
+   block — the board is a design tool, and a half-finished prototype dropped on
+   it is a normal thing to do. `level` is 'warn' for a document that means to
+   theme and got it wrong, 'note' for one that never had a theme to follow.
+
+   This is a read of the source text, not of the running document, and it is
+   honest about what that can miss: a document that hands its MediaQueryList to
+   a helper (`watch(matchMedia(q), render)`) rather than binding it is reported
+   as not listening. The exact version of this check is a runtime one — the
+   bridge holds every prefers-color-scheme query it handed out and could count
+   listeners on them — worth building if the text read starts crying wolf. */
+
+const Q = String.raw`matchMedia\s*\(\s*['"\`][^'"\`]*prefers-color-scheme`;
+const ON = String.raw`addEventListener\s*\(\s*['"\`]change|addListener\s*\(|onchange\s*=`;
+
+export function auditHtml(html) {
+  // The bridge's own scripts query prefers-color-scheme and listen to it; left
+  // in, they would answer for the document.
+  let src = html;
+  for (const { marker } of BRIDGE) {
+    src = src.replace(new RegExp(`<script ${marker}[^>]*>[\\s\\S]*?</script\\s*>`, 'gi'), '');
+  }
+
+  const queries = new RegExp(Q, 'i').test(src);
+  const cssRules = /@media[^{]*prefers-color-scheme/i.test(src);
+  const out = [];
+
+  if (queries) {
+    // Listening counts only on the query's own MediaQueryList — an unrelated
+    // 'change' listener elsewhere in the document must not stand in for it.
+    const chained = new RegExp(`${Q}[^'"\`]*['"\`]\\s*\\)\\s*\\.\\s*(?:${ON})`, 'i').test(src);
+    const bound = [...src.matchAll(new RegExp(String.raw`(?:const|let|var)\s+([\w$]+)\s*=[^;\n]*?${Q}`, 'gi'))]
+      .map((m) => m[1]);
+    const listens = chained || bound.some((name) =>
+      new RegExp(String.raw`\b${name}\s*\.\s*(?:${ON})`, 'i').test(src));
+    if (!listens) out.push({
+      level: 'warn', code: 'theme-read-once',
+      message: 'reads prefers-color-scheme in script but never listens for a change — '
+        + 'it will paint the right theme once and then stay there. Add '
+        + "scheme.addEventListener('change', …) and re-render. See EMBEDDED-HTML.md, “Theming from script”.",
+    });
+  } else if (!cssRules) out.push({
+    level: 'note', code: 'theme-none',
+    message: 'has no prefers-color-scheme rules and no theme query — it will keep its own '
+      + 'single appearance whatever the board does.',
+  });
+
+  return out;
+}
+
 /* Inject the bridge at the end of <head> — after the document's own styles (so
    the boot apply() sees them) yet before the body renders (else after the
    head/html open tag, else prepended). A half already at the current version is

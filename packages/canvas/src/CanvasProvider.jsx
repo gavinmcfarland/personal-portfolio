@@ -3,7 +3,7 @@ import { createContext, useContext, useMemo, useRef, useState, useEffect, useLay
 import { ZOOM, PAN, GRID, DEFAULT_SHAPE_STYLE, frameBarH, clampScale, sectionNodes, sectionLabel } from './constants';
 import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
 import { RICH_COMMANDS, sanitizeRich, isRichHtml } from './rich-text';
-import { injectBridge } from './html-bridge';
+import { injectBridge, auditHtml } from './html-bridge';
 import { getGlobalReadOnly, setGlobalReadOnly, subscribeMode, allocOwnerId, joinOwners, setActiveCanvas, subscribeOwner, primaryOwner } from './edit-mode';
 
 /* Default localStorage key for the dev autosave. Override with the `storageKey`
@@ -2823,7 +2823,16 @@ export function CanvasProvider({
         // The stored copy carries the host bridge — theme sync + zoom paint mode
         // (and a text/html type — files synthesized from pasted text arrive
         // typed, drag sources may not).
-        const typed = new Blob([injectBridge(await readText(file))], { type: 'text/html' });
+        const raw = await readText(file);
+        /* Advisory only: say what the document won't do on this board, and drop
+           it anyway. A prototype that doesn't theme yet is a normal thing to
+           put on a board; one that themes wrongly is worth a line in the
+           console, because nothing on screen would ever show it. */
+        for (const { level, message } of auditHtml(raw)) {
+          const say = level === 'warn' ? console.warn : console.info;
+          say(`[canvas] ${file.name || 'document.html'} ${message}`);
+        }
+        const typed = new Blob([injectBridge(raw)], { type: 'text/html' });
         let src;
         if (onUploadHtml) {
           src = await onUploadHtml(file, await readDataUrl(typed));

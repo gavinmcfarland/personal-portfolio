@@ -11,6 +11,17 @@ const BOARD_DIR = path.resolve(process.cwd(), 'src/data/canvas');
 const ASSET_DIR = path.resolve(process.cwd(), 'public/canvas-assets');
 const PRIVATE_DIR = path.resolve(process.cwd(), 'public/private');
 
+/* Where pruned assets go instead of being deleted outright. A prune is a guess
+   made from the files on disk, and the boards on disk are only ever a snapshot
+   of what the live editor holds: a cut waiting to be pasted, an undo waiting to
+   be pressed, a second tab, a private board whose refs are encrypted and
+   invisible here. Any of those brings a reference back a moment later — and the
+   bytes have to still exist when it does (see restoreAssets). Outside public/
+   so a trashed file is neither served nor copied into the build. */
+const TRASH_DIR = path.resolve(process.cwd(), '.canvas-trash');
+/* How long a trashed asset is kept before it's really gone. */
+const TRASH_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
 /* Private-page slugs name a file under PRIVATE_DIR — same filename-safe alphabet
    as board keys so a slug can never escape the directory. */
 const SLUG_RE = /^[a-zA-Z0-9_-]+$/;
@@ -89,12 +100,57 @@ function readBoard(file) {
   }
 }
 
-/* Delete generated assets orphaned by this save. Only files the PREVIOUS
+/* Bring back the bytes for anything this snapshot references that isn't on
+   disk but is still in the trash. This is the half that makes pruning safe:
+   the moment a node comes back — pasted onto another page, restored by undo,
+   saved from a second tab that still had it — its asset is un-trashed before
+   anything tries to load it. Runs on every save, before the prune, so a save
+   that both resurrects one asset and orphans another does the right thing with
+   each. Returns the names it restored. */
+function restoreAssets(refs) {
+  if (!refs.size || !fs.existsSync(TRASH_DIR)) return [];
+  const restored = [];
+  for (const name of refs) {
+    if (!ASSET_RE.test(name)) continue;
+    const live = path.join(ASSET_DIR, name);
+    const trashed = path.join(TRASH_DIR, name);
+    if (fs.existsSync(live) || !fs.existsSync(trashed)) continue;
+    fs.mkdirSync(ASSET_DIR, { recursive: true });
+    fs.renameSync(trashed, live);
+    restored.push(name);
+  }
+  return restored;
+}
+
+/* Drop trashed assets nothing has asked for in TRASH_TTL_MS. By then the board
+   that referenced them has been saved (and committed) many times over. */
+function sweepTrash() {
+  if (!fs.existsSync(TRASH_DIR)) return;
+  const cutoff = Date.now() - TRASH_TTL_MS;
+  for (const name of fs.readdirSync(TRASH_DIR)) {
+    const file = path.join(TRASH_DIR, name);
+    try { if (fs.statSync(file).mtimeMs < cutoff) fs.unlinkSync(file); }
+    catch { /* raced with another sweep — fine */ }
+  }
+}
+
+/* Retire generated assets orphaned by this save. Only files the PREVIOUS
    committed version of the saved board referenced are candidates — a sweep of
    everything unreferenced would also delete media just dropped onto a
    different board, which lives only in that board's localStorage autosave
    until its own Save. A candidate survives if any committed board (including
-   the one just written) still references it. */
+   the one just written) still references it.
+
+   Retired, not deleted: the file moves to TRASH_DIR, because the boards on
+   disk don't know what the live editor is still holding. Cutting a node to
+   paste it onto another page publishes a snapshot without it — for the second
+   or two before the paste lands — and a delete followed by undo does the same.
+   Unlinking there took the bytes with it: the node came back pointing at a URL
+   the dev server answers with the SPA's index.html, so the image renders
+   broken and the iframe loads the portfolio inside itself. (Neither shows up
+   until something re-fetches the URL — already-decoded images and loaded
+   iframes keep painting — so the damage surfaces later, on a paste or a
+   reload, far from the save that caused it.) restoreAssets puts them back. */
 function pruneAssets(prevRefs) {
   if (!prevRefs.size || !fs.existsSync(ASSET_DIR)) return [];
   const referenced = new Set();
@@ -108,11 +164,25 @@ function pruneAssets(prevRefs) {
   const removed = [];
   for (const name of prevRefs) {
     if (ASSET_RE.test(name) && !referenced.has(name) && fs.existsSync(path.join(ASSET_DIR, name))) {
-      fs.unlinkSync(path.join(ASSET_DIR, name));
+      fs.mkdirSync(TRASH_DIR, { recursive: true });
+      fs.renameSync(path.join(ASSET_DIR, name), path.join(TRASH_DIR, name));
       removed.push(name);
     }
   }
+  sweepTrash();
   return removed;
+}
+
+/* Assets a just-saved board points at that aren't on disk (and weren't in the
+   trash either). Nothing can fix these automatically — the file is gone — so
+   they're reported rather than swallowed: the node renders broken, and this is
+   the only place that can say which one and why. */
+function danglingRefs(refs) {
+  const missing = [];
+  for (const name of refs) {
+    if (!fs.existsSync(path.join(ASSET_DIR, name))) missing.push(name);
+  }
+  return missing;
 }
 
 /* ── Link unfurling (dev only) ──────────────────────────────────────────
@@ -260,7 +330,23 @@ export function canvasSave() {
         if (!ASSET_RE.test(name)) return next();
         const file = path.join(ASSET_DIR, name);
         let stat;
-        try { stat = fs.statSync(file); } catch { return next(); }
+        try { stat = fs.statSync(file); }
+        catch {
+          /* A miss can mean the file was retired by a prune while the live
+             board still had the node — pasted onto another page, restored by
+             undo. The request itself is the proof it's still wanted, and it
+             arrives before the save that would restore it: put the file back
+             now, so the <img>/<iframe> gets the bytes on its FIRST try. A
+             browser caches a failed image load until the element is recreated,
+             so healing this a second late is not healing it at all. */
+          try {
+            const trashed = path.join(TRASH_DIR, name);
+            stat = fs.statSync(trashed);
+            fs.mkdirSync(ASSET_DIR, { recursive: true });
+            fs.renameSync(trashed, file);
+            stat = fs.statSync(file);
+          } catch { return next(); }
+        }
         const ext = name.slice(name.lastIndexOf('.') + 1);
         res.setHeader('Content-Type', MIME[ext] || 'application/octet-stream');
         res.setHeader('Cache-Control', 'no-cache');
@@ -395,8 +481,18 @@ export function canvasSave() {
             const prev = fs.existsSync(target) ? readBoard(target) : null;
             fs.writeFileSync(target, JSON.stringify(snapshot, null, 2) + '\n');
             server.config.logger.info(`  canvas saved → ${path.relative(process.cwd(), target)}`);
+            /* Restore before pruning: this snapshot's own references decide
+               what comes back, and they also protect it from the prune. */
+            const refs = assetRefs(snapshot);
+            const restored = restoreAssets(refs);
+            if (restored.length) server.config.logger.info(`  restored ${restored.length} asset(s) from .canvas-trash`);
             const removed = pruneAssets(prev ? assetRefs(prev) : new Set());
-            if (removed.length) server.config.logger.info(`  pruned ${removed.length} orphaned asset(s)`);
+            if (removed.length) server.config.logger.info(`  retired ${removed.length} orphaned asset(s) → .canvas-trash`);
+            const dangling = danglingRefs(refs);
+            if (dangling.length) {
+              server.config.logger.warn(`  ⚠ ${key}: ${dangling.length} missing asset(s) — these nodes will render broken:`);
+              for (const name of dangling) server.config.logger.warn(`      /canvas-assets/${name}`);
+            }
             res.statusCode = 200;
             res.end(JSON.stringify({ ok: true, pruned: removed.length }));
           } catch (err) {

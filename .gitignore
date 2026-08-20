@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Retired canvas assets awaiting a reference that may come back (dev only)
+.canvas-trash

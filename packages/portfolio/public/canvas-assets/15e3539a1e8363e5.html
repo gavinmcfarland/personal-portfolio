@@ -32,7 +32,7 @@
     --act:#1F7E74; --act-soft:rgba(31,126,116,.34); --act-hover:rgba(31,126,116,.12);
     --act-fill:rgba(31,126,116,.15);
     --done-bg:#DCEBE2; --done-fg:#3C7A55;
-    --warn:#D89A07; --warn-soft:rgba(216,154,7,.72);
+    --warn:#D89A07; --warn-soft:rgba(216,154,7,.72); --warn-fill:rgba(216,154,7,.14);
     --mark:#0E7469;
     color:var(--tx); background:var(--tl);
   }
@@ -45,7 +45,7 @@
     --act:#6FDBCC; --act-soft:rgba(111,219,204,.36); --act-hover:rgba(111,219,204,.15);
     --act-fill:rgba(111,219,204,.17);
     --done-bg:rgba(104,176,134,.20); --done-fg:#8FD1AB;
-    --warn:#F5CC78; --warn-soft:rgba(245,204,120,.70);
+    --warn:#F5CC78; --warn-soft:rgba(245,204,120,.70); --warn-fill:rgba(245,204,120,.16);
     --mark:#63E2D0;
   }
 
@@ -110,6 +110,9 @@
     margin:0 20px 8px; padding:13px 14px;
     background:var(--card-bg); border:1px solid var(--edge); border-radius:12px;
   }
+  /* the day view stacks its cards straight onto each other with no rail between them,
+     so they need a little more air than the timeline's do */
+  .dayview .card{margin-bottom:12px}
   .card.logged{background:var(--card-past); border-color:var(--edge-soft)}
   /* The greyscale goes on the contents, not the card: a filter on the card would drain
      its own fill too, which is invisible on white but turns the dark card to flat black.
@@ -152,7 +155,12 @@
     margin-left:4px;
   }
   .cardhead.bare .routine{margin-left:0}
-  .entry{display:flex; align-items:center; gap:12px}
+  .entry{
+    display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+    font-family:inherit; background:none; border:none; padding:0; cursor:pointer;
+    border-radius:8px; transition:opacity .12s;
+  }
+  .entry:hover{opacity:.72}
   .entry + .entry{margin-top:13px}
   .name{margin:0; font-size:15.5px; font-weight:600; letter-spacing:-.012em; flex:1; min-width:0}
   .val{font-size:14px; color:var(--tx2); font-variant-numeric:tabular-nums; white-space:nowrap}
@@ -325,38 +333,56 @@
   .coming-t{font-size:15px; font-weight:600; letter-spacing:-.012em}
   .coming svg{width:17px; height:17px; display:block; flex:none}
 
+  /* ── the detail page ── */
+  .bartitle{flex:1; margin:0 0 0 4px; font-size:22px; font-weight:400; color:var(--bar-tx)}
+  /* the name and its line sit in their own air, clear of the bar above and the first
+     panel below */
+  .dhead{padding:26px 20px 22px}
+  .dname{
+    margin:0; font-size:29px; font-weight:600; letter-spacing:-.028em;
+    display:flex; align-items:center; gap:10px;
+  }
+  .dname .gl{width:19px; height:19px; margin-left:0}
+  .dsubt{margin:6px 0 0; font-size:15px; color:var(--tx2)}
+  .log-row{
+    display:flex; align-items:center; gap:12px; padding:9px 0;
+    border-top:1px solid var(--edge-soft); font-size:14.5px;
+  }
+  .log-row:first-of-type{border-top:none; padding-top:2px}
+  .log-when{flex:1}
+  .log-val{font-size:14px; color:var(--tx2); font-variant-numeric:tabular-nums}
+  .log-mark{
+    width:20px; height:20px; border-radius:50%; flex:none; display:grid; place-items:center;
+    background:var(--done-bg); color:var(--done-fg);
+  }
+  .log-mark svg{width:12px; height:12px}
+  /* an outstanding dose is amber here, as it is everywhere else in the app */
+  .log-mark.late{background:var(--warn-fill); color:var(--warn)}
+  .log-val.late{color:var(--warn); font-weight:600}
+  /* the detail page's sections, matching the cards the two views use */
+  .panel{
+    margin:16px 20px 0; padding:15px 16px 16px;
+    background:var(--card-bg); border:1px solid var(--edge); border-radius:12px;
+  }
+  .panel > h3{
+    font-size:11px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--tx3); margin:0 0 12px;
+  }
+  .panel .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .panel .chip{
+    margin:0; font-size:15px; font-weight:600; letter-spacing:-.01em; color:var(--tx);
+    background:var(--edge-soft); border-radius:999px; padding:8px 14px;
+    display:inline-flex; align-items:center;
+  }
+
+  .day .empty{margin-bottom:26px}
   .empty{
     margin:26px 20px 0; padding:30px 20px; text-align:center;
     border:1px dashed var(--edge); border-radius:12px;
   }
   .empty p{margin:0; font-size:14.5px; font-weight:500; color:var(--tx2)}
 </style>
-<script data-cv-zoom-opts="4">(() => {
-  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
-  var css =
-    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
-    // it is also the single biggest per-frame paint saving).
-    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
-    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
-    // Gesture only: paint-level savings that cannot move a box.
-    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
-    'box-shadow:none!important;text-shadow:none!important}';
-  var style = document.createElement('style');
-  style.textContent = css;
-  var attach = function () { (document.head || document.documentElement).appendChild(style); };
-  if (document.head || document.documentElement) attach();
-  else addEventListener('DOMContentLoaded', attach);
-  // Flat until told otherwise: a host too old to send a scale gets the safe,
-  // never-blurry rendering rather than an unannounced regression.
-  document.documentElement.classList.add('cv-flat');
-  addEventListener('message', function (e) {
-    var d = e.data;
-    if (!d || d.type !== 'canvas-zoom') return;
-    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
-    document.documentElement.classList.toggle('cv-zooming', !!d.active);
-    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
-  });
-})()</script><script data-cv-theme-sync="2">(() => {
+<script data-cv-theme-sync="2">(() => {
   const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
   const walk = (rules, dark) => {
     for (const r of rules) {
@@ -458,6 +484,31 @@
     apply(boot[1] === 'dark');
     addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
   }
+})()</script><script data-cv-zoom-opts="4">(() => {
+  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
+  var css =
+    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
+    // it is also the single biggest per-frame paint saving).
+    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
+    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
+    // Gesture only: paint-level savings that cannot move a box.
+    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
+    'box-shadow:none!important;text-shadow:none!important}';
+  var style = document.createElement('style');
+  style.textContent = css;
+  var attach = function () { (document.head || document.documentElement).appendChild(style); };
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
+  // Flat until told otherwise: a host too old to send a scale gets the safe,
+  // never-blurry rendering rather than an unannounced regression.
+  document.documentElement.classList.add('cv-flat');
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'canvas-zoom') return;
+    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
+    document.documentElement.classList.toggle('cv-zooming', !!d.active);
+    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
+  });
 })()</script><script data-cv-input="1">(() => {
   if (window.parent === window) return;
   var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
@@ -736,6 +787,7 @@
   let futureMode = "edge";      /* show | hide | edge */
   let futureOpen = false;       /* the boundary has been crossed this session */
   const showFuture = () => futureMode === "show" || (futureMode === "edge" && futureOpen);
+  let detail = null;            /* {d, i} while an event is open */
   let calOpen = false;          /* the month, dropped from the title */
   let loggedOpen = true;        /* is the logged group listed out, or folded up */
   let tStamp = "head";          /* rail | slim | split | head | tag | above */
@@ -862,6 +914,7 @@
   const NAV = {
     menu:'<path d="M3 6.5h18M3 12h18M3 17.5h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
     more:'<circle cx="12" cy="5.4" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="18.6" r="1.9" fill="currentColor"/>',
+    back:'<path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
     chev:'<path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
     today:'<rect x="3.5" y="4.8" width="17" height="15.7" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/>'
         + '<path d="M3.5 9.4h17M8 2.8v3.6M16 2.8v3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
@@ -901,6 +954,15 @@
     { dow:"Sat", dom:16 }, { dow:"Sun", dom:17 }, { dow:"Mon", dom:18 },
     { dow:"Tue", dom:19 }, { dow:"Wed", dom:20 }, { dow:"Thu", dom:21 }, { dow:"Fri", dom:22 }
   ];
+  /* the standing facts about each medicine, which the timeline itself does not carry */
+  const DRUGS = {
+    "Metformin":    { dose:"500 mg", form:"tablet", freq:"twice a day", food:"with food", supply:"56 left" },
+    "Ramipril":     { dose:"2.5 mg", form:"tablet", freq:"every day",   supply:"28 left" },
+    "Atorvastatin": { dose:"20 mg",  form:"tablet", freq:"every day",   food:"at bedtime", supply:"84 left" },
+    "Furosemide":   { dose:"20 mg",  form:"tablet", freq:"every day",   supply:"30 left" },
+    "Vitamin D":    { dose:"1000 IU", form:"capsule", freq:"every day",  supply:"90 left" }
+  };
+
   const DAYS = [
     { label:"Sat 16", events:[
       { name:"Metformin", at:8*60, shape:"green", logged:"08:31", routine:"With breakfast" },
@@ -959,7 +1021,8 @@
     const right = e.value ? `<span class="val">${e.value}</span>` : "";
     const name = `<h4 class="name">${e.name}${glyph(e.shape)}</h4>`;
     /* one row builder for both views, so the side is set in a single place */
-    if (bare) return `<div class="entry">${name}${right}</div>`;
+    if (bare) return `<button class="entry" data-open="${d}:${i}"
+      aria-label="${e.name}, open">${name}${right}</button>`;
     return boxSide === "right"
       ? `<div class="entry">${name}${right}${mark}</div>`
       : `<div class="entry">${mark}${name}${right}</div>`;
@@ -998,7 +1061,6 @@
   function timelineView(){
     const out = [];
     DAYS.forEach((d, di) => {
-      if (!d.events.length) return;
       /* with the future hidden the timeline ends at today, so the now line is the end of
          the scroll rather than a marker part way down it */
       if (!showFuture() && di > NOW.day) return;
@@ -1081,6 +1143,10 @@
       if (di === NOW.day) inner.push(`<div class="nowedge" role="separator" aria-label="Now, ${fmt(NOW.at)}">
         <div class="bar"><span class="dot"></span><span class="line"></span></div></div>`);
       inner.push(periods(soon));
+      /* An empty day is still a day. Skipping it left a hole the calendar could jump to
+         and land nowhere, and made the run of days lie about which ones exist. */
+      if (!d.events.length)
+        inner.push(`<div class="empty"><p>Nothing scheduled</p></div>`);
       /* Each day wraps its own contents so its chip sticks within that day and is pushed
          off by the next one, rather than every chip pinning to the same spot. */
       out.push(`<div class="day">${inner.join("")}</div>`);
@@ -1260,11 +1326,21 @@
     const bar  = document.querySelector(".appbar");
     if (!body || !mark || !tail) return;
     tail.style.height = "0px";
-    const inset = (bar ? bar.offsetHeight : 64) + 18;
-    const markTop = mark.getBoundingClientRect().top - body.getBoundingClientRect().top
-                  + body.scrollTop;
-    const below = body.scrollHeight - markTop;
-    tail.style.height = Math.max(0, body.clientHeight - inset - below) + "px";
+    const barH = bar ? bar.offsetHeight : 64;
+    const top = body.getBoundingClientRect().top;
+    const offsetOf = el => el.getBoundingClientRect().top - top + body.scrollTop;
+    const H = body.scrollHeight;
+
+    /* Two things have to be able to reach the top of the screen: the now line, where the
+       timeline parks, and the last day, which the calendar can jump to. Sizing only for
+       the now line left the final day unable to scroll up far enough — so it never
+       crossed the line the title watches, and the bar kept naming the day before it. */
+    let need = body.clientHeight - (barH + 18) - (H - offsetOf(mark));
+    const marks = document.querySelectorAll("[data-daymark]");
+    const last = marks[marks.length - 1];
+    if (last) need = Math.max(need, body.clientHeight - barH - (H - offsetOf(last)));
+
+    tail.style.height = Math.max(0, need) + "px";
   }
 
   /* Put a day at the top of the timeline. Today is special: its meaningful position is
@@ -1301,7 +1377,87 @@
     spyTimeline();
   }
 
+  /* ═════════ the detail page ═════════
+     Everything on it is derived from the same DAYS the two views read, so the history is
+     the real history — the days this medicine was taken, and the days it was missed. */
+  function historyOf(name){
+    const out = [];
+    /* A dose that has not come due yet is not history — it would read as a gap in the
+       record when nothing has gone wrong. Walk back from today taking only what has
+       actually happened or has actually been missed. */
+    for (let di = NOW.day; di >= 0 && out.length < 5; di--){
+      DAYS[di].events.forEach(e => {
+        if (e.name !== name || e.kind === "note") return;
+        const past = di < NOW.day || e.at < NOW.at;
+        if (!e.logged && !past) return;
+        out.push({
+          day: di === NOW.day ? "Today" : DAYS[di].label,
+          at: e.logged || `overdue · ${fmt(e.at)}`,
+          value: e.value || "",
+          done: !!e.logged
+        });
+      });
+    }
+    return out.slice(0, 5);
+  }
+
+  function detailView(){
+    const { d, i } = detail;
+    const e = DAYS[d].events[i];
+    const k = state(d, e);
+    const drug = DRUGS[e.name];
+    const isReading = !drug && e.kind !== "note";
+
+    const sub = drug
+      ? [drug.dose, routineOfEvent(d, i)].filter(Boolean).join(" · ")
+      : e.value ? `Last reading ${e.value}` : "";
+
+    const chips = drug
+      ? [drug.dose, drug.form, drug.freq, drug.food].filter(Boolean)
+          .map(x => `<span class="chip">${x}</span>`).join("")
+      : "";
+
+    const log = historyOf(e.name);
+
+    return `<div class="body">
+      <header class="appbar">
+        <button class="navicon js-back" aria-label="Go back">${s24(NAV.back)}</button>
+        <h1 class="bartitle">${drug ? "Medication" : isReading ? "Reading" : "Note"}</h1>
+        <button class="navicon" aria-label="More options">${s24(NAV.more)}</button>
+      </header>
+
+      <div class="dhead">
+        <h2 class="dname">${e.name}${glyph(e.shape)}</h2>
+        ${sub ? `<p class="dsubt">${sub}</p>` : ``}
+      </div>
+
+
+      ${chips ? `<section class="panel"><h3>Directions</h3><div class="chips">${chips}</div></section>` : ``}
+      ${drug && drug.supply ? `<section class="panel"><h3>Supply</h3>
+        <div class="chips"><span class="chip">${drug.supply}</span></div></section>` : ``}
+
+      ${log.length ? `<section class="panel">
+        <h3>${isReading ? "Recent readings" : "Recent doses"}</h3>
+        ${log.map(h => `<div class="log-row">
+          <span class="log-mark${h.done ? "" : " late"}">${h.done ? TICK : CLOCK}</span>
+          <span class="log-when">${h.day}</span>
+          ${h.value ? `<span class="log-val">${h.value}</span>` : ``}
+          <span class="log-val${h.done ? "" : " late"}">${h.at}</span>
+        </div>`).join("")}
+      </section>` : ``}
+
+      <div style="height:30px"></div>
+    </div>`;
+  }
+
+  /* the routine a given event belongs to, read back off its moment */
+  function routineOfEvent(d, i){
+    const e = DAYS[d].events[i];
+    return e.routine || "";
+  }
+
   function shell(){
+    if (detail) return detailView() + drawer();
     const title = titleFor();
     return `<div class="body">
         <header class="appbar">
@@ -1345,6 +1501,14 @@
   };
 
   wall.addEventListener("click", e => {
+    const openEvt = e.target.closest("[data-open]");
+    if (openEvt){
+      const [d, i] = openEvt.dataset.open.split(":").map(Number);
+      detail = { d, i };
+      return draw();
+    }
+    if (e.target.closest(".js-back")){ detail = null; return draw(); }
+
     if (e.target.closest(".js-menu")){ drawn = true; return draw(); }
     if (e.target.closest(".js-cal")){ calOpen = !calOpen; return draw(); }
     if (e.target.closest("[data-open-future]")){ futureOpen = true; return draw(); }
@@ -1355,6 +1519,8 @@
     const jump = e.target.closest("[data-jump]");
     if (jump){
       const di = +jump.dataset.jump;
+      /* asking for a day that is currently behind the boundary is asking to cross it */
+      if (di > NOW.day && futureMode === "edge") futureOpen = true;
       open = di; calOpen = false; draw();
       if (view === "timeline") scrollTimelineTo(di, true);
       return;
@@ -1419,16 +1585,17 @@
   });
 
   /* No prototype controls on this build — the settings keep the values they were left
-     at, and the appearance follows the device instead of a picker. Reading `.matches`
-     once was not enough: the palette is chosen in script, so a document that never
-     listens keeps whatever it booted with while everything around it changes. Embedded
-     on the canvas the query answers with the board's theme rather than the OS, so this
-     one listener covers both the page's light/dark switch and a system change beneath
-     it. draw() carries the scroller across, so a flip costs no position. */
-  if (window.matchMedia) {
-    const scheme = window.matchMedia("(prefers-color-scheme: dark)");
+     at, and the appearance follows the device instead of a picker. Listened to rather
+     than read once: the colours are picked in script, so a preference changed while the
+     page is open only lands if a redraw follows it. (Embedded on the canvas that same
+     listener is what follows the board's theme — the bridge answers this query with the
+     board's and fires 'change' when it flips.) */
+  const scheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+  if (scheme){
     darkMode = scheme.matches;
-    scheme.addEventListener("change", (e) => { darkMode = e.matches; draw(); });
+    const follow = (e) => { darkMode = e.matches; draw(); };
+    if (scheme.addEventListener) scheme.addEventListener("change", follow);
+    else if (scheme.addListener) scheme.addListener(follow); // pre-2019 spelling
   }
 
   draw();
