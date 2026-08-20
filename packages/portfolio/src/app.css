@@ -1351,7 +1351,7 @@ p + .footnotes {
   right: 72px;
 }
 
-/* Same collision when the playground canvas maximises: its full-bleed overlay
+/* Same collision when a canvas maximises: its full-bleed overlay
    puts the zoom cluster in the viewport corner, under the floated theme toggle
    (see CanvasMaximizeToggle). Nudge it left to sit beside the toggle. */
 .canvas-root[data-cv-fullbleed] [data-cv-part="zoom"] {

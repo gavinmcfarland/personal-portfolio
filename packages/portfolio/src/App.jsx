@@ -185,8 +185,8 @@ function App() {
           <Home />
         </div>
 
-        {/* A toggle that appears only while the playground canvas is maximised,
-            floated above its full-viewport overlay. */}
+        {/* A toggle that appears only while a canvas is maximised (playground
+            or a project board), floated above its full-viewport overlay. */}
         <CanvasMaximizeToggle />
 
         {/* Non-home routes: a panel that slides in from the right and leaves a

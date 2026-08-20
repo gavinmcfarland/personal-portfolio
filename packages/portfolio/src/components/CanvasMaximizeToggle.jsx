@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import ThemeToggle from "./ThemeToggle";
 
-/* The playground canvas can maximise into a full-viewport overlay
+/* The playground and project canvases can maximise into a full-viewport overlay
    (`fullscreenButton="document"`): the canvas root is portaled to <body> with a
-   near-max z-index and marked `data-cv-fullbleed`, covering Home's own theme
-   toggle. Mirror the page/overlay pattern — while it's maximised, float a toggle
-   above the overlay so the control always rides with whichever surface is on
-   top. Rendered inside the ThemeProvider; the portal preserves that context. */
+   near-max z-index and marked `data-cv-fullbleed`, covering whichever theme
+   toggle the page underneath was showing. Mirror the page/overlay pattern —
+   while it's maximised, float a toggle above the overlay so the control always
+   rides with whichever surface is on top. Rendered inside the ThemeProvider;
+   the portal preserves that context. */
 export default function CanvasMaximizeToggle() {
   const [maximized, setMaximized] = useState(false);
 
