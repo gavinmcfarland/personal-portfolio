@@ -33,14 +33,15 @@ budget everything below is about.
 
 ## What the canvas injects into your document
 
-At ingest the canvas rewrites the document to add two `<script>` blocks at the
+At ingest the canvas rewrites the document to add three `<script>` blocks at the
 end of `<head>`. Each is stamped with a version; on re-ingest an older copy is
-stripped and replaced (`injectBridge` in `src/CanvasProvider.jsx`).
+stripped and replaced (`injectBridge` in `src/html-bridge.js`).
 
 | Marker | Purpose |
 |---|---|
 | `data-cv-theme-sync="2"` | Applies the host's light/dark theme. Rewrites the document's `prefers-color-scheme` media rules, sets `color-scheme`, toggles a `dark` class on `<html>`, and patches `matchMedia` so prefers-color-scheme queries answer with the host theme (see below). Boot theme arrives in the URL hash (`#cv-theme=dark`) so the first paint is already correct; later flips arrive as `postMessage`. |
 | `data-cv-zoom-opts="4"` | Listens for `{ type: 'canvas-zoom', active, scale }` and sets two classes on `<html>`: `cv-zooming` while a gesture runs (disables `box-shadow` / `text-shadow`), and `cv-flat` while zoomed in past 1:1 or mid-gesture (disables `backdrop-filter` — see below). |
+| `data-cv-input="1"` | Keeps the document interactive while the board owns every gesture. In view mode the iframe is `pointer-events: none` behind a shield, so nothing reaches the document directly; this replays the cursor and any press that turned out to be a tap as real DOM events, and mirrors the document's `:hover` rules onto a class so hover states still show. See `INTERACTIVE-IFRAMES.md`. |
 
 **If your generator emits a block carrying the current marker and version
 itself, the canvas leaves it alone.** That's the supported way to own this
@@ -314,9 +315,13 @@ There is no automated check for this. To confirm a document behaves:
 
 ## Related
 
-- `src/html-bridge.js` — `THEME_SYNC`, `ZOOM_OPTS`, the version table and
-  `injectBridge`. The single definition; both the runtime and the backfill
-  script import it.
+- `INTERACTIVE-IFRAMES.md` — the other half of embedding: how the board pans and
+  zooms over a document while the document stays hoverable and clickable. Worth
+  reading if your generator emits anything with hover states, forms or its own
+  scrolling.
+- `src/html-bridge.js` — `THEME_SYNC`, `ZOOM_OPTS`, `INPUT_BRIDGE`, the version
+  table and `injectBridge`. The single definition; both the runtime and the
+  backfill script import it.
 - `src/CanvasProvider.jsx` — ingest (`addHtmlFromFile`) and the gesture window
   (`beginGesture` / `endGesture` / `postZoomPaintMode`).
 - `src/nodes/Html.jsx` — the iframe node, sandboxing, theme messaging.
