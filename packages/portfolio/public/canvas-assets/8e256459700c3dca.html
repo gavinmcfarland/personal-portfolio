@@ -2182,9 +2182,18 @@
   });
 
   /* No prototype controls on this build — the settings keep the values they were left
-     at, and the appearance follows the device instead of a picker. */
-  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)
-    darkMode = true;
+     at, and the appearance follows the device instead of a picker. Listened to rather
+     than read once: the colours are picked in script, so a preference changed while the
+     page is open only lands if a redraw follows it. (Embedded on the canvas that same
+     listener is what follows the board's theme — the bridge answers this query with the
+     board's and fires 'change' when it flips.) */
+  const scheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+  if (scheme){
+    darkMode = scheme.matches;
+    const follow = (e) => { darkMode = e.matches; draw(); };
+    if (scheme.addEventListener) scheme.addEventListener("change", follow);
+    else if (scheme.addListener) scheme.addListener(follow); // pre-2019 spelling
+  }
 
   draw();
 

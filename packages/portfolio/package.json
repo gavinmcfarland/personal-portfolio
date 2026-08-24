@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/audit-canvas-html.mjs && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "private:new": "node scripts/new-private-page.mjs",

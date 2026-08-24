@@ -406,18 +406,40 @@ re-enable the containment mode that had to be withdrawn.
 ## Verifying a change
 
 One fault is checked for you. `auditHtml` in `src/html-bridge.js` reads a
-document at ingest and warns — in the console on drop, and as a non-zero exit
-from `pnpm canvas:audit` (`packages/portfolio/scripts/audit-canvas-html.mjs`)
-over the committed assets — when it queries `prefers-color-scheme` in script but
-never listens for a change, i.e. the “Theming from script” mistake above. That
-one is worth automating because it is invisible: the document paints its first
-frame correctly and fails only when someone flips the board, so it survives
-every screenshot. Run the audit after importing or hand-editing an asset; the
-committed set is expected to stay clean.
+document and warns when it queries `prefers-color-scheme` in script but never
+listens for a change, i.e. the “Theming from script” mistake above. That one is
+worth automating because it is invisible: the document paints its first frame
+correctly and fails only when someone flips the board, so it survives every
+screenshot.
+
+It runs at three points, deliberately — the first two are easy to miss, and the
+mistake shipped twice on `project-canvas-health` before the third existed:
+
+| Where | Channel | Blocks? |
+|---|---|---|
+| On drop (`addHtmlFromFile`) | browser console | no |
+| When the dev server writes the asset (`vite-plugin-canvas-save.js`, `/__canvas/asset`) | the vite terminal | no |
+| `pnpm build`, and `pnpm canvas:audit` on demand | stdout, non-zero exit on a `warn` | **yes** |
+
+The middle one matters most in practice: a document is dropped by dragging a
+file onto the board, and nobody has devtools open while doing that. The build
+gate is the backstop — a `warn` fails the build, a `note` (“this document has no
+theme to follow”) never does, since a deliberately single-appearance document is
+a legitimate thing to publish.
 
 It reads source text rather than the running document, so a document that hands
 its MediaQueryList to a helper instead of binding it is reported as not
-listening. The findings are advisory — a drop is never blocked.
+listening. Ingest findings are advisory — a drop is never blocked.
+
+### Fix the generator, not the asset
+
+An asset under `public/canvas-assets` is an *export*. Hand-patching one fixes
+that file and nothing else: the next export of the same prototype arrives with
+the fault back, under a new content hash, looking like a brand-new document.
+That is exactly how it happened here — `health-app-11` was patched in place, and
+`health-app-39` came off the same unfixed source weeks later and regressed.
+So when the audit fires, fix the document where it is authored and re-export;
+patch the committed asset only to unblock an already-published board.
 
 The rest is by eye. To confirm a document behaves:
 

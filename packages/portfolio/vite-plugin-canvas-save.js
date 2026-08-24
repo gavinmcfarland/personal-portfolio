@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { auditHtml } from '../canvas/src/html-bridge.js';
 
 const BOARD_DIR = path.resolve(process.cwd(), 'src/data/canvas');
 const ASSET_DIR = path.resolve(process.cwd(), 'public/canvas-assets');
@@ -390,6 +391,21 @@ export function canvasSave() {
               fs.mkdirSync(ASSET_DIR, { recursive: true });
               fs.writeFileSync(file, decoded.buffer);
               server.config.logger.info(`  canvas image → public/canvas-assets/${name}`);
+              /* This is the moment a dropped document becomes committed content,
+                 so it is the moment to say what it won't do. The board audits on
+                 drop too, but only into the browser console — which nobody has
+                 open while dragging a file in, which is how a health-app export
+                 that reads the theme once and never listens again shipped twice.
+                 Same audit, in the terminal you are already watching. Advisory:
+                 the file is written either way (see auditHtml in
+                 packages/canvas/src/html-bridge.js). */
+              if (decoded.ext === 'html') {
+                const log = server.config.logger;
+                for (const { level, message } of auditHtml(decoded.buffer.toString('utf8'))) {
+                  const line = `  canvas html ${name} ${message}`;
+                  if (level === 'warn') log.warn(line); else log.info(line);
+                }
+              }
             }
             res.statusCode = 200;
             res.end(JSON.stringify({ ok: true, url: `/canvas-assets/${name}` }));
