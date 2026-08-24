@@ -443,6 +443,27 @@
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
+/* Restoring a saved start page. The document veils itself from its first paint
+   until it is on that screen (PAGE_BRIDGE), so this covers a node that is
+   deliberately blank rather than one that is broken.
+
+   Nothing is painted over the node itself: a framed embed already shows its
+   device-frame backdrop, and a frameless one is transparent by design — filling
+   either would be a flash of its own. Only the spinner, and only once the wait
+   is long enough to be worth remarking on: it fades in after 250ms, so a
+   restore that lands in the usual couple of hundred milliseconds shows no
+   indicator at all. */
+.canvas-root .cv-node.cv-html .cv-html-boot {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.canvas-root .cv-node.cv-html .cv-html-boot .cv-spin {
+  width: 18px;
+  height: 18px;
+}
 /* Live: the iframe takes the pointer; an accent outline says "interactive". */
 .canvas-root .cv-node.cv-html.cv-live .cv-html-frame {
   pointer-events: auto;
@@ -459,6 +480,26 @@
 }
 .canvas-root[data-cv-passthrough] .cv-node.cv-html .cv-html-frame {
   pointer-events: auto;
+}
+/* Reload, in the frame's toolbar: the reader's way back once they have driven
+   an embed somewhere. Sized off --cv-df-u like every other mark in the bar, so
+   it scales with the frame. The bar is inert to pointers; this takes its own
+   back, as the editable fields do. */
+.canvas-root .cv-df-reset {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--cv-df-u) * 20);
+  height: calc(var(--cv-df-u) * 20);
+  pointer-events: auto;
+  cursor: default;
+}
+/* Ink at low strength, so it reads on the bar in either theme without picking
+   a colour of its own — the same way the bar tints itself off --cv-surface. */
+.canvas-root .cv-df-reset svg {
+  width: calc(var(--cv-df-u) * 13);
+  height: calc(var(--cv-df-u) * 13);
 }
 /* Video playback controls — revealed on hover. Pointer events are stopped
    inside, so the bar never starts a node drag / pan / lightbox tap. */
@@ -535,11 +576,42 @@
 .canvas-root .cv-df-bar {
   flex: none;
   height: var(--cv-df-bar, 36px);
-  display: flex;
+  /* Three groups — left, centre, right — on a grid rather than a flex row, so
+     the centre is the BAR's centre and not the middle of whatever space the
+     other two leave over. That is what a title needs to sit under, and it means
+     a frame can grow its left or right group without dragging the centre with
+     it. The side columns are equal fractions for the same reason. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: calc(var(--cv-df-u) * 10);
   pointer-events: none;
   user-select: none;
+}
+/* Each group is its own row. Empty ones (the plugin and platform frames have
+   no centre) still render, so the three columns stay where they are. */
+.canvas-root .cv-df-group {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--cv-df-u) * 10);
+  min-width: 0;
+}
+.canvas-root .cv-df-group--left {
+  justify-self: start;
+}
+.canvas-root .cv-df-group--center {
+  justify-self: center;
+}
+.canvas-root .cv-df-group--right {
+  justify-self: end;
+}
+/* The browser's URL pill is the exception: it is centre content that wants the
+   room rather than its own width, so that column takes what is left over. */
+.canvas-root .cv-df-bar--browser {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.canvas-root .cv-df-bar--browser .cv-df-group--center {
+  justify-self: stretch;
 }
 /* SVGs default to display:inline, which sits them on the text baseline — as the
    bar scales that inline whitespace throws the icons off-centre. Block removes
@@ -580,10 +652,6 @@
   width: calc(var(--cv-df-u) * 16);
   height: calc(var(--cv-df-u) * 16);
 }
-.canvas-root .cv-df-nav svg:last-child {
-  width: calc(var(--cv-df-u) * 13);
-  height: calc(var(--cv-df-u) * 13);
-}
 .canvas-root .cv-df-url {
   flex: 1;
   min-width: 0;
@@ -613,7 +681,7 @@
   height: calc(var(--cv-df-u) * 10);
 }
 .canvas-root .cv-df-title {
-  flex: 1;
+  flex: 0 1 auto;
 }
 .canvas-root .cv-df-close {
   flex: none;
@@ -628,12 +696,7 @@
 /* Terminal window — traffic-light dots on the left, a centred monospace title.
    Same bar as the others; the spacer balances the dots so the title centres. */
 .canvas-root .cv-df-termtitle {
-  flex: 1;
-}
-.canvas-root .cv-df-termspacer {
-  flex: none;
-  /* Match the dots block: 3 dots (u·10) + 2 gaps (u·6) = u·42. */
-  width: calc(var(--cv-df-u) * 42);
+  flex: 0 1 auto;
 }
 /* Platform frames — iOS and Android. The plugin window's bar, with the
    platform's geometric mark in the icon tile and the screen's own size set out

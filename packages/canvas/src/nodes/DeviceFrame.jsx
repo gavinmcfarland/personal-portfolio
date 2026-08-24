@@ -21,6 +21,40 @@ import { frameBarH } from '../constants';
    labelled bar just says which platform this is and at what size, and leaves
    the screen to the design. */
 
+/* Reload, in the frame's own toolbar — the reader's way back to the state the
+   board opened this embed on.
+
+   It appears only once the reader has driven the document somewhere (the page
+   half says when; see PAGE_BRIDGE in html-bridge.js) and only in view mode: an
+   author has the context menu, and a live control in every frame would be one
+   more thing between them and the work.
+
+   The bar is inert to pointers so grabbing it still drags the node — this takes
+   its own back, the same exception the editable fields make.
+
+   Every bar is laid out as three groups — left, centre, right — and this is the
+   first thing in the RIGHT one, on every frame. One position across all five
+   means a reader who finds it once knows where it is on the next embed, which a
+   control that sits after the title here and after the size readout there does
+   not give them. */
+function FrameReset({ node }) {
+  const { readOnly, htmlMoved, eng } = useCanvas();
+  if (!readOnly || node.type !== 'html' || !htmlMoved.includes(node.id)) return null;
+  return (
+    <button
+      type="button"
+      className="cv-df-reset"
+      title="Back to the start"
+      aria-label="Back to the start"
+      onPointerDown={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
+      onClick={(e) => { e.stopPropagation(); eng.restartHtml(node.id); }}
+    >
+      <RotateCw strokeWidth={2.2} />
+    </button>
+  );
+}
+
 /* A committed-on-blur text field shared by the frame labels (browser URL /
    plugin title). Read-only boards show static text; editing never starts a node
    drag because the input captures its own pointer. */
@@ -47,23 +81,33 @@ function FrameField({ node, field, value, placeholder, className }) {
   );
 }
 
-/* Abstract browser chrome: traffic-light dots, back/forward/reload, a URL pill. */
+/* Abstract browser chrome: traffic-light dots, back/forward, a URL pill — and,
+   after the pill, the reload, which is the one control here that does anything.
+   The drawn reload that used to sit beside the arrows is gone: two refresh
+   glyphs in one bar, one of them inert, is a bar that lies about which one to
+   press. */
 function BrowserBar({ node }) {
   return (
     <div className="cv-df-bar cv-df-bar--browser">
-      <span className="cv-df-dots">
-        <i />
-        <i />
-        <i />
+      <span className="cv-df-group cv-df-group--left">
+        <span className="cv-df-dots">
+          <i />
+          <i />
+          <i />
+        </span>
+        <span className="cv-df-nav">
+          <ChevronLeft strokeWidth={2.2} />
+          <ChevronRight strokeWidth={2.2} />
+        </span>
       </span>
-      <span className="cv-df-nav">
-        <ChevronLeft strokeWidth={2.2} />
-        <ChevronRight strokeWidth={2.2} />
-        <RotateCw strokeWidth={2.2} />
+      <span className="cv-df-group cv-df-group--center">
+        <div className="cv-df-url">
+          <FrameField node={node} field="frameUrl" value={node.frameUrl || 'example.com'} placeholder="example.com" className="cv-df-url-field" />
+        </div>
       </span>
-      <div className="cv-df-url">
-        <FrameField node={node} field="frameUrl" value={node.frameUrl || 'example.com'} placeholder="example.com" className="cv-df-url-field" />
-      </div>
+      <span className="cv-df-group cv-df-group--right">
+        <FrameReset node={node} />
+      </span>
     </div>
   );
 }
@@ -73,29 +117,42 @@ function BrowserBar({ node }) {
 function PluginBar({ node }) {
   return (
     <div className="cv-df-bar cv-df-bar--plugin">
-      <span className="cv-df-icon">
-        <Code strokeWidth={2.2} />
+      <span className="cv-df-group cv-df-group--left">
+        <span className="cv-df-icon">
+          <Code strokeWidth={2.2} />
+        </span>
+        <FrameField node={node} field="frameTitle" value={node.frameTitle || 'Plugin'} placeholder="Plugin" className="cv-df-title" />
       </span>
-      <FrameField node={node} field="frameTitle" value={node.frameTitle || 'Plugin'} placeholder="Plugin" className="cv-df-title" />
-      <span className="cv-df-close">
-        <X strokeWidth={2.2} />
+      <span className="cv-df-group cv-df-group--center" />
+      <span className="cv-df-group cv-df-group--right">
+        <FrameReset node={node} />
+        <span className="cv-df-close">
+          <X strokeWidth={2.2} />
+        </span>
       </span>
     </div>
   );
 }
 
 /* macOS-style terminal: traffic-light dots on the left, a centred monospace
-   title. The spacer mirrors the dots' width so the title stays truly centred. */
+   title. The title is truly centred by the bar's grid, not by balancing the
+   dots against a spacer of the same width. */
 function TerminalBar({ node }) {
   return (
     <div className="cv-df-bar cv-df-bar--terminal">
-      <span className="cv-df-dots">
-        <i />
-        <i />
-        <i />
+      <span className="cv-df-group cv-df-group--left">
+        <span className="cv-df-dots">
+          <i />
+          <i />
+          <i />
+        </span>
       </span>
-      <FrameField node={node} field="frameTitle" value={node.frameTitle || 'bash'} placeholder="bash" className="cv-df-termtitle" />
-      <span className="cv-df-termspacer" />
+      <span className="cv-df-group cv-df-group--center">
+        <FrameField node={node} field="frameTitle" value={node.frameTitle || 'bash'} placeholder="bash" className="cv-df-termtitle" />
+      </span>
+      <span className="cv-df-group cv-df-group--right">
+        <FrameReset node={node} />
+      </span>
     </div>
   );
 }
@@ -141,9 +198,15 @@ function PlatformBar({ node, name, mark }) {
   const h = Math.round(Math.max(0, (+node.h || 0) - bar));
   return (
     <div className={`cv-df-bar cv-df-bar--${node.frame}`}>
-      <span className="cv-df-icon">{mark}</span>
-      <FrameField node={node} field="frameTitle" value={node.frameTitle || name} placeholder={name} className="cv-df-title" />
-      <span className="cv-df-dims">{w}×{h}</span>
+      <span className="cv-df-group cv-df-group--left">
+        <span className="cv-df-icon">{mark}</span>
+        <FrameField node={node} field="frameTitle" value={node.frameTitle || name} placeholder={name} className="cv-df-title" />
+      </span>
+      <span className="cv-df-group cv-df-group--center" />
+      <span className="cv-df-group cv-df-group--right">
+        <FrameReset node={node} />
+        <span className="cv-df-dims">{w}×{h}</span>
+      </span>
     </div>
   );
 }

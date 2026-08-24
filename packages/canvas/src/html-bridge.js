@@ -3,9 +3,10 @@
    An `html` node is a sandboxed iframe at an opaque origin (see nodes/Html.jsx):
    the host can't reach into it and it can't reach out. Everything the document
    needs to know about the board therefore arrives as `postMessage`, and these
-   three scripts — injected at the end of <head> at ingest — are what listen.
+   four scripts — injected at the end of <head> at ingest — are what listen.
    The input half also talks back: it is the only route the board has to the
-   presses landing on a document it cannot otherwise see.
+   presses landing on a document it cannot otherwise see, and the page half with
+   it — it is how the board learns which screen a prototype is showing.
 
    Plain JS with no imports, deliberately: `scripts/inject-canvas-bridge.mjs` in
    the portfolio runs this module under Node to upgrade already-committed assets
@@ -244,7 +245,7 @@ const ZOOM_OPTS = `<script data-cv-zoom-opts="4">(() => {
    thing: the board drops the shield, the iframe takes the pointer, and the
    document behaves exactly as it would standalone — which is also how a demo's
    own scrolling, sliders and drags are used. */
-const INPUT_BRIDGE = `<script data-cv-input="1">(() => {
+const INPUT_BRIDGE = `<script data-cv-input="2">(() => {
   if (window.parent === window) return;
   var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
 
@@ -413,7 +414,7 @@ const INPUT_BRIDGE = `<script data-cv-input="1">(() => {
   /* A press the board decided was not a drag, replayed as a full click at that
      point. Untrusted events still run activation behaviour, so links follow,
      checkboxes toggle and buttons submit. */
-  var replay = function (x, y, pointerType, detail) {
+  var replay = function (x, y, pointerType, detail, quiet) {
     var el = document.elementFromPoint(x, y);
     if (!el) return;
     // The press implies the cursor is there; without this a demo that only
@@ -463,8 +464,12 @@ const INPUT_BRIDGE = `<script data-cv-input="1">(() => {
        Real keys, deliberately, rather than synthesised ones: an untrusted
        KeyboardEvent carries no default action, so dispatching one fires a demo's
        handlers but inserts no text and moves no caret — it would look like
-       typing worked while the field stayed empty. */
-    if (f && (/^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName) || f.isContentEditable)) {
+       typing worked while the field stayed empty.
+
+       A quiet tap — one a page restore is replaying, before anyone has
+       looked at this board — asks for none of that: the frame must not take
+       the host's focus for a press the user never made. */
+    if (!quiet && f && (/^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName) || f.isContentEditable)) {
       send({ type: 'canvas-input-focus' });
     }
     el.dispatchEvent(mouse('mousedown', 1));
@@ -493,12 +498,318 @@ const INPUT_BRIDGE = `<script data-cv-input="1">(() => {
     if (!d) return;
     if (d.type === 'canvas-input-hover') { hoverAt(d.x, d.y); return; }
     if (d.type === 'canvas-input-hover-end') { hoverEnd(); return; }
-    if (d.type === 'canvas-input-tap') replay(d.x, d.y, d.pointerType || 'mouse', d.detail || 1);
+    if (d.type === 'canvas-input-tap') replay(d.x, d.y, d.pointerType || 'mouse', d.detail || 1, !!d.quiet);
   });
 })()</` + 'script>';
 
 
-/* The three halves, each stamped with the version of the script it carries. Bump
+/* Page memory, the fourth half.
+
+   An embedded prototype is usually more than one screen, and which screen it
+   opens on is a thing the author cares about: a board that shows a health app's
+   timeline wants the timeline, not whatever the document boots into. But the
+   screen is the DOCUMENT's business — it lives in a closure the host cannot
+   reach, behind an opaque origin, in a document the board only knows as a URL.
+
+   So the board never learns what a page IS. It asks this script to describe the
+   one the document is on, keeps that description on the node (`page`, saved with
+   the board), and hands it back on every load for this script to walk the
+   document to. Three descriptions, in the order they are tried:
+
+     1. `window.canvasPage` — a document that knows its own routing says so
+        directly: `{ get() { return state.screen }, set(p) { go(p) } }`. Exact,
+        cheap, and worth adding to a prototype you author.
+     2. The URL hash, for a document that routes by it. Restored by assignment,
+        which fires `hashchange` exactly as a real navigation would. The board's
+        own boot hash (#cv-theme=…) is stripped first — that one is the host's.
+        Only the hash: `history.pushState` throws in a sandboxed document at an
+        opaque origin, so `search` and `pathname` are beyond reach here.
+     3. The clicks that got the document here, replayed. The fallback that needs
+        nothing of the document at all — which is why it exists, since a
+        prototype typically holds its screen in a plain variable and re-renders
+        on click. Each click is recorded with a selector for what it landed on,
+        so the replay finds the same control even when the document lays out at
+        a different size than it was recorded at, and falls back to the recorded
+        point when the selector no longer matches.
+
+   Replay is done under a veil — the document is hidden and its transitions are
+   off until it arrives — so a restored board paints the saved page rather than
+   flicking through the path to it. A watchdog lifts the veil whatever happens:
+   a document that fails to restore is still a document to show. */
+const PAGE_BRIDGE = `<script data-cv-page="1">(() => {
+  if (window.parent === window) return;
+  var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
+
+  /* The document's own hash, with the board's boot parameter taken out — a
+     document that never touched its hash must read as unchanged. */
+  var docHash = function () {
+    var h = (location.hash || '').replace(/^#/, '');
+    h = h.replace(/(^|&)cv-theme=(dark|light)(&|$)/, function (m, a, b, c) { return a && c ? '&' : ''; });
+    return h.replace(/(^|&)cv-page=1(&|$)/, function (m, a, c) { return a && c ? '&' : ''; });
+  };
+  var BOOT_HASH = docHash();
+
+  // ── The trail ─────────────────────────────────────────────────────────────
+  /* Every click, whoever made it: in edit mode the shield is down and these are
+     the author's own presses; in view mode they are the taps the input half
+     dispatches on the board's behalf. Both fire this capture-phase listener, so
+     the trail reads the same either way — and the clicks a replay itself makes
+     are skipped, since the trail they would duplicate is already loaded. */
+  var MAX = 60;   // a path this long is a session, not a destination
+  var trail = [];
+  var restoring = false;
+
+  /* A selector for the element a click landed on. Stops at the first id —
+     nothing above it can change what matches. */
+  var pathOf = function (el) {
+    var parts = [];
+    for (var n = el; n && n.nodeType === 1 && n !== document.documentElement; n = n.parentElement) {
+      if (n.id && /^[A-Za-z][-\\w]*$/.test(n.id)) { parts.unshift('#' + n.id); break; }
+      var i = 1, s = n;
+      while ((s = s.previousElementSibling)) { if (s.tagName === n.tagName) i++; }
+      parts.unshift(n.tagName.toLowerCase() + ':nth-of-type(' + i + ')');
+    }
+    return parts.join('>');
+  };
+
+  addEventListener('click', function (e) {
+    if (restoring) return;
+    var el = e.target;
+    if (!el || el.nodeType !== 1) return;
+    if (trail.length >= MAX) trail.shift();
+    trail.push({ p: pathOf(el), x: Math.round(e.clientX), y: Math.round(e.clientY) });
+    checkMoved();
+  }, true);
+
+  /* ── Off the start state ────────────────────────────────────────────────
+     In view mode a visitor can drive a demo wherever they like, and the board
+     offers them a way back — but only once there is somewhere to come back
+     FROM, or the button is an affordance for nothing.
+
+     What counts as "moved" cannot be asked of the document directly: the whole
+     reason the trail tier exists is that a prototype keeps its screen out of
+     reach. So this compares a signature of the document against the one taken
+     when the board finished opening it — a routing hook's answer, the hash, and
+     what the document is SHOWING. Deliberately broad: it catches a screen change
+     without pretending to know what a screen is, and a visitor who merely opened
+     a disclosure has changed the document too — offering them the way back is no
+     worse for it.
+
+     The showing half is the body's markup, hashed, with the input half's hover
+     classes taken back out. Every part of that sentence was arrived at the hard
+     way:
+
+     The markup rather than the TEXT, because a prototype often switches screens
+     by class alone — the health app's drawer is in the DOM either way, shown by
+     a class on its wrapper — and a text signature sees nothing happen.
+
+     Hashed rather than MEASURED. Length collapses a document to one number and
+     two unrelated changes can cancel: on that same drawer, the content lost 14
+     characters while the hover class added exactly 14, and the signature came
+     back identical across a real navigation.
+
+     And the hover classes come out because the input half puts one on every
+     element under a replayed tap, to drive CSS :hover. Left in, the markup would
+     change on every click whether the document moved or not, and every click
+     would read as movement.
+
+     Sampled two frames after the click so the document has re-rendered and laid
+     out; a click that changes nothing leaves the signature alone and says
+     nothing. Announced once — the board only needs to be told to show it. */
+  var moved = false;
+  var HOVER_MIRROR = 'cv-hv'; // must match HOVER_CLASS in the input half
+  // djb2. Cheap enough to run on a click and no more.
+  var hashOf = function (str) {
+    var h = 5381;
+    for (var i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return h;
+  };
+  /* The hover mirror's class, and the empty attribute removing it can leave
+     behind, so markup carrying one hashes the same as markup that never did.
+     classList appends, so the token is last and takes its leading space with it. */
+  var unhover = function (html) {
+    return html
+      .split(' ' + HOVER_MIRROR).join('')
+      .split(HOVER_MIRROR).join('')
+      .split(' class=""').join('');
+  };
+  var stateSig = function () {
+    var hook = '';
+    try {
+      if (window.canvasPage && typeof window.canvasPage.get === 'function') hook = JSON.stringify(window.canvasPage.get());
+    } catch (err) { /* the document's own hook threw */ }
+    var markup = document.body ? unhover(document.body.innerHTML) : '';
+    return hook + '|' + docHash() + '|' + markup.length + ':' + hashOf(markup);
+  };
+  var announce = function () {
+    if (moved || restoring) return;
+    moved = true;
+    send({ type: 'canvas-page-moved' });
+  };
+  /* Did THIS press change anything?
+
+     The baseline is taken at the click, in the capture phase, before the
+     document's own handler has run — not once when the board finished opening
+     the document. A snapshot taken then goes stale on its own: a prototype that
+     is still settling (a late render, a scroll into place, a font landing) has
+     moved by the time the visitor touches it, and their first press would report
+     movement wherever they put it. Measured on the health app: a tap on inert
+     chrome announced a move it had not made.
+
+     Sampled again two frames later, and once more at 400ms for a document that
+     answers a press with something slower than a re-render. */
+  var checkMoved = function () {
+    if (moved || restoring) return;
+    var before = stateSig();
+    var probe = function () {
+      if (moved || restoring || stateSig() === before) return false;
+      announce();
+      return true;
+    };
+    raf2(function () { if (!probe()) setTimeout(probe, 400); });
+  };
+  /* A hash router has already moved by the time this fires, so there is nothing
+     to compare against — the change IS the event. */
+  addEventListener('hashchange', function () { announce(); });
+
+  // ── Describing the page ───────────────────────────────────────────────────
+  var capture = function () {
+    try {
+      if (window.canvasPage && typeof window.canvasPage.get === 'function') {
+        var v = window.canvasPage.get();
+        if (v !== undefined && v !== null) return { v: 1, hook: v };
+      }
+    } catch (err) { /* the document's own hook threw; fall through */ }
+    var h = docHash();
+    if (h !== BOOT_HASH) return { v: 1, hash: h };
+    if (trail.length) return { v: 1, taps: trail.slice() };
+    return null; // nothing happened here worth remembering
+  };
+
+  // ── Walking back to it ────────────────────────────────────────────────────
+  var veil = null;
+  var hide = function () {
+    if (veil) return;
+    veil = document.createElement('style');
+    veil.setAttribute('data-cv-page-veil', '');
+    /* Opacity, not visibility: a hidden document is not hit-testable, and the
+       replay finds what it is aiming at with elementFromPoint. Hiding it the
+       obvious way makes every tap in the trail land on nothing. */
+    veil.textContent = ':root{opacity:0!important}*{transition:none!important;animation:none!important}';
+    (document.head || document.documentElement).appendChild(veil);
+  };
+  var reveal = function () {
+    if (veil && veil.parentNode) veil.parentNode.removeChild(veil);
+    veil = null;
+  };
+  // Two frames: one for the document to re-render in, one for it to lay out in.
+  var raf2 = function (fn) { requestAnimationFrame(function () { requestAnimationFrame(fn); }); };
+
+  /* The board writes cv-page=1 into the boot hash when the node it is loading
+     has a saved page, and the veil goes up HERE — synchronously, at the end of
+     <head>, before the document has painted anything.
+
+     It cannot wait for the restore message. That arrives after the frame's load
+     event, which is several paints too late: the document has already shown the
+     screen it boots into, so what the user sees is that screen, then a blank,
+     then the saved one. Veiling on the flag means the boot screen is never
+     painted at all, and the first thing drawn is the right one.
+
+     The watchdog matters more here than anywhere else in this script: a veil
+     raised at boot with no restore behind it — an older host, a message that
+     never comes — would leave the document invisible for good. */
+  var bootTimer = 0;
+  var ready = function () { send({ type: 'canvas-page-ready' }); };
+  if (/(^|#|&)cv-page=1(&|$)/.test(location.hash || '')) {
+    hide();
+    bootTimer = setTimeout(function () { if (!restoring) { reveal(); ready(); } }, 3000);
+  }
+
+  /* One recorded click, replayed through the INPUT half's own tap path — so a
+     restored click is exactly the click a view-mode press produces: same
+     events, in the same order, with the same hover set up before them. Quiet,
+     because a tap that lands on a field must not pull the host's focus into a
+     frame nobody has touched yet. */
+  var tapAt = function (step) {
+    var el = null;
+    try { el = step.p ? document.querySelector(step.p) : null; } catch (err) { el = null; }
+    var x = step.x, y = step.y;
+    if (el) {
+      var r = el.getBoundingClientRect();
+      // A zero-sized match is a stale selector pointing at something the
+      // document has since collapsed: the recorded point is the better guess.
+      if (r.width || r.height) { x = r.left + r.width / 2; y = r.top + r.height / 2; }
+    }
+    postMessage({ type: 'canvas-input-tap', x: x, y: y, pointerType: 'mouse', detail: 1, quiet: true }, '*');
+  };
+
+  var replayTrail = function (steps, done) {
+    var i = 0;
+    var next = function () {
+      if (i >= steps.length) {
+        /* Each replayed tap hovers what it aims at, and the input half leaves
+           that hover standing until something moves off it — which here would
+           be a control sitting lit up on a board nobody has touched. Ending the
+           hover the same way a real pointer leaving does clears it. */
+        postMessage({ type: 'canvas-input-hover-end' }, '*');
+        return raf2(done);
+      }
+      tapAt(steps[i++]);
+      raf2(next);
+    };
+    next();
+  };
+
+  var restore = function (page) {
+    clearTimeout(bootTimer);
+    // Nothing to restore, but the veil may already be up on the boot flag.
+    if (!page) { reveal(); ready(); return; }
+    if (restoring) return;
+    restoring = true;
+    hide();
+    var settled = false;
+    var done = function () {
+      if (settled) return;
+      settled = true;
+      restoring = false;
+      reveal();
+      // The host paints a loading indicator over a node it knows is restoring;
+      // this is what takes it down.
+      ready();
+    };
+    // Whatever happens — a hook that throws, a selector that matches nothing, a
+    // document that never settles — the veil comes off.
+    var guard = setTimeout(done, 2500);
+    var finish = function () { clearTimeout(guard); done(); };
+    try {
+      if (page.hook !== undefined && window.canvasPage && typeof window.canvasPage.set === 'function') {
+        window.canvasPage.set(page.hook);
+        return void raf2(finish);
+      }
+      if (page.hash != null) {
+        if (('#' + page.hash) !== location.hash) location.hash = page.hash;
+        return void raf2(finish);
+      }
+      if (page.taps && page.taps.length) {
+        /* The restored path becomes this document's own trail, so a capture
+           taken after further navigation still describes the whole way from
+           boot rather than only what followed the restore. */
+        trail = page.taps.slice();
+        return void replayTrail(page.taps, finish);
+      }
+    } catch (err) { /* a document that threw is still a document to show */ }
+    finish();
+  };
+
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d) return;
+    if (d.type === 'canvas-page-get') { send({ type: 'canvas-page', page: capture() }); return; }
+    if (d.type === 'canvas-page-restore') restore(d.page);
+  });
+})()</` + 'script>';
+
+/* The four halves, each stamped with the version of the script it carries. Bump
    a version whenever its script changes: ingest replaces any older copy it
    finds rather than leaving it in place, so a document that already passed
    through an earlier build of the canvas — an asset re-dropped onto the board,
@@ -513,7 +824,8 @@ const INPUT_BRIDGE = `<script data-cv-input="1">(() => {
 export const BRIDGE = [
   { marker: 'data-cv-theme-sync', version: '2', script: THEME_SYNC },
   { marker: 'data-cv-zoom-opts', version: '4', script: ZOOM_OPTS },
-  { marker: 'data-cv-input', version: '1', script: INPUT_BRIDGE },
+  { marker: 'data-cv-input', version: '2', script: INPUT_BRIDGE },
+  { marker: 'data-cv-page', version: '1', script: PAGE_BRIDGE },
 ];
 
 /* ── Does this document actually follow the theme? ──

@@ -48,7 +48,7 @@ events:
 |---|---|---|
 | `hover` (x, y) | The cursor moves over the shield | `pointerover/out/enter/leave/move` + mouse equivalents at that point, plus the CSS `:hover` mirror (below) |
 | `hover-end` | The cursor leaves the shield | Clears both |
-| `tap` (x, y, detail) | A press ended without moving | `pointerdown → mousedown → pointerup → mouseup → click`, plus `dblclick` on the second of a run |
+| `tap` (x, y, detail, quiet) | A press ended without moving | `pointerdown → mousedown → pointerup → mouseup → click`, plus `dblclick` on the second of a run. `quiet` marks a tap nobody made — one replayed to put a document back on a saved screen (see the start page in `EMBEDDED-HTML.md`) — and suppresses the focus request below |
 
 | Document → host | When | Effect |
 |---|---|---|
@@ -219,6 +219,11 @@ shield. So when a replayed tap lands on an `input`, `textarea`, `select` or
 A useful side effect: while the frame holds focus the host window stops
 receiving `keydown`, so the canvas's own keyboard shortcuts stand aside for
 exactly as long as the user is typing.
+
+One exception: a tap the *host* is replaying rather than a user making it —
+restoring a saved screen on load — must not ask for focus. Nobody pressed
+anything, and a frame that takes the keyboard on load is a frame that swallows
+the first shortcut the user tries. That is what the `quiet` flag is for.
 
 ### 7. Getting state into the document reliably
 

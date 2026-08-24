@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Maximize, Scaling, AppWindow, Puzzle, Terminal, Smartphone, SquareX, Expand, ExternalLink, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Pencil, Trash2, Sun, Moon, MessageSquareText, RectangleHorizontal, ChevronRight } from 'lucide-react';
+import { Maximize, Scaling, AppWindow, Puzzle, Terminal, Smartphone, SquareX, Expand, ExternalLink, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Pencil, Trash2, Sun, Moon, MessageSquareText, RectangleHorizontal, ChevronRight, Bookmark, RotateCcw } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { FRAME_RATIOS, atRatio } from '../constants';
 
@@ -249,6 +249,20 @@ export default function ContextMenu() {
             <ExternalLink />
             Open in new tab
           </button>
+          {/* The screen this document opens on. Double-clicking in and
+              navigating already sets it when you press away — this is the same
+              capture without leaving the node, and the way back to the
+              document's own first screen. */}
+          <button onClick={run(() => eng.captureHtmlPage(node.id))}>
+            <Bookmark />
+            Set start page
+          </button>
+          {node.page && (
+            <button onClick={run(() => eng.clearHtmlPage(node.id))}>
+              <RotateCcw />
+              Clear start page
+            </button>
+          )}
           {frameButtons}
           <div className="cv-ctxsep" />
         </>

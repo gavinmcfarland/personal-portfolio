@@ -324,7 +324,7 @@ function normalizeSaved(n) {
     return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n), ...(grid ? { grid } : {}), ...(crop ? { crop } : {}), ...(n.frame ? { frame: n.frame } : {}), ...(n.frameUrl ? { frameUrl: n.frameUrl } : {}), ...(n.frameTitle ? { frameTitle: n.frameTitle } : {}), ...(n.frameScale ? { frameScale: n.frameScale } : {}) };
   }
   if (n.type === 'sound') return { ...base, w: n.w || 260, h: n.h || 56, src: n.src || '', name: n.name || '', dur: n.dur || 0 };
-  if (n.type === 'html') return { ...base, w: n.w || 800, h: n.h || 500, src: n.src || '', name: n.name || '', ...(n.frame ? { frame: n.frame } : {}), ...(n.frameUrl ? { frameUrl: n.frameUrl } : {}), ...(n.frameTitle ? { frameTitle: n.frameTitle } : {}), ...(n.frameScale ? { frameScale: n.frameScale } : {}) };
+  if (n.type === 'html') return { ...base, w: n.w || 800, h: n.h || 500, src: n.src || '', name: n.name || '', ...(n.page ? { page: n.page } : {}), ...(n.frame ? { frame: n.frame } : {}), ...(n.frameUrl ? { frameUrl: n.frameUrl } : {}), ...(n.frameTitle ? { frameTitle: n.frameTitle } : {}), ...(n.frameScale ? { frameScale: n.frameScale } : {}) };
   if (n.type === 'link') return { ...base, w: n.w || 280, url: n.url || '', title: n.title || '', desc: n.desc || '', image: n.image || '', siteName: n.siteName || '', favicon: n.favicon || '' };
   const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
   const ff = n.font ? { font: n.font } : null; // serif | sans | mono | script
@@ -589,6 +589,9 @@ export function CanvasProvider({
   const [gridEditId, setGridEditId] = useState(null); // media node whose grid proportions are being edited
   const [renameFrameId, setRenameFrameId] = useState(null); // frame whose label is being renamed inline (double-click or the context menu's Rename)
   const [htmlActiveId, setHtmlActiveId] = useState(null); // html node whose iframe is live (receives pointer events)
+  // html nodes a reader has moved off the state the board opened them on, and
+  // which therefore offer a way back. Ids, since a board can have several.
+  const [htmlMoved, setHtmlMoved] = useState([]);
   const [notesEditId, setNotesEditId] = useState(null); // frame whose speaker notes are open in the notes drawer
   /* Present mode: the board is the room's screen. View-only, chrome gone, full
      bleed, parked on a section. `presentRoom` is the short code the phone
@@ -768,6 +771,7 @@ export function CanvasProvider({
   S.fullscreen = fullscreen;
   S.gridEditId = gridEditId;
   S.htmlActiveId = htmlActiveId;
+  S.htmlMoved = htmlMoved;
   S.recording = recording;
   S.pages = pages;
   S.activePageId = activePageId;
@@ -2269,6 +2273,8 @@ export function CanvasProvider({
       else if (n.type === 'html') {
         o.w = n.w; o.h = n.h; o.src = n.src;
         if (n.name) o.name = n.name;
+        // The screen the document opens on, as the document itself described it.
+        if (n.page) o.page = n.page;
         // Device frame, same fields as media.
         if (n.frame) o.frame = n.frame;
         if (n.frameUrl) o.frameUrl = n.frameUrl;
@@ -3304,7 +3310,127 @@ export function CanvasProvider({
        receives pointer events directly (see nodes/Html.jsx). Works in view mode
        too — visitors can interact with a demo. Deactivated by a press outside
        the node or Escape (see Canvas.jsx). */
-    function setHtmlActive(id) { setHtmlActiveId(id || null); }
+    function setHtmlActive(id) {
+      // Leaving a live node is the moment to ask the document where it ended
+      // up: the author double-clicked in, drove the prototype to a screen and
+      // pressed away — which is the gesture that means "this one".
+      const prev = S.htmlActiveId;
+      if (prev && prev !== id) captureHtmlPage(prev);
+      setHtmlActiveId(id || null);
+    }
+
+    /* ── The page an html node opens on ───────────────────────────
+       A prototype is usually several screens, and which one the board opens on
+       is the author's decision — but the screen itself is the DOCUMENT's
+       business: it lives in a closure behind an opaque origin, in a document
+       the board only knows as a URL. So the board never learns what a page IS.
+       It asks the document to describe the one it is on, keeps that description
+       on the node (`page`, serialized with the board) and hands it back on
+       every load for the document to walk itself to. PAGE_BRIDGE in
+       html-bridge.js is the other end, and explains the three ways a document
+       can answer.
+
+       Asked over postMessage and answered the same way, so this is a round trip
+       with no guaranteed reply — a document ingested before the page half
+       existed never answers — and the listener is dropped on a timeout rather
+       than left waiting for one. */
+    function captureHtmlPage(id) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || n.type !== 'html') return;
+      const el = nodeEls.get(id);
+      const frame = el && el.querySelector('.cv-html-frame');
+      const win = frame && frame.contentWindow;
+      if (!win) return;
+      let timer = 0;
+      const stop = () => { clearTimeout(timer); window.removeEventListener('message', onMessage); };
+      /* Identified by source rather than origin: a sandboxed document has an
+         opaque one, and there is no window to compare against but this frame's. */
+      function onMessage(e) {
+        if (e.source !== win || !e.data || e.data.type !== 'canvas-page') return;
+        stop();
+        const page = e.data.page || undefined;
+        const cur = S.nodes.find((x) => x.id === id);
+        if (!cur || cur.type !== 'html') return;
+        /* A document with nothing to report — no routing hook, an untouched
+           hash, no clicks — clears whatever the node was carrying. That covers
+           the hash and hook tiers: routing back to where the document started
+           drops the start page from inside it. A trail never empties itself
+           (walking back is more clicks, not fewer), so "Clear start page" is
+           the way out of that one. */
+        if (JSON.stringify(page ?? null) === JSON.stringify(cur.page ?? null)) return;
+        updateNode(id, { page });
+      }
+      window.addEventListener('message', onMessage);
+      timer = setTimeout(stop, 600);
+      win.postMessage({ type: 'canvas-page-get' }, '*');
+    }
+
+    /* Forget it, and put the document back on its own first screen. The reload
+       is the only way there — the board cannot reach in to undo what a restore
+       did — and its mechanics are in reloadHtmlFrame below. */
+    function clearHtmlPage(id) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || n.type !== 'html') return;
+      if (n.page) updateNode(id, { page: undefined });
+      reloadHtmlFrame(id);
+    }
+
+    /* Reload an html node's document, which is how it goes back to the state the
+       board opens it on: whatever start page the node carries is handed over
+       again on load (see Html.jsx), and a node with none boots into its own
+       first screen. */
+    function reloadHtmlFrame(id) {
+      /* `contentWindow.location.reload()` is barred here — the document sits at
+         an opaque origin — and re-assigning the src the frame already has does
+         NOT reload a document whose URL carries a fragment, which every one of
+         these does (the boot theme is written into the hash): the browser takes
+         it as a same-document navigation, fires `load`, and leaves the document
+         exactly as it was. Hence the bounce through about:blank. The src React
+         put there is what goes back, so its DOM and the element still agree. */
+      const el = nodeEls.get(id);
+      const frame = el && el.querySelector('.cv-html-frame');
+      if (!frame || !frame.src || frame.src === 'about:blank') return;
+      const src = frame.src;
+      /* And `loading="lazy"` has to come off first, or the way back never runs.
+         The frame sits in the scaled world, where the browser's lazy heuristic
+         cannot see it as visible: the initial load happens anyway, but a SECOND
+         one asked for while it sits there is deferred until something unrelated
+         nudges the page. Measured on a project board, that was 217 seconds
+         against 314ms with lazy off — a blank embed, indistinguishable from a
+         broken one. Nothing is lost by dropping it: the document this frame is
+         going back to is the one it just had. */
+      frame.loading = 'eager';
+      /* The way back goes on about:blank's own load event, not a timer. Two
+         src assignments in flight at once race, and the one that commits last
+         is not reliably the second: the frame ends up parked on about:blank
+         with its src attribute pointing at a document it is not showing. */
+      const back = () => { frame.removeEventListener('load', back); frame.src = src; };
+      frame.addEventListener('load', back);
+      frame.src = 'about:blank';
+    }
+
+    /* The document reporting that the reader has driven it somewhere (or that
+       it is back where it started, after a reset). */
+    function markHtmlMoved(id, on) {
+      setHtmlMoved((ids) => {
+        const has = ids.includes(id);
+        if (on === has) return ids;
+        return on ? [...ids, id] : ids.filter((x) => x !== id);
+      });
+    }
+
+    /* The reader's way back. Deliberately ungated by EDITABLE / readOnly, unlike
+       everything else here: it changes nothing about the board, only puts one
+       document back where the board opened it — which is a thing a visitor does,
+       not an author. */
+    function restartHtml(id) {
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || n.type !== 'html') return;
+      markHtmlMoved(id, false);
+      reloadHtmlFrame(id);
+    }
     /* Shift held: stand the html nodes' shields down so the documents underneath
        take the pointer themselves, for a demo's own scrolling and dragging (the
        CSS is on data-cv-passthrough; see the note beside it). An attribute
@@ -3399,7 +3525,7 @@ export function CanvasProvider({
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
-      isHtmlFile, addHtmlFromFile, setHtmlActive, setHtmlPassThrough, openHtml,
+      isHtmlFile, addHtmlFromFile, setHtmlActive, setHtmlPassThrough, openHtml, captureHtmlPage, clearHtmlPage, restartHtml, markHtmlMoved,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startRenameFrame, stopRenameFrame, startEditing, stopEditing, formatText, setChrome,
       openSectionNotes, closeSectionNotes, setSectionNotes, deck, setFrameAspect,
@@ -3758,7 +3884,7 @@ export function CanvasProvider({
     // state
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, textSize, strokeColor, fillColor, shapeStyle, ctxMenu,
     isPrimaryCanvas,
-    publishState, recording, fullscreen, gridEditId, renameFrameId, notesEditId, htmlActiveId, focusedSectionId, presenting, presentRoom, presentRelay, pages, activePageId, pageData, bgColor, bgStrength, gridHidden, reflow, collide: COLLIDE,
+    publishState, recording, fullscreen, gridEditId, renameFrameId, notesEditId, htmlActiveId, htmlMoved, focusedSectionId, presenting, presentRoom, presentRelay, pages, activePageId, pageData, bgColor, bgStrength, gridHidden, reflow, collide: COLLIDE,
     brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls, minimap: MINIMAP.on, MINIMAP, minimapEls,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setTextSize, setStrokeColor, setFillColor, setShapeStyle, setCtxMenu, setSelectedState, setEngaged,

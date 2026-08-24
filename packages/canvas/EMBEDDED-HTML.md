@@ -33,7 +33,7 @@ budget everything below is about.
 
 ## What the canvas injects into your document
 
-At ingest the canvas rewrites the document to add three `<script>` blocks at the
+At ingest the canvas rewrites the document to add four `<script>` blocks at the
 end of `<head>`. Each is stamped with a version; on re-ingest an older copy is
 stripped and replaced (`injectBridge` in `src/html-bridge.js`).
 
@@ -41,7 +41,8 @@ stripped and replaced (`injectBridge` in `src/html-bridge.js`).
 |---|---|
 | `data-cv-theme-sync="2"` | Applies the host's light/dark theme. Rewrites the document's `prefers-color-scheme` media rules, sets `color-scheme`, toggles a `dark` class on `<html>`, and patches `matchMedia` so prefers-color-scheme queries answer with the host theme (see below). Boot theme arrives in the URL hash (`#cv-theme=dark`) so the first paint is already correct; later flips arrive as `postMessage`. |
 | `data-cv-zoom-opts="4"` | Listens for `{ type: 'canvas-zoom', active, scale }` and sets two classes on `<html>`: `cv-zooming` while a gesture runs (disables `box-shadow` / `text-shadow`), and `cv-flat` while zoomed in past 1:1 or mid-gesture (disables `backdrop-filter` — see below). |
-| `data-cv-input="1"` | Keeps the document interactive while the board owns every gesture. In view mode the iframe is `pointer-events: none` behind a shield, so nothing reaches the document directly; this replays the cursor and any press that turned out to be a tap as real DOM events, and mirrors the document's `:hover` rules onto a class so hover states still show. See `INTERACTIVE-IFRAMES.md`. |
+| `data-cv-input="2"` | Keeps the document interactive while the board owns every gesture. In view mode the iframe is `pointer-events: none` behind a shield, so nothing reaches the document directly; this replays the cursor and any press that turned out to be a tap as real DOM events, and mirrors the document's `:hover` rules onto a class so hover states still show. See `INTERACTIVE-IFRAMES.md`. |
+| `data-cv-page="1"` | Remembers which screen the document is on, so a board opens on the one its author chose. Answers `{ type: 'canvas-page-get' }` with a description of the current page and walks the document back to one handed over as `{ type: 'canvas-page-restore', page }`. Hides the document from its first paint when the boot hash carries `cv-page=1`, so a restore is never seen happening, and tells the board when a reader has moved the document off that screen. See below. |
 
 **If your generator emits a block carrying the current marker and version
 itself, the canvas leaves it alone.** That's the supported way to own this
@@ -88,6 +89,103 @@ Sent on zoom-glide edges only — `active: true` when a glide starts, `false` wh
 it settles. **Not** sent for panning or pinch-zoom: those promote the world to
 its own compositor layer and composite on the GPU, so nothing repaints and there
 is nothing to save.
+
+### The start page: which screen the board opens you on
+
+A prototype is usually several screens, and which one the board shows is the
+author's decision. It is set by hand and stored on the node:
+
+1. In edit mode, double-click the embed to make it live.
+2. Navigate to the screen you want.
+3. Press away (or right-click → **Set start page**).
+
+The board then asks your document to describe where it ended up, keeps the
+answer on the node, and hands it back on every load — so a visitor opens the
+board on that screen. **Right-click → Clear start page** forgets it and reloads
+the document onto its own first screen.
+
+The description is your document's to make. The page half tries three things in
+order:
+
+| | How the screen is described | Restored by |
+|---|---|---|
+| 1 | `window.canvasPage.get()` — whatever you return, as long as it survives `JSON.stringify` | `window.canvasPage.set(page)` |
+| 2 | `location.hash`, if your document routes by it (the board's own `#cv-theme=…` is stripped first) | assigning the hash, which fires `hashchange` as a real navigation would |
+| 3 | The clicks that got the document there, recorded with a selector for each target | replaying them in order, under a veil, before anyone sees the document |
+
+Tier 3 is the fallback that needs nothing of your document at all, which is why
+it exists: a prototype typically keeps its screen in a plain variable and
+re-renders on click, and there is nothing for the board to read. It is also the
+brittle one — a document that renders a different tree on a different day (a
+list of live data, a random layout) can have its trail land somewhere else, and
+a trail is capped at 60 clicks.
+
+So if you own the document, spend the five lines:
+
+```js
+window.canvasPage = {
+  get: () => state.screen,      // any JSON-serialisable value
+  set: (p) => { state.screen = p; render(); },
+};
+```
+
+Notes:
+
+- `history.pushState` throws in these documents — they are sandboxed at an
+  opaque origin — so tier 2 is the hash only. `search` and `pathname` are out of
+  reach.
+- **The document hides itself from its first paint, not from when the restore
+  arrives.** The board writes `cv-page=1` into the boot hash of a node that has
+  a saved page; the page half reads it synchronously at the end of `<head>` and
+  goes to `opacity: 0` there. Waiting for the restore message would be several
+  paints too late — the document would paint the screen it boots into, blink,
+  and land on the saved one. Transitions are suppressed for the walk, and a
+  watchdog reveals the document after 3s whatever happens, so one that fails to
+  restore is still a document to show.
+- When it arrives it posts `{ type: 'canvas-page-ready' }`. The board paints a
+  spinner over a node it knows is restoring, and that message is what takes it
+  down; the spinner is delayed 250ms, so a restore that lands in the usual
+  couple of hundred milliseconds shows no indicator at all.
+
+### Getting back: the reader's Reset
+
+A reader can drive an embed wherever they like, so the board gives them the way
+back — a **reload icon in the device frame's own toolbar**, which reloads the
+document and hands it its start page again (or boots it into its own first
+screen, for a node with none). On a browser frame it takes the place of the
+decorative reload already drawn there, which is the control a reader would reach
+for anyway; the plugin, terminal and platform frames get it at the right-hand end
+of the bar. View mode only: an author has the context menu, and a live control in
+every frame would be one more thing between them and the work.
+
+**An embed with no device frame has no toolbar, and so has no way back.** Give
+such a node a frame if its readers need one.
+
+It appears only once there is somewhere to come back from. The page half posts
+`{ type: 'canvas-page-moved' }` the first time a press actually changes the
+document — comparing a signature of the document across the click itself, which
+is the only comparison that holds up:
+
+- **Across the click, not against a snapshot from load.** A prototype that is
+  still settling when the board finishes opening it has moved by the time anyone
+  touches it, and the reader's first press would report movement wherever they
+  put it.
+- **The markup, not the text.** A prototype often switches screens by class
+  alone — the health app's drawer is in the DOM either way — and a text
+  signature sees nothing happen.
+- **Hashed, not measured.** Length collapses a document to one number and two
+  unrelated changes can cancel: on that drawer, the content lost 14 characters
+  while the hover class added exactly 14, and a length signature came back
+  identical across a real navigation.
+- **With the hover mirror's classes taken out.** The input half puts a class on
+  every element under a replayed tap to drive CSS `:hover`; left in, every click
+  would read as movement.
+
+A document with a `window.canvasPage` hook needs none of that guesswork — its
+answer is part of the signature, so a screen change is exact.
+- Restoring is not a substitute for interaction: the document is genuinely on
+  that screen afterwards, with its own state advanced, so a visitor carries on
+  from there normally.
 
 ## The constraint: containment vs. `position: fixed`
 

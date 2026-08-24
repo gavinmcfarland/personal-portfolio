@@ -6,17 +6,17 @@
       "id": "home",
       "name": "Cover",
       "view": {
-        "x": -2667.3240037326864,
-        "y": 397.59741593506897,
-        "scale": 1.211979362240886
+        "x": -1646.8703493657003,
+        "y": 358.96349885914736,
+        "scale": 0.6919378355905008
       },
       "nodes": [
         {
           "id": "n2-html",
           "type": "html",
-          "x": 1509.2629398945637,
+          "x": 1290.7954909642308,
           "y": -166.82890925973953,
-          "z": 22,
+          "z": 24,
           "w": 450,
           "h": 877,
           "src": "/canvas-assets/15e3539a1e8363e5.html",
@@ -26,14 +26,100 @@
         {
           "id": "n28-html",
           "type": "html",
-          "x": 2317.5033783413737,
-          "y": -166.82890925973942,
-          "z": 23,
+          "x": 3307.07411368381,
+          "y": -166.82890925973948,
+          "z": 25,
           "w": 450,
-          "h": 913,
+          "h": 877,
           "src": "/canvas-assets/8e256459700c3dca.html",
           "name": "health-app-39.html",
+          "page": {
+            "v": 1,
+            "taps": [
+              {
+                "p": "#wall>div:nth-of-type(1)>button:nth-of-type(1)",
+                "x": 421,
+                "y": 797
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(2)",
+                "x": 110,
+                "y": 166
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(1)>div:nth-of-type(3)>section:nth-of-type(1)>div:nth-of-type(1)>div:nth-of-type(1)>button:nth-of-type(1)>h4:nth-of-type(1)",
+                "x": 64,
+                "y": 175
+              }
+            ]
+          },
           "frame": "android"
+        },
+        {
+          "id": "n29-html",
+          "type": "html",
+          "x": 684.8591604339131,
+          "y": -166.82890925973953,
+          "z": 22,
+          "w": 450,
+          "h": 877,
+          "src": "/canvas-assets/15e3539a1e8363e5.html",
+          "name": "health-app-11.html",
+          "frame": "android"
+        },
+        {
+          "id": "n30-html",
+          "type": "html",
+          "x": 2051.0833344903976,
+          "y": -166.82890925973948,
+          "z": 26,
+          "w": 450,
+          "h": 877,
+          "src": "/canvas-assets/8e256459700c3dca.html",
+          "name": "health-app-39.html",
+          "page": {
+            "v": 1,
+            "taps": [
+              {
+                "p": "#wall>div:nth-of-type(1)>button:nth-of-type(1)",
+                "x": 421,
+                "y": 797
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(3)",
+                "x": 277,
+                "y": 519
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(2)",
+                "x": 178,
+                "y": 265
+              }
+            ]
+          },
+          "frame": "plugin"
+        },
+        {
+          "id": "n31-html",
+          "type": "html",
+          "x": 2687.9492448208302,
+          "y": -166.82890925973953,
+          "z": 23,
+          "w": 450,
+          "h": 877,
+          "src": "/canvas-assets/8e256459700c3dca.html",
+          "name": "health-app-39.html",
+          "page": {
+            "v": 1,
+            "taps": [
+              {
+                "p": "#wall>div:nth-of-type(1)>button:nth-of-type(1)>svg:nth-of-type(1)",
+                "x": 410,
+                "y": 797
+              }
+            ]
+          },
+          "frame": "browser"
         }
       ],
       "shapes": []
@@ -242,5 +328,5 @@
     "w": 997,
     "h": 996
   },
-  "savedAt": 1787596691611
+  "savedAt": 1787605361561
 }

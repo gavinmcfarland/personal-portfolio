@@ -1,4 +1,5 @@
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { useRegister, useMediaSrc } from './common';
 import { frameBarH } from '../constants';
@@ -32,7 +33,9 @@ import { postHover, postHoverEnd } from '../html-input';
    EDIT MODE. Authoring needs the whole gesture (marquee, move, resize), so
    nothing is forwarded either way: the shield is simply a hit surface until the
    node is made "live" by a double-click, when it drops and the demo is directly
-   interactive. A press outside or Escape deactivates. */
+   interactive. A press outside or Escape deactivates — and that press is also
+   when the board asks the document which screen it ended up on, so navigating a
+   prototype in edit mode is how its start page is set (see captureHtmlPage). */
 
 /* Theme: the host's `.dark` class (and its tokens) stop at the iframe
    boundary, and browsers don't let an embedder flip a child document's
@@ -93,6 +96,15 @@ function useFrameMessages(frameRef, active, eng) {
 
 function HtmlNode({ node }) {
   const { htmlActiveId, readOnly, eng } = useCanvas();
+  /* Is a restore coming on this load? Captured once, at mount, for the same
+     reason the boot theme is: it decides the frame's URL, and re-deciding it
+     later would reload the document. Setting a start page mid-session therefore
+     doesn't re-flag the frame — nor should it, since nothing reloads. */
+  const bootPage = useRef(null);
+  if (bootPage.current === null) bootPage.current = !!node.page;
+  // Whether to paint the loading indicator: true until the document says it has
+  // arrived (canvas-page-ready), and only ever true where a restore is due.
+  const [booting, setBooting] = useState(bootPage.current);
   const { setRef, dataProps, style } = useRegister(node);
   const src = useMediaSrc(node.src);
   // Activation is an edit-mode idea only: in view mode the shield stays up and
@@ -108,9 +120,27 @@ function HtmlNode({ node }) {
      backdrop-filters render — see ZOOM_OPTS). The zoom broadcast only fires on
      gesture edges, so without this seed a document on a board nobody zooms
      never hears anything. */
+  /* The page this node was saved on (see captureHtmlPage), read through a ref
+     so a later capture never re-runs onLoad — the document is already up by
+     then, and re-posting the restore would walk it through the trail again. */
+  const pageRef = useRef(node.page);
+  pageRef.current = node.page;
   const onLoad = useCallback(() => {
     postTheme();
     eng.postZoomStateTo(frameRef.current);
+    /* And the screen the board remembers this document on, if any.
+
+       Sent even when there is none, because a document that veiled itself on
+       the boot flag is waiting to hear either way — and the two can disagree.
+       Clearing a start page reloads the frame, and the URL React put there
+       still carries the flag (changing it would mean a second reload), so the
+       document that comes back veils itself for a restore that is never
+       coming. A null answer is what takes the veil down promptly instead of
+       leaving it to the bridge's three-second watchdog. */
+    const f = frameRef.current;
+    if (f && f.contentWindow) {
+      f.contentWindow.postMessage({ type: 'canvas-page-restore', page: pageRef.current || null }, '*');
+    }
   }, [postTheme, eng]);
 
   /* The cursor, forwarded so the document can light up under it. Throttled to a
@@ -134,6 +164,41 @@ function HtmlNode({ node }) {
   }, [readOnly]);
   useEffect(() => () => { if (hoverRAF.current) cancelAnimationFrame(hoverRAF.current); }, []);
 
+  /* The document, veiled since boot, reporting that it has arrived. Backed by a
+     deadline of its own: the bridge lifts its veil after 3s whatever happens, so
+     the indicator must not outlast a document that is already on screen — and a
+     document too old to carry the page half never answers at all. */
+  useEffect(() => {
+    if (!booting) return undefined;
+    const onMessage = (e) => {
+      const f = frameRef.current;
+      if (!f || !f.contentWindow || e.source !== f.contentWindow || !e.data) return;
+      if (e.data.type === 'canvas-page-ready') setBooting(false);
+    };
+    window.addEventListener('message', onMessage);
+    const t = setTimeout(() => setBooting(false), 3500);
+    return () => { window.removeEventListener('message', onMessage); clearTimeout(t); };
+  }, [booting]);
+
+  /* The document reporting that the reader has driven it off the state the
+     board opened it on. The board paints the way back — in the chrome layer, not
+     here, so it keeps one size at any zoom and stays on screen over a node taller
+     than the window (see placeHtmlResets). View mode only: an author in edit mode
+     has the context menu, and a Reset over every embed would be chrome in the way
+     of the work. */
+  useEffect(() => {
+    if (!readOnly) return undefined;
+    const onMessage = (e) => {
+      const f = frameRef.current;
+      if (!f || !f.contentWindow || e.source !== f.contentWindow || !e.data) return;
+      if (e.data.type === 'canvas-page-moved') eng.markHtmlMoved(node.id, true);
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [readOnly, eng, node.id]);
+  // A node that leaves the board (or the mode) takes its way back with it.
+  useEffect(() => () => eng.markHtmlMoved(node.id, false), [eng, node.id]);
+
   // Boot theme, carried in the URL hash so the injected sync script can apply
   // it before the document's first paint — the message path only lands after
   // onLoad, which would flash the OS theme first. Captured once: rewriting the
@@ -144,7 +209,15 @@ function HtmlNode({ node }) {
     bootTheme.current = document.documentElement.classList.contains('dark')
       || (document.body && document.body.classList.contains('dark')) ? 'dark' : 'light';
   }
-  const frameSrc = src && !src.startsWith('data:') ? `${src}#cv-theme=${bootTheme.current}` : src;
+  /* cv-page tells the document a restore is coming, so its page half can veil
+     it before its first paint (see PAGE_BRIDGE). Without that the document
+     paints the screen it boots into, blinks, and lands on the saved one — the
+     restore message only arrives after load, which is far too late to prevent
+     it. A flag, not the page itself: the payload can be long, and it comes over
+     postMessage a moment later anyway. */
+  const frameSrc = src && !src.startsWith('data:')
+    ? `${src}#cv-theme=${bootTheme.current}${bootPage.current ? '&cv-page=1' : ''}`
+    : src;
 
   const w = (node.w || 800) + 'px';
   const h = (node.h || 500) + 'px';
@@ -189,6 +262,16 @@ function HtmlNode({ node }) {
               onPointerLeave={onShieldLeave}
             />
           )}
+          {/* Over a document that is hiding itself while it walks back to its
+              saved screen. The spinner fades in on a delay (see the CSS): a
+              restore that lands quickly — most do — should show nothing at all,
+              or the indicator becomes the flicker it was added to remove. */}
+          {booting && (
+            <div className="cv-html-boot">
+              <Loader2 className="cv-spin" />
+            </div>
+          )}
+
         </div>
       </div>
     </div>

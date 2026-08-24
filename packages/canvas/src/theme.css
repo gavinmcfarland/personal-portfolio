@@ -503,6 +503,29 @@
 .canvas-root .cv-node.cv-html .cv-html-shield {
   -webkit-tap-highlight-color: transparent;
 }
+/* Restoring a saved start page. The document veils itself from its first paint
+   until it is on that screen (PAGE_BRIDGE), so this covers a node that is
+   deliberately blank rather than one that is broken.
+
+   Nothing is painted over the node itself: a framed embed already shows its
+   device-frame backdrop, and a frameless one is transparent by design — filling
+   either would be a flash of its own. Only the spinner, and only once the wait
+   is long enough to be worth remarking on: it fades in after 250ms, so a
+   restore that lands in the usual couple of hundred milliseconds shows no
+   indicator at all. */
+.canvas-root .cv-node.cv-html .cv-html-boot {
+  opacity: 0;
+  animation: cv-html-boot-in 0.2s ease-out 0.25s forwards;
+}
+.canvas-root .cv-node.cv-html .cv-html-boot .cv-spin {
+  stroke: var(--cv-muted);
+  animation: cv-spin 0.8s linear infinite;
+}
+@keyframes cv-html-boot-in {
+  to {
+    opacity: 1;
+  }
+}
 /* Live: the iframe takes the pointer; an accent outline says "interactive". */
 .canvas-root .cv-node.cv-html.cv-live {
   outline: 2px solid var(--cv-accent);
@@ -515,6 +538,39 @@
    is held the shield stands down and the iframe takes the pointer, so the
    document behaves exactly as it would standalone — real hover, real :hover,
    real scrolling. Released, the board has it back. */
+/* Reload, in the frame's toolbar: the reader's way back once they have driven
+   an embed somewhere. Sized off --cv-df-u like every other mark in the bar, so
+   it scales with the frame. The bar is inert to pointers; this takes its own
+   back, as the editable fields do. */
+.canvas-root .cv-df-reset {
+  /* Negative margin against the group's gap: the lit square should read as
+     spaced like the icons beside it, not pushed a full gap away by its own
+     padding. */
+  margin: 0 calc(var(--cv-df-u) * -2);
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--cv-df-u) * 4);
+  background: transparent;
+  color: var(--cv-muted);
+  opacity: 0.75;
+  transition: background-color 0.12s ease, opacity 0.12s ease, color 0.12s ease;
+  animation: cv-df-reset-in 0.18s ease-out;
+}
+/* Ink at low strength, so it reads on the bar in either theme without picking
+   a colour of its own — the same way the bar tints itself off --cv-surface. */
+.canvas-root .cv-df-reset:hover {
+  background: color-mix(in srgb, var(--cv-ink) 10%, transparent);
+  color: var(--cv-ink);
+  opacity: 1;
+}
+.canvas-root .cv-df-reset:active {
+  background: color-mix(in srgb, var(--cv-ink) 16%, transparent);
+}
+@keyframes cv-df-reset-in {
+  from {
+    opacity: 0;
+  }
+}
 /* Video playback controls — revealed on hover. Pointer events are stopped
    inside, so the bar never starts a node drag / pan / lightbox tap. */
 .canvas-root .cv-node.cv-video .cv-vctrl {
@@ -585,6 +641,10 @@
   border-bottom: calc(var(--cv-df-u) * 1) solid
     color-mix(in srgb, var(--cv-line), transparent 65%);
 }
+/* Each group is its own row. Empty ones (the plugin and platform frames have
+   no centre) still render, so the three columns stay where they are. */
+/* The browser's URL pill is the exception: it is centre content that wants the
+   room rather than its own width, so that column takes what is left over. */
 /* SVGs default to display:inline, which sits them on the text baseline — as the
    bar scales that inline whitespace throws the icons off-centre. Block removes
    them from inline flow so the flex `align-items:center` keeps them centred.
@@ -621,9 +681,6 @@
 .canvas-root .cv-df-nav {
   color: var(--cv-muted);
   opacity: 0.75;
-}
-.canvas-root .cv-df-nav svg:last-child {
-  margin-left: calc(var(--cv-df-u) * 4);
 }
 .canvas-root .cv-df-url {
   padding: 0 calc(var(--cv-df-u) * 10);
