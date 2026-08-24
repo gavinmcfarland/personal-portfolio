@@ -862,11 +862,16 @@
    distinguishes those from a pan, so the user says which they meant. While Shift
    is held the shield stands down and the iframe takes the pointer, so the
    document behaves exactly as it would standalone — real hover, real :hover,
-   real scrolling. Released, the board has it back. */
-.canvas-root[data-cv-passthrough] .cv-node.cv-html .cv-html-shield {
+   real scrolling. Released, the board has it back.
+
+   A node marked not-interactive (`inert`; see Html.jsx) is excluded: Shift is
+   the one way left to reach a document the board otherwise keeps at arm's
+   length, so letting it through here would undo the option entirely. Its shield
+   stays up and its iframe stays inert whatever is held. */
+.canvas-root[data-cv-passthrough] .cv-node.cv-html:not(.cv-html-inert) .cv-html-shield {
   pointer-events: none;
 }
-.canvas-root[data-cv-passthrough] .cv-node.cv-html .cv-html-frame {
+.canvas-root[data-cv-passthrough] .cv-node.cv-html:not(.cv-html-inert) .cv-html-frame {
   pointer-events: auto;
 }
 

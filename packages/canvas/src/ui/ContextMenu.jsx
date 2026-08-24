@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Maximize, Scaling, AppWindow, Puzzle, Terminal, Smartphone, SquareX, Expand, ExternalLink, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Pencil, Trash2, Sun, Moon, MessageSquareText, RectangleHorizontal, ChevronRight, Bookmark, RotateCcw } from 'lucide-react';
+import { Maximize, Scaling, AppWindow, Puzzle, Terminal, Smartphone, SquareX, Expand, ExternalLink, Copy, Scissors, CopyPlus, ClipboardPaste, Grid2x2, BringToFront, SendToBack, Anchor, Pencil, Trash2, Sun, Moon, MessageSquareText, RectangleHorizontal, ChevronRight, Bookmark, RotateCcw, MousePointerClick } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { FRAME_RATIOS, atRatio } from '../constants';
 
@@ -263,6 +263,12 @@ export default function ContextMenu() {
               Clear start page
             </button>
           )}
+          {/* Whether the reader may drive the document. Off, it is a live
+              rendering that can't be clicked through — see toggleHtmlInert. */}
+          <button data-active={!node.inert ? '' : undefined} onClick={run(() => eng.toggleHtmlInert(node.id))}>
+            <MousePointerClick />
+            Interactive
+          </button>
           {frameButtons}
           <div className="cv-ctxsep" />
         </>

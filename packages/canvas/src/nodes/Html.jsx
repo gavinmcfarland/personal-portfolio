@@ -30,6 +30,15 @@ import { postHover, postHoverEnd } from '../html-input';
    dragging and scrolling. Hold SHIFT for those — the shield drops, the iframe
    takes the pointer, and the document behaves exactly as it would standalone.
 
+   NOT INTERACTIVE. A node carrying `inert` opts out of all of that: nothing is
+   forwarded in, the shield never stands down for SHIFT, and a tap is only ever
+   a tap on the board. The document still runs — it is a live rendering, with
+   its own animations and its own theme sync — it just cannot be driven. For a
+   prototype that is on the board to be looked at rather than clicked through,
+   that is the whole difference: no stray click walks it off the screen it was
+   placed on. Edit mode is deliberately unaffected, since setting a start page
+   means navigating there first.
+
    EDIT MODE. Authoring needs the whole gesture (marquee, move, resize), so
    nothing is forwarded either way: the shield is simply a hit surface until the
    node is made "live" by a double-click, when it drops and the demo is directly
@@ -149,14 +158,14 @@ function HtmlNode({ node }) {
      mid-pan the board is moving the content, not pointing at it. */
   const hoverRAF = useRef(0);
   const onShieldMove = useCallback((e) => {
-    if (!readOnly || eng.actionRef?.current) return;
+    if (!readOnly || node.inert || eng.actionRef?.current) return;
     const { clientX, clientY } = e;
     if (hoverRAF.current) return;
     hoverRAF.current = requestAnimationFrame(() => {
       hoverRAF.current = 0;
       postHover(frameRef.current, clientX, clientY);
     });
-  }, [readOnly, eng]);
+  }, [readOnly, node.inert, eng]);
   const onShieldLeave = useCallback(() => {
     if (!readOnly) return;
     if (hoverRAF.current) { cancelAnimationFrame(hoverRAF.current); hoverRAF.current = 0; }
@@ -227,7 +236,10 @@ function HtmlNode({ node }) {
     ? { '--cv-df-bar': `${node.frameScale ? Math.max(1, (node.h || 0) * node.frameScale) : frameBarH(node.frame)}px` }
     : null;
 
-  const cls = `cv-node cv-html${live ? ' cv-live' : ''}${node.frame ? ' cv-framed' : ''}`;
+  // cv-html-inert is what the board reads back off the DOM: the CSS keeps the
+  // shield up through SHIFT, and Canvas.jsx's pointerdown skips the node when it
+  // looks for the html under the cursor, so no press is ever handed back to it.
+  const cls = `cv-node cv-html${live ? ' cv-live' : ''}${node.frame ? ' cv-framed' : ''}${node.inert ? ' cv-html-inert' : ''}`;
   // The cv-df/cv-df-screen skeleton renders permanently (frameless too, where
   // it's invisible) with the chrome bar as a conditional FIRST child — so
   // toggling a device frame on/off never re-parents the iframe. Re-parenting

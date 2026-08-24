@@ -553,7 +553,12 @@
    distinguishes those from a pan, so the user says which they meant. While Shift
    is held the shield stands down and the iframe takes the pointer, so the
    document behaves exactly as it would standalone — real hover, real :hover,
-   real scrolling. Released, the board has it back. */
+   real scrolling. Released, the board has it back.
+
+   A node marked not-interactive (`inert`; see Html.jsx) is excluded: Shift is
+   the one way left to reach a document the board otherwise keeps at arm's
+   length, so letting it through here would undo the option entirely. Its shield
+   stays up and its iframe stays inert whatever is held. */
 /* Reload, in the frame's toolbar: the reader's way back once they have driven
    an embed somewhere. Sized off --cv-df-u like every other mark in the bar, so
    it scales with the frame. The bar is inert to pointers; this takes its own

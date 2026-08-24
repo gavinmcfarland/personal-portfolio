@@ -219,7 +219,10 @@ export default function Canvas() {
       const isMedia = nodeUnder && (nodeUnder.dataset.type === 'image' || nodeUnder.dataset.type === 'video');
       const cellEl = e.target.closest && e.target.closest('[data-media-idx]');
       const linkEl = e.target.closest && e.target.closest('.cv-node.cv-link');
-      const htmlEl = e.target.closest && e.target.closest('.cv-node.cv-html');
+      // `:not(.cv-html-inert)` is the whole of the non-interactive option on this
+      // side: a node marked not-interactive is simply not found here, so its
+      // press stays a board press and nothing is ever replayed into it.
+      const htmlEl = e.target.closest && e.target.closest('.cv-node.cv-html:not(.cv-html-inert)');
       actionRef.current = { type: 'pan', sx: e.clientX, sy: e.clientY, ox: eng.viewRef.x, oy: eng.viewRef.y, imgId: isMedia ? nodeUnder.dataset.id : null, imgIdx: cellEl ? +cellEl.dataset.mediaIdx : 0, linkId: linkEl ? linkEl.dataset.id : null, htmlId: htmlEl ? htmlEl.dataset.id : null, pointerType: e.pointerType };
       rootState('panning', true);
       capture(vp, e.pointerId);

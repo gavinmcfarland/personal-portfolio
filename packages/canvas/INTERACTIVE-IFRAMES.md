@@ -61,6 +61,13 @@ events:
 behaves exactly as it would standalone. This is how a demo's own scrolling,
 sliders and drags are used — see "What this costs" below.
 
+**A node can opt out of all of it.** An embed marked not-interactive (`inert` on
+the node; **Interactive** in its right-click menu) is given nothing: no hover, no
+replayed tap, and no Shift escape hatch. It keeps the shield and the running
+document, and loses only the ability to be driven — which is what you want for a
+prototype that is on the board as an illustration. See "Turning interactivity
+off" in `EMBEDDED-HTML.md`.
+
 ## The pieces
 
 ### 1. The shield

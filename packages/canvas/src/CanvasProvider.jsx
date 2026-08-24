@@ -324,7 +324,8 @@ function normalizeSaved(n) {
     return { ...base, w: n.w || (n.type === 'video' ? 320 : 200), h: n.h || (n.type === 'video' ? 180 : 150), assets: normalizeAssets(n), ...(grid ? { grid } : {}), ...(crop ? { crop } : {}), ...(n.frame ? { frame: n.frame } : {}), ...(n.frameUrl ? { frameUrl: n.frameUrl } : {}), ...(n.frameTitle ? { frameTitle: n.frameTitle } : {}), ...(n.frameScale ? { frameScale: n.frameScale } : {}) };
   }
   if (n.type === 'sound') return { ...base, w: n.w || 260, h: n.h || 56, src: n.src || '', name: n.name || '', dur: n.dur || 0 };
-  if (n.type === 'html') return { ...base, w: n.w || 800, h: n.h || 500, src: n.src || '', name: n.name || '', ...(n.page ? { page: n.page } : {}), ...(n.frame ? { frame: n.frame } : {}), ...(n.frameUrl ? { frameUrl: n.frameUrl } : {}), ...(n.frameTitle ? { frameTitle: n.frameTitle } : {}), ...(n.frameScale ? { frameScale: n.frameScale } : {}) };
+  // `inert`: the document is rendered but never driven — see toggleHtmlInert.
+  if (n.type === 'html') return { ...base, w: n.w || 800, h: n.h || 500, src: n.src || '', name: n.name || '', ...(n.inert ? { inert: true } : {}), ...(n.page ? { page: n.page } : {}), ...(n.frame ? { frame: n.frame } : {}), ...(n.frameUrl ? { frameUrl: n.frameUrl } : {}), ...(n.frameTitle ? { frameTitle: n.frameTitle } : {}), ...(n.frameScale ? { frameScale: n.frameScale } : {}) };
   if (n.type === 'link') return { ...base, w: n.w || 280, url: n.url || '', title: n.title || '', desc: n.desc || '', image: n.image || '', siteName: n.siteName || '', favicon: n.favicon || '' };
   const fs = n.fontSize != null ? { fontSize: n.fontSize } : null; // cmd-drag scaled text
   const ff = n.font ? { font: n.font } : null; // serif | sans | mono | script
@@ -2273,6 +2274,8 @@ export function CanvasProvider({
       else if (n.type === 'html') {
         o.w = n.w; o.h = n.h; o.src = n.src;
         if (n.name) o.name = n.name;
+        // Not interactive: rendered live, but no input ever reaches it.
+        if (n.inert) o.inert = true;
         // The screen the document opens on, as the document itself described it.
         if (n.page) o.page = n.page;
         // Device frame, same fields as media.
@@ -3431,6 +3434,25 @@ export function CanvasProvider({
       markHtmlMoved(id, false);
       reloadHtmlFrame(id);
     }
+    /* Whether this document may be driven from the board at all.
+
+       On (`inert`), the embed becomes something to look at rather than click
+       through: the shield keeps every gesture, no hover or tap is forwarded in
+       (Html.jsx), and Shift no longer stands the shield down (the CSS excludes
+       `.cv-html-inert`). The document still runs — animations, theme sync, a
+       restored start page — it just can't be walked off the screen it was
+       placed on, which is the point for a prototype that is on the board as an
+       illustration.
+
+       Edit mode is deliberately untouched: double-click still makes the node
+       live, because navigating to a screen is how its start page gets set. */
+    function toggleHtmlInert(id) {
+      if (!EDITABLE || S.readOnly) return;
+      const n = S.nodes.find((x) => x.id === id);
+      if (!n || n.type !== 'html') return;
+      updateNode(id, { inert: n.inert ? undefined : true });
+      selectNode(id);
+    }
     /* Shift held: stand the html nodes' shields down so the documents underneath
        take the pointer themselves, for a demo's own scrolling and dragging (the
        CSS is on data-cv-passthrough; see the note beside it). An attribute
@@ -3525,7 +3547,7 @@ export function CanvasProvider({
       switchPage, addPage, renamePage, removePage,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
-      isHtmlFile, addHtmlFromFile, setHtmlActive, setHtmlPassThrough, openHtml, captureHtmlPage, clearHtmlPage, restartHtml, markHtmlMoved,
+      isHtmlFile, addHtmlFromFile, setHtmlActive, setHtmlPassThrough, toggleHtmlInert, openHtml, captureHtmlPage, clearHtmlPage, restartHtml, markHtmlMoved,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startRenameFrame, stopRenameFrame, startEditing, stopEditing, formatText, setChrome,
       openSectionNotes, closeSectionNotes, setSectionNotes, deck, setFrameAspect,

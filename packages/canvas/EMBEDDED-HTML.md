@@ -187,6 +187,28 @@ answer is part of the signature, so a screen change is exact.
   that screen afterwards, with its own state advanced, so a visitor carries on
   from there normally.
 
+### Turning interactivity off
+
+Some prototypes are on the board to be *looked at* — a screen that illustrates a
+point, a demo that animates by itself. **Interactive** in an html node's
+right-click menu toggles that. Switched off, the node is stored with `inert:
+true` and:
+
+- no hover position and no tap is forwarded into the document, so a click on it
+  is an ordinary board click;
+- Shift no longer stands its shield down, so the escape hatch can't reach it
+  either (the CSS excludes `.cv-html-inert`);
+- the document still *runs* — its own animations play, the theme still syncs,
+  a saved start page is still restored. It is a live rendering, not a picture.
+
+Edit mode is deliberately unaffected: double-click still makes the node live,
+because navigating to a screen is how its start page gets set.
+
+The reason a reader can't drive it is worth stating plainly: a prototype with no
+Reset (a frameless one — see above) that a visitor clicks off its screen stays
+there for the rest of their visit. Turning interactivity off is the way to say
+that a node is an illustration and should stay on the screen it was placed on.
+
 ## The constraint: containment vs. `position: fixed`
 
 This is the part worth designing around, because it's the one the canvas cannot
