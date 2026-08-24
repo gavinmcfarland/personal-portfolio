@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --font:"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:#E9E9EC; font-family:var(--font); color:#1E222A;
+    -webkit-font-smoothing:antialiased;
+    min-height:100dvh; display:flex; align-items:center; justify-content:center;
+  }
+  @media (prefers-color-scheme: dark){ body{background:#0B0D14} }
+
+  /* Framed on a desktop, edge to edge on a phone — no page around it either way. */
+  .phone{
+    position:relative; width:412px; height:923px; max-height:100dvh;
+    border-radius:22px; overflow:hidden;
+    box-shadow:0 18px 44px -26px rgba(15,20,30,.42), 0 0 0 1px rgba(20,24,32,.06);
+    --tl:#FFFFFF; --card-bg:#FFFFFF; --card-past:#F8F8FA;
+    --edge:rgba(20,24,32,.11); --edge-soft:rgba(20,24,32,.09);
+    --tx:#1E222A; --tx2:#666C78; --tx3:#8A909C;
+    --bar:#FFFFFF; --bar-tx:#1B1B1F; --bar-ic:#45474F; --bar-edge:rgba(20,24,32,.08);
+    --bar-hover:rgba(27,27,31,.07);
+    --act:#1F7E74; --act-soft:rgba(31,126,116,.34); --act-hover:rgba(31,126,116,.12);
+    --act-fill:rgba(31,126,116,.15);
+    --done-bg:#DCEBE2; --done-fg:#3C7A55;
+    --warn:#D89A07; --warn-soft:rgba(216,154,7,.72); --warn-fill:rgba(216,154,7,.14);
+    --mark:#0E7469;
+    color:var(--tx); background:var(--tl);
+  }
+  .phone.dark{
+    --tl:#07091C; --card-bg:#07091C; --card-past:#0D1126;
+    --edge:rgba(255,255,255,.15); --edge-soft:rgba(255,255,255,.10);
+    --tx:#E4E7F0; --tx2:#98A0B4; --tx3:#767E93;
+    --bar:#07091C; --bar-tx:#E4E7F0; --bar-ic:#A5ACC0; --bar-edge:rgba(255,255,255,.13);
+    --bar-hover:rgba(255,255,255,.08);
+    --act:#6FDBCC; --act-soft:rgba(111,219,204,.36); --act-hover:rgba(111,219,204,.15);
+    --act-fill:rgba(111,219,204,.17);
+    --done-bg:rgba(104,176,134,.20); --done-fg:#8FD1AB;
+    --warn:#F5CC78; --warn-soft:rgba(245,204,120,.70); --warn-fill:rgba(245,204,120,.16);
+    --mark:#63E2D0;
+  }
+
+  @media (max-width:479px), (max-height:940px){
+    .phone{width:100vw; height:100dvh; border-radius:0; box-shadow:none}
+  }
+  @media (min-width:480px) and (min-height:941px){
+    body{padding:24px}
+  }
+
+  .body{height:100%; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none}
+  .body::-webkit-scrollbar{display:none}
+
+  .appbar{
+    position:sticky; top:0; z-index:6; height:64px; display:flex; align-items:center;
+    padding:0 8px 0 4px; background:var(--bar); border-bottom:1px solid var(--bar-edge);
+  }
+  .appbar h1{flex:1; margin:0 0 0 4px; font-size:22px; font-weight:400; color:var(--bar-tx)}
+  .navicon{
+    width:48px; height:48px; border-radius:50%; flex:none; padding:0; border:none;
+    background:none; color:var(--bar-ic); cursor:pointer; display:grid; place-items:center;
+  }
+  .navicon:hover{background:var(--bar-hover)}
+  .navicon svg{width:24px; height:24px; display:block}
+
+  /* ── the drawer ──
+     A modal navigation drawer, as Material draws one: 360dp at most, off the left edge,
+     over a scrim, with the current destination held in a filled pill. */
+  .scrim{
+    position:absolute; inset:0; z-index:14; background:rgba(10,14,22,.44);
+    opacity:0; pointer-events:none; transition:opacity .22s ease;
+  }
+  .phone.drawn .scrim{opacity:1; pointer-events:auto}
+  .drawer{
+    position:absolute; top:0; bottom:0; left:0; z-index:15; width:300px;
+    background:var(--bar); border-right:1px solid var(--bar-edge);
+    transform:translateX(-100%); transition:transform .26s cubic-bezier(.2,.7,.3,1);
+    padding:22px 12px; display:flex; flex-direction:column;
+    border-radius:0 16px 16px 0;
+  }
+  .phone.drawn .drawer{transform:none}
+  .dtitle{margin:6px 16px 18px; font-size:21px; font-weight:600; letter-spacing:-.02em}
+  .dsub{
+    margin:0 16px 8px; font-size:11px; font-weight:700; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--tx3);
+  }
+  .ditem{
+    display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+    font-family:inherit; font-size:14.5px; font-weight:600; letter-spacing:-.008em;
+    color:var(--tx2); background:none; border:none; border-radius:999px;
+    padding:13px 16px; cursor:pointer; transition:background .15s, color .15s;
+  }
+  .ditem:hover{background:var(--edge-soft); color:var(--tx)}
+  .ditem svg{width:22px; height:22px; display:block; flex:none}
+  .ditem.on{background:var(--act-fill); color:var(--act)}
+  .ditem.off{opacity:.5; cursor:default}
+  .ditem.off:hover{background:none; color:var(--tx2)}
+  .dsplit{height:1px; background:var(--edge-soft); margin:14px 16px}
+
+  /* ── shared parts ── */
+  .card{
+    margin:0 20px 8px; padding:13px 14px;
+    background:var(--card-bg); border:1px solid var(--edge); border-radius:12px;
+  }
+  /* the day view stacks its cards straight onto each other with no rail between them,
+     so they need a little more air than the timeline's do */
+  .dayview .card{margin-bottom:12px}
+  .card.logged{background:var(--card-past); border-color:var(--edge-soft)}
+  /* The greyscale goes on the contents, not the card: a filter on the card would drain
+     its own fill too, which is invisible on white but turns the dark card to flat black.
+     In the timeline the rail sits outside the card, so the past run is drained separately. */
+  .card.logged > *{filter:grayscale(1)}
+  /* The stamp goes with its moment. A blanket rule on the past run was close but not the
+     same thing — a past moment can still be outstanding, and that one should keep its
+     colour. These follow whether the moment was actually logged. */
+  .rail.done, .whenrow.done{filter:grayscale(1)}
+  .cardhead{display:flex; align-items:center; gap:9px; margin:0 0 12px}
+  .latebar{
+    display:flex; align-items:center; gap:5px; margin:0 0 11px;
+    font-size:13px; font-weight:600; color:var(--warn);
+  }
+  .latebar svg{width:14px; height:14px; display:block; flex:none}
+  .cardhead .grow{flex:1}
+  /* The lines below line up with the time rather than with the mark that governs them —
+     which means the indent has to follow the mark to whichever side it is on. */
+  /* Only in the day view, where the mark governs the whole moment from the card head.
+     The timeline's cards have a head too once the stamp moves inside them, but their
+     marks sit on the rows — so an indent there just holds them off the edge. */
+  .phone:not(.right-box) .cardhead ~ .entry{padding-left:34px}
+  .phone.right-box .cardhead ~ .entry{padding-right:34px}
+  /* above the card, the rows have nothing to clear */
+  .abovewrap .entry, .stack.wide > .card .entry{padding-left:0; padding-right:0}
+  .cardhead .phase{width:20px; height:20px; display:block; flex:none}
+  .whentime{font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; flex:none}
+  /* the same slot, but a name rather than a reading — so it takes a little more room
+     and drops the figures-only spacing */
+  .whentime.named{font-variant-numeric:normal; letter-spacing:-.006em; font-size:13.5px}
+  .rail .whentime{text-align:center; line-height:1.25}
+  .rail .whentime.named{white-space:normal; font-size:12px}
+  /* The routine names the occasion; the rows name the things. It used to match a row in
+     weight and colour, so it read as more content rather than the label over it. Sentence
+     case is kept — the separation comes from being smaller, lighter and quieter instead. */
+  .routine{
+    font-size:13px; font-weight:500; letter-spacing:-.004em; text-transform:none;
+    color:var(--tx2);
+    flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    margin-left:4px;
+  }
+  .cardhead.bare .routine{margin-left:0}
+  .entry{
+    display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+    font-family:inherit; background:none; border:none; padding:0; cursor:pointer;
+    border-radius:8px; transition:opacity .12s;
+  }
+  .entry:hover{opacity:.72}
+  .entry + .entry{margin-top:13px}
+  .name{margin:0; font-size:15.5px; font-weight:600; letter-spacing:-.012em; flex:1; min-width:0}
+  .val{font-size:14px; color:var(--tx2); font-variant-numeric:tabular-nums; white-space:nowrap}
+  .gl{width:13px; height:13px; display:inline-block; vertical-align:-2px; margin-left:7px}
+  .box{
+    width:23px; height:23px; border-radius:50%; flex:none; padding:0;
+    border:1.5px solid var(--act-soft); background:none; color:transparent;
+    display:grid; place-items:center; cursor:pointer;
+    transition:background .15s, border-color .15s, color .15s;
+  }
+  .box svg{width:13px; height:13px; display:block}
+  .box:hover{background:var(--act-hover); border-color:var(--act); color:var(--act)}
+  .box.late{border-color:var(--warn-soft)}
+  .box.late:hover{border-color:var(--warn); color:var(--warn)}
+  /* The plus is shown at rest, and stands on its own: a ring around it would say "this
+     is a box to fill in", which is the tick's job. Only the hover draws a disc, for
+     something to press against. It keeps the ring's footprint so the column still lines up. */
+  .box.plus{border-color:transparent; background:none; color:var(--act)}
+  .box.plus svg{width:16px; height:16px}
+  .box.plus:hover{background:var(--act-hover); border-color:transparent}
+  .box.plus.late{color:var(--warn)}
+  .box.plus.late:hover{background:rgba(216,154,7,.14); border-color:transparent}
+  .box.on{background:var(--done-bg); border-color:transparent; color:var(--done-fg)}
+  .box.mark{border-color:transparent; background:none; cursor:default}
+
+  /* ── the day view ── */
+  .titlebtn{
+    display:flex; align-items:center; gap:2px; margin:0 0 0 4px; padding:6px 8px 6px 10px;
+    font-family:inherit; font-size:22px; font-weight:400; color:var(--bar-tx);
+    background:none; border:none; border-radius:999px; cursor:pointer;
+  }
+  .titlebtn:hover{background:var(--bar-hover)}
+  .titlebtn svg{width:22px; height:22px; display:block; color:var(--bar-ic); transition:transform .2s ease}
+  .titlebtn[aria-expanded="true"] svg{transform:rotate(180deg)}
+  .appbar .grow{flex:1}
+
+  /* the month, dropped under the bar and staying there while it is open */
+  .cal{
+    position:sticky; top:64px; z-index:5;
+    background:var(--bar); border-bottom:1px solid var(--bar-edge);
+    padding:10px 14px 14px;
+  }
+  .calhead{display:flex; align-items:center; margin:0 0 6px}
+  .calmonth{flex:1; font-size:14.5px; font-weight:600; letter-spacing:-.012em; padding-left:6px}
+  .calnav{display:flex; gap:2px}
+  .navicon.sm{width:36px; height:36px}
+  .navicon.sm svg{width:20px; height:20px}
+  .navicon.sm:first-child svg{transform:rotate(90deg)}
+  .navicon.sm:last-child svg{transform:rotate(-90deg)}
+  .navicon.sm:disabled{opacity:.35; cursor:default}
+  .navicon.sm:disabled:hover{background:none}
+
+  .calgrid{display:grid; grid-template-columns:repeat(7, 1fr); gap:2px}
+  .calgrid .dow{
+    text-align:center; font-size:10.5px; font-weight:700; letter-spacing:.06em;
+    color:var(--tx3); padding:2px 0 4px;
+  }
+  .cell{
+    position:relative; display:flex; flex-direction:column; align-items:center; gap:2px;
+    font-family:inherit; font-size:13.5px; font-weight:500; font-variant-numeric:tabular-nums;
+    color:var(--tx); background:none; border:none; border-radius:12px;
+    padding:6px 0 5px; cursor:pointer; transition:background .15s, color .15s;
+  }
+  .cell i{width:4px; height:4px; border-radius:50%; background:var(--warn); display:block}
+  .cell .void{background:none}
+  .cell:hover{background:var(--edge-soft)}
+  .cell.off{color:var(--tx3); opacity:.45; cursor:default}
+  .cell.off:hover{background:none}
+  .cell.today{color:var(--act); font-weight:700}
+  .cell.on{background:var(--tx); color:var(--tl)}
+  .cell.on:hover{background:var(--tx)}
+  .cell.pad{pointer-events:none}
+
+  .ghead{
+    display:flex; align-items:baseline; gap:9px; margin:22px 20px 10px;
+    font-size:11px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--tx3);
+  }
+  .ghead.late{color:var(--warn)}
+  .ghead .hide{
+    margin-left:auto; font-family:inherit; font-size:11px; font-weight:700;
+    letter-spacing:.09em; text-transform:uppercase; color:var(--act);
+    background:none; border:none; padding:0; cursor:pointer;
+  }
+  .ghead .hide:hover{text-decoration:underline}
+
+  .folded{
+    display:flex; align-items:center; gap:11px; width:100%; text-align:left;
+    margin:0 20px; width:calc(100% - 40px); padding:13px 14px; cursor:pointer;
+    font-family:inherit; background:var(--card-past);
+    border:1px solid var(--edge-soft); border-radius:12px;
+    transition:background .15s, border-color .15s;
+  }
+  .folded:hover{border-color:var(--edge)}
+  .fold-t{font-size:15px; font-weight:600; letter-spacing:-.012em; color:var(--tx2); flex:none}
+  .fold-s{display:flex; align-items:center; gap:6px; flex:1; filter:grayscale(1)}
+  .fold-s .gl{margin-left:0}
+  .chev{display:grid; place-items:center; color:var(--tx3); flex:none}
+  .chev svg{width:16px; height:16px; display:block}
+
+  /* ── the timeline view ── */
+  .period{display:grid; grid-template-columns:23% 1fr}
+  .rail{display:flex; flex-direction:column; align-items:center; gap:3px; padding:16px 4px 0}
+  .rail .phase{width:34px; height:34px; display:block}
+  .rail .whentime{font-size:12px}
+
+  /* the timestamp can keep its column, narrow it, or move inside the card */
+  .period.slim{grid-template-columns:16% 1fr}
+  .period.slim .rail{padding-left:2px; padding-right:2px}
+  .period.slim .rail .phase{width:28px; height:28px}
+  .period.slim .rail .whentime{font-size:11px}
+  /* the mark alone needs a narrower column, and sits level with the card's own heading */
+  .card.marked{display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start}
+  .phone.right-box .card.marked{grid-template-columns:1fr auto}
+  .phone.right-box .card.marked .ringcol{order:2}
+  .card.marked .latebar{grid-column:1 / -1}
+  .cardbody{min-width:0}
+  .routineline{margin:0 0 9px; display:flex}
+  .routineline .routine{margin-left:0}
+
+  .period.split{grid-template-columns:19% 1fr}
+  .period.split .rail{padding-top:14px}
+  .period.split .rail .phase{width:30px; height:30px}
+  .period.solo{grid-template-columns:1fr}
+  /* the stamp on its own line, above the card and outside it */
+  .whenrow{display:flex; align-items:center; gap:9px; margin:0 20px 9px}
+  .stack.wide .whenrow{margin:0 20px 9px}
+  .whenrow .phase{width:20px; height:20px; display:block; flex:none}
+  .whenrow .grow{flex:1}
+  .abovewrap + .abovewrap{margin-top:14px}
+  .stack.wide .card{margin:0 20px 8px}
+  .cardhead.tag{margin:0 0 11px}
+  .whentag{
+    display:inline-flex; align-items:center; gap:6px; padding:3px 11px 3px 4px;
+    border-radius:999px; background:var(--edge-soft);
+  }
+  .whentag .phase{width:18px; height:18px; display:block; flex:none}
+  .stack{padding:16px 0 16px 0}
+  .stack .card{margin:0 20px 8px 0}
+  .stack .card:last-child{margin-bottom:0}
+  /* the chip just marks where a day begins; the app bar title says which day you are in */
+  .daychip{display:flex; justify-content:center; padding:16px 0 6px}
+  .daychip span{
+    background:#2E3138; color:#F3F3F5; font-size:11.5px; font-weight:600;
+    letter-spacing:.045em; border-radius:999px; padding:4px 12px;
+  }
+  .phone.dark .daychip span{background:#E7EAF3; color:#141830}
+  .nowedge{position:relative; height:0; z-index:3}
+  .tail{height:0}
+  .nowedge .bar{
+    position:absolute; left:16px; right:16px; top:-5px; height:10px;
+    display:flex; align-items:center; gap:9px;
+  }
+  .nowedge .dot{width:10px; height:10px; border-radius:50%; background:var(--mark); flex:none}
+  .nowedge .line{flex:1; height:2px; background:var(--mark); border-radius:2px}
+  .past.ends{padding-bottom:12px}
+  .period.opens{padding-top:12px}
+
+  /* The boundary. Quiet enough that it does not compete with today, explicit enough
+     that the days ahead are obviously there rather than missing. */
+  .coming{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:calc(100% - 40px); margin:18px 20px 30px; padding:14px 16px;
+    cursor:pointer; font-family:inherit;
+    background:none; border:1.5px solid var(--edge); border-radius:12px;
+    transition:border-color .15s, background .15s, color .15s;
+    color:var(--act);
+  }
+  .coming:hover{border-color:var(--act-soft); background:var(--act-hover)}
+  .coming-t{font-size:15px; font-weight:600; letter-spacing:-.012em}
+  .coming svg{width:17px; height:17px; display:block; flex:none}
+
+  /* ── the detail page ── */
+  .bartitle{flex:1; margin:0 0 0 4px; font-size:22px; font-weight:400; color:var(--bar-tx)}
+  /* the name and its line sit in their own air, clear of the bar above and the first
+     panel below */
+  .dhead{padding:26px 20px 22px}
+  .dname{
+    margin:0; font-size:29px; font-weight:600; letter-spacing:-.028em;
+    display:flex; align-items:center; gap:10px;
+  }
+  .dname .gl{width:19px; height:19px; margin-left:0}
+  .dsubt{margin:6px 0 0; font-size:15px; color:var(--tx2)}
+  .log-row{
+    display:flex; align-items:center; gap:12px; padding:9px 0;
+    border-top:1px solid var(--edge-soft); font-size:14.5px;
+  }
+  .log-row:first-of-type{border-top:none; padding-top:2px}
+  .log-when{flex:1}
+  .log-val{font-size:14px; color:var(--tx2); font-variant-numeric:tabular-nums}
+  .log-mark{
+    width:20px; height:20px; border-radius:50%; flex:none; display:grid; place-items:center;
+    background:var(--done-bg); color:var(--done-fg);
+  }
+  .log-mark svg{width:12px; height:12px}
+  /* an outstanding dose is amber here, as it is everywhere else in the app */
+  .log-mark.late{background:var(--warn-fill); color:var(--warn)}
+  .log-val.late{color:var(--warn); font-weight:600}
+  /* the detail page's sections, matching the cards the two views use */
+  .panel{
+    margin:16px 20px 0; padding:15px 16px 16px;
+    background:var(--card-bg); border:1px solid var(--edge); border-radius:12px;
+  }
+  .panel > h3{
+    font-size:11px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--tx3); margin:0 0 12px;
+  }
+  .panel .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .panel .chip{
+    margin:0; font-size:15px; font-weight:600; letter-spacing:-.01em; color:var(--tx);
+    background:var(--edge-soft); border-radius:999px; padding:8px 14px;
+    display:inline-flex; align-items:center;
+  }
+
+  .day .empty{margin-bottom:26px}
+  .empty{
+    margin:26px 20px 0; padding:30px 20px; text-align:center;
+    border:1px dashed var(--edge); border-radius:12px;
+  }
+  .empty p{margin:0; font-size:14.5px; font-weight:500; color:var(--tx2)}
+</style>
+<script data-cv-theme-sync="2">(() => {
+  const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
+  const walk = (rules, dark) => {
+    for (const r of rules) {
+      // A rewritten rule's mediaText no longer mentions prefers-color-scheme,
+      // so membership in the flipped map must count as a match too or it
+      // would only ever flip once.
+      if (r.media && (flipped.has(r) || /prefers-color-scheme/i.test(r.media.mediaText))) {
+        if (!flipped.has(r)) flipped.set(r, /prefers-color-scheme:\s*dark/i.test(r.media.mediaText));
+        r.media.mediaText = flipped.get(r) === dark ? 'all' : 'not all';
+      } else if (r.cssRules) walk(r.cssRules, dark);
+    }
+  };
+
+  // The board's theme, once it has said. Null until then: a document opened
+  // without a boot hash answers from the OS rather than guessing.
+  let host = null;
+
+  /* prefers-color-scheme in JavaScript.
+
+     Rewriting media rules only reaches a document that themes itself in CSS. A
+     prototype that renders from script — picking colours in JS, or setting a
+     class off matchMedia — reads the media query directly, and inside the
+     iframe that answers with the OS. Such a document ignored the board
+     entirely: it stayed on the system setting while the host sat pinned to
+     light or dark, and when the OS flipped it moved on its own rather than
+     with the page around it.
+
+     So prefers-color-scheme queries answer with the host theme instead, and
+     fire 'change' when it flips — meaning the ordinary listener a document
+     already writes is enough to follow the board, with nothing canvas-specific
+     in it. Every other query passes through to the real matchMedia untouched.
+
+     'no-preference' is left to the OS: the host is always one of light or
+     dark, so it has no honest answer for "the user expressed none". */
+  const native = window.matchMedia && window.matchMedia.bind(window);
+  const wants = (q) =>
+    /prefers-color-scheme:\s*dark/i.test(q) ? true
+    : /prefers-color-scheme:\s*light/i.test(q) ? false
+    : null;
+  // Held strongly, so a query stays live for as long as the document does —
+  // the same lifetime a real MediaQueryList has once it carries a listener.
+  const live = [];
+  if (native) window.matchMedia = (query) => {
+    const q = String(query);
+    const dark = wants(q);
+    if (dark === null) return native(q);
+    const bus = new EventTarget();
+    const mql = {
+      media: q,
+      get matches() { return host === null ? native(q).matches : host === dark; },
+      onchange: null,
+      addEventListener: (t, fn, o) => bus.addEventListener(t, fn, o),
+      removeEventListener: (t, fn, o) => bus.removeEventListener(t, fn, o),
+      // The pre-2019 spelling, still what a lot of copied snippets use.
+      addListener: (fn) => bus.addEventListener('change', fn),
+      removeListener: (fn) => bus.removeEventListener('change', fn),
+      dispatchEvent: (e) => bus.dispatchEvent(e),
+    };
+    live.push({ mql, bus, was: mql.matches });
+    return mql;
+  };
+  // Only on a real edge, like the platform: a host that re-sends the theme it
+  // already sent must not make every listener re-run.
+  const notify = () => {
+    for (const l of live) {
+      const now = l.mql.matches;
+      if (now === l.was) continue;
+      l.was = now;
+      // A MediaQueryListEvent in all the ways a listener reads one.
+      const ev = new Event('change');
+      ev.matches = now;
+      ev.media = l.mql.media;
+      if (typeof l.mql.onchange === 'function') l.mql.onchange.call(l.mql, ev);
+      l.bus.dispatchEvent(ev);
+    }
+  };
+
+  const apply = (dark) => {
+    host = dark;
+    document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.style.colorScheme = dark ? 'dark' : 'light'; // UA defaults (bg, controls) follow too
+    for (const sheet of document.styleSheets) {
+      try { walk(sheet.cssRules, dark); } catch { /* unreadable sheet */ }
+    }
+    notify();
+  };
+  addEventListener('message', (e) => {
+    const d = e.data;
+    if (d && d.type === 'canvas-theme' && (d.theme === 'dark' || d.theme === 'light')) apply(d.theme === 'dark');
+  });
+  // Boot theme from the URL hash (set by the host, see nodes/Html.jsx): applied
+  // synchronously — this script sits at the end of <head>, after the document's
+  // styles but before any rendering — so the first paint is already themed, and
+  // a body script reading matchMedia gets the board's answer on its first read
+  // rather than the OS's. The message path only lands after load.
+  // Re-applied at DOMContentLoaded for any stylesheets later in the body.
+  const boot = /cv-theme=(dark|light)/.exec(location.hash || '');
+  if (boot) {
+    apply(boot[1] === 'dark');
+    addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
+  }
+})()</script><script data-cv-zoom-opts="4">(() => {
+  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
+  var css =
+    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
+    // it is also the single biggest per-frame paint saving).
+    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
+    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
+    // Gesture only: paint-level savings that cannot move a box.
+    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
+    'box-shadow:none!important;text-shadow:none!important}';
+  var style = document.createElement('style');
+  style.textContent = css;
+  var attach = function () { (document.head || document.documentElement).appendChild(style); };
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
+  // Flat until told otherwise: a host too old to send a scale gets the safe,
+  // never-blurry rendering rather than an unannounced regression.
+  document.documentElement.classList.add('cv-flat');
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'canvas-zoom') return;
+    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
+    document.documentElement.classList.toggle('cv-zooming', !!d.active);
+    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
+  });
+})()</script><script data-cv-input="2">(() => {
+  if (window.parent === window) return;
+  var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
+
+  // Announce this document, so the host can hand it anything it holds for it
+  // whenever the script happens to start — a lazily-loaded frame with a warm
+  // cache can be running before the host has a handler on it.
+  send({ type: 'canvas-input-hello' });
+
+  var opts = function (x, y, extra) {
+    var o = {
+      bubbles: true, cancelable: true, composed: true, view: window,
+      clientX: x, clientY: y, screenX: x, screenY: y,
+    };
+    for (var k in extra) o[k] = extra[k];
+    return o;
+  };
+
+  // ── Hover ──────────────────────────────────────────────────────────────────
+  /* The cursor's position, replayed as the enter/leave traffic a real one would
+     produce. Tracked so the transitions are emitted only on a real crossing, as
+     the platform does it: over/out bubble, enter/leave do not.
+
+     The CSS :hover pseudo-class is beyond reach here (see the note above, and
+     note that a backtick would end this script's template literal) — what it
+     drives is
+     everything a demo does in JavaScript: onMouseEnter handlers, cursor-follow
+     effects, tooltips, hover-tracked canvases. */
+  /* CSS hover, which no dispatched event can produce.
+
+     The pseudo-class follows the real cursor, and the real cursor is on the
+     board's shield — so a demo whose hover states are pure CSS would sit inert
+     under the pointer while its JavaScript hover handlers ran perfectly. The
+     events below are only half of hovering; this is the other half.
+
+     So the document's own rules are read back and re-emitted with :hover
+     swapped for a class this script controls. Specificity survives the swap
+     exactly — a pseudo-class and a class both count (0,1,0) — so a mirrored rule
+     wins and loses against everything the original did, and the sheet goes last
+     so it takes ties. Then hovering is a matter of putting that class on the
+     right elements.
+
+     Rules are read from the document's own stylesheets, which is why this works
+     at all: these are ingested documents, styled inline or from their own
+     origin. A sheet that can't be read is skipped, exactly as the theme half
+     skips it.
+
+     Rebuilt on load as well as first use — a document that adds a stylesheet
+     while it boots would otherwise mirror only what existed at the first move. */
+  var HOVER_CLASS = 'cv-hv';
+  var hoverSheet = null;
+  var collect = function (rules) {
+    var css = '';
+    for (var i = 0; i < rules.length; i++) {
+      var r = rules[i];
+      // Rebuilt from the selector and the declarations rather than patching
+      // cssText, so a ':hover' appearing inside a VALUE is left alone.
+      if (r.selectorText && r.selectorText.indexOf(':hover') !== -1 && r.style) {
+        css += r.selectorText.split(':hover').join('.' + HOVER_CLASS) + '{' + r.style.cssText + '}\n';
+      } else if (r.cssRules) {
+        var inner = collect(r.cssRules);
+        // Keep whatever wrapper this is (@media, @supports, @layer) by reusing
+        // its own prelude, so the condition still applies to the copy.
+        if (inner) css += r.cssText.slice(0, r.cssText.indexOf('{') + 1) + '\n' + inner + '}\n';
+      }
+    }
+    return css;
+  };
+  /* Cheap fingerprint of what is currently loaded — how many sheets, and how
+     many rules in each. Enough to notice a stylesheet arriving or a rule being
+     inserted, which is what a demo built with CSS-in-JS does continuously, long
+     after this script first ran. Reading a rule COUNT is cheap; reading the
+     rules themselves is not, which is why the mirror is only rebuilt when this
+     changes rather than on every move. */
+  var sheetSig = function () {
+    var sig = '';
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      try { sig += document.styleSheets[i].cssRules.length + ','; } catch (err) { sig += 'x,'; }
+    }
+    return sig;
+  };
+  var lastSig = null;
+  var buildHoverSheet = function () {
+    lastSig = sheetSig();
+    var css = '';
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      var sheet = document.styleSheets[i];
+      if (sheet.ownerNode === hoverSheet) continue;
+      try { css += collect(sheet.cssRules); } catch (err) { /* unreadable sheet */ }
+    }
+    if (!hoverSheet) {
+      hoverSheet = document.createElement('style');
+      hoverSheet.setAttribute('data-cv-hover', '');
+      (document.head || document.documentElement).appendChild(hoverSheet);
+    } else if (hoverSheet.parentNode) {
+      // Last, so a mirrored rule takes ties against the original it copies.
+      hoverSheet.parentNode.appendChild(hoverSheet);
+    }
+    hoverSheet.textContent = css;
+  };
+  addEventListener('load', function () { if (hoverSheet) buildHoverSheet(); });
+
+  /* :hover matches the whole ancestor chain, not just the innermost element, so
+     the class goes on every one of them — otherwise a rule of the form
+     ".card:hover .title" would never fire when the cursor is over the title.
+     (No backticks anywhere in here: this script lives in a template literal.) */
+  var hoverChain = [];
+  var setHoverChain = function (el) {
+    var next = [];
+    for (var n = el; n && n.nodeType === 1; n = n.parentElement) next.push(n);
+    for (var i = 0; i < hoverChain.length; i++) {
+      if (next.indexOf(hoverChain[i]) === -1) hoverChain[i].classList.remove(HOVER_CLASS);
+    }
+    for (var j = 0; j < next.length; j++) next[j].classList.add(HOVER_CLASS);
+    hoverChain = next;
+  };
+
+  var hoverEl = null;
+  var hoverEvent = function (type, el, related, x, y, bubbles) {
+    el.dispatchEvent(new PointerEvent(type, opts(x, y, {
+      bubbles: bubbles, cancelable: false, relatedTarget: related || null,
+      pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0,
+    })));
+  };
+  var mouseEvent = function (type, el, related, x, y, bubbles) {
+    el.dispatchEvent(new MouseEvent(type, opts(x, y, {
+      bubbles: bubbles, cancelable: type === 'mousemove', relatedTarget: related || null, buttons: 0,
+    })));
+  };
+  var hoverAt = function (x, y) {
+    var el = document.elementFromPoint(x, y);
+    if (!hoverSheet || sheetSig() !== lastSig) buildHoverSheet();
+    setHoverChain(el);
+    if (el !== hoverEl) {
+      var was = hoverEl;
+      hoverEl = el;
+      if (was) {
+        hoverEvent('pointerout', was, el, x, y, true);
+        mouseEvent('mouseout', was, el, x, y, true);
+        hoverEvent('pointerleave', was, el, x, y, false);
+        mouseEvent('mouseleave', was, el, x, y, false);
+      }
+      if (el) {
+        hoverEvent('pointerover', el, was, x, y, true);
+        mouseEvent('mouseover', el, was, x, y, true);
+        hoverEvent('pointerenter', el, was, x, y, false);
+        mouseEvent('mouseenter', el, was, x, y, false);
+      }
+    }
+    if (el) {
+      hoverEvent('pointermove', el, null, x, y, true);
+      mouseEvent('mousemove', el, null, x, y, true);
+    }
+  };
+  var hoverEnd = function () {
+    setHoverChain(null);
+    if (!hoverEl) return;
+    var was = hoverEl;
+    hoverEl = null;
+    hoverEvent('pointerout', was, null, -1, -1, true);
+    mouseEvent('mouseout', was, null, -1, -1, true);
+    hoverEvent('pointerleave', was, null, -1, -1, false);
+    mouseEvent('mouseleave', was, null, -1, -1, false);
+  };
+
+  // ── Tap ────────────────────────────────────────────────────────────────────
+  /* A press the board decided was not a drag, replayed as a full click at that
+     point. Untrusted events still run activation behaviour, so links follow,
+     checkboxes toggle and buttons submit. */
+  var replay = function (x, y, pointerType, detail, quiet) {
+    var el = document.elementFromPoint(x, y);
+    if (!el) return;
+    // The press implies the cursor is there; without this a demo that only
+    // reveals a control on hover would be clicked while still thinking the
+    // pointer was elsewhere.
+    hoverAt(x, y);
+    var mouse = function (type, buttons) {
+      return new MouseEvent(type, opts(x, y, { button: 0, buttons: buttons, detail: detail }));
+    };
+    var pointer = function (type, buttons) {
+      return new PointerEvent(type, opts(x, y, {
+        button: 0, buttons: buttons, detail: detail,
+        pointerId: 1, pointerType: pointerType, isPrimary: true, width: 1, height: 1,
+      }));
+    };
+    // A touch pair too, in the platform's order, for a demo that listens for
+    // touches alone. Guarded: the Touch constructor isn't everywhere, and a demo
+    // that misses these still gets the pointer and mouse events below.
+    var touch = null, t = null;
+    if (pointerType === 'touch' && window.Touch && window.TouchEvent) {
+      try {
+        t = new Touch({
+          identifier: 1, target: el,
+          clientX: x, clientY: y, screenX: x, screenY: y,
+          pageX: x + window.scrollX, pageY: y + window.scrollY,
+        });
+        touch = function (type, list) {
+          return new TouchEvent(type, {
+            bubbles: true, cancelable: true, composed: true, view: window,
+            touches: list, targetTouches: list, changedTouches: [t],
+          });
+        };
+      } catch (err) { touch = null; }
+    }
+    el.dispatchEvent(pointer('pointerdown', 1));
+    if (touch) el.dispatchEvent(touch('touchstart', [t]));
+    // Focus as a real press would: a demo that closes a popover on blur, or a
+    // field that expects the caret, depends on it.
+    var f = el.closest && el.closest('a[href],button,input,select,textarea,summary,[tabindex],[contenteditable]');
+    if (f && f.focus) { try { f.focus({ preventScroll: true }); } catch (err) { f.focus(); } }
+    /* Typing needs more than a focused field: keystrokes follow the focused
+       FRAME, and this one has never been focused — the press that would have
+       done it landed on the shield. So when a tap lands on something you type
+       into, ask the host to focus the frame; from then on real keys arrive here
+       by themselves.
+
+       Real keys, deliberately, rather than synthesised ones: an untrusted
+       KeyboardEvent carries no default action, so dispatching one fires a demo's
+       handlers but inserts no text and moves no caret — it would look like
+       typing worked while the field stayed empty.
+
+       A quiet tap — one a page restore is replaying, before anyone has
+       looked at this board — asks for none of that: the frame must not take
+       the host's focus for a press the user never made. */
+    if (!quiet && f && (/^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName) || f.isContentEditable)) {
+      send({ type: 'canvas-input-focus' });
+    }
+    el.dispatchEvent(mouse('mousedown', 1));
+    el.dispatchEvent(pointer('pointerup', 0));
+    if (touch) el.dispatchEvent(touch('touchend', []));
+    el.dispatchEvent(mouse('mouseup', 0));
+    el.dispatchEvent(mouse('click', 0));
+    // Exactly the second of a run, as the platform does it: a third tap keeps
+    // counting up on the click's detail but fires no further dblclick.
+    if (detail === 2) el.dispatchEvent(mouse('dblclick', 0));
+  };
+
+  /* Shift is the escape hatch, and it is the HOST that drops the shield — but
+     once a field in here has been typed into, focus is in this document and the
+     host never sees the key. So it is reported from whichever side hears it. */
+  addEventListener('keydown', function (e) {
+    if (e.key === 'Shift') send({ type: 'canvas-input-shift', on: true });
+  }, true);
+  addEventListener('keyup', function (e) {
+    if (e.key === 'Shift') send({ type: 'canvas-input-shift', on: false });
+  }, true);
+  addEventListener('blur', function () { send({ type: 'canvas-input-shift', on: false }); });
+
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d) return;
+    if (d.type === 'canvas-input-hover') { hoverAt(d.x, d.y); return; }
+    if (d.type === 'canvas-input-hover-end') { hoverEnd(); return; }
+    if (d.type === 'canvas-input-tap') replay(d.x, d.y, d.pointerType || 'mouse', d.detail || 1, !!d.quiet);
+  });
+})()</script><script data-cv-page="1">(() => {
+  if (window.parent === window) return;
+  var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
+
+  /* The document's own hash, with the board's boot parameter taken out — a
+     document that never touched its hash must read as unchanged. */
+  var docHash = function () {
+    var h = (location.hash || '').replace(/^#/, '');
+    h = h.replace(/(^|&)cv-theme=(dark|light)(&|$)/, function (m, a, b, c) { return a && c ? '&' : ''; });
+    return h.replace(/(^|&)cv-page=1(&|$)/, function (m, a, c) { return a && c ? '&' : ''; });
+  };
+  var BOOT_HASH = docHash();
+
+  // ── The trail ─────────────────────────────────────────────────────────────
+  /* Every click, whoever made it: in edit mode the shield is down and these are
+     the author's own presses; in view mode they are the taps the input half
+     dispatches on the board's behalf. Both fire this capture-phase listener, so
+     the trail reads the same either way — and the clicks a replay itself makes
+     are skipped, since the trail they would duplicate is already loaded. */
+  var MAX = 60;   // a path this long is a session, not a destination
+  var trail = [];
+  var restoring = false;
+
+  /* A selector for the element a click landed on. Stops at the first id —
+     nothing above it can change what matches. */
+  var pathOf = function (el) {
+    var parts = [];
+    for (var n = el; n && n.nodeType === 1 && n !== document.documentElement; n = n.parentElement) {
+      if (n.id && /^[A-Za-z][-\w]*$/.test(n.id)) { parts.unshift('#' + n.id); break; }
+      var i = 1, s = n;
+      while ((s = s.previousElementSibling)) { if (s.tagName === n.tagName) i++; }
+      parts.unshift(n.tagName.toLowerCase() + ':nth-of-type(' + i + ')');
+    }
+    return parts.join('>');
+  };
+
+  addEventListener('click', function (e) {
+    if (restoring) return;
+    var el = e.target;
+    if (!el || el.nodeType !== 1) return;
+    if (trail.length >= MAX) trail.shift();
+    trail.push({ p: pathOf(el), x: Math.round(e.clientX), y: Math.round(e.clientY) });
+    checkMoved();
+  }, true);
+
+  /* ── Off the start state ────────────────────────────────────────────────
+     In view mode a visitor can drive a demo wherever they like, and the board
+     offers them a way back — but only once there is somewhere to come back
+     FROM, or the button is an affordance for nothing.
+
+     What counts as "moved" cannot be asked of the document directly: the whole
+     reason the trail tier exists is that a prototype keeps its screen out of
+     reach. So this compares a signature of the document against the one taken
+     when the board finished opening it — a routing hook's answer, the hash, and
+     what the document is SHOWING. Deliberately broad: it catches a screen change
+     without pretending to know what a screen is, and a visitor who merely opened
+     a disclosure has changed the document too — offering them the way back is no
+     worse for it.
+
+     The showing half is the body's markup, hashed, with the input half's hover
+     classes taken back out. Every part of that sentence was arrived at the hard
+     way:
+
+     The markup rather than the TEXT, because a prototype often switches screens
+     by class alone — the health app's drawer is in the DOM either way, shown by
+     a class on its wrapper — and a text signature sees nothing happen.
+
+     Hashed rather than MEASURED. Length collapses a document to one number and
+     two unrelated changes can cancel: on that same drawer, the content lost 14
+     characters while the hover class added exactly 14, and the signature came
+     back identical across a real navigation.
+
+     And the hover classes come out because the input half puts one on every
+     element under a replayed tap, to drive CSS :hover. Left in, the markup would
+     change on every click whether the document moved or not, and every click
+     would read as movement.
+
+     Sampled two frames after the click so the document has re-rendered and laid
+     out; a click that changes nothing leaves the signature alone and says
+     nothing. Announced once — the board only needs to be told to show it. */
+  var moved = false;
+  var HOVER_MIRROR = 'cv-hv'; // must match HOVER_CLASS in the input half
+  // djb2. Cheap enough to run on a click and no more.
+  var hashOf = function (str) {
+    var h = 5381;
+    for (var i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return h;
+  };
+  /* The hover mirror's class, and the empty attribute removing it can leave
+     behind, so markup carrying one hashes the same as markup that never did.
+     classList appends, so the token is last and takes its leading space with it. */
+  var unhover = function (html) {
+    return html
+      .split(' ' + HOVER_MIRROR).join('')
+      .split(HOVER_MIRROR).join('')
+      .split(' class=""').join('');
+  };
+  var stateSig = function () {
+    var hook = '';
+    try {
+      if (window.canvasPage && typeof window.canvasPage.get === 'function') hook = JSON.stringify(window.canvasPage.get());
+    } catch (err) { /* the document's own hook threw */ }
+    var markup = document.body ? unhover(document.body.innerHTML) : '';
+    return hook + '|' + docHash() + '|' + markup.length + ':' + hashOf(markup);
+  };
+  var announce = function () {
+    if (moved || restoring) return;
+    moved = true;
+    send({ type: 'canvas-page-moved' });
+  };
+  /* Did THIS press change anything?
+
+     The baseline is taken at the click, in the capture phase, before the
+     document's own handler has run — not once when the board finished opening
+     the document. A snapshot taken then goes stale on its own: a prototype that
+     is still settling (a late render, a scroll into place, a font landing) has
+     moved by the time the visitor touches it, and their first press would report
+     movement wherever they put it. Measured on the health app: a tap on inert
+     chrome announced a move it had not made.
+
+     Sampled again two frames later, and once more at 400ms for a document that
+     answers a press with something slower than a re-render. */
+  var checkMoved = function () {
+    if (moved || restoring) return;
+    var before = stateSig();
+    var probe = function () {
+      if (moved || restoring || stateSig() === before) return false;
+      announce();
+      return true;
+    };
+    raf2(function () { if (!probe()) setTimeout(probe, 400); });
+  };
+  /* A hash router has already moved by the time this fires, so there is nothing
+     to compare against — the change IS the event. */
+  addEventListener('hashchange', function () { announce(); });
+
+  // ── Describing the page ───────────────────────────────────────────────────
+  var capture = function () {
+    try {
+      if (window.canvasPage && typeof window.canvasPage.get === 'function') {
+        var v = window.canvasPage.get();
+        if (v !== undefined && v !== null) return { v: 1, hook: v };
+      }
+    } catch (err) { /* the document's own hook threw; fall through */ }
+    var h = docHash();
+    if (h !== BOOT_HASH) return { v: 1, hash: h };
+    if (trail.length) return { v: 1, taps: trail.slice() };
+    return null; // nothing happened here worth remembering
+  };
+
+  // ── Walking back to it ────────────────────────────────────────────────────
+  var veil = null;
+  var hide = function () {
+    if (veil) return;
+    veil = document.createElement('style');
+    veil.setAttribute('data-cv-page-veil', '');
+    /* Opacity, not visibility: a hidden document is not hit-testable, and the
+       replay finds what it is aiming at with elementFromPoint. Hiding it the
+       obvious way makes every tap in the trail land on nothing. */
+    veil.textContent = ':root{opacity:0!important}*{transition:none!important;animation:none!important}';
+    (document.head || document.documentElement).appendChild(veil);
+  };
+  var reveal = function () {
+    if (veil && veil.parentNode) veil.parentNode.removeChild(veil);
+    veil = null;
+  };
+  // Two frames: one for the document to re-render in, one for it to lay out in.
+  var raf2 = function (fn) { requestAnimationFrame(function () { requestAnimationFrame(fn); }); };
+
+  /* The board writes cv-page=1 into the boot hash when the node it is loading
+     has a saved page, and the veil goes up HERE — synchronously, at the end of
+     <head>, before the document has painted anything.
+
+     It cannot wait for the restore message. That arrives after the frame's load
+     event, which is several paints too late: the document has already shown the
+     screen it boots into, so what the user sees is that screen, then a blank,
+     then the saved one. Veiling on the flag means the boot screen is never
+     painted at all, and the first thing drawn is the right one.
+
+     The watchdog matters more here than anywhere else in this script: a veil
+     raised at boot with no restore behind it — an older host, a message that
+     never comes — would leave the document invisible for good. */
+  var bootTimer = 0;
+  var ready = function () { send({ type: 'canvas-page-ready' }); };
+  if (/(^|#|&)cv-page=1(&|$)/.test(location.hash || '')) {
+    hide();
+    bootTimer = setTimeout(function () { if (!restoring) { reveal(); ready(); } }, 3000);
+  }
+
+  /* One recorded click, replayed through the INPUT half's own tap path — so a
+     restored click is exactly the click a view-mode press produces: same
+     events, in the same order, with the same hover set up before them. Quiet,
+     because a tap that lands on a field must not pull the host's focus into a
+     frame nobody has touched yet. */
+  var tapAt = function (step) {
+    var el = null;
+    try { el = step.p ? document.querySelector(step.p) : null; } catch (err) { el = null; }
+    var x = step.x, y = step.y;
+    if (el) {
+      var r = el.getBoundingClientRect();
+      // A zero-sized match is a stale selector pointing at something the
+      // document has since collapsed: the recorded point is the better guess.
+      if (r.width || r.height) { x = r.left + r.width / 2; y = r.top + r.height / 2; }
+    }
+    postMessage({ type: 'canvas-input-tap', x: x, y: y, pointerType: 'mouse', detail: 1, quiet: true }, '*');
+  };
+
+  var replayTrail = function (steps, done) {
+    var i = 0;
+    var next = function () {
+      if (i >= steps.length) {
+        /* Each replayed tap hovers what it aims at, and the input half leaves
+           that hover standing until something moves off it — which here would
+           be a control sitting lit up on a board nobody has touched. Ending the
+           hover the same way a real pointer leaving does clears it. */
+        postMessage({ type: 'canvas-input-hover-end' }, '*');
+        return raf2(done);
+      }
+      tapAt(steps[i++]);
+      raf2(next);
+    };
+    next();
+  };
+
+  var restore = function (page) {
+    clearTimeout(bootTimer);
+    // Nothing to restore, but the veil may already be up on the boot flag.
+    if (!page) { reveal(); ready(); return; }
+    if (restoring) return;
+    restoring = true;
+    hide();
+    var settled = false;
+    var done = function () {
+      if (settled) return;
+      settled = true;
+      restoring = false;
+      reveal();
+      // The host paints a loading indicator over a node it knows is restoring;
+      // this is what takes it down.
+      ready();
+    };
+    // Whatever happens — a hook that throws, a selector that matches nothing, a
+    // document that never settles — the veil comes off.
+    var guard = setTimeout(done, 2500);
+    var finish = function () { clearTimeout(guard); done(); };
+    try {
+      if (page.hook !== undefined && window.canvasPage && typeof window.canvasPage.set === 'function') {
+        window.canvasPage.set(page.hook);
+        return void raf2(finish);
+      }
+      if (page.hash != null) {
+        if (('#' + page.hash) !== location.hash) location.hash = page.hash;
+        return void raf2(finish);
+      }
+      if (page.taps && page.taps.length) {
+        /* The restored path becomes this document's own trail, so a capture
+           taken after further navigation still describes the whole way from
+           boot rather than only what followed the restore. */
+        trail = page.taps.slice();
+        return void replayTrail(page.taps, finish);
+      }
+    } catch (err) { /* a document that threw is still a document to show */ }
+    finish();
+  };
+
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d) return;
+    if (d.type === 'canvas-page-get') { send({ type: 'canvas-page', page: capture() }); return; }
+    if (d.type === 'canvas-page-restore') restore(d.page);
+  });
+})()</script></head>
+<body>
+
+<div id="wall"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  let darkMode = false;
+  let iconDesign = "crescent";
+  let view = "timeline";        /* timeline | day */
+  let drawn = false;            /* the drawer */
+  const NOW = { day:2, at:15*60 + 10 };
+  let open = NOW.day;
+  let boxSide = "right";        /* left | right */
+  let markStyle = "tick";       /* tick | plus */
+  /* Three answers to "what about the days ahead", not two:
+       show  — everything, one continuous run
+       hide  — nothing past today
+       edge  — today, then a boundary that says what is coming and opens on request
+     The third is the interesting one: it makes looking ahead a deliberate act rather
+     than a setting, so the default screen stays about now without the future being
+     unreachable. */
+  let futureMode = "edge";      /* show | hide | edge */
+  let futureOpen = false;       /* the boundary has been crossed this session */
+  const showFuture = () => futureMode === "show" || (futureMode === "edge" && futureOpen);
+  let detail = null;            /* {d, i} while an event is open */
+  let calOpen = false;          /* the month, dropped from the title */
+  let loggedOpen = true;        /* is the logged group listed out, or folded up */
+  let tStamp = "head";          /* rail | slim | split | head | tag | above */
+
+  /* ═════════ colour ═════════ */
+  const toLin = c => { c/=255; return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
+  const toSrgb = c => {
+    const v = c<=0.0031308 ? c*12.92 : 1.055*Math.pow(c,1/2.4)-0.055;
+    return Math.round(Math.min(1,Math.max(0,v))*255);
+  };
+  function hexToLab(hex){
+    const n = parseInt(hex.slice(1),16);
+    const r = toLin((n>>16)&255), g = toLin((n>>8)&255), b = toLin(n&255);
+    const l = Math.cbrt(0.4122214708*r + 0.5363325363*g + 0.0514459929*b);
+    const m = Math.cbrt(0.2119034982*r + 0.6806995451*g + 0.1073969566*b);
+    const s = Math.cbrt(0.0883024619*r + 0.2817188376*g + 0.6299787005*b);
+    return [0.2104542553*l + 0.7936177850*m - 0.0040720468*s,
+            1.9779984951*l - 2.4285922050*m + 0.4505937099*s,
+            0.0259040371*l + 0.7827717662*m - 0.8086757660*s];
+  }
+  function labToHex(L,a,b){
+    const l = Math.pow(L + 0.3963377774*a + 0.2158037573*b, 3);
+    const m = Math.pow(L - 0.1055613458*a - 0.0638541728*b, 3);
+    const s = Math.pow(L - 0.0894841775*a - 1.2914855480*b, 3);
+    return "#" + ((1<<24)
+      + (toSrgb( 4.0767416621*l - 3.3077115913*m + 0.2309699292*s)<<16)
+      + (toSrgb(-1.2684380046*l + 2.6097574011*m - 0.3413193965*s)<<8)
+      + toSrgb(-0.0041960863*l - 0.7034186147*m + 1.7076147010*s)).toString(16).slice(1).toUpperCase();
+  }
+  const KEYS = [
+    [   0,"#5B5BD6"], [ 120,"#4C6BD8"], [ 180,"#4276D6"], [ 300,"#4A86DE"],
+    [ 342,"#C06E93"], [ 360,"#F0B429"], [ 600,"#F5A623"], [ 720,"#F79A1F"],
+    [ 840,"#F58220"], [1080,"#EE6C1F"], [1200,"#E8481F"], [1245,"#B03A6E"],
+    [1290,"#5B3A9E"], [1440,"#5B5BD6"]
+  ].map(([t,h]) => ({ t, lab:hexToLab(h) }));
+  function bodyColour(min){
+    const t = ((min % 1440) + 1440) % 1440;
+    let i = 0;
+    while (i < KEYS.length-2 && t >= KEYS[i+1].t) i++;
+    const a = KEYS[i], b = KEYS[i+1], u = (t - a.t) / (b.t - a.t);
+    return labToHex(...a.lab.map((v,k) => v + (b.lab[k] - v) * u));
+  }
+  function liftForDark(hex){
+    const [L,a,b] = hexToLab(hex);
+    const lift = Math.max(0, Math.min(0.34, 0.80 - L));
+    const k = 1 - 0.28 * (lift / 0.34);
+    return labToHex(Math.min(1, L + lift), a*k, b*k);
+  }
+  function timeInk(min){
+    const [ ,a,b] = hexToLab(bodyColour(min));
+    return labToHex(darkMode ? 0.72 : 0.47, a*0.9, b*0.9);
+  }
+
+  /* ═════════ the time-of-day mark ═════════ */
+  const smooth = x => x*x*(3-2*x);
+  const clamp01 = x => Math.max(0, Math.min(1, x));
+  const DAWN = 350, DUSK = 1195, HANDOVER = 110, THIN = 0.40 + 0.58*0.58;
+  let uid = 0;
+  const pt = (cx, cy, r, deg) => {
+    const a = deg * Math.PI/180;
+    return [cx + r*Math.sin(a), cy - r*Math.cos(a)];
+  };
+  function capPath(cx, cy, R, dir){
+    const [x0,y0] = pt(cx, cy, R, dir - 90), [x1,y1] = pt(cx, cy, R, dir + 90);
+    return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z`;
+  }
+  function phasePath(R, k){
+    const kk = Math.max(-0.985, Math.min(0.985, k));
+    const rx = Math.abs(kk) * R, sweep = kk >= 0 ? 0 : 1;
+    return `M0 ${(-R).toFixed(2)}A${R} ${R} 0 0 1 0 ${R.toFixed(2)}`
+         + `A${rx.toFixed(2)} ${R} 0 0 ${sweep} 0 ${(-R).toFixed(2)}Z`;
+  }
+  function dayness(min){
+    const t = ((min % 1440) + 1440) % 1440, h = HANDOVER/2;
+    if (t >= DAWN - h && t <= DAWN + h) return smooth((t - (DAWN - h)) / (2*h));
+    if (t >= DUSK - h && t <= DUSK + h) return 1 - smooth((t - (DUSK - h)) / (2*h));
+    return (t > DAWN && t < DUSK) ? 1 : 0;
+  }
+  function riseHeight(min){
+    const t = ((min % 1440) + 1440) % 1440;
+    const dayLen = DUSK - DAWN, nightLen = 1440 - dayLen;
+    const u = (t >= DAWN && t < DUSK) ? (t - DAWN)/dayLen
+            : ((t < DAWN ? t + 1440 : t) - DUSK)/nightLen;
+    return smooth(clamp01(Math.sin(Math.PI * u) * 1.85));
+  }
+  function sunmoon(min, cls){
+    const S = 32, c = S/2, R = 11, id = "p" + (++uid);
+    const body = darkMode ? liftForDark(bodyColour(min)) : bodyColour(min);
+    const theta = (((min/1440)*360 - 180) % 360 + 360) % 360;
+    let inner;
+    if (iconDesign === "terminator"){
+      inner = `<path d="${capPath(c,c,R,theta+180)}" fill="${body}" opacity="0.22"/>
+        <path d="${capPath(c,c,R,theta)}" fill="${body}"/>`;
+    } else if (iconDesign === "horizon"){
+      const r = R*0.46, y = c - R*(0.98*riseHeight(min) - 0.22);
+      const biteAmt = (1 - dayness(min)) * 0.62, biteR = r*0.88;
+      const off = r * (1.30 - 0.62*biteAmt);
+      const bites = biteAmt > 0.01 && off < (r + biteR - 0.4);
+      const a = 46*Math.PI/180;
+      const bx = c + off*Math.sin(a), by = y - off*Math.cos(a);
+      inner = `<defs><clipPath id="${id}c"><rect x="0" y="0" width="${S}" height="${c}"/></clipPath>
+        ${bites ? `<mask id="${id}m" maskUnits="userSpaceOnUse" x="0" y="0" width="${S}" height="${S}">
+          <circle cx="${c}" cy="${y.toFixed(2)}" r="${r.toFixed(2)}" fill="#fff"/>
+          <circle cx="${bx.toFixed(2)}" cy="${by.toFixed(2)}" r="${biteR.toFixed(2)}" fill="#000"/></mask>` : ``}
+        </defs>
+        <g clip-path="url(#${id}c)"><g ${bites ? `mask="url(#${id}m)"` : ``}>
+          <circle cx="${c}" cy="${y.toFixed(2)}" r="${r.toFixed(2)}" fill="${body}"/></g></g>
+        <path d="M${c-R} ${c}A${R} ${R} 0 0 0 ${c+R} ${c}Z" fill="${body}" opacity="0.36"/>`;
+    } else {
+      const elev = Math.cos(theta*Math.PI/180);
+      const k = elev >= 0 ? elev : elev*THIN;
+      inner = `<circle cx="${c}" cy="${c}" r="${R}" fill="${body}" opacity="0.22"/>
+        <path d="${phasePath(R,k)}" fill="${body}"
+              transform="translate(${c} ${c}) rotate(${(theta-90).toFixed(1)})"/>`;
+    }
+    return `<svg class="phase ${cls||""}" viewBox="0 0 ${S} ${S}" aria-hidden="true">${inner}</svg>`;
+  }
+
+  /* ═════════ glyphs ═════════ */
+  const TICK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.6 8.4 6.5 11.3 12.4 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const PLUS = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.6v8.8M3.6 8h8.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const CHEV = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 9.5l3-3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const CLOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.5V8.2l2.5 1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const NAV = {
+    menu:'<path d="M3 6.5h18M3 12h18M3 17.5h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    more:'<circle cx="12" cy="5.4" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="18.6" r="1.9" fill="currentColor"/>',
+    back:'<path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+    chev:'<path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+    today:'<rect x="3.5" y="4.8" width="17" height="15.7" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/>'
+        + '<path d="M3.5 9.4h17M8 2.8v3.6M16 2.8v3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
+        + '<circle cx="12" cy="14.6" r="1.9" fill="currentColor"/>',
+    line:'<path d="M4 6h16M4 12h10M4 18h13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+    grid:'<rect x="3.5" y="4.5" width="17" height="16" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3.5 9.5h17M8.5 2.8v3.4M15.5 2.8v3.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+    pill:'<rect x="2.6" y="8.4" width="18.8" height="7.2" rx="3.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 8.4v7.2" stroke="currentColor" stroke-width="1.9"/>',
+    chart:'<path d="M4 20V9M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+    cog:'<circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 2.8v2.6M12 18.6v2.6M21.2 12h-2.6M5.4 12H2.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8M18.5 18.5l-1.8-1.8M7.3 7.3 5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>'
+  };
+  const SHAPE = {
+    green:'<rect x="0.5" y="4" width="15" height="8" rx="4" fill="#79C795"/>',
+    blue:'<rect x="0.5" y="4" width="15" height="8" rx="4" fill="#8AB4E4"/>',
+    purple:'<rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.6" fill="#AE96DF"/>',
+    pink:'<path d="M8 0.8 15.2 8 8 15.2 0.8 8z" fill="#E48CA3"/>',
+    amber:'<rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.6" fill="#EDBB5C"/>',
+    grey:'<circle cx="8" cy="8" r="7" fill="#B3C0D6"/>',
+    bp:'<rect x="0.8" y="2.2" width="14.4" height="11.6" rx="2.8" fill="none" stroke="#8A919E" stroke-width="1.5"/><path d="M3.4 9.9 6 7l2.2 2.4 2.1-3.3 2.4 3.6" fill="none" stroke="#8A919E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+    note:'<path d="M3.4 1.9h9.2v12.2H3.4z" fill="none" stroke="#8A919E" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.8 5.6h4.4M5.8 8.2h4.4M5.8 10.8h2.6" stroke="#8A919E" stroke-width="1.5" stroke-linecap="round"/>'
+  };
+  const glyph = k => SHAPE[k] ? `<svg class="gl" viewBox="0 0 16 16" aria-hidden="true">${SHAPE[k]}</svg>` : "";
+  const s24 = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+  const fmt = m => String(Math.floor(m/60)).padStart(2,"0") + ":" + String(m%60).padStart(2,"0");
+  /* a moment's routine is whatever its events agree it is */
+  const routineOf = m => (m.rows.find(x => x.e.routine) || {}).e?.routine || "";
+  const toMin = t => { const [h,m] = t.split(":").map(Number); return h*60 + m; };
+
+  /* ═════════ one set of days, read two ways ═════════ */
+  /* A month laid out so the 16th falls on a Saturday, matching the days below. Only the
+     dates the timeline actually holds can be tapped; the rest are shown so the month
+     still reads as a month. */
+  const MONTH = { label:"August 2026", days:31, firstDow:4 };   /* 0 = Monday */
+  const DOW = ["M","T","W","T","F","S","S"];
+  const dayIndexFor = date => DAYS.findIndex(d => +d.label.split(" ")[1] === date);
+
+  const WEEK = [
+    { dow:"Sat", dom:16 }, { dow:"Sun", dom:17 }, { dow:"Mon", dom:18 },
+    { dow:"Tue", dom:19 }, { dow:"Wed", dom:20 }, { dow:"Thu", dom:21 }, { dow:"Fri", dom:22 }
+  ];
+  /* the standing facts about each medicine, which the timeline itself does not carry */
+  const DRUGS = {
+    "Metformin":    { dose:"500 mg", form:"tablet", freq:"twice a day", food:"with food", supply:"56 left" },
+    "Ramipril":     { dose:"2.5 mg", form:"tablet", freq:"every day",   supply:"28 left" },
+    "Atorvastatin": { dose:"20 mg",  form:"tablet", freq:"every day",   food:"at bedtime", supply:"84 left" },
+    "Furosemide":   { dose:"20 mg",  form:"tablet", freq:"every day",   supply:"30 left" },
+    "Vitamin D":    { dose:"1000 IU", form:"capsule", freq:"every day",  supply:"90 left" }
+  };
+
+  const DAYS = [
+    { label:"Sat 16", events:[
+      { name:"Metformin", at:8*60, shape:"green", logged:"08:31", routine:"With breakfast" },
+      { name:"Ramipril", at:8*60, shape:"blue", logged:"08:31", routine:"With breakfast" },
+      { name:"Metformin", at:19*60, shape:"green", logged:"19:02", routine:"With dinner" },
+      { name:"Atorvastatin", at:22*60, shape:"purple", logged:"22:40", routine:"Before bed" }
+    ]},
+    { label:"Sun 17", events:[
+      { name:"Weight", at:7*60+10, shape:"grey", value:"78.2 kg", logged:"07:12" },
+      { name:"Metformin", at:8*60, shape:"green", logged:"08:15", routine:"With breakfast" },
+      { name:"Ramipril", at:8*60, shape:"blue", logged:"08:15", routine:"With breakfast" },
+      { name:"Metformin", at:19*60, shape:"green", logged:null, routine:"With dinner" },
+      { name:"Atorvastatin", at:22*60, shape:"purple", logged:"22:05", routine:"Before bed" }
+    ]},
+    { label:"Mon 18", events:[
+      { name:"Metformin", at:7*60+30, shape:"green", logged:"07:32", routine:"With breakfast" },
+      { name:"Ramipril", at:7*60+30, shape:"blue", logged:"07:32", routine:"With breakfast" },
+      { name:"Blood pressure", at:9*60+15, shape:"bp", value:"132/84", logged:"09:18" },
+      { name:"Felt lightheaded standing up", at:12*60+40, shape:"note", kind:"note" },
+      { name:"Metformin", at:13*60, shape:"green", logged:null, routine:"With lunch" },
+      { name:"Metformin", at:18*60+30, shape:"green", logged:null, routine:"With dinner" },
+      { name:"Blood pressure", at:19*60, shape:"bp", logged:null },
+      { name:"Atorvastatin", at:22*60, shape:"purple", logged:null, routine:"Before bed" },
+      { name:"Furosemide", at:22*60, shape:"pink", logged:null, routine:"Before bed" }
+    ]},
+    { label:"Tue 19", events:[
+      { name:"Metformin", at:7*60+30, shape:"green", logged:null, routine:"With breakfast" },
+      { name:"Ramipril", at:7*60+30, shape:"blue", logged:null, routine:"With breakfast" },
+      { name:"Metformin", at:18*60+30, shape:"green", logged:null, routine:"With dinner" }
+    ]},
+    { label:"Wed 20", events:[] },
+    { label:"Thu 21", events:[
+      { name:"Eye test", at:11*60, shape:"grey", logged:null }
+    ]},
+    { label:"Fri 22", events:[
+      { name:"Metformin", at:7*60+30, shape:"green", logged:null, routine:"With breakfast" }
+    ]}
+  ];
+
+  const isPast = (d, e) => d < NOW.day || (d === NOW.day && e.at < NOW.at);
+  const state = (d, e) => e.kind === "note" || e.logged ? "done" : isPast(d, e) ? "late" : "next";
+
+  /* ═════════ rows and cards, shared by both views ═════════ */
+  function row(e, d, i, bare){
+    const k = state(d, e);
+    /* A ring waiting to be ticked shows nothing until you reach for it; a ring offering
+       to add shows its plus, because a plus is an invitation rather than a state. Either
+       way a logged one shows the tick — that part is a fact, not an affordance. */
+    const plus = markStyle === "plus";
+    const mark = e.kind === "note"
+      ? `<span class="box mark" aria-hidden="true"></span>`
+      : k === "done"
+        ? `<button class="box on" data-un="${d}:${i}" aria-label="${e.name}, logged — tap to undo">${TICK}</button>`
+        : `<button class="box${k === "late" ? " late" : ""}${plus ? " plus" : ""}" data-log="${d}:${i}"
+             aria-label="Log ${e.name}${k === "late" ? ", overdue" : ""}">${plus ? PLUS : TICK}</button>`;
+    const right = e.value ? `<span class="val">${e.value}</span>` : "";
+    const name = `<h4 class="name">${e.name}${glyph(e.shape)}</h4>`;
+    /* one row builder for both views, so the side is set in a single place */
+    if (bare) return `<button class="entry" data-open="${d}:${i}"
+      aria-label="${e.name}, open">${name}${right}</button>`;
+    return boxSide === "right"
+      ? `<div class="entry">${name}${right}${mark}</div>`
+      : `<div class="entry">${mark}${name}${right}</div>`;
+  }
+
+  /* The mark that governs a whole moment. Both views use it now: everything at one time
+     is taken together, so one ring stands for the lot. */
+  function momentMark(rows, di){
+    const act = rows.filter(x => x.e.kind !== "note");
+    if (!act.length) return `<span class="box mark" aria-hidden="true"></span>`;
+    const ids = `${di}:${act.map(x => x.i).join(",")}`;
+    const allDone = act.every(x => state(di, x.e) === "done");
+    const anyLate = act.some(x => state(di, x.e) === "late");
+    const plus = markStyle === "plus" && !allDone;
+    const label = `${allDone ? "Undo" : "Log"} ${act.length} item${act.length > 1 ? "s" : ""}`;
+    return allDone
+      ? `<button class="box on" data-unall="${ids}" aria-label="${label}">${TICK}</button>`
+      : `<button class="box${anyLate ? " late" : ""}${plus ? " plus" : ""}"
+           data-logall="${ids}" aria-label="${label}">${plus ? PLUS : TICK}</button>`;
+  }
+
+  /* group a list into the moments it happened at */
+  function moments(list, useLogged){
+    const out = [];
+    list.slice().sort((a,b) => (useLogged ? a.key : a.e.at) - (useLogged ? b.key : b.e.at))
+      .forEach(x => {
+        const at = useLogged ? x.key : x.e.at;
+        const last = out[out.length-1];
+        if (last && last.at === at) last.rows.push(x);
+        else out.push({ at, rows:[x] });
+      });
+    return out;
+  }
+
+  /* ═════════ view one: the timeline ═════════ */
+  function timelineView(){
+    const out = [];
+    DAYS.forEach((d, di) => {
+      /* with the future hidden the timeline ends at today, so the now line is the end of
+         the scroll rather than a marker part way down it */
+      if (!showFuture() && di > NOW.day) return;
+      const rows = d.events.map((e,i) => ({ e, i, d:di, key:e.logged ? toMin(e.logged) : e.at }));
+      const past = rows.filter(x => isPast(di, x.e));
+      const soon = rows.filter(x => !isPast(di, x.e));
+
+      const periods = list => moments(list, false).map(m => {
+        /* one card per moment, as the day view does it: everything at this time is one
+           object. It only counts as logged when all of it is — a moment holding one
+           taken dose and one still outstanding is not a settled thing. */
+        const allDone = m.rows.every(x => state(di, x.e) === "done");
+        const mark = sunmoon(m.at);
+        /* the stamp names the occasion when the moment has one, and falls back to the
+           clock when it does not — one slot, not a time and a label side by side */
+        const stamp = routineOf(m) || fmt(m.at);
+        const when = `<span class="whentime${routineOf(m) ? " named" : ""}"
+          style="color:${timeInk(m.at)}">${stamp}</span>`;
+        const body = m.rows.map(x => row(x.e, di, x.i, true)).join("");
+        const ring = momentMark(m.rows, di);
+        const hasRail = tStamp === "rail" || tStamp === "slim" || tStamp === "split";
+        const railed = tStamp === "rail" || tStamp === "slim";
+
+        /* out in a column of its own, or in at the head of the card it describes */
+        /* Railed, the rail holds the time and the card is left to name the routine; with
+           the stamp inside, the two sit together on one line. */
+        /* Split keeps the mark out on the rail — where it reads as the hour of the day,
+           beside the card rather than in it — and brings only the time inside, where it
+           sits with the routine as the card's own heading. */
+        /* whatever names the moment also carries its mark; on the left it leads, on the
+           right it is pushed to the end of that line */
+        const lay = inner => boxSide === "right"
+          ? `${inner}<span class="grow"></span>${ring}`
+          : `${ring}${inner}`;
+
+        const head = tStamp === "above"
+          ? ``
+          : tStamp === "split"
+            ? `<div class="cardhead">${lay(when)}</div>`
+            : tStamp === "tag"
+              ? `<div class="cardhead">${lay(`<span class="whentag">${mark}${when}</span>`)}</div>`
+              : `<div class="cardhead">${lay(`${mark}${when}`)}</div>`;
+        /* The timeline has no group to say it, so a card that is late says so itself —
+           the day view leaves this out because its Overdue heading already has. */
+        const anyLate = m.rows.some(x => state(di, x.e) === "late");
+        const late = anyLate ? `<div class="latebar">${CLOCK}<span>Overdue</span></div>` : ``;
+        /* With the stamp out on the rail there is no heading line for the mark to sit on,
+           and a lone ring on an otherwise empty row has nothing to align to. A railed card
+           gives it a column instead, level with the top of what it governs; the routine,
+           when there is one, heads the contents beside it. */
+        if (railed){
+          return `<section class="period${tStamp === "slim" ? " slim" : ""}">
+            <aside class="rail${allDone ? " done" : ""}">${mark}${when}</aside>
+            <div class="stack"><div class="card marked${allDone ? " logged" : ""}">${late}
+              <span class="ringcol">${ring}</span>
+              <div class="cardbody">${body}</div>
+            </div></div>
+          </section>`;
+        }
+
+        const card = `<div class="card${allDone ? " logged" : ""}">${late}${head}${body}</div>`;
+
+        if (hasRail)
+          return `<section class="period split">
+              <aside class="rail${allDone ? " done" : ""}">${mark}</aside>
+              <div class="stack">${card}</div>
+            </section>`;
+
+        /* the stamp sits on top of the card rather than inside it — the card holds only
+           the things, and what time they belong to is said just above it */
+        if (tStamp === "above")
+          return `<section class="period solo"><div class="stack wide">
+            <div class="whenrow${allDone ? " done" : ""}">${lay(`${mark}${when}`)}</div>${card}</div></section>`;
+
+        return `<section class="period solo"><div class="stack wide">${card}</div></section>`;
+      }).join("");
+
+      const inner = [`<div class="daychip" data-daymark="${di}"><span>${d.label}</span></div>`];
+      if (past.length) inner.push(`<div class="past${di === NOW.day ? " ends" : ""}">${periods(past)}</div>`);
+      if (di === NOW.day) inner.push(`<div class="nowedge" role="separator" aria-label="Now, ${fmt(NOW.at)}">
+        <div class="bar"><span class="dot"></span><span class="line"></span></div></div>`);
+      inner.push(periods(soon));
+      /* An empty day is still a day. Skipping it left a hole the calendar could jump to
+         and land nowhere, and made the run of days lie about which ones exist. */
+      if (!d.events.length)
+        inner.push(`<div class="empty"><p>Nothing scheduled</p></div>`);
+      /* Each day wraps its own contents so its chip sticks within that day and is pushed
+         off by the next one, rather than every chip pinning to the same spot. */
+      out.push(`<div class="day">${inner.join("")}</div>`);
+    });
+    /* Room after the last day, so the now line can be brought up to where it parks. With
+       the future hidden the line is the end of the content, and without this there is
+       nothing to scroll into — the line can never leave the bottom of the screen. */
+    out.push(comingBar());
+    out.push(`<div class="tail"></div>`);
+    return out.join("");
+  }
+
+  /* ═════════ view two: a day at a time ═════════ */
+  function dayView(){
+    const d = DAYS[open];
+    const rows = d.events.map((e,i) => ({ e, i, d:open, key:e.logged ? toMin(e.logged) : e.at }));
+    const late = rows.filter(x => state(open, x.e) === "late");
+    const next = rows.filter(x => state(open, x.e) === "next");
+    const done = rows.filter(x => state(open, x.e) === "done");
+
+    const block = (title, cls, list, useLogged, logged) => {
+      if (!list.length) return "";
+      return `<section class="group">
+        <div class="ghead ${cls}">${title}<span class="n">${list.length}</span>${
+          logged ? `<button class="hide" data-collapse>Hide</button>` : ``}</div>
+        ${moments(list, useLogged).map(m => {
+          const mark = momentMark(m.rows, open);
+
+          const rt = routineOf(m);
+          const when = `${sunmoon(m.at)}<span class="whentime${rt ? " named" : ""}"
+            style="color:${timeInk(m.at)}">${rt || fmt(m.at)}</span>`;
+          const headRow = boxSide === "right"
+            ? `${when}<span class="grow"></span>${mark}`
+            : `${mark}${when}`;
+
+          if (tStamp === "above")
+            return `<div class="abovewrap">
+              <div class="whenrow${logged ? " done" : ""}">${headRow}</div>
+              <div class="card${logged ? " logged" : ""}">${
+                m.rows.map(x => row(x.e, open, x.i, true)).join("")}</div>
+            </div>`;
+
+          return `<div class="card${logged ? " logged" : ""}">
+            <div class="cardhead">${headRow}</div>
+            ${m.rows.map(x => row(x.e, open, x.i, true)).join("")}
+          </div>`;
+        }).join("")}
+      </section>`;
+    };
+
+    return `<div class="dayview" style="padding:6px 0 40px">
+        ${block("Overdue", "late", late, false, false)}
+        ${block("Scheduled", "next", next, false, false)}
+        ${done.length && !loggedOpen ? foldedLogged(done) : block("Logged", "done", done, true, true)}
+        ${rows.length ? `` : `<div class="empty"><p>Nothing scheduled</p></div>`}
+      </div>`;
+  }
+
+  /* Folded, the logged group is one line: how many, what they were, and a way in. What
+     is done is the least urgent thing on the screen, so it can be the smallest. */
+  function foldedLogged(list){
+    const shapes = [...new Set(list.map(x => x.e.shape))].slice(0, 5).map(k => glyph(k)).join("");
+    return `<section class="group">
+      <div class="ghead">Logged<span class="n">${list.length}</span></div>
+      <button class="folded" data-expand aria-expanded="false">
+        <span class="fold-t">${list.length} logged</span>
+        <span class="fold-s">${shapes}</span>
+        <span class="chev">${CHEV}</span>
+      </button>
+    </section>`;
+  }
+
+  /* the days after today that actually hold anything */
+  function ahead(){
+    return DAYS.map((d, di) => ({ d, di }))
+      .filter(x => x.di > NOW.day && x.d.events.length);
+  }
+
+  const MINUS = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.6 8h8.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
+  function comingBar(){
+    const rest = ahead();
+    if (futureMode !== "edge" || !rest.length) return "";
+    /* Both labels are noun phrases naming what you get, so the two states read as one
+       control rather than a section heading on one side and a command on the other. */
+    return futureOpen
+      ? `<button class="coming" data-fold-future aria-expanded="true">
+          <span class="coming-t">Fewer days</span>${MINUS}</button>`
+      : `<button class="coming" data-open-future aria-expanded="false">
+          <span class="coming-t">Coming up</span>${PLUS}</button>`;
+  }
+
+  function calendar(){
+    const cells = [];
+    for (let i = 0; i < MONTH.firstDow; i++) cells.push(`<span class="cell pad"></span>`);
+    for (let date = 1; date <= MONTH.days; date++){
+      const di = dayIndexFor(date);
+      const has = di >= 0 && (showFuture() || futureMode === "edge" || di <= NOW.day);
+      const late = has && DAYS[di].events.some(e => state(di, e) === "late");
+      const isToday = has && di === NOW.day;
+      const isOpen = has && di === open && view === "day";
+      cells.push(has
+        ? `<button class="cell${isOpen ? " on" : ""}${isToday ? " today" : ""}" data-jump="${di}"
+             aria-label="${DAYS[di].label}${late ? ", has something overdue" : ""}">
+             ${date}<i class="${late ? "" : "void"}"></i></button>`
+        : `<span class="cell off">${date}<i class="void"></i></span>`);
+    }
+    return `<section class="cal" aria-label="Choose a day">
+      <header class="calhead">
+        <span class="calmonth">${MONTH.label}</span>
+        <span class="calnav">
+          <button class="navicon sm" aria-label="Previous month" disabled>${s24(NAV.chev)}</button>
+          <button class="navicon sm" aria-label="Next month" disabled>${s24(NAV.chev)}</button>
+        </span>
+      </header>
+      <div class="calgrid dows">${DOW.map(d => `<span class="dow">${d}</span>`).join("")}</div>
+      <div class="calgrid">${cells.join("")}</div>
+    </section>`;
+  }
+
+  /* ═════════ the shell ═════════ */
+  /* Named the way a calendar names its views: single nouns for the shape of the thing,
+     sitting above the divider with the real destinations below. "Schedule" is avoided on
+     purpose — the other view already has a Scheduled group, and the two would mean
+     different things a few pixels apart. */
+  const DEST = [
+    { key:"timeline", label:"Timeline", icon:"line" },
+    { key:"day",      label:"Day",      icon:"grid" }
+  ];
+  const REST = [
+    { label:"Medicines", icon:"pill" },
+    { label:"History",   icon:"chart" },
+    { label:"Settings",  icon:"cog" }
+  ];
+
+  function drawer(){
+    return `<div class="scrim js-close"></div>
+      <nav class="drawer" aria-label="Main navigation" ${drawn ? "" : `aria-hidden="true"`}>
+        <p class="dtitle">Health</p>
+        ${DEST.map(x => `<button class="ditem${view === x.key ? " on" : ""}" data-view="${x.key}"
+            ${view === x.key ? `aria-current="page"` : ``}>${s24(NAV[x.icon])}${x.label}</button>`).join("")}
+        <div class="dsplit"></div>
+        ${REST.map(x => `<button class="ditem off" disabled>${s24(NAV[x.icon])}${x.label}</button>`).join("")}
+      </nav>`;
+  }
+
+  /* Both views name the day they are showing. The day view knows it outright; the
+     timeline has to work it out from where it has been scrolled to. */
+  const titleFor = () => open === NOW.day ? "Today" : DAYS[open].label;
+
+  /* Which day the timeline is currently over — the last one whose marker has passed
+     under the app bar. Updated in place rather than by redrawing, since redrawing
+     mid-scroll would fight the scroll it is reacting to. */
+  function spyTimeline(){
+    const body = document.querySelector(".body");
+    if (!body) return;
+    const bar = document.querySelector(".appbar");
+    const line = (bar ? bar.offsetHeight : 64) + 8;
+    const top = body.getBoundingClientRect().top;
+    let cur = null;
+    document.querySelectorAll("[data-daymark]").forEach(el => {
+      if (el.getBoundingClientRect().top - top <= line) cur = +el.dataset.daymark;
+    });
+    if (cur === null) return;
+    open = cur;
+    const label = document.querySelector(".titlebtn span");
+    if (label) label.textContent = titleFor();
+  }
+
+  /* Size the run-out so the now line can reach its parked position: whatever the screen
+     has left once the content below the line is accounted for. */
+  function sizeTail(){
+    if (view !== "timeline") return;
+    const body = document.querySelector(".body");
+    const mark = document.querySelector(".nowedge");
+    const tail = document.querySelector(".tail");
+    const bar  = document.querySelector(".appbar");
+    if (!body || !mark || !tail) return;
+    tail.style.height = "0px";
+    const barH = bar ? bar.offsetHeight : 64;
+    const top = body.getBoundingClientRect().top;
+    const offsetOf = el => el.getBoundingClientRect().top - top + body.scrollTop;
+    const H = body.scrollHeight;
+
+    /* Two things have to be able to reach the top of the screen: the now line, where the
+       timeline parks, and the last day, which the calendar can jump to. Sizing only for
+       the now line left the final day unable to scroll up far enough — so it never
+       crossed the line the title watches, and the bar kept naming the day before it. */
+    let need = body.clientHeight - (barH + 18) - (H - offsetOf(mark));
+    const marks = document.querySelectorAll("[data-daymark]");
+    const last = marks[marks.length - 1];
+    if (last) need = Math.max(need, body.clientHeight - barH - (H - offsetOf(last)));
+
+    tail.style.height = Math.max(0, need) + "px";
+  }
+
+  /* Put a day at the top of the timeline. Today is special: its meaningful position is
+     the now line rather than the start of the day, which is where it parks on load. */
+  function scrollTimelineTo(di, animate){
+    const body = document.querySelector(".body");
+    const bar  = document.querySelector(".appbar");
+    if (!body) return;
+    const barH = bar ? bar.offsetHeight : 64;
+    const anchor = di === NOW.day
+      ? document.querySelector(".nowedge")
+      : document.querySelector(`[data-daymark="${di}"]`);
+    if (!anchor) return;
+    const inset = di === NOW.day ? barH + 18 : barH;
+    const y = anchor.getBoundingClientRect().top - body.getBoundingClientRect().top
+            + body.scrollTop - inset;
+    if (animate && body.scrollTo) body.scrollTo({ top:Math.max(0, y), behavior:"smooth" });
+    else body.scrollTop = Math.max(0, y);
+    open = di;
+    const label = document.querySelector(".titlebtn span");
+    if (label) label.textContent = titleFor();
+  }
+
+  function watchTimeline(){
+    if (view !== "timeline") return;
+    const body = document.querySelector(".body");
+    if (!body || !body.addEventListener) return;
+    let queued = false;
+    body.addEventListener("scroll", () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; spyTimeline(); });
+    }, { passive:true });
+    spyTimeline();
+  }
+
+  /* ═════════ the detail page ═════════
+     Everything on it is derived from the same DAYS the two views read, so the history is
+     the real history — the days this medicine was taken, and the days it was missed. */
+  function historyOf(name){
+    const out = [];
+    /* A dose that has not come due yet is not history — it would read as a gap in the
+       record when nothing has gone wrong. Walk back from today taking only what has
+       actually happened or has actually been missed. */
+    for (let di = NOW.day; di >= 0 && out.length < 5; di--){
+      DAYS[di].events.forEach(e => {
+        if (e.name !== name || e.kind === "note") return;
+        const past = di < NOW.day || e.at < NOW.at;
+        if (!e.logged && !past) return;
+        out.push({
+          day: di === NOW.day ? "Today" : DAYS[di].label,
+          at: e.logged || `overdue · ${fmt(e.at)}`,
+          value: e.value || "",
+          done: !!e.logged
+        });
+      });
+    }
+    return out.slice(0, 5);
+  }
+
+  function detailView(){
+    const { d, i } = detail;
+    const e = DAYS[d].events[i];
+    const k = state(d, e);
+    const drug = DRUGS[e.name];
+    const isReading = !drug && e.kind !== "note";
+
+    const sub = drug
+      ? [drug.dose, routineOfEvent(d, i)].filter(Boolean).join(" · ")
+      : e.value ? `Last reading ${e.value}` : "";
+
+    const chips = drug
+      ? [drug.dose, drug.form, drug.freq, drug.food].filter(Boolean)
+          .map(x => `<span class="chip">${x}</span>`).join("")
+      : "";
+
+    const log = historyOf(e.name);
+
+    return `<div class="body">
+      <header class="appbar">
+        <button class="navicon js-back" aria-label="Go back">${s24(NAV.back)}</button>
+        <h1 class="bartitle">${drug ? "Medication" : isReading ? "Reading" : "Note"}</h1>
+        <button class="navicon" aria-label="More options">${s24(NAV.more)}</button>
+      </header>
+
+      <div class="dhead">
+        <h2 class="dname">${e.name}${glyph(e.shape)}</h2>
+        ${sub ? `<p class="dsubt">${sub}</p>` : ``}
+      </div>
+
+
+      ${chips ? `<section class="panel"><h3>Directions</h3><div class="chips">${chips}</div></section>` : ``}
+      ${drug && drug.supply ? `<section class="panel"><h3>Supply</h3>
+        <div class="chips"><span class="chip">${drug.supply}</span></div></section>` : ``}
+
+      ${log.length ? `<section class="panel">
+        <h3>${isReading ? "Recent readings" : "Recent doses"}</h3>
+        ${log.map(h => `<div class="log-row">
+          <span class="log-mark${h.done ? "" : " late"}">${h.done ? TICK : CLOCK}</span>
+          <span class="log-when">${h.day}</span>
+          ${h.value ? `<span class="log-val">${h.value}</span>` : ``}
+          <span class="log-val${h.done ? "" : " late"}">${h.at}</span>
+        </div>`).join("")}
+      </section>` : ``}
+
+      <div style="height:30px"></div>
+    </div>`;
+  }
+
+  /* the routine a given event belongs to, read back off its moment */
+  function routineOfEvent(d, i){
+    const e = DAYS[d].events[i];
+    return e.routine || "";
+  }
+
+  function shell(){
+    if (detail) return detailView() + drawer();
+    const title = titleFor();
+    return `<div class="body">
+        <header class="appbar">
+          <button class="navicon js-menu" aria-label="Open navigation menu"
+                  aria-expanded="${drawn}">${s24(NAV.menu)}</button>
+          <button class="titlebtn js-cal" aria-expanded="${calOpen}"
+                  aria-label="${title} — choose a day">
+            <span>${title}</span>${s24(NAV.chev)}
+          </button>
+          <span class="grow"></span>
+          <button class="navicon js-now" aria-label="Back to now">${s24(NAV.today)}</button>
+          <button class="navicon" aria-label="More options">${s24(NAV.more)}</button>
+        </header>
+        ${calOpen ? calendar() : ``}
+        ${view === "timeline" ? timelineView() : dayView()}
+      </div>
+      ${drawer()}`;
+  }
+
+  const wall = document.getElementById("wall");
+  let drawnView = null;
+
+  /* Rendering replaces the scroller, so its position has to be carried across by hand.
+     Without this, anything that redraws — opening the drawer, ticking a dose, changing a
+     setting — silently returns the timeline to the top, and the day spy then reports
+     whatever is up there rather than the day the user was actually on. */
+  const draw = () => {
+    const old = document.querySelector(".body");
+    const keepScroll = (old && drawnView === view) ? old.scrollTop : null;
+
+    wall.innerHTML = `<div class="phone${darkMode ? " dark" : ""}${drawn ? " drawn" : ""}${
+      boxSide === "right" ? " right-box" : ""}">${shell()}</div>`;
+    drawnView = view;
+
+    sizeTail();
+    if (keepScroll){
+      const body = document.querySelector(".body");
+      if (body) body.scrollTop = keepScroll;
+    }
+    watchTimeline();
+  };
+
+  wall.addEventListener("click", e => {
+    const openEvt = e.target.closest("[data-open]");
+    if (openEvt){
+      const [d, i] = openEvt.dataset.open.split(":").map(Number);
+      detail = { d, i };
+      return draw();
+    }
+    if (e.target.closest(".js-back")){ detail = null; return draw(); }
+
+    if (e.target.closest(".js-menu")){ drawn = true; return draw(); }
+    if (e.target.closest(".js-cal")){ calOpen = !calOpen; return draw(); }
+    if (e.target.closest("[data-open-future]")){ futureOpen = true; return draw(); }
+    if (e.target.closest("[data-fold-future]")){ futureOpen = false; return draw(); }
+
+    /* One tap means "take me to this day", which the two views answer differently:
+       the day view opens it, the timeline scrolls to where it begins. */
+    const jump = e.target.closest("[data-jump]");
+    if (jump){
+      const di = +jump.dataset.jump;
+      /* asking for a day that is currently behind the boundary is asking to cross it */
+      if (di > NOW.day && futureMode === "edge") futureOpen = true;
+      open = di; calOpen = false; draw();
+      if (view === "timeline") scrollTimelineTo(di, true);
+      return;
+    }
+
+    /* "Now" means two different things: in the day view it is a day, and in the timeline
+       it is a place on a long scroll. Same button, same intent, different mechanism. */
+    if (e.target.closest(".js-now")){
+      if (view === "day"){ open = NOW.day; return draw(); }
+      /* through the same helper the calendar and the view switch use, so the title is
+         renamed at once rather than waiting for the smooth scroll to fire its events */
+      scrollTimelineTo(NOW.day, true);
+      return;
+    }
+    if (e.target.closest(".js-close")){ drawn = false; return draw(); }
+
+    const dest = e.target.closest("[data-view]");
+    if (dest){
+      /* The day survives the switch. Going to the timeline it has to be scrolled to,
+         since the timeline holds every day at once and would otherwise open at the top
+         — and the spy would then rename the title to whatever that first day is. */
+      const keep = open;
+      view = dest.dataset.view;
+      drawn = false;
+      draw();
+      if (view === "timeline") scrollTimelineTo(keep, false);
+      else { open = keep; draw(); }
+      return;
+    }
+
+    const day = e.target.closest("[data-day]");
+    if (day){ open = +day.dataset.day; return draw(); }
+
+    if (e.target.closest("[data-expand]")){ loggedOpen = true; return draw(); }
+    if (e.target.closest("[data-collapse]")){ loggedOpen = false; return draw(); }
+
+    const all = e.target.closest("[data-logall]");
+    if (all){
+      const [d, list] = all.dataset.logall.split(":");
+      list.split(",").forEach(i => DAYS[+d].events[+i].logged = fmt(NOW.at));
+      return draw();
+    }
+    const undoAll = e.target.closest("[data-unall]");
+    if (undoAll){
+      const [d, list] = undoAll.dataset.unall.split(":");
+      list.split(",").forEach(i => DAYS[+d].events[+i].logged = null);
+      return draw();
+    }
+
+    const log = e.target.closest("[data-log]");
+    if (log){
+      const [d,i] = log.dataset.log.split(":").map(Number);
+      DAYS[d].events[i].logged = fmt(NOW.at);
+      return draw();
+    }
+    const un = e.target.closest("[data-un]");
+    if (un){
+      const [d,i] = un.dataset.un.split(":").map(Number);
+      DAYS[d].events[i].logged = null;
+      return draw();
+    }
+  });
+
+  /* No prototype controls on this build — the settings keep the values they were left
+     at, and the appearance follows the device instead of a picker. Listened to rather
+     than read once: the colours are picked in script, so a preference changed while the
+     page is open only lands if a redraw follows it. (Embedded on the canvas that same
+     listener is what follows the board's theme — the bridge answers this query with the
+     board's and fires 'change' when it flips.) */
+  const scheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+  if (scheme){
+    darkMode = scheme.matches;
+    const follow = (e) => { darkMode = e.matches; draw(); };
+    if (scheme.addEventListener) scheme.addEventListener("change", follow);
+    else if (scheme.addListener) scheme.addListener(follow); // pre-2019 spelling
+  }
+
+  draw();
+
+  /* Open on today rather than at the start of the week: the timeline holds several days,
+     and the one that matters on load is the one you are in. Repeated once the fonts have
+     settled, since the run-out and the position are both measured and the metrics shift
+     when the real typeface arrives. */
+  scrollTimelineTo(NOW.day, false);
+  if (document.fonts && document.fonts.ready)
+    document.fonts.ready.then(() => {
+      sizeTail();
+      scrollTimelineTo(NOW.day, false);
+    });
+})();
+</script>
+</body>
+</html>

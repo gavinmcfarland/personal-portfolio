@@ -1209,18 +1209,31 @@ export default function Canvas() {
      document viewport, but `position: fixed` resolves against the nearest
      transformed/filtered/contained ancestor — and a host page often has one
      (an animated section, a scroll-reveal wrapper…), which would trap the
-     overlay inside that box. So while full-bleed we relocate the board to
-     <body>, escaping every such ancestor.
+     overlay inside that box, and clip it to any scroller on the way.
 
-     To relocate WITHOUT remounting (which would reload live iframes, restart
-     videos and reset the camera), we borrow the reverse-portal trick: the board
-     always renders into ONE stable container node, and we move that container in
-     the DOM between an in-place holder and <body>. React never sees the
-     container change, so it only ever moves the existing DOM — refs and state
-     survive. */
+     The board is promoted into the browser's TOP LAYER instead, as a manual
+     popover. A top-layer element paints above the entire page and takes the
+     viewport as its containing block, so no ancestor can trap or clip it — and,
+     the point of doing it this way, the board does NOT move in the DOM. Moving
+     it would re-insert every iframe on the board, and a re-inserted iframe
+     RELOADS: HTML embeds would lose their state and blink back to their start
+     page every time the board was maximised or restored.
+
+     Where `showPopover` is missing, fall back to relocating the board to <body>,
+     escaping those ancestors the older way: the board always renders into ONE
+     stable container node, and that container is moved in the DOM between an
+     in-place holder and <body> (the reverse-portal trick). React never sees the
+     container change, so refs and state survive the move — but the iframes still
+     reload, which is why it is only the fallback. */
   // Only opt into the portal indirection when document-mode full-bleed is
   // enabled — every other board renders in place exactly as before.
   const documentFs = fullscreenButton === 'document';
+  // Probed once, and held in state rather than read per render so the tree is
+  // identical on every pass (the holder/portal pair below renders either way —
+  // with the top layer it simply never moves). Latched off for good if the
+  // promotion below ever fails to produce a full-viewport board.
+  const [canTopLayer, setCanTopLayer] = useState(() => typeof HTMLElement !== 'undefined'
+    && typeof HTMLElement.prototype.showPopover === 'function');
   const holderRef = useRef(null);
   const [portalNode] = useState(() => {
     if (typeof document === 'undefined') return null; // SSR guard (component is client-only)
@@ -1228,17 +1241,61 @@ export default function Canvas() {
     d.style.display = 'contents'; // generates no box, so the board sizes to whichever parent hosts it
     return d;
   });
-  // Move the stable container into the right parent (before paint, so no flash),
-  // and lock the page behind the overlay from scrolling while full-bleed.
+  // Park the stable container in its in-place holder — and, on the fallback path
+  // only, move it to <body> for the duration of full-bleed. Before paint, so
+  // neither is ever seen. Declared ahead of the promotion effect below because
+  // that one needs the board connected to the document.
   useLayoutEffect(() => {
     if (!documentFs || !portalNode) return;
-    const parent = fullBleed ? document.body : holderRef.current;
+    const parent = fullBleed && !canTopLayer ? document.body : holderRef.current;
     if (parent && portalNode.parentNode !== parent) parent.appendChild(portalNode);
-    if (!fullBleed) return;
+  }, [documentFs, canTopLayer, fullBleed, portalNode]);
+  // Lock the page behind the overlay from scrolling while full-bleed. Ahead of
+  // the promotion below so the board is measured against a viewport that has
+  // already lost the page's scrollbar.
+  useLayoutEffect(() => {
+    if (!documentFs || !fullBleed) return undefined;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
-  }, [documentFs, fullBleed, portalNode]);
+  }, [documentFs, fullBleed]);
+  /* Promote the board into the top layer for exactly as long as it is
+     full-bleed. The attribute goes on with the promotion and comes off with it:
+     an element carrying `popover` while closed is `display: none`, and the board
+     is only ever a popover while it is showing as one. Manual, so the browser's
+     light-dismiss never fires — Esc and clicks belong to the board (see
+     ZoomControls, which exits full-bleed on Esc).
+
+     Then check the result rather than trusting it: escaping an ancestor's
+     transform is the whole reason for the promotion, so measure the board and,
+     if it did not land on the whole viewport, hand the job back to the
+     relocation fallback — before paint, so a browser that gets this wrong shows
+     a correct overlay rather than a trapped one. */
+  useLayoutEffect(() => {
+    if (!documentFs || !canTopLayer || !fullBleed) return undefined;
+    const el = rootRef.current;
+    if (!el) return undefined;
+    el.setAttribute('popover', 'manual');
+    const give = () => { el.removeAttribute('popover'); setCanTopLayer(false); };
+    try {
+      el.showPopover();
+    } catch {
+      give(); // never leave it attributed-but-closed (a closed popover is display:none)
+      return undefined;
+    }
+    const r = el.getBoundingClientRect();
+    const doc = document.documentElement;
+    if (Math.abs(r.left) > 2 || Math.abs(r.top) > 2
+      || Math.abs(r.width - doc.clientWidth) > 2 || Math.abs(r.height - doc.clientHeight) > 2) {
+      try { el.hidePopover(); } catch { /* nothing to close */ }
+      give();
+      return undefined;
+    }
+    return () => {
+      try { if (el.isConnected && el.matches(':popover-open')) el.hidePopover(); } catch { /* already closed */ }
+      el.removeAttribute('popover');
+    };
+  }, [documentFs, canTopLayer, fullBleed, rootRef]);
   // Detach the container on unmount so it isn't orphaned in <body>.
   useEffect(() => () => { if (portalNode) portalNode.remove(); }, [portalNode]);
 
@@ -1359,8 +1416,8 @@ export default function Canvas() {
   );
 
   // Default: render in place, unchanged. Document-mode: render into the stable
-  // `portalNode` (never changes → no remount) whose DOM position the layout
-  // effect above moves between `holderRef`'s spot and <body> on toggle.
+  // `portalNode` (never changes → no remount), which sits in `holderRef`'s spot
+  // and only ever leaves it on the no-top-layer fallback path above.
   if (!documentFs) return root;
   return (
     <>

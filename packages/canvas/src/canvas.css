@@ -398,13 +398,30 @@
 /* Full-bleed toggle: cover the document's viewport at runtime (position:fixed),
    like data-fit="fullscreen" but driven by the zoom-panel button — it stays
    inside the page (no native browser fullscreen), so it needs a high z-index to
-   sit above the host content. */
+   sit above the host content.
+
+   While full-bleed the board is also promoted into the top layer as a manual
+   popover (see Canvas.jsx) — that is what frees it from a transformed or
+   clipping ancestor without moving it in the DOM, which would reload every
+   iframe on the board. The UA's popover styles come along with the promotion,
+   so undo the box they add; background and text colour are already set by the
+   `.canvas-root` rules, which win on origin. The z-index is redundant in the
+   top layer but still does the work on the fallback path. */
 .canvas-root[data-cv-fullbleed] {
   position: fixed;
   inset: 0;
   width: auto;
   height: auto;
   z-index: 2147483000;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+/* A popover that isn't open is display:none. The attribute is only ever on the
+   board while it is showing as one — but if showPopover were ever refused, this
+   keeps the board on screen rather than blanking it. */
+.canvas-root[popover]:not(:popover-open) {
+  display: block;
 }
 .canvas-root * {
   box-sizing: border-box;

@@ -608,7 +608,7 @@ export function CanvasProvider({
   const [focusedSectionId, setFocusedSectionIdState] = useState(null);
   const focusedSectionRef = useRef(null);
   const setFocusedSectionId = (v) => { focusedSectionRef.current = v; setFocusedSectionIdState(v); };
-  const [fullBleed, setFullBleed] = useState(false); // `fullscreenButton="document"` overlay: covers the document's viewport (portaled to body so an ancestor transform can't trap it)
+  const [fullBleed, setFullBleed] = useState(false); // `fullscreenButton="document"` overlay: covers the document's viewport (promoted to the top layer so an ancestor transform can't trap it — see Canvas.jsx)
   const [nativeFullscreen, setNativeFullscreen] = useState(false); // this canvas owns the browser Fullscreen API (via `fullscreenButton` native mode)
   const [bgColor, setBgColor] = useState(init.bgColor || null); // board-wide background override (null = theme default)
   const [bgStrength, setBgStrength] = useState(init.bgStrength ?? null); // how far that colour blends in, 0–100 (null = the theme's own tint)
