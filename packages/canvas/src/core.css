@@ -500,6 +500,21 @@
 .canvas-root[data-cv-passthrough] .cv-node.cv-html:not(.cv-html-inert) .cv-html-frame {
   pointer-events: auto;
 }
+/* A reload's replacement, mid-swap: stacked exactly over the document it is
+   about to replace, and invisible until it reports it is ready (see Html.jsx).
+   Opacity, not `visibility` / `display` / an off-screen transform — the
+   incoming document has to lay out, paint and keep its rAF running, since the
+   restore it is doing under here is what "ready" waits on, and every other way
+   of hiding an iframe is exactly what the browser throttles. Last of the
+   .cv-html-frame rules on purpose: it has to outrank the live and passthrough
+   ones above, which would otherwise hand the pointer to a frame nobody can
+   see. */
+.canvas-root .cv-node.cv-html .cv-html-frame.cv-html-next,
+.canvas-root[data-cv-passthrough] .cv-node.cv-html .cv-html-frame.cv-html-next {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
 /* Reload, in the frame's toolbar: the reader's way back once they have driven
    an embed somewhere. Sized off --cv-df-u like every other mark in the bar, so
    it scales with the frame. The bar is inert to pointers; this takes its own

@@ -3385,15 +3385,26 @@ export function CanvasProvider({
        again on load (see Html.jsx), and a node with none boots into its own
        first screen. */
     function reloadHtmlFrame(id) {
-      /* `contentWindow.location.reload()` is barred here — the document sits at
+      const el = nodeEls.get(id);
+      if (!el) return;
+      /* Asked of the node first, because it can do it without the gap: it loads
+         the replacement in a second frame behind the one on screen and swaps
+         them once the new document is ready, so nothing is ever missing from
+         the board (see Html.jsx). Answering the event marks it handled. */
+      const ev = new CustomEvent('cv-html-reload', { cancelable: true });
+      el.dispatchEvent(ev);
+      if (ev.defaultPrevented) return;
+      /* Nobody took it — reload the frame in place, which blanks the node for
+         as long as the document takes to come back.
+
+         `contentWindow.location.reload()` is barred here — the document sits at
          an opaque origin — and re-assigning the src the frame already has does
          NOT reload a document whose URL carries a fragment, which every one of
          these does (the boot theme is written into the hash): the browser takes
          it as a same-document navigation, fires `load`, and leaves the document
          exactly as it was. Hence the bounce through about:blank. The src React
          put there is what goes back, so its DOM and the element still agree. */
-      const el = nodeEls.get(id);
-      const frame = el && el.querySelector('.cv-html-frame');
+      const frame = el.querySelector('.cv-html-frame');
       if (!frame || !frame.src || frame.src === 'about:blank') return;
       const src = frame.src;
       /* And `loading="lazy"` has to come off first, or the way back never runs.

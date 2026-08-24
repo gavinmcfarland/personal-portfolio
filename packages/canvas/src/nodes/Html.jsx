@@ -54,17 +54,22 @@ import { postHover, postHoverEnd } from '../html-input';
    the document at ingest (see addHtmlFromFile) applies it by rewriting the
    document's prefers-color-scheme media rules. targetOrigin '*' because the
    sandboxed document's origin is opaque. */
-function useThemeSync(frameRef) {
-  const post = useCallback(() => {
-    const f = frameRef.current;
-    if (!f || !f.contentWindow) return;
-    const dark = !!(f.closest && f.closest('.dark'));
-    // Mirror the scheme onto the iframe ELEMENT: when it differs from the
-    // embedded document's, the browser forces an opaque canvas — which would
-    // break the transparent background documents rely on to sit on the board.
-    f.style.colorScheme = dark ? 'dark' : 'light';
-    f.contentWindow.postMessage({ type: 'canvas-theme', theme: dark ? 'dark' : 'light' }, '*');
-  }, [frameRef]);
+function postThemeTo(f) {
+  if (!f || !f.contentWindow) return;
+  const dark = !!(f.closest && f.closest('.dark'));
+  // Mirror the scheme onto the iframe ELEMENT: when it differs from the
+  // embedded document's, the browser forces an opaque canvas — which would
+  // break the transparent background documents rely on to sit on the board.
+  f.style.colorScheme = dark ? 'dark' : 'light';
+  f.contentWindow.postMessage({ type: 'canvas-theme', theme: dark ? 'dark' : 'light' }, '*');
+}
+
+/* Posted to every frame the node currently has, which during a reload is two:
+   the document on screen and its invisible replacement (see the swap below).
+   A flip that lands in that window would otherwise reach only the one about to
+   be thrown away, and the new document would arrive in the old theme. */
+function useThemeSync(framesOf) {
+  const post = useCallback(() => { framesOf().forEach(postThemeTo); }, [framesOf]);
   useEffect(() => {
     // The portfolio's switcher (like most) toggles the class on <html>/<body>;
     // watch both. A theme class on a deeper wrapper would need its own signal.
@@ -111,9 +116,47 @@ function HtmlNode({ node }) {
      doesn't re-flag the frame — nor should it, since nothing reloads. */
   const bootPage = useRef(null);
   if (bootPage.current === null) bootPage.current = !!node.page;
+  // Boot theme, carried in the URL hash so the injected sync script can apply
+  // it before the document's first paint — the message path only lands after
+  // onLoad, which would flash the OS theme first. Captured once: rewriting the
+  // src on later theme flips would reload the iframe (the message handles
+  // those). data: URLs are left alone (a hash would corrupt the document).
+  const bootTheme = useRef(null);
+  if (bootTheme.current === null) {
+    bootTheme.current = document.documentElement.classList.contains('dark')
+      || (document.body && document.body.classList.contains('dark')) ? 'dark' : 'light';
+  }
   // Whether to paint the loading indicator: true until the document says it has
   // arrived (canvas-page-ready), and only ever true where a restore is due.
   const [booting, setBooting] = useState(bootPage.current);
+
+  /* THE FRAMES. Normally one — the document on screen. A reload (the reader's
+     Reset, "Clear start page", eng.reloadHtmlFrame) adds a SECOND, and for as
+     long as it takes the replacement to load and walk back to its start page
+     the node holds both: the old document still painted, the new one stacked
+     over it and invisible. They swap the moment the new one reports it is ready.
+
+     The alternative — reloading the one frame in place — empties the node for
+     the whole of that wait, and an embed is transparent by design (a frameless
+     one has no backdrop at all), so what the reader sees is the board straight
+     through a hole where the demo was: the flicker this exists to remove.
+     Painting something over the gap instead would only trade it for a flash of
+     whatever was painted, which is why the boot indicator deliberately fills
+     nothing.
+
+     Keyed, and never re-parented: React drops the outgoing entry and leaves the
+     incoming element exactly where it already is in the DOM, because moving or
+     re-creating an iframe reloads its document — which would put the gap back
+     at the one moment it is most visible.
+
+     Each entry carries the theme and start-page flag its URL hash was built
+     with, so the outgoing frame keeps the src it loaded (any change to it is a
+     navigation) while the incoming one gets today's. */
+  const nextKey = useRef(0);
+  const [frames, setFrames] = useState(() => [
+    { key: 0, theme: bootTheme.current, page: bootPage.current },
+  ]);
+
   const { setRef, dataProps, style } = useRegister(node);
   const src = useMediaSrc(node.src);
   // Activation is an edit-mode idea only: in view mode the shield stays up and
@@ -121,22 +164,36 @@ function HtmlNode({ node }) {
   // activate — and a node left live when the board flipped to view mode must not
   // stay exempt from that.
   const live = htmlActiveId === node.id && !readOnly;
+  const rootRef = useRef(null);
+  const setRoot = useCallback((el) => { rootRef.current = el; setRef(el); }, [setRef]);
+  /* Read off the DOM rather than tracked in a ref, which is also how the board
+     and the input bridge find a node's frame (frameOf). Document order is the
+     stacking order: [0] is the one on screen, [1] the replacement mid-reload. */
+  const framesOf = useCallback(() => (
+    rootRef.current ? Array.from(rootRef.current.querySelectorAll('.cv-html-frame')) : []
+  ), []);
+  // The frame everything else means by "the frame": the one being shown. Kept
+  // in a ref because the message handlers and the input bridge read it outside
+  // of render, and re-pointed the instant a reload swaps in its replacement.
   const frameRef = useRef(null);
-  const postTheme = useThemeSync(frameRef);
+  useEffect(() => { frameRef.current = framesOf()[0] || null; }, [framesOf, frames]);
+
+  useThemeSync(framesOf);
   useFrameMessages(frameRef, readOnly, eng);
+  /* The page this node was saved on (see captureHtmlPage), read through a ref
+     so a later capture never re-runs the seed — the document is already up by
+     then, and re-posting the restore would walk it through the trail again. */
+  const pageRef = useRef(node.page);
+  pageRef.current = node.page;
   /* On load, hand the document both pieces of host state it can't infer: the
      theme, and the board's current zoom (which decides whether its
      backdrop-filters render — see ZOOM_OPTS). The zoom broadcast only fires on
      gesture edges, so without this seed a document on a board nobody zooms
      never hears anything. */
-  /* The page this node was saved on (see captureHtmlPage), read through a ref
-     so a later capture never re-runs onLoad — the document is already up by
-     then, and re-posting the restore would walk it through the trail again. */
-  const pageRef = useRef(node.page);
-  pageRef.current = node.page;
-  const onLoad = useCallback(() => {
-    postTheme();
-    eng.postZoomStateTo(frameRef.current);
+  const onLoad = useCallback((e) => {
+    const f = e.currentTarget;
+    postThemeTo(f);
+    eng.postZoomStateTo(f);
     /* And the screen the board remembers this document on, if any.
 
        Sent even when there is none, because a document that veiled itself on
@@ -146,11 +203,65 @@ function HtmlNode({ node }) {
        document that comes back veils itself for a restore that is never
        coming. A null answer is what takes the veil down promptly instead of
        leaving it to the bridge's three-second watchdog. */
-    const f = frameRef.current;
-    if (f && f.contentWindow) {
+    if (f.contentWindow) {
       f.contentWindow.postMessage({ type: 'canvas-page-restore', page: pageRef.current || null }, '*');
     }
-  }, [postTheme, eng]);
+  }, [eng]);
+
+  /* A reload, asked for by the board (reloadHtmlFrame dispatches it on the node
+     element). Answering marks the event handled, so the board leaves the frame
+     alone and the swap below is what puts the new document up. */
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return undefined;
+    const onReload = (e) => {
+      /* Nothing loaded to replace (a media ref that hasn't resolved yet). Left
+         unhandled so the board's own path decides, which bails on the same
+         test — the point is that no frame is added for a document that isn't
+         there. */
+      const front = framesOf()[0];
+      if (!front || !front.src || front.src === 'about:blank') return;
+      e.preventDefault();
+      setFrames((fs) => {
+        // One at a time: a second Reset while a replacement is still loading
+        // would leave a document on screen that nothing is waiting on.
+        if (fs.length > 1) return fs;
+        nextKey.current += 1;
+        const dark = document.documentElement.classList.contains('dark')
+          || (document.body && document.body.classList.contains('dark'));
+        return [...fs, { key: nextKey.current, theme: dark ? 'dark' : 'light', page: !!pageRef.current }];
+      });
+    };
+    el.addEventListener('cv-html-reload', onReload);
+    return () => el.removeEventListener('cv-html-reload', onReload);
+  }, [framesOf]);
+
+  /* The swap. The replacement is up and hidden; this waits for it to say it is
+     on the screen it should have opened on — canvas-page-ready, the same signal
+     the boot indicator waits on — and then drops the document it replaces.
+
+     Backed by a deadline, because ready only comes from a document carrying the
+     page half of the bridge: an older one never answers, and the node would sit
+     showing a stale document forever. The wait is invisible either way (the old
+     document is still painted), so it can afford to be generous where a restore
+     is actually due — the bridge gives itself 2.5s to walk a trail. */
+  useEffect(() => {
+    if (frames.length < 2) return undefined;
+    const incoming = frames[1];
+    let timer = 0;
+    const swap = () => {
+      clearTimeout(timer);
+      setFrames((fs) => (fs.length > 1 ? fs.slice(1) : fs));
+    };
+    const onMessage = (e) => {
+      const f = framesOf()[1];
+      if (!f || !f.contentWindow || e.source !== f.contentWindow || !e.data) return;
+      if (e.data.type === 'canvas-page-ready') swap();
+    };
+    window.addEventListener('message', onMessage);
+    timer = setTimeout(swap, incoming.page ? 3500 : 1200);
+    return () => { window.removeEventListener('message', onMessage); clearTimeout(timer); };
+  }, [frames, framesOf]);
 
   /* The cursor, forwarded so the document can light up under it. Throttled to a
      frame: a demo that recomputes on every mousemove would otherwise be driven
@@ -208,25 +319,15 @@ function HtmlNode({ node }) {
   // A node that leaves the board (or the mode) takes its way back with it.
   useEffect(() => () => eng.markHtmlMoved(node.id, false), [eng, node.id]);
 
-  // Boot theme, carried in the URL hash so the injected sync script can apply
-  // it before the document's first paint — the message path only lands after
-  // onLoad, which would flash the OS theme first. Captured once: rewriting the
-  // src on later theme flips would reload the iframe (the message handles
-  // those). data: URLs are left alone (a hash would corrupt the document).
-  const bootTheme = useRef(null);
-  if (bootTheme.current === null) {
-    bootTheme.current = document.documentElement.classList.contains('dark')
-      || (document.body && document.body.classList.contains('dark')) ? 'dark' : 'light';
-  }
   /* cv-page tells the document a restore is coming, so its page half can veil
      it before its first paint (see PAGE_BRIDGE). Without that the document
      paints the screen it boots into, blinks, and lands on the saved one — the
      restore message only arrives after load, which is far too late to prevent
      it. A flag, not the page itself: the payload can be long, and it comes over
      postMessage a moment later anyway. */
-  const frameSrc = src && !src.startsWith('data:')
-    ? `${src}#cv-theme=${bootTheme.current}${bootPage.current ? '&cv-page=1' : ''}`
-    : src;
+  const srcFor = (f) => (src && !src.startsWith('data:')
+    ? `${src}#cv-theme=${f.theme}${f.page ? '&cv-page=1' : ''}`
+    : src);
 
   const w = (node.w || 800) + 'px';
   const h = (node.h || 500) + 'px';
@@ -246,23 +347,31 @@ function HtmlNode({ node }) {
   // reloads the document: the demo loses its state and repaints in the OS
   // theme until the sync message lands (a visible flash).
   return (
-    <div ref={setRef} className={cls} {...dataProps} style={{ ...style, width: w, height: h, ...barStyle }}>
+    <div ref={setRoot} className={cls} {...dataProps} style={{ ...style, width: w, height: h, ...barStyle }}>
       <div className={`cv-df cv-df--${node.frame || 'plain'}`}>
         {node.frame ? <FrameBar node={node} /> : null}
         <div className="cv-df-screen">
           {/* The iframe element's color-scheme is seeded to match the boot
               theme the hash hands the document (and kept in sync by postTheme)
               — a mismatch makes the browser force an opaque canvas. */}
-          <iframe
-            ref={frameRef}
-            className="cv-html-frame"
-            src={frameSrc || undefined}
-            sandbox="allow-scripts"
-            title={node.name || 'HTML'}
-            loading="lazy"
-            onLoad={onLoad}
-            style={{ colorScheme: bootTheme.current }}
-          />
+          {frames.map((f, i) => (
+            <iframe
+              key={f.key}
+              className={`cv-html-frame${i > 0 ? ' cv-html-next' : ''}`}
+              src={srcFor(f) || undefined}
+              sandbox="allow-scripts"
+              title={node.name || 'HTML'}
+              /* Lazy only for the frame the node mounts with. A reload's
+                 replacement must be eager: the frame sits in the scaled world,
+                 where the browser's lazy heuristic cannot see it as visible, and
+                 a load asked for there is deferred until something unrelated
+                 nudges the page — measured at 217 seconds against 314ms with
+                 lazy off, which is a reload that never appears to happen. */
+              loading={f.key === 0 ? 'lazy' : 'eager'}
+              onLoad={onLoad}
+              style={{ colorScheme: f.theme }}
+            />
+          ))}
           {/* The hit surface. Everything the board reserves lands here rather
               than in the iframe, which is what lets a pan or a wheel cross the
               node as if it weren't there. In view mode it also tracks the cursor
