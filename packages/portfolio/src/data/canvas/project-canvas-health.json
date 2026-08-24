@@ -6,28 +6,16 @@
       "id": "home",
       "name": "Cover",
       "view": {
-        "x": -1646.8703493657003,
-        "y": 358.96349885914736,
-        "scale": 0.6919378355905008
+        "x": -634.525979526338,
+        "y": 402.92581627938404,
+        "scale": 0.36919030751237275
       },
       "nodes": [
         {
-          "id": "n2-html",
-          "type": "html",
-          "x": 1290.7954909642308,
-          "y": -166.82890925973953,
-          "z": 24,
-          "w": 450,
-          "h": 877,
-          "src": "/canvas-assets/15e3539a1e8363e5.html",
-          "name": "health-app-11.html",
-          "frame": "android"
-        },
-        {
           "id": "n28-html",
           "type": "html",
-          "x": 3307.07411368381,
-          "y": -166.82890925973948,
+          "x": 4059.939331054688,
+          "y": -166.82890925973945,
           "z": 25,
           "w": 450,
           "h": 877,
@@ -56,19 +44,189 @@
           "frame": "android"
         },
         {
-          "id": "n29-html",
+          "id": "n30-html",
           "type": "html",
-          "x": 684.8591604339131,
-          "y": -166.82890925973953,
-          "z": 22,
+          "x": 2720.7032470703125,
+          "y": -166.82890925973945,
+          "z": 35,
           "w": 450,
           "h": 877,
-          "src": "/canvas-assets/15e3539a1e8363e5.html",
-          "name": "health-app-11.html",
+          "src": "/canvas-assets/8e256459700c3dca.html",
+          "name": "health-app-39.html",
+          "page": {
+            "v": 1,
+            "taps": [
+              {
+                "p": "#wall>div:nth-of-type(1)>button:nth-of-type(1)",
+                "x": 421,
+                "y": 797
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(3)",
+                "x": 277,
+                "y": 519
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(2)",
+                "x": 178,
+                "y": 265
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(1)>header:nth-of-type(1)>button:nth-of-type(1)>svg:nth-of-type(1)",
+                "x": 34,
+                "y": 43
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>nav:nth-of-type(1)>button:nth-of-type(2)",
+                "x": 72,
+                "y": 145
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(1)>header:nth-of-type(1)>button:nth-of-type(2)>svg:nth-of-type(1)",
+                "x": 139,
+                "y": 33
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(1)>section:nth-of-type(1)>div:nth-of-type(2)>button:nth-of-type(5)",
+                "x": 161,
+                "y": 265
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(1)>header:nth-of-type(1)>button:nth-of-type(2)>span:nth-of-type(1)",
+                "x": 106,
+                "y": 36
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(1)>section:nth-of-type(1)>div:nth-of-type(2)>button:nth-of-type(4)",
+                "x": 107,
+                "y": 257
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(2)",
+                "x": 326,
+                "y": 624
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(1)>header:nth-of-type(1)>button:nth-of-type(2)>span:nth-of-type(1)",
+                "x": 110,
+                "y": 19
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(1)>header:nth-of-type(1)>button:nth-of-type(1)>svg:nth-of-type(1)",
+                "x": 30,
+                "y": 39
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>nav:nth-of-type(1)>button:nth-of-type(2)",
+                "x": 69,
+                "y": 143
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(1)>section:nth-of-type(1)>div:nth-of-type(2)>button:nth-of-type(6)",
+                "x": 223,
+                "y": 257
+              }
+            ]
+          },
           "frame": "android"
         },
         {
-          "id": "n30-html",
+          "id": "n31-html",
+          "type": "html",
+          "x": 3390.3233642578125,
+          "y": -166.82890925973945,
+          "z": 23,
+          "w": 450,
+          "h": 877,
+          "src": "/canvas-assets/8e256459700c3dca.html",
+          "name": "health-app-39.html",
+          "page": {
+            "v": 1,
+            "taps": [
+              {
+                "p": "#wall>div:nth-of-type(1)>button:nth-of-type(1)>svg:nth-of-type(1)",
+                "x": 410,
+                "y": 797
+              }
+            ]
+          },
+          "frame": "android"
+        },
+        {
+          "id": "n32-html",
+          "type": "html",
+          "x": 1381.4632568359375,
+          "y": -166.82890925973945,
+          "z": 28,
+          "w": 450,
+          "h": 877,
+          "src": "/canvas-assets/8e256459700c3dca.html",
+          "name": "health-app-39.html",
+          "page": {
+            "v": 1,
+            "taps": [
+              {
+                "p": "#wall>div:nth-of-type(1)>button:nth-of-type(1)",
+                "x": 421,
+                "y": 797
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(3)",
+                "x": 277,
+                "y": 519
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(2)",
+                "x": 178,
+                "y": 265
+              },
+              {
+                "p": "#wall>div:nth-of-type(1)>div:nth-of-type(1)>header:nth-of-type(1)>button:nth-of-type(1)>svg:nth-of-type(1)>path:nth-of-type(1)",
+                "x": 21,
+                "y": 32
+              }
+            ]
+          },
+          "frame": "android"
+        },
+        {
+          "id": "n33-tblock",
+          "type": "tblock",
+          "x": 4059.939331054688,
+          "y": 755.2395969198259,
+          "z": 33,
+          "text": "Details Screen",
+          "font": "sans"
+        },
+        {
+          "id": "n34-tblock",
+          "type": "tblock",
+          "x": 1381.4632568359375,
+          "y": 755.2395969198258,
+          "z": 30,
+          "text": "Menu",
+          "font": "sans"
+        },
+        {
+          "id": "n35-tblock",
+          "type": "tblock",
+          "x": 2720.7032470703125,
+          "y": 755.2395969198258,
+          "z": 36,
+          "text": "Day",
+          "font": "sans"
+        },
+        {
+          "id": "n36-tblock",
+          "type": "tblock",
+          "x": 3390.3233642578125,
+          "y": 755.2395969198259,
+          "z": 32,
+          "text": "Log Menu",
+          "font": "sans"
+        },
+        {
+          "id": "n37-html",
           "type": "html",
           "x": 2051.0833344903976,
           "y": -166.82890925973948,
@@ -97,29 +255,16 @@
               }
             ]
           },
-          "frame": "plugin"
+          "frame": "android"
         },
         {
-          "id": "n31-html",
-          "type": "html",
-          "x": 2687.9492448208302,
-          "y": -166.82890925973953,
-          "z": 23,
-          "w": 450,
-          "h": 877,
-          "src": "/canvas-assets/8e256459700c3dca.html",
-          "name": "health-app-39.html",
-          "page": {
-            "v": 1,
-            "taps": [
-              {
-                "p": "#wall>div:nth-of-type(1)>button:nth-of-type(1)>svg:nth-of-type(1)",
-                "x": 410,
-                "y": 797
-              }
-            ]
-          },
-          "frame": "browser"
+          "id": "n38-tblock",
+          "type": "tblock",
+          "x": 2051.0833344903976,
+          "y": 755.2395969198258,
+          "z": 31,
+          "text": "Timeline",
+          "font": "sans"
         }
       ],
       "shapes": []
@@ -328,5 +473,5 @@
     "w": 997,
     "h": 996
   },
-  "savedAt": 1787605361561
+  "savedAt": 1787606648682
 }
