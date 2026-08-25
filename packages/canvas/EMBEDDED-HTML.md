@@ -40,14 +40,15 @@ stripped and replaced (`injectBridge` in `src/html-bridge.js`).
 | Marker | Purpose |
 |---|---|
 | `data-cv-theme-sync="2"` | Applies the host's light/dark theme. Rewrites the document's `prefers-color-scheme` media rules, sets `color-scheme`, toggles a `dark` class on `<html>`, and patches `matchMedia` so prefers-color-scheme queries answer with the host theme (see below). Boot theme arrives in the URL hash (`#cv-theme=dark`) so the first paint is already correct; later flips arrive as `postMessage`. |
-| `data-cv-zoom-opts="4"` | Listens for `{ type: 'canvas-zoom', active, scale }` and sets two classes on `<html>`: `cv-zooming` while a gesture runs (disables `box-shadow` / `text-shadow`), and `cv-flat` while zoomed in past 1:1 or mid-gesture (disables `backdrop-filter` — see below). |
+| `data-cv-zoom-opts="5"` | Listens for `{ type: 'canvas-zoom', active, scale }` and sets one class on `<html>`: `cv-flat`, while zoomed in past 1:1 or mid-gesture (disables `backdrop-filter` — see below). Nothing else about the document's paint changes during a gesture: v4 and earlier also stripped `box-shadow` / `text-shadow` for the duration, which was visible as shadows blinking off mid-zoom, and no longer happens. |
 | `data-cv-input="2"` | Keeps the document interactive while the board owns every gesture. In view mode the iframe is `pointer-events: none` behind a shield, so nothing reaches the document directly; this replays the cursor and any press that turned out to be a tap as real DOM events, and mirrors the document's `:hover` rules onto a class so hover states still show. See `INTERACTIVE-IFRAMES.md`. |
 | `data-cv-page="1"` | Remembers which screen the document is on, so a board opens on the one its author chose. Answers `{ type: 'canvas-page-get' }` with a description of the current page and walks the document back to one handed over as `{ type: 'canvas-page-restore', page }`. Hides the document from its first paint when the boot hash carries `cv-page=1`, so a restore is never seen happening, and tells the board when a reader has moved the document off that screen. See below. |
 
 **If your generator emits a block carrying the current marker and version
 itself, the canvas leaves it alone.** That's the supported way to own this
-behaviour — for example, to scope the effect-stripping to specific elements
-instead of universally, or to add document-specific work on the same signal.
+behaviour — for example, to scope the `backdrop-filter` flattening to specific
+elements instead of universally, or to add document-specific work on the same
+signal.
 
 ### Theming from script
 
@@ -81,7 +82,8 @@ change”.
 ```js
 addEventListener('message', (e) => {
   if (!e.data || e.data.type !== 'canvas-zoom') return;
-  document.documentElement.classList.toggle('cv-zooming', !!e.data.active);
+  const { active, scale } = e.data;
+  document.documentElement.classList.toggle('cv-flat', !!active || scale > 1.02);
 });
 ```
 
@@ -89,6 +91,11 @@ Sent on zoom-glide edges only — `active: true` when a glide starts, `false` wh
 it settles. **Not** sent for panning or pinch-zoom: those promote the world to
 its own compositor layer and composite on the GPU, so nothing repaints and there
 is nothing to save.
+
+A document that hooks this itself should think in *scale*, not in motion.
+Anything keyed purely on `active` toggles a visual property on and off around
+every gesture, and a reader watching the document sees the property go, not the
+frame time it bought — which is why the bridge no longer strips shadows on it.
 
 ### The start page: which screen the board opens you on
 
@@ -217,9 +224,10 @@ solve on its own.
 The obvious way to make a document cheap to repaint is CSS containment:
 
 ```css
-/* DO NOT DO THIS — see below */
-html.cv-zooming body      { contain: layout paint; }
-html.cv-zooming body > *  { content-visibility: auto; contain-intrinsic-size: auto 500px; }
+/* DO NOT DO THIS — see below. `.zooming` here is a gesture-scoped class of your
+   own; the bridge no longer sets one. */
+html.zooming body      { contain: layout paint; }
+html.zooming body > *  { content-visibility: auto; contain-intrinsic-size: auto 500px; }
 ```
 
 The canvas shipped exactly this (zoom-opts v1) and had to withdraw it, because
@@ -239,10 +247,16 @@ zoom.
 ones on anything not yet rendered. Get the placeholder wrong and the document
 reflows around it.
 
-So zoom-opts v2 is restricted to properties that change **paint only** and
+So from v2 the mode is restricted to properties that change **paint only** and
 therefore cannot move a box: `box-shadow`, `text-shadow`, `backdrop-filter`.
 That is the safe subset for an arbitrary document. It is also the smaller half
 of the available win.
+
+From v5 it is smaller still: only `backdrop-filter`, and on scale rather than on
+the gesture. The two shadow properties were dropped from the mode because
+"cannot move a box" is a lower bar than "cannot be noticed" — a document's
+shadows disappearing for the length of every zoom is a change the reader sees,
+and depth is part of how these documents are designed.
 
 ### What a document has to guarantee to get the bigger half back
 
@@ -401,8 +415,10 @@ plainly the largest remaining item after deduplication.
 reasoning that they cost zoom performance is reasoning, not profiling. 606
 elements is a small DOM, and a transform-only scale does not itself trigger
 style recalculation. What large CSS does make expensive is *invalidation* — and
-the `cv-zooming` class toggle on `<html>` invalidates against a universal
-selector twice per gesture. Whether that is material at 8,168 rules is unmeasured.
+the `cv-flat` class toggle on `<html>` invalidates against a universal selector
+whenever it flips. Whether that is material at 8,168 rules is unmeasured. (It
+flips less often than it used to: the gesture-scoped shadow strip that toggled a
+second universal-selector class on every zoom edge is gone.)
 Deduplication is worth doing regardless, on file-size grounds alone.
 
 ## Priorities

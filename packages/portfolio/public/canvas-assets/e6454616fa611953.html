@@ -371,32 +371,7 @@
 [data-h="1031"][data-h]:hover{background-color:rgb(56, 56, 56) !important;z-index:100 !important;}
 [data-h="1035"][data-h]:hover{background-color:rgb(56, 56, 56) !important;z-index:100 !important;}
 [data-h="1041"][data-h]:hover{background-color:rgb(56, 56, 56) !important;z-index:100 !important;}
-}</style><script data-cv-zoom-opts="4">(() => {
-  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
-  var css =
-    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
-    // it is also the single biggest per-frame paint saving).
-    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
-    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
-    // Gesture only: paint-level savings that cannot move a box.
-    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
-    'box-shadow:none!important;text-shadow:none!important}';
-  var style = document.createElement('style');
-  style.textContent = css;
-  var attach = function () { (document.head || document.documentElement).appendChild(style); };
-  if (document.head || document.documentElement) attach();
-  else addEventListener('DOMContentLoaded', attach);
-  // Flat until told otherwise: a host too old to send a scale gets the safe,
-  // never-blurry rendering rather than an unannounced regression.
-  document.documentElement.classList.add('cv-flat');
-  addEventListener('message', function (e) {
-    var d = e.data;
-    if (!d || d.type !== 'canvas-zoom') return;
-    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
-    document.documentElement.classList.toggle('cv-zooming', !!d.active);
-    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
-  });
-})()</script><script data-cv-theme-sync="2">(() => {
+}</style><script data-cv-theme-sync="2">(() => {
   const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
   const walk = (rules, dark) => {
     for (const r of rules) {
@@ -1046,6 +1021,27 @@
     if (!d) return;
     if (d.type === 'canvas-page-get') { send({ type: 'canvas-page', page: capture() }); return; }
     if (d.type === 'canvas-page-restore') restore(d.page);
+  });
+})()</script><script data-cv-zoom-opts="5">(() => {
+  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
+  var css =
+    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
+    // it is also the single biggest per-frame paint saving).
+    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
+    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}';
+  var style = document.createElement('style');
+  style.textContent = css;
+  var attach = function () { (document.head || document.documentElement).appendChild(style); };
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
+  // Flat until told otherwise: a host too old to send a scale gets the safe,
+  // never-blurry rendering rather than an unannounced regression.
+  document.documentElement.classList.add('cv-flat');
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'canvas-zoom') return;
+    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
+    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
   });
 })()</script></head><body style="background-color:rgb(44, 44, 44);border-block-end-color:rgb(255, 255, 255);border-block-start-color:rgb(255, 255, 255);border-bottom-color:rgb(255, 255, 255);border-inline-end-color:rgb(255, 255, 255);border-inline-start-color:rgb(255, 255, 255);border-left-color:rgb(255, 255, 255);border-right-color:rgb(255, 255, 255);border-top-color:rgb(255, 255, 255);box-sizing:border-box;caret-color:rgb(124, 196, 248);color:rgb(255, 255, 255);column-rule-color:rgb(255, 255, 255);line-height:1.45454;margin-block-end:0px;margin-block-start:0px;margin-bottom:0px;margin-inline-end:0px;margin-inline-start:0px;margin-left:0px;margin-right:0px;margin-top:0px;outline-color:rgb(255, 255, 255);overflow-block:hidden;overflow-inline:hidden;overflow-x:hidden;overflow-y:hidden;position:relative;row-rule-color:rgb(255, 255, 255);scrollbar-color:rgb(68, 68, 68) rgba(0, 0, 0, 0);text-decoration-color:rgb(255, 255, 255);text-emphasis-color:rgb(255, 255, 255);user-select:none;-webkit-text-fill-color:rgb(255, 255, 255);-webkit-text-stroke-color:rgb(255, 255, 255);" data-h="0">
 

@@ -163,32 +163,7 @@
 [data-h="14"]{opacity:1 !important;}
 [data-h="16"]{opacity:1 !important;}
 [data-h="16"]::after{inset-inline-end:1756.8px !important;inset-inline-start:-864px !important;left:-864px !important;right:1756.8px !important;}
-[data-h="1"]{transform:translate(363px, 142px) translate(-50%, -50%) !important;}</style><script data-cv-zoom-opts="4">(() => {
-  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
-  var css =
-    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
-    // it is also the single biggest per-frame paint saving).
-    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
-    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
-    // Gesture only: paint-level savings that cannot move a box.
-    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
-    'box-shadow:none!important;text-shadow:none!important}';
-  var style = document.createElement('style');
-  style.textContent = css;
-  var attach = function () { (document.head || document.documentElement).appendChild(style); };
-  if (document.head || document.documentElement) attach();
-  else addEventListener('DOMContentLoaded', attach);
-  // Flat until told otherwise: a host too old to send a scale gets the safe,
-  // never-blurry rendering rather than an unannounced regression.
-  document.documentElement.classList.add('cv-flat');
-  addEventListener('message', function (e) {
-    var d = e.data;
-    if (!d || d.type !== 'canvas-zoom') return;
-    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
-    document.documentElement.classList.toggle('cv-zooming', !!d.active);
-    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
-  });
-})()</script><script data-cv-theme-sync="2">(() => {
+[data-h="1"]{transform:translate(363px, 142px) translate(-50%, -50%) !important;}</style><script data-cv-theme-sync="2">(() => {
   const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
   const walk = (rules, dark) => {
     for (const r of rules) {
@@ -838,6 +813,27 @@
     if (!d) return;
     if (d.type === 'canvas-page-get') { send({ type: 'canvas-page', page: capture() }); return; }
     if (d.type === 'canvas-page-restore') restore(d.page);
+  });
+})()</script><script data-cv-zoom-opts="5">(() => {
+  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
+  var css =
+    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
+    // it is also the single biggest per-frame paint saving).
+    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
+    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}';
+  var style = document.createElement('style');
+  style.textContent = css;
+  var attach = function () { (document.head || document.documentElement).appendChild(style); };
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
+  // Flat until told otherwise: a host too old to send a scale gets the safe,
+  // never-blurry rendering rather than an unannounced regression.
+  document.documentElement.classList.add('cv-flat');
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'canvas-zoom') return;
+    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
+    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
   });
 })()</script></head><body style="background-color: rgb(244, 241, 234); border-block-color: currentcolor; border-color: currentcolor; border-inline-color: currentcolor; box-sizing: border-box; caret-color: rgb(17, 17, 17); color: rgb(17, 17, 17); rule-color: currentcolor; cursor: none; display: flex; flex-direction: column; font-family: Inter, system-ui, sans-serif; margin-block: 0px; margin: 0px; margin-inline: 0px; min-block-size: 900px; min-height: 100vh; outline-color: currentcolor; overflow-block: auto; overflow-inline: hidden; overflow: hidden auto; position: relative; text-decoration-color: currentcolor; text-emphasis-color: currentcolor; -webkit-font-smoothing: antialiased; -webkit-locale: &quot;en&quot;; -webkit-text-fill-color: currentcolor; -webkit-text-stroke-color: currentcolor;" data-h="0">
 <div style="animation-duration:24s;animation-iteration-count:infinite;animation-name:drift;background-image:linear-gradient(120deg, rgb(247, 244, 237), rgb(239, 233, 220), rgb(243, 236, 221), rgb(240, 235, 224));background-position:1.8411% 50%;background-size:300% 300%;border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;bottom:0px;box-sizing:border-box;column-rule-color:currentcolor;inset-block-end:0px;inset-block-start:0px;inset-inline-end:0px;inset-inline-start:0px;left:0px;outline-color:currentcolor;pointer-events:none;position:fixed;right:0px;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;top:0px;z-index:0;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;" data-h="2"></div>

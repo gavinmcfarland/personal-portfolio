@@ -299,32 +299,7 @@
 [data-h="12"][data-h]:hover{border-block-end-color:rgb(68, 68, 68) !important;border-block-end-width:1px !important;border-block-start-color:rgb(68, 68, 68) !important;border-block-start-width:1px !important;border-bottom-color:rgb(68, 68, 68) !important;border-bottom-width:1px !important;border-inline-end-color:rgb(68, 68, 68) !important;border-inline-end-width:1px !important;border-inline-start-color:rgb(68, 68, 68) !important;border-inline-start-width:1px !important;border-left-color:rgb(68, 68, 68) !important;border-left-width:1px !important;border-right-color:rgb(68, 68, 68) !important;border-right-width:1px !important;border-top-color:rgb(68, 68, 68) !important;border-top-width:1px !important;padding-inline-end:7px !important;padding-inline-start:7px !important;padding-left:7px !important;padding-right:7px !important;}
 [data-h="242"][data-h]:hover::before{border-block-end-color:rgb(68, 68, 68) !important;border-block-end-style:solid !important;border-block-end-width:1px !important;border-block-start-color:rgb(68, 68, 68) !important;border-block-start-style:solid !important;border-block-start-width:1px !important;border-bottom-color:rgb(68, 68, 68) !important;border-bottom-left-radius:2px !important;border-bottom-right-radius:2px !important;border-bottom-style:solid !important;border-bottom-width:1px !important;border-end-end-radius:2px !important;border-end-start-radius:2px !important;border-inline-end-color:rgb(68, 68, 68) !important;border-inline-end-style:solid !important;border-inline-end-width:1px !important;border-inline-start-color:rgb(68, 68, 68) !important;border-inline-start-style:solid !important;border-inline-start-width:1px !important;border-left-color:rgb(68, 68, 68) !important;border-left-style:solid !important;border-left-width:1px !important;border-right-color:rgb(68, 68, 68) !important;border-right-style:solid !important;border-right-width:1px !important;border-start-end-radius:2px !important;border-start-start-radius:2px !important;border-top-color:rgb(68, 68, 68) !important;border-top-left-radius:2px !important;border-top-right-radius:2px !important;border-top-style:solid !important;border-top-width:1px !important;bottom:4px !important;caret-color:rgb(255, 255, 255) !important;color:rgb(255, 255, 255) !important;column-rule-color:rgb(255, 255, 255) !important;content:"" !important;display:block !important;font-family:Inter, sans-serif !important;font-size:11px !important;inset-block-end:4px !important;inset-block-start:4px !important;inset-inline-end:0px !important;inset-inline-start:0px !important;left:0px !important;line-height:16px !important;outline-color:rgb(255, 255, 255) !important;perspective-origin:36px 12px !important;pointer-events:none !important;position:absolute !important;right:0px !important;row-rule-color:rgb(255, 255, 255) !important;scrollbar-color:rgba(179, 179, 179, 0.5) rgba(0, 0, 0, 0) !important;text-decoration-color:rgb(255, 255, 255) !important;text-emphasis-color:rgb(255, 255, 255) !important;top:4px !important;transform-origin:36px 12px !important;user-select:none !important;-webkit-text-fill-color:rgb(255, 255, 255) !important;-webkit-text-stroke-color:rgb(255, 255, 255) !important;}
 [data-h="28"][data-h]:hover{background-color:rgb(56, 56, 56) !important;}
-}</style><script data-cv-zoom-opts="4">(() => {
-  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
-  var css =
-    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
-    // it is also the single biggest per-frame paint saving).
-    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
-    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
-    // Gesture only: paint-level savings that cannot move a box.
-    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
-    'box-shadow:none!important;text-shadow:none!important}';
-  var style = document.createElement('style');
-  style.textContent = css;
-  var attach = function () { (document.head || document.documentElement).appendChild(style); };
-  if (document.head || document.documentElement) attach();
-  else addEventListener('DOMContentLoaded', attach);
-  // Flat until told otherwise: a host too old to send a scale gets the safe,
-  // never-blurry rendering rather than an unannounced regression.
-  document.documentElement.classList.add('cv-flat');
-  addEventListener('message', function (e) {
-    var d = e.data;
-    if (!d || d.type !== 'canvas-zoom') return;
-    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
-    document.documentElement.classList.toggle('cv-zooming', !!d.active);
-    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
-  });
-})()</script><script data-cv-theme-sync="2">(() => {
+}</style><script data-cv-theme-sync="2">(() => {
   const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
   const walk = (rules, dark) => {
     for (const r of rules) {
@@ -974,6 +949,27 @@
     if (!d) return;
     if (d.type === 'canvas-page-get') { send({ type: 'canvas-page', page: capture() }); return; }
     if (d.type === 'canvas-page-restore') restore(d.page);
+  });
+})()</script><script data-cv-zoom-opts="5">(() => {
+  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
+  var css =
+    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
+    // it is also the single biggest per-frame paint saving).
+    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
+    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}';
+  var style = document.createElement('style');
+  style.textContent = css;
+  var attach = function () { (document.head || document.documentElement).appendChild(style); };
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
+  // Flat until told otherwise: a host too old to send a scale gets the safe,
+  // never-blurry rendering rather than an unannounced regression.
+  document.documentElement.classList.add('cv-flat');
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'canvas-zoom') return;
+    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
+    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
   });
 })()</script></head><body style="background-color:rgb(255, 255, 255);border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;box-sizing:border-box;caret-color:rgba(0, 0, 0, 0.898);color:rgba(0, 0, 0, 0.898);column-rule-color:currentcolor;font-family:Inter, sans-serif;font-size:11px;line-height:1.45454;margin-block-end:0px;margin-block-start:0px;margin-bottom:0px;margin-inline-end:0px;margin-inline-start:0px;margin-left:0px;margin-right:0px;margin-top:0px;outline-color:currentcolor;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;" data-h="259">
 

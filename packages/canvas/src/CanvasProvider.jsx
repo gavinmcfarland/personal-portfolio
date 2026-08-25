@@ -972,14 +972,21 @@ export function CanvasProvider({
            (see nodeBox) instead of being re-measured after every transform
            write. Nothing about a node's world-space box depends on where the
            camera is, so this holds for panning just as well.
-         • Paint, inside HTML nodes — suspended on the ZOOM GLIDE ONLY. A
+         • Paint, inside HTML nodes — narrowed on the ZOOM GLIDE ONLY. A
            dropped document is a live iframe with its own render tree, and the
            glide deliberately leaves the world un-promoted so every frame
            re-rasterizes crisply (see zoomLoop) — which means repainting that
            whole document, per frame. A pan (and a pinch) instead promotes the
            world to its own layer and composites on the GPU: nothing repaints,
-           so there is nothing to optimise, and stripping shadows there would
-           only make them visibly blink off as the board slides.
+           so there is nothing to optimise there at all.
+
+           What the glide actually buys is now only backdrop-filter, which is
+           scale-gated rather than gesture-gated and so mostly stays off either
+           way. The gesture-scoped shadow strip that used to ride along with it
+           is gone: it did save raster time, but the shadows visibly blinked off
+           as a zoom started and back when it settled, which reads as the
+           document changing rather than the camera moving. See ZOOM_OPTS in
+           html-bridge.js.
 
        Both are released at the end of the gesture, and the release re-measures
        and repaints — so anything that did settle underneath (a lazy image, an

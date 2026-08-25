@@ -156,13 +156,21 @@ const THEME_SYNC = `<script data-cv-theme-sync="2">(() => {
    actually embeds, where <body> holds a single app-root element that always
    intersects the viewport and so can never be skipped.
 
-   What remains is purely per-pixel work, which cannot move a box: shadows, the
-   most expensive effect to raster and the least missed mid-motion.
+   It also rules out the per-pixel half awenate keeps: box-shadow and
+   text-shadow, dropped for the duration of the glide (v4 and earlier). It never
+   moved a box, but it was visible — a document's shadows blinked off the moment
+   a zoom started and back when it settled, which reads as the document changing
+   rather than the camera moving. Depth is part of how these documents are
+   designed; a frame of raster time isn't worth losing it.
 
-   Deliberately NOT stripped, following awenate: `filter` and `mix-blend-mode`.
-   Both are load-bearing for real documents — filter drives duotone and
-   grayscale treatments (stripping flashes the raw image), blend modes let
-   overlays composite (stripping makes them opaque and hides what's underneath).
+   Deliberately NOT stripped either, following awenate: `filter` and
+   `mix-blend-mode`. Both are load-bearing for real documents — filter drives
+   duotone and grayscale treatments (stripping flashes the raw image), blend
+   modes let overlays composite (stripping makes them opaque and hides what's
+   underneath).
+
+   So nothing here is gesture-scoped any more. What the mode does is entirely
+   the scale gate below.
 
    ── backdrop-filter is scale-gated, not gesture-gated ──
 
@@ -191,16 +199,13 @@ const THEME_SYNC = `<script data-cv-theme-sync="2">(() => {
    Inline styles carry backdrop-filter in practice (an exported document that
    serialises computed styles writes it onto every element that had one), so
    `!important` is required to win the cascade. */
-const ZOOM_OPTS = `<script data-cv-zoom-opts="4">(() => {
+const ZOOM_OPTS = `<script data-cv-zoom-opts="5">(() => {
   var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
   var css =
     // Frost off: applied while zoomed in past 1:1, and during a gesture (where
     // it is also the single biggest per-frame paint saving).
     'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
-    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
-    // Gesture only: paint-level savings that cannot move a box.
-    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
-    'box-shadow:none!important;text-shadow:none!important}';
+    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}';
   var style = document.createElement('style');
   style.textContent = css;
   var attach = function () { (document.head || document.documentElement).appendChild(style); };
@@ -213,7 +218,6 @@ const ZOOM_OPTS = `<script data-cv-zoom-opts="4">(() => {
     var d = e.data;
     if (!d || d.type !== 'canvas-zoom') return;
     var scale = typeof d.scale === 'number' ? d.scale : Infinity;
-    document.documentElement.classList.toggle('cv-zooming', !!d.active);
     document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
   });
 })()</` + 'script>';
@@ -846,7 +850,7 @@ const PAGE_BRIDGE = `<script data-cv-page="2">(() => {
    is what the skip-if-current check compares against. */
 export const BRIDGE = [
   { marker: 'data-cv-theme-sync', version: '2', script: THEME_SYNC },
-  { marker: 'data-cv-zoom-opts', version: '4', script: ZOOM_OPTS },
+  { marker: 'data-cv-zoom-opts', version: '5', script: ZOOM_OPTS },
   { marker: 'data-cv-input', version: '2', script: INPUT_BRIDGE },
   { marker: 'data-cv-page', version: '2', script: PAGE_BRIDGE },
 ];

@@ -322,31 +322,6 @@
     apply(boot[1] === 'dark');
     addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
   }
-})()</script><script data-cv-zoom-opts="4">(() => {
-  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
-  var css =
-    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
-    // it is also the single biggest per-frame paint saving).
-    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
-    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' +
-    // Gesture only: paint-level savings that cannot move a box.
-    'html.cv-zooming *,html.cv-zooming *::before,html.cv-zooming *::after{' +
-    'box-shadow:none!important;text-shadow:none!important}';
-  var style = document.createElement('style');
-  style.textContent = css;
-  var attach = function () { (document.head || document.documentElement).appendChild(style); };
-  if (document.head || document.documentElement) attach();
-  else addEventListener('DOMContentLoaded', attach);
-  // Flat until told otherwise: a host too old to send a scale gets the safe,
-  // never-blurry rendering rather than an unannounced regression.
-  document.documentElement.classList.add('cv-flat');
-  addEventListener('message', function (e) {
-    var d = e.data;
-    if (!d || d.type !== 'canvas-zoom') return;
-    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
-    document.documentElement.classList.toggle('cv-zooming', !!d.active);
-    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
-  });
 })()</script><script data-cv-input="2">(() => {
   if (window.parent === window) return;
   var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
@@ -895,6 +870,27 @@
     if (!d) return;
     if (d.type === 'canvas-page-get') { send({ type: 'canvas-page', page: capture() }); return; }
     if (d.type === 'canvas-page-restore') restore(d.page);
+  });
+})()</script><script data-cv-zoom-opts="5">(() => {
+  var FLAT_ABOVE = 1.02; // board scale past which a ~1:1 filter surface is upscaled and soft
+  var css =
+    // Frost off: applied while zoomed in past 1:1, and during a gesture (where
+    // it is also the single biggest per-frame paint saving).
+    'html.cv-flat *,html.cv-flat *::before,html.cv-flat *::after{' +
+    'backdrop-filter:none!important;-webkit-backdrop-filter:none!important}';
+  var style = document.createElement('style');
+  style.textContent = css;
+  var attach = function () { (document.head || document.documentElement).appendChild(style); };
+  if (document.head || document.documentElement) attach();
+  else addEventListener('DOMContentLoaded', attach);
+  // Flat until told otherwise: a host too old to send a scale gets the safe,
+  // never-blurry rendering rather than an unannounced regression.
+  document.documentElement.classList.add('cv-flat');
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'canvas-zoom') return;
+    var scale = typeof d.scale === 'number' ? d.scale : Infinity;
+    document.documentElement.classList.toggle('cv-flat', !!d.active || scale > FLAT_ABOVE);
   });
 })()</script></head>
 <body>
