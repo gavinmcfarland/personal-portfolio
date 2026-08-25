@@ -170,7 +170,12 @@ const THEME_SYNC = `<script data-cv-theme-sync="2">(() => {
    underneath).
 
    So nothing here is gesture-scoped any more. What the mode does is entirely
-   the scale gate below.
+   the scale gate below. The rule that replaced "paint only, never layout" is
+   that an optimisation must be invisible by construction — cheap because the
+   reader could not have seen the difference at that moment, not because we
+   decided they would forgive it. EMBEDDED-HTML.md, "Shadows: stripped until v5",
+   carries that argument in full along with the ways to make a shadowed document
+   cheap to zoom without taking its shadows away.
 
    ── backdrop-filter is scale-gated, not gesture-gated ──
 

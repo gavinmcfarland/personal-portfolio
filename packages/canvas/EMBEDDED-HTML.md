@@ -335,6 +335,164 @@ worth noting: it means the value was baked at capture time from a computed
 style, and no amount of changing the *source* stylesheet afterwards affects the
 exported copy.
 
+## Shadows: stripped until v5, and what to do instead
+
+For three versions the zoom paint mode's cheapest saving was also its most
+visible one. zoom-opts v2–v4 injected:
+
+```css
+/* WITHDRAWN in v5 */
+html.cv-zooming *,
+html.cv-zooming *::before,
+html.cv-zooming *::after { box-shadow: none !important; text-shadow: none !important; }
+```
+
+`cv-zooming` was set for the length of every zoom glide, so every shadow in the
+document went flat when a zoom started and came back when it settled.
+
+**Why it was withdrawn.** It obeyed the rule this mode is built around — paint
+only, never layout, so nothing moved — but that rule turns out to be the wrong
+bar. "Cannot move a box" is not "cannot be noticed". Shadows are how these
+documents say what floats above what; dropping them for the length of a gesture
+is the reader watching the *document* change while they move the *camera*, which
+is the one thing a zoom must never look like. It also inverted the intent of the
+un-promoted world: the board spends raster time per frame specifically so the
+thing you are zooming into looks like itself all the way in.
+
+The saving was also never measured on the documents this canvas actually embeds.
+It was ported from awenate's paint-opts handler along with the containment half
+(which was withdrawn in v2 for the `position: fixed` reason above), and shadows
+survived three versions on that inherited reasoning alone.
+
+So the rule for this mode is now stricter than "paint only":
+
+> A zoom-time optimisation must be **invisible by construction** — cheap because
+> the reader could not have seen the difference at that moment, not cheap because
+> we decided they would forgive it.
+
+`backdrop-filter` still qualifies: it is gated on *scale*, and it is switched off
+exactly where a 1:1 filter surface would have been upscaled into softness, which
+is a defect either way. A gesture-scoped strip of anything visible does not.
+
+### Before optimising again: measure
+
+Nothing below should be built on the same inherited reasoning that put the
+shadow strip there. The profile in this document is of file *composition*; the
+per-frame raster cost of a zoom over an `html` node has not been recorded. To
+get that:
+
+1. Chrome DevTools → **Rendering** → *Paint flashing* and *Frame rendering
+   stats*. Zoom the board over the node. Confirm the iframe is actually
+   repainting per frame rather than being composited already — a sandboxed
+   iframe may be getting its own layer regardless of what the host does, in
+   which case the whole premise of the paint mode is moot for that node.
+2. **Performance** panel, record a zoom glide, and read the *Rasterize* track
+   rather than total frame time. Shadow blur shows up as raster work, not as
+   style or layout.
+3. If raster is the bottleneck, use the paint profiler on one long frame: the op
+   list attributes cost per draw call, so "blur passes on 40 stacked elevation
+   shadows" and "one enormous background image" are distinguishable rather than
+   both being "paint is slow".
+
+The two numbers worth having before touching this again: raster ms/frame during
+a glide with shadows, and the same with them forced off (the withdrawn rule,
+pasted into the document by hand, is the control). If the delta is small the
+question is closed.
+
+### What the generator can do — these keep shadows at every zoom level
+
+Blur cost tracks the *blurred area and radius*, not the element count, and every
+shadow in a comma-separated list is its own pass. That gives four token-level
+levers, plus one structural one below — none of which the reader ever sees
+operating:
+
+1. **Collapse elevation stacks to one shadow.** The Material/Tailwind idiom
+   layers three to five shadows per card to fake a light model. Each is a
+   separate blur over roughly the same area, so a five-shadow token costs about
+   five times a one-shadow token — for a difference most designs cannot show you
+   at 100%, let alone mid-glide. This is the largest shadow-side saving available
+   and it is a token change.
+2. **Cap the blur radius.** A `0 40px 80px` shadow on a full-width card blurs an
+   area larger than the card. Halving the radius is closer to a quarter of the
+   work, since the affected area shrinks in both axes.
+3. **Put the shadow on the container, not on every row.** A list of 60 shadowed
+   rows is 60 blur passes to draw one edge the reader reads as a single surface.
+4. **Bake it.** A shadow that never animates can ship as a pre-blurred
+   `border-image` 9-slice or a small PNG/SVG behind the element. Drawing a
+   bitmap is cheap where running a blur is not, and upscaling a pre-blurred
+   texture is safe for the reason given just below.
+
+#### And the structural one: promote the shadow, not the element
+
+This is the lever that makes the compositing constraint work *for* a document
+instead of against it. Everything in the section above says a composited subtree
+stays soft, because its surface rasters once and is then GPU-scaled — which is
+fatal for text and fine detail. A blurred shadow has no fine detail: it is
+low-frequency by definition, and upscaling it is invisible in a way that
+upscaling type never is.
+
+So draw the shadow on its own promoted layer and leave the content un-promoted
+and crisp:
+
+```css
+.card { position: relative; /* no box-shadow here */ }
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
+  will-change: transform;   /* raster once, GPU-scale thereafter */
+  z-index: -1;
+}
+```
+
+The blur runs once, at whatever scale the layer was first rasterized at, and
+every subsequent frame of the glide composites the cached texture. The card's
+text is untouched and re-rasters crisply as before.
+
+Two caveats, both real. Every promoted element costs layer memory, so this is
+for the handful of large surfaces that carry the document's depth, not for every
+shadowed element in it — `will-change` on hundreds of nodes trades a raster
+problem for a memory one. And a shadow scaled far past the scale it rastered at
+will eventually show soft banding on its edge; if a document is read at 400% and
+the shadow is a hairline rather than a soft pool, this is not the technique for
+it.
+
+### What the canvas could do
+
+None of these are implemented. In rough order of how much they buy against how
+much they cost:
+
+1. **Give the document the scale and let it decide.** The `canvas-zoom` message
+   already carries `scale`, and the document is the only party that knows which
+   of its shadows are structural and which are decoration. A document can strip
+   its own decorative shadows below the scale where their blur falls under a
+   device pixel — at 8% zoom a 16px blur is 1.3px and a 4px blur has nothing left
+   to show — which is a strip the reader is physically unable to see. The canvas
+   cannot do this universally, because it does not know any document's shadow
+   tokens; the document can, and the generator can emit the rule.
+2. **Promote the iframe for the length of the glide.** `will-change: transform`
+   on `.cv-html-frame` at gesture start, removed at `endGesture` so the settled
+   view re-rasters crisply. Repaint cost during the glide goes to zero — shadows,
+   filters, blend modes and all — because the whole document becomes one texture
+   the GPU stretches. What it spends is the thing the un-promoted world was
+   bought with: the document is soft *while moving* and snaps sharp when it
+   settles. That is a real regression to the glide's feel, but it is a uniform
+   one — everything softens together, which reads as motion blur rather than as
+   the document restyling itself. Worth prototyping as a per-node opt-in for the
+   documents heavy enough to need it, rather than as a global default.
+3. **Spend fewer frames.** The strip only ever paid for the duration of the
+   lerp, so a shorter glide (a higher `ZOOM.lerp`) is the same saving with no
+   fidelity cost at all — and re-rasterizing on every other frame during the
+   glide halves raster work while keeping every property the document asked for.
+   Both are worth trying before anything is taken away from the document again.
+4. **Fix invalidation before paint.** The profile says CSS is 74% of the file and
+   8,168 rules, a megabyte of it byte-identical duplicates. A universal-selector
+   class toggle against a stylesheet that size is style work per gesture edge,
+   and it is unmeasured. Deduplication is free and it is item 1 under Priorities
+   for other reasons anyway.
+
 ## A third thing: `content-visibility` needs sections to skip
 
 Even setting the fixed-position problem aside, `content-visibility: auto` on
@@ -437,9 +595,18 @@ and removes 28% of the file.
    Prerequisite for containment being safe at all.
 4. **Prune stylesheet rules the inline styles already resolved**, preserving
    media queries, keyframes, font-face and interaction states.
+5. **Collapse layered elevation shadows to one shadow per surface**, and cap the
+   blur radius. Each shadow in a comma-separated list is its own blur pass over
+   roughly the same area — see the shadow section. Cheapest way to make a zoom
+   cheaper without anything disappearing during it.
+6. **Promote the shadow rather than the element** on the few large surfaces that
+   carry the document's depth (same section). Blur is low-frequency, so a cached
+   shadow texture upscales invisibly where cached text would not.
 
 1 is independently worthwhile. 2 and 3 together are what would let the canvas
-re-enable the containment mode that had to be withdrawn.
+re-enable the containment mode that had to be withdrawn. 5 is a token change
+that pays on every frame of every glide, and it is the reason the canvas no
+longer needs to strip shadows for you.
 
 ## Verifying a change
 
@@ -500,8 +667,9 @@ The rest is by eye. To confirm a document behaves:
 - `src/html-bridge.js` — `THEME_SYNC`, `ZOOM_OPTS`, `INPUT_BRIDGE`, the version
   table, `injectBridge` and `auditHtml`. The single definition; the runtime, the
   backfill script and the audit script all import it.
-- `src/CanvasProvider.jsx` — ingest (`addHtmlFromFile`) and the gesture window
-  (`beginGesture` / `endGesture` / `postZoomPaintMode`).
+- `src/CanvasProvider.jsx` — ingest (`addHtmlFromFile`), the gesture window
+  (`beginGesture` / `endGesture`) and the zoom broadcast (`postZoomState`,
+  `postZoomStateTo`).
 - `src/nodes/Html.jsx` — the iframe node, sandboxing, theme messaging.
 - `packages/portfolio/scripts/inject-canvas-bridge.mjs` — upgrades the bridge in
   already-committed assets.

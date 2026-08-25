@@ -360,7 +360,9 @@ npm run demo   # → http://localhost:5178  (Vite, consumes the package from sou
 - [EMBEDDED-HTML.md](EMBEDDED-HTML.md) — what the canvas injects into a dropped
   HTML document, the `canvas-zoom` message contract, and what a document (or the
   tool that generates it) can do to make zooming cheaper. Read this before
-  changing `injectBridge` or the zoom paint mode.
+  changing `injectBridge` or the zoom paint mode. Its shadow section is the
+  worked example of what that mode may and may not take away from a document
+  mid-gesture, and of the cheaper things to do instead.
 
 ## Build
 
