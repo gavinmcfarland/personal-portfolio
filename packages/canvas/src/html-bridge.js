@@ -536,7 +536,7 @@ const INPUT_BRIDGE = `<script data-cv-input="2">(() => {
    off until it arrives — so a restored board paints the saved page rather than
    flicking through the path to it. A watchdog lifts the veil whatever happens:
    a document that fails to restore is still a document to show. */
-const PAGE_BRIDGE = `<script data-cv-page="1">(() => {
+const PAGE_BRIDGE = `<script data-cv-page="2">(() => {
   if (window.parent === window) return;
   var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
 
@@ -666,7 +666,7 @@ const PAGE_BRIDGE = `<script data-cv-page="1">(() => {
       announce();
       return true;
     };
-    raf2(function () { if (!probe()) setTimeout(probe, 400); });
+    settle(function () { if (!probe()) setTimeout(probe, 400); });
   };
   /* A hash router has already moved by the time this fires, so there is nothing
      to compare against — the change IS the event. */
@@ -702,8 +702,31 @@ const PAGE_BRIDGE = `<script data-cv-page="1">(() => {
     if (veil && veil.parentNode) veil.parentNode.removeChild(veil);
     veil = null;
   };
-  // Two frames: one for the document to re-render in, one for it to lay out in.
-  var raf2 = function (fn) { requestAnimationFrame(function () { requestAnimationFrame(fn); }); };
+  /* One step of a replay: long enough for the document to have reacted to the
+     last tap and laid out again.
+
+     Two animation frames where the document is being rendered — one to
+     re-render in, one to lay out in — raced against a timer that takes over
+     where it isn't. An embed parked outside the board's viewport is not
+     rendered at all: the browser stops its rAF dead (measured on a project
+     board: 0 ticks a second, against 35 for the same document on screen), so a
+     trail driven by frames alone simply stops part-way. The veil's own deadline
+     then reveals the document wherever it stopped, and the taps still owed
+     replay in front of the reader the moment they pan the node into view —
+     which is the embed walking through its screens by itself.
+
+     Nothing is lost by advancing on the timer instead: layout is computed on
+     demand and the replay forces it at every step by measuring what it is
+     aiming at. What an unrendered document doesn't get is a paint nobody was
+     going to see. 50ms, so the timer only wins where frames genuinely aren't
+     coming — two of them on a 60Hz display is 33ms. */
+  var settle = function (fn) {
+    var t = 0;
+    var done = false;
+    var run = function () { if (done) return; done = true; clearTimeout(t); fn(); };
+    t = setTimeout(run, 50);
+    requestAnimationFrame(function () { requestAnimationFrame(run); });
+  };
 
   /* The board writes cv-page=1 into the boot hash when the node it is loading
      has a saved page, and the veil goes up HERE — synchronously, at the end of
@@ -752,10 +775,10 @@ const PAGE_BRIDGE = `<script data-cv-page="1">(() => {
            be a control sitting lit up on a board nobody has touched. Ending the
            hover the same way a real pointer leaving does clears it. */
         postMessage({ type: 'canvas-input-hover-end' }, '*');
-        return raf2(done);
+        return settle(done);
       }
       tapAt(steps[i++]);
-      raf2(next);
+      settle(next);
     };
     next();
   };
@@ -784,11 +807,11 @@ const PAGE_BRIDGE = `<script data-cv-page="1">(() => {
     try {
       if (page.hook !== undefined && window.canvasPage && typeof window.canvasPage.set === 'function') {
         window.canvasPage.set(page.hook);
-        return void raf2(finish);
+        return void settle(finish);
       }
       if (page.hash != null) {
         if (('#' + page.hash) !== location.hash) location.hash = page.hash;
-        return void raf2(finish);
+        return void settle(finish);
       }
       if (page.taps && page.taps.length) {
         /* The restored path becomes this document's own trail, so a capture
@@ -825,7 +848,7 @@ export const BRIDGE = [
   { marker: 'data-cv-theme-sync', version: '2', script: THEME_SYNC },
   { marker: 'data-cv-zoom-opts', version: '4', script: ZOOM_OPTS },
   { marker: 'data-cv-input', version: '2', script: INPUT_BRIDGE },
-  { marker: 'data-cv-page', version: '1', script: PAGE_BRIDGE },
+  { marker: 'data-cv-page', version: '2', script: PAGE_BRIDGE },
 ];
 
 /* ── Does this document actually follow the theme? ──
