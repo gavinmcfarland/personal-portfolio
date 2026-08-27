@@ -816,6 +816,42 @@
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+  /* The cursor of whatever the pointer is over INSIDE the document — a link's
+     pointer, an I-beam over text. The pointer is on this div, not in there, so
+     the document computes it and posts it out and Html.jsx sets the property
+     (see canvas-input-cursor). Deliberately through a variable rather than by
+     setting `cursor` directly: unset, the declaration is invalid at
+     computed-value time, and since `cursor` inherits that resolves to the
+     board's own — so an embed the document says nothing about, or one carrying a
+     bridge too old to say it, behaves exactly as it did before. */
+  cursor: var(--cv-html-cursor);
+}
+/* In view mode the whole board is `grab` (drag-to-pan everywhere, below), and
+   over a demo that is meant to be driven that is the wrong thing to say: it
+   offers the one gesture the board reserved and hides the several the document
+   would answer. So an interactive embed is an ARROW by default — the fallback
+   here, in place until the document reports something better under the pointer,
+   and the same thing the read-only rules do for an image (`zoom-in`) or an SVG
+   that opens nothing (`inherit`).
+
+   `inert` keeps the grab, and should: panning really is all it affords. */
+.canvas-root[data-readonly]
+  .cv-node.cv-html:not(.cv-html-inert)
+  .cv-html-shield {
+  cursor: var(--cv-html-cursor, default);
+}
+/* While the board is holding, or ready to hold, a gesture, ITS cursor is the
+   true one: the pointer is doing something to the board, not pointing at
+   something in a document. `inherit` is the fallback of the first rule made
+   explicit — and these carry `:not(.cv-html-inert)` to match the specificity of
+   the rule above as well as the one below it, so a gesture wins over both the
+   arrow and whatever the document last reported, with nothing to clear. */
+.canvas-root[data-panning] .cv-node.cv-html:not(.cv-html-inert) .cv-html-shield,
+.canvas-root[data-space] .cv-node.cv-html:not(.cv-html-inert) .cv-html-shield,
+.canvas-root[data-tool="hand"]
+  .cv-node.cv-html:not(.cv-html-inert)
+  .cv-html-shield {
+  cursor: inherit;
 }
 /* Restoring a saved start page. The document veils itself from its first paint
    until it is on that screen (PAGE_BRIDGE), so this covers a node that is

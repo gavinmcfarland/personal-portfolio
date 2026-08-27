@@ -363,6 +363,14 @@ npm run demo   # → http://localhost:5178  (Vite, consumes the package from sou
   changing `injectBridge` or the zoom paint mode. Its shadow section is the
   worked example of what that mode may and may not take away from a document
   mid-gesture, and of the cheaper things to do instead.
+- [INTERACTIVE-IFRAMES.md](INTERACTIVE-IFRAMES.md) — how an embedded document
+  stays hoverable and clickable while the board owns every gesture, with no
+  "click to activate" step: the iframe is inert behind a shield, and taps, the
+  cursor's position, CSS `:hover` and the cursor itself are carried across the
+  boundary by hand. Written to be portable, and it records the several ways of
+  doing this that look right and fail. Read it before changing the shield, the
+  input half of the bridge, or anything about how a press over an html node is
+  decided to be a pan or a tap.
 
 ## Build
 

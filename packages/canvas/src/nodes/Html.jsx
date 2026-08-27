@@ -25,8 +25,10 @@ import { postHover, postHoverEnd } from '../html-input';
    turned out to be a tap INTO the document, where the script baked in at ingest
    (INPUT_BRIDGE in html-bridge.js) replays them as real DOM events at that
    point. Hover states, clicks, links and form fields all work, with nothing to
-   activate first. Two things can't be replayed and don't need to be: CSS
-   `:hover` (it follows the real cursor, which is on the shield) and a demo's own
+   activate first. Two of them can't be replayed in at all, because they follow
+   the REAL pointer and the real pointer is on the shield: CSS `:hover`, which
+   the document mirrors onto a class of its own, and the cursor, which it reports
+   back out for the shield to wear. What is genuinely left over is a demo's own
    dragging and scrolling. Hold SHIFT for those — the shield drops, the iframe
    takes the pointer, and the document behaves exactly as it would standalone.
 
@@ -81,9 +83,10 @@ function useThemeSync(framesOf) {
   return post;
 }
 
-/* What the document sends back. Only two things, both of which need the host to
-   act on the document's behalf. */
-function useFrameMessages(frameRef, active, eng) {
+/* What the document sends back — each of it something the host has to do on the
+   document's behalf, because the thing in question belongs to the real pointer
+   and the real pointer is out here. */
+function useFrameMessages(frameRef, shieldRef, active, eng) {
   useEffect(() => {
     if (!active) return undefined;
     /* Identified by source rather than origin: a sandboxed document has an
@@ -99,6 +102,28 @@ function useFrameMessages(frameRef, active, eng) {
          window stops receiving keydown, so the board's own shortcuts stand
          aside for as long as the user is typing. */
       if (e.data.type === 'canvas-input-focus') { f.focus({ preventScroll: true }); return; }
+      /* The cursor the document would be showing under the pointer — a pointer
+         over a link or a button, an I-beam over text, a resize handle's arrows.
+         Like `:hover`, it follows the REAL cursor, which is on the shield: a
+         plain div that knows nothing of what is beneath it, so a demo full of
+         controls otherwise reads as flat board under the one signal that says
+         it can be clicked.
+
+         So the document computes it (see INPUT_BRIDGE) and the shield wears it.
+         A custom property rather than the `cursor` property itself, so the
+         board's own cursor still wins where it should: an empty or unusable
+         value makes the CSS declaration invalid at computed-value time, and
+         `cursor` inherits — so the shield falls back to the board's, which is
+         also what the gesture rules in canvas.css rely on (see .cv-html-shield). */
+      if (e.data.type === 'canvas-input-cursor') {
+        const shield = shieldRef.current;
+        if (shield) {
+          const c = e.data.cursor;
+          if (c && c !== 'default' && c !== 'auto') shield.style.setProperty('--cv-html-cursor', c);
+          else shield.style.removeProperty('--cv-html-cursor');
+        }
+        return;
+      }
       /* Shift, seen from inside because focus is in there (the user is typing in
          a demo). The board owns the shield, so it has to be told. */
       if (e.data.type === 'canvas-input-shift') eng.setHtmlPassThrough(!!e.data.on);
@@ -178,8 +203,13 @@ function HtmlNode({ node }) {
   const frameRef = useRef(null);
   useEffect(() => { frameRef.current = framesOf()[0] || null; }, [framesOf, frames]);
 
+  // The hit surface over the iframe, held because it is what wears the cursor
+  // the document reports (useFrameMessages). Null whenever there isn't one —
+  // React clears it when the node goes live and the shield unmounts.
+  const shieldRef = useRef(null);
+
   useThemeSync(framesOf);
-  useFrameMessages(frameRef, readOnly, eng);
+  useFrameMessages(frameRef, shieldRef, readOnly, eng);
   /* The page this node was saved on (see captureHtmlPage), read through a ref
      so a later capture never re-runs the seed — the document is already up by
      then, and re-posting the restore would walk it through the trail again. */
@@ -277,9 +307,14 @@ function HtmlNode({ node }) {
       postHover(frameRef.current, clientX, clientY);
     });
   }, [readOnly, node.inert, eng]);
-  const onShieldLeave = useCallback(() => {
+  const onShieldLeave = useCallback((e) => {
     if (!readOnly) return;
     if (hoverRAF.current) { cancelAnimationFrame(hoverRAF.current); hoverRAF.current = 0; }
+    // Here as well as on the document's answer: a document carrying an older
+    // bridge never reports a cursor, and one that has just been navigated away
+    // from is in no position to answer at all. The board's cursor is the right
+    // one the moment the pointer is off the node either way.
+    e.currentTarget.style.removeProperty('--cv-html-cursor');
     postHoverEnd(frameRef.current);
   }, [readOnly]);
   useEffect(() => () => { if (hoverRAF.current) cancelAnimationFrame(hoverRAF.current); }, []);
@@ -378,6 +413,7 @@ function HtmlNode({ node }) {
               so the document can be told where it is. */}
           {!live && (
             <div
+              ref={shieldRef}
               className="cv-html-shield"
               onPointerMove={onShieldMove}
               onPointerLeave={onShieldLeave}

@@ -247,14 +247,19 @@ const ZOOM_OPTS = `<script data-cv-zoom-opts="5">(() => {
    the cursor and responds to clicks without anyone having to "enter" it first;
    it simply never sees the gestures the board reserved.
 
-   WHAT IT CANNOT GIVE BACK: `:hover` in CSS. The pseudo-class follows the real
-   cursor, which is over the shield, and no dispatched event can set it — so a
-   demo whose hover states are pure CSS will look inert under the cursor even
-   though its JavaScript hover handlers are running. Hold Shift for the real
-   thing: the board drops the shield, the iframe takes the pointer, and the
-   document behaves exactly as it would standalone — which is also how a demo's
-   own scrolling, sliders and drags are used. */
-const INPUT_BRIDGE = `<script data-cv-input="2">(() => {
+   TWO THINGS FOLLOW THE REAL POINTER and so can never be dispatched in: the
+   `:hover` pseudo-class, and the cursor. Both are handled by going around rather
+   than through. `:hover` is mirrored — the document's own rules are re-emitted
+   against a class this script controls — and the cursor is reported outwards,
+   for the host to put on the shield the pointer is genuinely over. See each
+   below.
+
+   WHAT IS LEFT is a demo's own dragging and scrolling: a slider, a carousel, a
+   pane with a scrollbar. Nothing about those gestures distinguishes them from a
+   pan, so the user says which they meant — hold Shift, and the board drops the
+   shield and the iframe takes the pointer, so the document behaves exactly as it
+   would standalone. */
+const INPUT_BRIDGE = `<script data-cv-input="3">(() => {
   if (window.parent === window) return;
   var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
 
@@ -371,6 +376,60 @@ const INPUT_BRIDGE = `<script data-cv-input="2">(() => {
     hoverChain = next;
   };
 
+  /* ── The cursor ──────────────────────────────────────────────────────────
+     The other thing that follows the real pointer and therefore never reaches
+     this document: the cursor itself. The board's shield is what the pointer is
+     actually over, and a plain div has no idea that a link, a text field or a
+     resize handle is sitting under it — so a demo full of buttons reads as flat
+     board, and the one signal that says "this is clickable" is missing at
+     exactly the moment it is wanted.
+
+     :hover is mirrored because it cannot be dispatched; the cursor is REPORTED
+     for the same reason. The document computes what it would be showing and
+     tells the host, which puts it on the shield (see Html.jsx). Read after the
+     hover class is applied, so a rule that only sets cursor:pointer on :hover is
+     included — that is why this sits at the end of hoverAt rather than beside
+     elementFromPoint.
+
+     Sent only when it changes: the position arrives once a frame, and nearly
+     every one of those is over the same element as the last. */
+  var lastCursor = null;
+  /* getComputedStyle answers 'auto' for cursor:auto — the renderer resolves it
+     while painting and never writes the answer back, so it has to be resolved
+     here. The rule the browser uses: an I-beam over text you could select or
+     type into, an arrow everywhere else. */
+  var resolveCursor = function (el) {
+    var c = '';
+    try { c = getComputedStyle(el).cursor; } catch (err) { return 'default'; }
+    if (c === 'auto') {
+      var tag = el.tagName;
+      if (el.isContentEditable || tag === 'TEXTAREA'
+        || (tag === 'INPUT' && /^(|text|search|url|tel|email|password|number)$/i.test(el.type || ''))) return 'text';
+      // Text the pointer is directly over, rather than text somewhere in a
+      // descendant: a card with a label inside it is not an I-beam, the label is.
+      for (var n = el.firstChild; n; n = n.nextSibling) {
+        if (n.nodeType === 3 && n.nodeValue && n.nodeValue.trim()) return 'text';
+      }
+      return 'default';
+    }
+    /* A custom image cursor cannot cross: its url() resolves against THIS
+       document, which the host cannot reach (opaque origin, and a relative path
+       would resolve against the host page instead). Fall back to the keyword the
+       document listed after it — which is what a browser does when the image
+       fails to load — and to an arrow when it listed none. */
+    if (c.indexOf('url(') !== -1) {
+      var last = c.split(',').pop().trim();
+      return /^[a-z-]+$/.test(last) ? last : 'default';
+    }
+    return c;
+  };
+  var sendCursor = function (el) {
+    var c = el ? resolveCursor(el) : '';
+    if (c === lastCursor) return;
+    lastCursor = c;
+    send({ type: 'canvas-input-cursor', cursor: c });
+  };
+
   var hoverEl = null;
   var hoverEvent = function (type, el, related, x, y, bubbles) {
     el.dispatchEvent(new PointerEvent(type, opts(x, y, {
@@ -407,9 +466,13 @@ const INPUT_BRIDGE = `<script data-cv-input="2">(() => {
       hoverEvent('pointermove', el, null, x, y, true);
       mouseEvent('mousemove', el, null, x, y, true);
     }
+    sendCursor(el);
   };
   var hoverEnd = function () {
     setHoverChain(null);
+    // Before the early return below: the host is wearing this document's cursor
+    // and must be given the board's back even when nothing was hovered.
+    sendCursor(null);
     if (!hoverEl) return;
     var was = hoverEl;
     hoverEl = null;
@@ -489,6 +552,13 @@ const INPUT_BRIDGE = `<script data-cv-input="2">(() => {
     // Exactly the second of a run, as the platform does it: a third tap keeps
     // counting up on the click's detail but fires no further dblclick.
     if (detail === 2) el.dispatchEvent(mouse('dblclick', 0));
+    /* A click routinely rebuilds what is under the pointer — a re-render, a
+       button that disables itself, a menu that opens over the thing that opened
+       it — and the cursor the host is wearing describes the element that was
+       there. Nothing would notice: the pointer has not moved, so the next hover
+       lands on the same point and this side's caches all still agree. So re-read
+       once the document has had a frame to settle. */
+    requestAnimationFrame(function () { sendCursor(document.elementFromPoint(x, y)); });
   };
 
   /* Shift is the escape hatch, and it is the HOST that drops the shield — but
@@ -856,7 +926,7 @@ const PAGE_BRIDGE = `<script data-cv-page="2">(() => {
 export const BRIDGE = [
   { marker: 'data-cv-theme-sync', version: '2', script: THEME_SYNC },
   { marker: 'data-cv-zoom-opts', version: '5', script: ZOOM_OPTS },
-  { marker: 'data-cv-input', version: '2', script: INPUT_BRIDGE },
+  { marker: 'data-cv-input', version: '3', script: INPUT_BRIDGE },
   { marker: 'data-cv-page', version: '2', script: PAGE_BRIDGE },
 ];
 

@@ -54,6 +54,7 @@ events:
 |---|---|---|
 | `hello` | The injected script starts | Host sends any state it holds for the document |
 | `focus` | A replayed tap landed on a text field | Host calls `iframe.focus()` so real typing works (below) |
+| `cursor` | The element under the forwarded position changes what it would be showing | Host puts that cursor on the shield, which is what the real pointer is over (below) |
 | `shift` | Shift pressed/released while focus is inside the document | Host toggles the escape hatch |
 
 **Shift is the escape hatch.** While held, the shield stands down
@@ -211,7 +212,80 @@ Throttle the forwarded cursor position to one message per frame, and skip it
 entirely while a gesture is running — mid-pan the canvas is moving the content,
 not pointing at it.
 
-### 6. Keyboard
+### 6. The cursor
+
+The second thing that follows the real pointer, and so the second that has to be
+handled by going around rather than through. The pointer is on the shield — a
+bare div that knows nothing of what is beneath it — so every document on the
+canvas is an arrow, whatever it is full of. A prototype of buttons and links
+reads as a picture of one, and it is the cursor, more than any hover state, that
+says a thing can be clicked.
+
+`:hover` is mirrored inwards because it cannot be dispatched. The cursor goes
+the other way: the document computes what it would be showing and reports it,
+and the host puts it on the shield.
+
+```js
+// document, at the end of the hover handler — AFTER the hover class is applied,
+// so a rule that only sets cursor:pointer on :hover is included
+let last = null;
+const report = (el) => {
+  const c = el ? resolve(el) : '';
+  if (c !== last) parent.postMessage({ type: 'cursor', cursor: (last = c) }, '*');
+};
+```
+
+Three things it needs to get right:
+
+- **`cursor: auto` has to be resolved by hand.** The renderer resolves it while
+  painting and never writes the answer back, so `getComputedStyle` still says
+  `auto`. The rule: an I-beam over text you could select or type into, an arrow
+  everywhere else — and *directly* over it, since a card containing a label is
+  not an I-beam, the label is.
+- **A `url()` cursor cannot cross.** It resolves against the *document*, which
+  the host can't reach; a relative path would resolve against the host page
+  instead. Fall back to the keyword the document listed after it — what a
+  browser does when the image fails to load — and to an arrow when it listed
+  none.
+- **A click can change what is under a pointer that hasn't moved.** A
+  re-render, a button that disables itself, a menu that opens over its own
+  trigger: the reported cursor now describes an element that is gone, and
+  nothing notices, because the next hover lands on the same point and every
+  cache still agrees. Re-read a frame after replaying a tap.
+
+Send only on change — the position arrives once a frame and nearly every one is
+over the same element as the last.
+
+On the host, apply the reported value through a custom property rather than as
+`cursor` directly. `cursor` inherits, and an unset (or unusable) custom property
+makes the declaration invalid at computed-value time — which for an inherited
+property means the inherited value. So the fallbacks fall out of the cascade,
+with nothing to clear and no `!important` anywhere:
+
+```css
+.node .shield             { cursor: var(--doc-cursor); }          /* unset -> the canvas's own */
+[data-view] .node .shield { cursor: var(--doc-cursor, default); } /* ...but see below */
+[data-panning] .node .shield,
+[data-space]   .node .shield { cursor: inherit; }                 /* a gesture -> the canvas's own */
+```
+
+Two things that middle rule is doing.
+
+**A gesture belongs to the canvas, so its cursor does too.** A pointer that is
+panning the board is not pointing at anything in a document, and the canvas
+already says so — `grabbing` — everywhere else. Keep the selectors at matching
+specificity so the gesture rules win in source order over both of the others.
+
+**But an idle pointer over an embed belongs to the document.** This is the one
+that is easy to get backwards. A canvas in view mode typically sets one cursor
+over the whole board — `grab`, because drag-to-pan is what a reader has — and
+inheriting it means a prototype full of buttons offers the single gesture the
+canvas reserved and hides the several the document would answer. So an
+interactive embed reads as an **arrow** by default, and as whatever the document
+reports the moment it says. An embed that has been marked non-interactive is the
+exception, and should keep the board's `grab`: panning really is all it affords.
+
+### 7. Keyboard
 
 Don't synthesize key events. **An untrusted `KeyboardEvent` carries no default
 action**: dispatching one fires the document's handlers but inserts no text and
@@ -232,7 +306,7 @@ restoring a saved screen on load — must not ask for focus. Nobody pressed
 anything, and a frame that takes the keyboard on load is a frame that swallows
 the first shortcut the user tries. That is what the `quiet` flag is for.
 
-### 7. Getting state into the document reliably
+### 8. Getting state into the document reliably
 
 A sandboxed iframe can only be talked to by `postMessage`, and the two obvious
 moments to send are both unreliable: at mount the document hasn't loaded, and a
@@ -316,7 +390,10 @@ failures:
    it.
 4. **Hover a CSS-only hover state.** JS hover handlers can work perfectly while
    `:hover` does nothing — they are separate mechanisms and separate bugs.
-5. **Type into a field in a document.** Handlers firing is not the same as text
+5. **Watch the cursor over a button, and again after clicking it.** The second
+   is the one that breaks: the pointer hasn't moved, so nothing re-reads unless
+   you made it.
+6. **Type into a field in a document.** Handlers firing is not the same as text
    appearing.
 
 ## Related

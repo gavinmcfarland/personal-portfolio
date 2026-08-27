@@ -41,7 +41,7 @@ stripped and replaced (`injectBridge` in `src/html-bridge.js`).
 |---|---|
 | `data-cv-theme-sync="2"` | Applies the host's light/dark theme. Rewrites the document's `prefers-color-scheme` media rules, sets `color-scheme`, toggles a `dark` class on `<html>`, and patches `matchMedia` so prefers-color-scheme queries answer with the host theme (see below). Boot theme arrives in the URL hash (`#cv-theme=dark`) so the first paint is already correct; later flips arrive as `postMessage`. |
 | `data-cv-zoom-opts="5"` | Listens for `{ type: 'canvas-zoom', active, scale }` and sets one class on `<html>`: `cv-flat`, while zoomed in past 1:1 or mid-gesture (disables `backdrop-filter` — see below). Nothing else about the document's paint changes during a gesture: v4 and earlier also stripped `box-shadow` / `text-shadow` for the duration, which was visible as shadows blinking off mid-zoom, and no longer happens. |
-| `data-cv-input="2"` | Keeps the document interactive while the board owns every gesture. In view mode the iframe is `pointer-events: none` behind a shield, so nothing reaches the document directly; this replays the cursor and any press that turned out to be a tap as real DOM events, and mirrors the document's `:hover` rules onto a class so hover states still show. See `INTERACTIVE-IFRAMES.md`. |
+| `data-cv-input="3"` | Keeps the document interactive while the board owns every gesture. In view mode the iframe is `pointer-events: none` behind a shield, so nothing reaches the document directly; this replays the cursor's position and any press that turned out to be a tap as real DOM events, mirrors the document's `:hover` rules onto a class so hover states still show, and reports the cursor the document would be showing back out for the board to put on the shield. See `INTERACTIVE-IFRAMES.md`. |
 | `data-cv-page="1"` | Remembers which screen the document is on, so a board opens on the one its author chose. Answers `{ type: 'canvas-page-get' }` with a description of the current page and walks the document back to one handed over as `{ type: 'canvas-page-restore', page }`. Hides the document from its first paint when the boot hash carries `cv-page=1`, so a restore is never seen happening, and tells the board when a reader has moved the document off that screen. See below. |
 
 **If your generator emits a block carrying the current marker and version
@@ -96,6 +96,41 @@ A document that hooks this itself should think in *scale*, not in motion.
 Anything keyed purely on `active` toggles a visual property on and off around
 every gesture, and a reader watching the document sees the property go, not the
 frame time it bought — which is why the bridge no longer strips shadows on it.
+
+### The cursor your document shows
+
+The pointer is never in your document — it is on the board's shield, over an
+iframe that has been made inert so the board can be panned across it (the whole
+arrangement is in `INTERACTIVE-IFRAMES.md`). A cursor follows the real pointer
+and no message can move it, so an embed would be an arrow from edge to edge
+however many buttons it has.
+
+So the input half reads what your document *would* be showing under the
+forwarded position — after the hover mirror is applied, so a `cursor: pointer`
+that only appears on `:hover` counts — and posts it out for the shield to wear.
+A button in an embed comes with a pointer, a paragraph with an I-beam, a
+resizable pane with its arrows.
+
+Until it says otherwise, an embed you can drive is a plain arrow rather than the
+board's `grab`. A view-mode board is drag-to-pan everywhere, and over a demo
+that is the wrong thing to say: it offers the one gesture the board reserved and
+hides the several yours would answer. (A node whose **Interactive** is switched
+off keeps the `grab` — see below. There, panning really is all it affords.)
+
+This asks nothing of your document: it is your own CSS, read back. `cursor:
+auto` is resolved the way the renderer would (an I-beam over text you could
+select or type into, an arrow elsewhere), and a cursor set from script is read
+the same way, since it is the computed value either way.
+
+The one thing worth knowing is that **an image cursor cannot cross**. `url()`
+resolves against your document, which the board cannot reach — and a relative
+path would resolve against the host page instead. So list a keyword after it, as
+you would for a browser that fails to load the image:
+
+```css
+cursor: url(pencil.png) 4 12, crosshair;   /* the board shows: crosshair */
+cursor: url(pencil.png) 4 12;              /* the board shows: an arrow */
+```
 
 ### The start page: which screen the board opens you on
 
@@ -203,6 +238,8 @@ true` and:
 
 - no hover position and no tap is forwarded into the document, so a click on it
   is an ordinary board click;
+- nothing comes back out either, so the board's own cursor stays over the whole
+  node — which is the honest signal, since nothing in there can be clicked;
 - Shift no longer stands its shield down, so the escape hatch can't reach it
   either (the CSS excludes `.cv-html-inert`);
 - the document still *runs* — its own animations play, the theme still syncs,
