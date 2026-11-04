@@ -72,7 +72,7 @@ const Home = () => {
       {/* Home keeps the site defaults — a generic OG card with the site name. */}
       <Seo
         title=""
-        description="Designer and full-stack engineer building tools and web applications. Currently freelancing and building Awenate."
+        description="Design engineer building tools and web applications. Currently building Awenate."
       />
       {/* All page content lives in <main>: a flush heading per group, its body
         hung at the indent stop beside it — no wrapper between them. */}

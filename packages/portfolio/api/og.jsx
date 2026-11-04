@@ -29,7 +29,7 @@ const MARK = `data:image/svg+xml,${encodeURIComponent(
 const SITE = "gavinmcfarland.co.uk";
 const DEFAULT_TITLE = "Gavin McFarland";
 const DEFAULT_SUBTITLE =
-  "Designer and full-stack engineer building tools and web applications.";
+  "Design engineer building tools and web applications.";
 
 // Load a Google font as raw bytes so the card uses the site's typeface (Spline
 // Sans Mono) rather than Satori's fallback. Subset to the glyphs we actually

@@ -84,11 +84,11 @@ const Intro = () => (
         one movement without a wrapper to group them; the step between them is
         `p.indent + p.indent`. */}
     <p className="indent rise d1 max-w-measure text-muted">
-      Designer and full-stack engineer building tools and web applications.
+      Design engineer building tools and web applications.
       Background in product design and user research.
     </p>
     <p className="indent rise d1 max-w-measure text-muted">
-      Currently freelancing and building{" "}
+      Currently building{" "}
       <a
         href="https://awenate.com"
         target="_blank"

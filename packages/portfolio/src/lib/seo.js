@@ -14,9 +14,9 @@ export const SITE_NAME = "Gavin McFarland";
 // The home page / static-fallback <title>. Descriptive so the tab and search
 // result read as more than just the name. Per-page titles become
 // "<page> — Gavin McFarland" via <Seo>.
-export const DEFAULT_TITLE = "Gavin McFarland — Designer & full-stack engineer";
+export const DEFAULT_TITLE = "Gavin McFarland — Design engineer";
 export const DEFAULT_DESCRIPTION =
-  "Gavin McFarland — freelance developer building tools that take the friction out of building things. Currently working on Awenate.";
+  "Gavin McFarland — design engineer building tools and web applications. Currently building Awenate.";
 
 /* Build the /api/og URL for a page. `title` shows large; `subtitle` is the
    supporting line (usually the page's meta description). Returns a root-relative
