@@ -859,6 +859,86 @@
     if (d.type === 'canvas-input-hover-end') { hoverEnd(); return; }
     if (d.type === 'canvas-input-tap') replay(d.x, d.y, d.pointerType || 'mouse', d.detail || 1, !!d.quiet);
   });
+})()</script><script data-cv-scroll="1">(() => {
+  if (window.parent === window) return;
+  var HOVER_CLASS = 'cv-hv';
+  var held = [];   // [{ el, prev }] — prev is the inline values to put back
+  var live = false;
+  var timer = 0;
+  var scrollable = function (v) { return v === 'auto' || v === 'scroll' || v === 'overlay'; };
+  var PROPS = ['overflow-x', 'overflow-y', 'scrollbar-gutter'];
+  var find = function (el) {
+    for (var i = 0; i < held.length; i++) if (held[i].el === el) return held[i];
+    return null;
+  };
+  var hold = function () {
+    timer = 0;
+    if (live || !document.body) return;
+    held = held.filter(function (h) { return h.el.isConnected; });
+    var all = document.body.getElementsByTagName('*');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      var cs = getComputedStyle(el);
+      if (!scrollable(cs.overflowX) && !scrollable(cs.overflowY)) continue;
+      var st = el.style;
+      // A box already held only comes back scrollable if its own script has
+      // rewritten the inline overflow since — re-apply over that, but keep the
+      // values remembered the first time, which are the ones to restore.
+      if (!find(el)) {
+        var prev = {};
+        PROPS.forEach(function (p) { prev[p] = [st.getPropertyValue(p), st.getPropertyPriority(p)]; });
+        held.push({ el: el, prev: prev });
+      }
+      var bar = el.offsetWidth - el.clientWidth
+        - (parseFloat(cs.borderLeftWidth) || 0) - (parseFloat(cs.borderRightWidth) || 0);
+      var top = el.scrollTop, left = el.scrollLeft;
+      if (bar > 0.5) st.setProperty('scrollbar-gutter', 'stable', 'important');
+      st.setProperty('overflow-x', 'hidden', 'important');
+      st.setProperty('overflow-y', 'hidden', 'important');
+      el.scrollTop = top; el.scrollLeft = left;
+    }
+  };
+  var release = function () {
+    clearTimeout(timer); timer = 0;
+    held.forEach(function (h) {
+      if (!h.el.isConnected) return;
+      var top = h.el.scrollTop, left = h.el.scrollLeft;
+      PROPS.forEach(function (p) {
+        var v = h.prev[p];
+        if (v[0]) h.el.style.setProperty(p, v[0], v[1]); else h.el.style.removeProperty(p);
+      });
+      h.el.scrollTop = top; h.el.scrollLeft = left;
+    });
+    held = [];
+  };
+  var schedule = function () { if (!live && !timer) timer = setTimeout(hold, 150); };
+  var strip = function (c) { return (' ' + (c || '') + ' ').split(' ' + HOVER_CLASS + ' ').join(' ').trim(); };
+  var mo = new MutationObserver(function (list) {
+    for (var i = 0; i < list.length; i++) {
+      var m = list[i];
+      if (m.type === 'attributes' && m.attributeName === 'class'
+        && strip(m.oldValue) === strip(m.target.getAttribute('class'))) continue;
+      return schedule();
+    }
+  });
+  var start = function () {
+    hold();
+    mo.observe(document.documentElement, {
+      childList: true, subtree: true,
+      attributes: true, attributeFilter: ['class', 'style'], attributeOldValue: true,
+    });
+  };
+  if (document.readyState === 'loading') addEventListener('DOMContentLoaded', start);
+  else start();
+  // Fonts and late styles can turn a box into a scroller after the first pass.
+  addEventListener('load', schedule);
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'canvas-scroll') return;
+    if (!!d.live === live) return;
+    live = !!d.live;
+    if (live) release(); else hold();
+  });
 })()</script></head><body style="background-color:rgb(20, 17, 14);border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;box-sizing:border-box;caret-color:rgb(243, 234, 217);color:rgb(243, 234, 217);column-rule-color:currentcolor;font-family:Inter, system-ui, sans-serif;margin-block-end:0px;margin-block-start:0px;margin-bottom:0px;margin-inline-end:0px;margin-inline-start:0px;margin-left:0px;margin-right:0px;margin-top:0px;outline-color:currentcolor;overflow-block:auto;overflow-inline:hidden;overflow-x:hidden;overflow-y:auto;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;">
 <section style="place-items: center; block-size: 900px; border-block-color: currentcolor; border-color: currentcolor; border-inline-color: currentcolor; box-sizing: border-box; rule-color: currentcolor; display: grid; height: 100vh; outline-color: currentcolor; overflow-block: hidden; overflow-inline: hidden; overflow: hidden; position: relative; text-align: center; text-decoration-color: currentcolor; text-emphasis-color: currentcolor; -webkit-font-smoothing: antialiased; -webkit-locale: &quot;en&quot;; -webkit-text-fill-color: currentcolor; -webkit-text-stroke-color: currentcolor;" data-h="18">
   <div style="border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;bottom:0px;box-sizing:border-box;column-rule-color:currentcolor;inset-block-end:0px;inset-block-start:0px;inset-inline-end:0px;inset-inline-start:0px;left:0px;outline-color:currentcolor;overflow-block:hidden;overflow-inline:hidden;overflow-x:hidden;overflow-y:hidden;position:absolute;right:0px;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;top:0px;z-index:0;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&amp;w=1800&amp;auto=format&amp;fit=crop" alt="Restaurant interior" style="animation-direction:alternate;animation-duration:16s;animation-iteration-count:infinite;animation-name:ken;animation-timing-function:ease-in-out;block-size:100%;border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;box-sizing:border-box;column-rule-color:currentcolor;display:block;height:100%;inline-size:100%;max-inline-size:100%;max-width:100%;object-fit:cover;outline-color:currentcolor;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;transform:scale(1.0001, 1.0001);width:100%;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;" data-h="8"></div>

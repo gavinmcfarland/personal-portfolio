@@ -4,6 +4,7 @@ import { ZOOM, PAN, GRID, DEFAULT_SHAPE_STYLE, frameBarH, clampScale, sectionNod
 import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
 import { RICH_COMMANDS, sanitizeRich, isRichHtml } from './rich-text';
 import { injectBridge, auditHtml } from './html-bridge';
+import { postScrollState } from './html-input';
 import { getGlobalReadOnly, setGlobalReadOnly, subscribeMode, allocOwnerId, joinOwners, setActiveCanvas, subscribeOwner, primaryOwner } from './edit-mode';
 
 /* Default localStorage key for the dev autosave. Override with the `storageKey`
@@ -3479,8 +3480,13 @@ export function CanvasProvider({
        toggle one CSS rule. */
     function setHtmlPassThrough(on) {
       const el = rootRef.current; if (!el) return;
+      // Shift auto-repeats its keydown; only an edge is worth telling the frames.
+      if (on === el.hasAttribute('data-cv-passthrough')) return;
       if (on) el.setAttribute('data-cv-passthrough', '');
       else el.removeAttribute('data-cv-passthrough');
+      // The documents hold their scroll containers flat while nobody can scroll
+      // them (SCROLL_HOLD in html-bridge.js) — let go now the shield is down.
+      for (const f of el.querySelectorAll('.cv-html-frame')) postScrollState(f);
     }
     /* Open an html node's document in a new tab (idb: refs resolve to an object
        URL first). Sync window.open where possible so popup blockers stay calm. */

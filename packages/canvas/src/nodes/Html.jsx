@@ -4,7 +4,7 @@ import { useCanvas } from '../CanvasProvider';
 import { useRegister, useMediaSrc } from './common';
 import { frameBarH } from '../constants';
 import { FrameBar } from './DeviceFrame';
-import { postHover, postHoverEnd } from '../html-input';
+import { postHover, postHoverEnd, postScrollState } from '../html-input';
 
 /* A dropped/pasted HTML document rendered live in a sandboxed iframe. The
    iframe is the whole point: the document's styles and scripts are fully
@@ -210,6 +210,11 @@ function HtmlNode({ node }) {
 
   useThemeSync(framesOf);
   useFrameMessages(frameRef, shieldRef, readOnly, eng);
+  /* Going live (or back) drops or raises the shield, and with it whether the
+     document can be scrolled — so it lets go of, or retakes, its scroll
+     containers. Inert too: it decides whether Shift reaches this node. Read off
+     the DOM after commit, where the classes those depend on have landed. */
+  useEffect(() => { framesOf().forEach(postScrollState); }, [live, node.inert, framesOf]);
   /* The page this node was saved on (see captureHtmlPage), read through a ref
      so a later capture never re-runs the seed — the document is already up by
      then, and re-posting the restore would walk it through the trail again. */
@@ -224,6 +229,9 @@ function HtmlNode({ node }) {
     const f = e.currentTarget;
     postThemeTo(f);
     eng.postZoomStateTo(f);
+    // Boots held (see SCROLL_HOLD); only a frame that loads with the shield
+    // already down — live, or Shift held — needs telling.
+    postScrollState(f);
     /* And the screen the board remembers this document on, if any.
 
        Sent even when there is none, because a document that veiled itself on

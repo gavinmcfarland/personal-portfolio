@@ -957,6 +957,86 @@
     if (d.type === 'canvas-input-hover-end') { hoverEnd(); return; }
     if (d.type === 'canvas-input-tap') replay(d.x, d.y, d.pointerType || 'mouse', d.detail || 1, !!d.quiet);
   });
+})()</script><script data-cv-scroll="1">(() => {
+  if (window.parent === window) return;
+  var HOVER_CLASS = 'cv-hv';
+  var held = [];   // [{ el, prev }] — prev is the inline values to put back
+  var live = false;
+  var timer = 0;
+  var scrollable = function (v) { return v === 'auto' || v === 'scroll' || v === 'overlay'; };
+  var PROPS = ['overflow-x', 'overflow-y', 'scrollbar-gutter'];
+  var find = function (el) {
+    for (var i = 0; i < held.length; i++) if (held[i].el === el) return held[i];
+    return null;
+  };
+  var hold = function () {
+    timer = 0;
+    if (live || !document.body) return;
+    held = held.filter(function (h) { return h.el.isConnected; });
+    var all = document.body.getElementsByTagName('*');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      var cs = getComputedStyle(el);
+      if (!scrollable(cs.overflowX) && !scrollable(cs.overflowY)) continue;
+      var st = el.style;
+      // A box already held only comes back scrollable if its own script has
+      // rewritten the inline overflow since — re-apply over that, but keep the
+      // values remembered the first time, which are the ones to restore.
+      if (!find(el)) {
+        var prev = {};
+        PROPS.forEach(function (p) { prev[p] = [st.getPropertyValue(p), st.getPropertyPriority(p)]; });
+        held.push({ el: el, prev: prev });
+      }
+      var bar = el.offsetWidth - el.clientWidth
+        - (parseFloat(cs.borderLeftWidth) || 0) - (parseFloat(cs.borderRightWidth) || 0);
+      var top = el.scrollTop, left = el.scrollLeft;
+      if (bar > 0.5) st.setProperty('scrollbar-gutter', 'stable', 'important');
+      st.setProperty('overflow-x', 'hidden', 'important');
+      st.setProperty('overflow-y', 'hidden', 'important');
+      el.scrollTop = top; el.scrollLeft = left;
+    }
+  };
+  var release = function () {
+    clearTimeout(timer); timer = 0;
+    held.forEach(function (h) {
+      if (!h.el.isConnected) return;
+      var top = h.el.scrollTop, left = h.el.scrollLeft;
+      PROPS.forEach(function (p) {
+        var v = h.prev[p];
+        if (v[0]) h.el.style.setProperty(p, v[0], v[1]); else h.el.style.removeProperty(p);
+      });
+      h.el.scrollTop = top; h.el.scrollLeft = left;
+    });
+    held = [];
+  };
+  var schedule = function () { if (!live && !timer) timer = setTimeout(hold, 150); };
+  var strip = function (c) { return (' ' + (c || '') + ' ').split(' ' + HOVER_CLASS + ' ').join(' ').trim(); };
+  var mo = new MutationObserver(function (list) {
+    for (var i = 0; i < list.length; i++) {
+      var m = list[i];
+      if (m.type === 'attributes' && m.attributeName === 'class'
+        && strip(m.oldValue) === strip(m.target.getAttribute('class'))) continue;
+      return schedule();
+    }
+  });
+  var start = function () {
+    hold();
+    mo.observe(document.documentElement, {
+      childList: true, subtree: true,
+      attributes: true, attributeFilter: ['class', 'style'], attributeOldValue: true,
+    });
+  };
+  if (document.readyState === 'loading') addEventListener('DOMContentLoaded', start);
+  else start();
+  // Fonts and late styles can turn a box into a scroller after the first pass.
+  addEventListener('load', schedule);
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'canvas-scroll') return;
+    if (!!d.live === live) return;
+    live = !!d.live;
+    if (live) release(); else hold();
+  });
 })()</script></head>
 <body>
 <div class="app">

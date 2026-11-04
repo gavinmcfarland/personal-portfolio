@@ -911,7 +911,133 @@ const PAGE_BRIDGE = `<script data-cv-page="2">(() => {
   });
 })()</` + 'script>';
 
-/* The four halves, each stamped with the version of the script it carries. Bump
+/* Scroll hold, the fifth injected half. Holds the document's own scroll
+   containers at `overflow: hidden` for as long as nobody can scroll them.
+
+   WHY. A scroll container is the most expensive thing an embed can contain.
+   The browser gives every user-scrollable box its own composited layer, backed
+   for the box's whole scrollable extent at the device's pixel ratio, and it
+   does that whatever scale the board is drawing the node at. Profiled on the
+   health board (five copies of one phone prototype whose screen is an
+   `overflow-y: auto` pane), the five iframes cost ~90 MB of GPU memory over a
+   board with the same nodes empty; holding that one pane at `hidden` brought it
+   back to the empty board's figure, and no other property moved it at all —
+   backdrop-filter, shadows, filters, positioning and animation were each worth
+   nothing measurable. On a phone that is the difference between a board that
+   opens and a tab iOS kills: Safari reloads it once ("sent back to the top")
+   and then gives up ("A problem repeatedly occurred").
+
+   WHY IT IS FREE. Nobody can scroll an embed anyway, most of the time. The
+   board's shield takes every wheel and drag (see INPUT_BRIDGE), so a document
+   is only ever scrolled while the shield is down: Shift held in view mode, or
+   the node made live in edit mode. On a touch device, never. Everything else
+   that moves a scroll position — the page half walking back to a start page,
+   a demo's own scrollIntoView, a replayed tap focusing a field — is
+   programmatic, and `hidden` is still a scroll container: it keeps its offset,
+   it still scrolls from script, and `position: sticky` inside it still sticks
+   to it. So the document looks and behaves exactly as before; it just stops
+   paying for a scroller nobody can drag.
+
+   The host says when the shield is down with { type: 'canvas-scroll', live },
+   and everything held is let go on `live: true` and taken back on `false`.
+   A document whose host never sends it (an older canvas, the file opened
+   standalone — where the guard below makes this a no-op anyway) stays held,
+   which costs it only the scrolling that host could not deliver either.
+
+   The root scroller (html/body) is left alone: it measured as free, and
+   clipping it would change how the document lays out against the viewport.
+
+   A box with a classic, space-taking scrollbar is given `scrollbar-gutter:
+   stable` while held, so taking the bar away does not reflow its content
+   sideways. Overlay scrollbars (macOS, iOS) take no space and get nothing.
+
+   Kept current as the document changes — a prototype that swaps screens
+   mounts new panes — with a debounced rescan on DOM changes. The input half
+   toggles its hover class on every forwarded move, and those mutations are
+   filtered out so hovering never sets off a rescan. */
+const SCROLL_HOLD = `<script data-cv-scroll="1">(() => {
+  if (window.parent === window) return;
+  var HOVER_CLASS = 'cv-hv';
+  var held = [];   // [{ el, prev }] — prev is the inline values to put back
+  var live = false;
+  var timer = 0;
+  var scrollable = function (v) { return v === 'auto' || v === 'scroll' || v === 'overlay'; };
+  var PROPS = ['overflow-x', 'overflow-y', 'scrollbar-gutter'];
+  var find = function (el) {
+    for (var i = 0; i < held.length; i++) if (held[i].el === el) return held[i];
+    return null;
+  };
+  var hold = function () {
+    timer = 0;
+    if (live || !document.body) return;
+    held = held.filter(function (h) { return h.el.isConnected; });
+    var all = document.body.getElementsByTagName('*');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      var cs = getComputedStyle(el);
+      if (!scrollable(cs.overflowX) && !scrollable(cs.overflowY)) continue;
+      var st = el.style;
+      // A box already held only comes back scrollable if its own script has
+      // rewritten the inline overflow since — re-apply over that, but keep the
+      // values remembered the first time, which are the ones to restore.
+      if (!find(el)) {
+        var prev = {};
+        PROPS.forEach(function (p) { prev[p] = [st.getPropertyValue(p), st.getPropertyPriority(p)]; });
+        held.push({ el: el, prev: prev });
+      }
+      var bar = el.offsetWidth - el.clientWidth
+        - (parseFloat(cs.borderLeftWidth) || 0) - (parseFloat(cs.borderRightWidth) || 0);
+      var top = el.scrollTop, left = el.scrollLeft;
+      if (bar > 0.5) st.setProperty('scrollbar-gutter', 'stable', 'important');
+      st.setProperty('overflow-x', 'hidden', 'important');
+      st.setProperty('overflow-y', 'hidden', 'important');
+      el.scrollTop = top; el.scrollLeft = left;
+    }
+  };
+  var release = function () {
+    clearTimeout(timer); timer = 0;
+    held.forEach(function (h) {
+      if (!h.el.isConnected) return;
+      var top = h.el.scrollTop, left = h.el.scrollLeft;
+      PROPS.forEach(function (p) {
+        var v = h.prev[p];
+        if (v[0]) h.el.style.setProperty(p, v[0], v[1]); else h.el.style.removeProperty(p);
+      });
+      h.el.scrollTop = top; h.el.scrollLeft = left;
+    });
+    held = [];
+  };
+  var schedule = function () { if (!live && !timer) timer = setTimeout(hold, 150); };
+  var strip = function (c) { return (' ' + (c || '') + ' ').split(' ' + HOVER_CLASS + ' ').join(' ').trim(); };
+  var mo = new MutationObserver(function (list) {
+    for (var i = 0; i < list.length; i++) {
+      var m = list[i];
+      if (m.type === 'attributes' && m.attributeName === 'class'
+        && strip(m.oldValue) === strip(m.target.getAttribute('class'))) continue;
+      return schedule();
+    }
+  });
+  var start = function () {
+    hold();
+    mo.observe(document.documentElement, {
+      childList: true, subtree: true,
+      attributes: true, attributeFilter: ['class', 'style'], attributeOldValue: true,
+    });
+  };
+  if (document.readyState === 'loading') addEventListener('DOMContentLoaded', start);
+  else start();
+  // Fonts and late styles can turn a box into a scroller after the first pass.
+  addEventListener('load', schedule);
+  addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'canvas-scroll') return;
+    if (!!d.live === live) return;
+    live = !!d.live;
+    if (live) release(); else hold();
+  });
+})()</` + 'script>';
+
+/* The five halves, each stamped with the version of the script it carries. Bump
    a version whenever its script changes: ingest replaces any older copy it
    finds rather than leaving it in place, so a document that already passed
    through an earlier build of the canvas — an asset re-dropped onto the board,
@@ -928,6 +1054,7 @@ export const BRIDGE = [
   { marker: 'data-cv-zoom-opts', version: '5', script: ZOOM_OPTS },
   { marker: 'data-cv-input', version: '3', script: INPUT_BRIDGE },
   { marker: 'data-cv-page', version: '2', script: PAGE_BRIDGE },
+  { marker: 'data-cv-scroll', version: '1', script: SCROLL_HOLD },
 ];
 
 /* ── Does this document actually follow the theme? ──

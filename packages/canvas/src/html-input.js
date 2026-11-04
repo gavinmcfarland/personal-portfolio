@@ -89,3 +89,24 @@ export function replayTap(frame, clientX, clientY, pointerType) {
   taps.set(frame, { t: now, x, y, detail: run });
   post(frame, { type: 'canvas-input-tap', x, y, pointerType: pointerType || 'mouse', detail: run });
 }
+
+/* Whether the document can be scrolled by the reader right now — the shield is
+   down (Shift held, or the node live in edit mode). While it can't, the bridge
+   holds its scroll containers at `overflow: hidden`, which is what keeps a
+   board of embeds inside a phone's memory budget (SCROLL_HOLD in
+   html-bridge.js has the measurements).
+
+   Decided from the DOM, the same way the CSS that drops the shield decides it:
+   the root's passthrough attribute (minus inert nodes, which keep their shield
+   whatever is held) or the node's own live class. */
+export function scrollFreeFor(frame) {
+  const node = frame && frame.closest('.cv-node.cv-html');
+  if (!node) return false;
+  if (node.classList.contains('cv-live')) return true;
+  const root = node.closest('.canvas-root');
+  return !!(root && root.hasAttribute('data-cv-passthrough') && !node.classList.contains('cv-html-inert'));
+}
+
+export function postScrollState(frame) {
+  post(frame, { type: 'canvas-scroll', live: scrollFreeFor(frame) });
+}
