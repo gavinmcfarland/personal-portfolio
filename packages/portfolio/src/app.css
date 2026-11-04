@@ -28,6 +28,18 @@
   --color-surface: var(--surface);
   --color-hover: var(--hover);
 
+  /* The text colours, registered for the same reason. They used to be plain
+     unlayered classes further down, and unlayered CSS beats every Tailwind
+     utility whatever its variant — so `text-ink group-hover:text-accent` never
+     turned, and `hover:text-ink` was never generated at all (no theme colour by
+     that name). Every text hover on the site was dead; the only thing a row did
+     when pointed at was fade its background in. As theme colours they live in
+     the utilities layer with their variants, and the variants win. */
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+
   /* ── Type scale ──────────────────────────────────────────────
      Seven steps, and nothing between them. These used to be written as literals
      at every call site, which is how the sheet ended up with eleven different
@@ -325,18 +337,7 @@ body :not(.canvas-root, .canvas-root *, .route-panel) {
 }
 
 /* ── Token helper classes ───────────────────────────────────── */
-.text-ink {
-  color: var(--ink);
-}
-.text-muted {
-  color: var(--muted);
-}
-.text-faint {
-  color: var(--faint);
-}
-.text-accent {
-  color: var(--accent);
-}
+/* text-ink / muted / faint / accent are theme colours now — see @theme. */
 .bg-base {
   background: var(--bg);
 }
@@ -427,8 +428,15 @@ body :not(.canvas-root, .canvas-root *, .route-panel) {
   white-space: nowrap;
   transition: color 150ms;
 }
+/* Hover lands at once and only the way out fades. A colour that eases in over
+   150–200ms reads as the page being slow to notice the pointer, not as polish;
+   every single link follows the same rule (`hover:duration-0` on the Tailwind
+   ones). Stacked list rows (Projects, WritingIndex, ListRow) take no
+   transition at all: a fade-out on rows set edge to edge leaves a trail of
+   washes behind a pointer sweeping down the list. */
 .bar nav a:hover {
   color: var(--ink);
+  transition-duration: 0s;
 }
 
 /* The live page is filled, not underlined — rank by fill, the system's first
@@ -668,6 +676,7 @@ p + .footnotes {
 .xref:hover {
   color: var(--accent);
   text-decoration-color: currentColor;
+  transition-duration: 0s;
 }
 .xref__sec {
   color: var(--faint);
@@ -1112,6 +1121,7 @@ p + .footnotes {
 .codeblock__copy:hover {
   color: var(--ink);
   background: var(--hover);
+  transition-duration: 0s;
 }
 .codeblock__copy svg {
   width: 14px;
@@ -1275,6 +1285,7 @@ p + .footnotes {
 .ulink:hover {
   color: var(--accent);
   background-image: linear-gradient(var(--accent), var(--accent));
+  transition-duration: 0s;
 }
 
 /* ── Entrance animation — one calm staggered load ────────────── */

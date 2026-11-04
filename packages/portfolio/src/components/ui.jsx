@@ -24,7 +24,7 @@ export function ListRow({ index, href, to, external, children }) {
   // -mx-3 px-3 on every row so link and non-link rows share the same left edge.
   const cls =
     'group relative -mx-3 grid grid-cols-1 gap-y-1 rounded-[0.5rem] px-3 py-3 sm:grid-cols-[8.5rem_1fr] sm:gap-x-6';
-  const linkCls = `${cls} transition-colors duration-200 hover:bg-surface`;
+  const linkCls = `${cls} hover:bg-surface`;
   const body = (
     <>
       <div className="font-sans tnum text-5 font-bold text-ink">{index}</div>

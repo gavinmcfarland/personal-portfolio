@@ -7,7 +7,7 @@ import { useTheme } from '../contexts/ThemeContext';
    sliding overlay panel — see App.jsx. */
 const PANEL = 'flex items-center justify-center border border-line bg-surface p-1';
 const BUTTON =
-  'flex h-7 w-7 items-center justify-center rounded-[8px] bg-transparent text-muted transition-colors duration-150 hover:bg-hover hover:text-ink';
+  'flex h-7 w-7 items-center justify-center rounded-[8px] bg-transparent text-muted transition-colors duration-150 hover:bg-hover hover:text-ink hover:duration-0';
 
 /* Minimal single-button theme cycle — system → light → dark.
 

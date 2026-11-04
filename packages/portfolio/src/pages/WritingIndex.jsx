@@ -77,10 +77,10 @@ export default function WritingIndex() {
                   key={post.slug}
                   to={`/writing/${post.slug}`}
                   onClick={blurOnPointerClick}
-                  className="group -mx-4 block px-4 py-(--sp-2) transition-colors duration-150 hover:bg-surface"
+                  className="group -mx-4 block px-4 py-(--sp-2) hover:bg-surface"
                 >
                   <span className="leader max-w-measure">
-                    <span className="text-ink transition-colors duration-150 group-hover:text-accent">
+                    <span className="text-ink group-hover:text-accent">
                       {post.title}
                     </span>
                     {post.draft && <span className="draft-tag">Draft</span>}

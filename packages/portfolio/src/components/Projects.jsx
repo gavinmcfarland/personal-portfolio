@@ -74,14 +74,18 @@ export const ProjectList = () => (
       <Link
         key={p.id}
         to={`/projects/${p.id}`}
-        className="group -mx-4 block px-4 py-3 transition-colors duration-150 hover:bg-surface"
+        /* No transition on the wash or the title, either way. The rows are
+           stacked edge to edge, so a fade-out leaves each row the pointer has
+           just crossed still lit as the next one comes on — a trail of washes
+           down the list. A fade-in reads as lag. It snaps on and off. */
+        className="group -mx-4 block px-4 py-3 hover:bg-surface"
         onClick={blurOnPointerClick}
       >
         {/* Title row spans the full width, so the kind chip stays hard against
               the entry's right edge — the chevron rides the row below it rather
               than sitting beside the chip and insetting it. */}
         <p className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <span className="font-bold text-ink transition-colors duration-150 group-hover:text-accent">
+          <span className="font-bold text-ink group-hover:text-accent">
             {p.title}
           </span>
           <span className="flex items-baseline gap-3">
