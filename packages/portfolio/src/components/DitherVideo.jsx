@@ -63,6 +63,10 @@ const RASTER = 480;
 
 export default function DitherVideo({
   src,
+  /* A still to dither until the clip's first frame (see `poster` in
+     @gavinmcfarland/dither's player) — small enough to inline, so the box has
+     dots in it on the first paint rather than when the clip turns up. */
+  poster,
   className = "",
   cell = CELL,
   fps = FPS,
@@ -103,11 +107,12 @@ export default function DitherVideo({
       steps,
       autoLevels,
       background,
+      poster,
       order: 4, // the classic 4×4 matrix
       ...(style ? { style } : {}),
       palette: paletteFor(theme),
     }),
-    [cell, fps, raster, method, fit, lo, hi, contrast, brightness, steps, autoLevels, background, style, theme],
+    [cell, fps, raster, method, fit, lo, hi, contrast, brightness, steps, autoLevels, background, poster, style, theme],
   );
 
   // Retune in place. Declared first so the ref is current before the mount

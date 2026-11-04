@@ -35,7 +35,7 @@
    that did not change keeps its dot. That stability is also what lets the
    same clip be cut at any size and stay recognisably itself. */
 
-import { imageSpec, toLuma } from './image.js';
+import { imageSpec, loadLuma, toLuma } from './image.js';
 import { renderImageData } from './engine.js';
 
 const isBrowser = typeof document !== 'undefined';
@@ -201,15 +201,35 @@ export async function openVideo(src, opts = {}) {
   video.preload = 'auto';
   video.crossOrigin = video.crossOrigin || (typeof src === 'string' && /^https?:/.test(src) ? 'anonymous' : null);
 
+  /* Ask to play BEFORE waiting for data, not after. `preload` is a hint, and
+     iOS Safari does not take it: a muted inline video there fetches nothing
+     until play() is called, so waiting for `loadeddata` first waited for an
+     event that only play() could cause, and the avatar sat empty for good.
+
+     A rejected play() is not fatal. Low Power Mode, and any browser set to
+     block autoplay, refuse it — and on iOS a refused play also means no data,
+     so the clip is retried on the reader's first tap, click or key. Until then
+     the player shows its poster, if it was given one. */
+  const retryOnInteraction = () => {
+    const events = ['pointerdown', 'touchend', 'keydown'];
+    const retry = () => {
+      events.forEach((e) => removeEventListener(e, retry, true));
+      video.play().catch(() => {});
+    };
+    events.forEach((e) => addEventListener(e, retry, { capture: true, passive: true }));
+  };
+  video.play().catch(retryOnInteraction);
+
   if (!video.videoWidth) {
     await new Promise((resolve, reject) => {
+      const fail = () => reject(new Error(`Could not load video: ${String(src).slice(0, 80)}`));
+      // Handed an element that already failed (the head warmup's fetch can
+      // finish, and fail, before this runs): its error event has been and gone.
+      if (video.error) return fail();
       video.addEventListener('loadeddata', resolve, { once: true });
-      video.addEventListener('error', () => reject(new Error(`Could not load video: ${String(src).slice(0, 80)}`)), { once: true });
+      video.addEventListener('error', fail, { once: true });
     });
   }
-  // A rejected play() is not fatal — a paused video still holds a frame, and
-  // the player will try again on the first interaction.
-  await video.play().catch(() => {});
 
   // Frames are read back at `raster` px on the long edge. Reading a full
   // 1080p frame sixty times a second is the one thing that will drop the
@@ -250,6 +270,13 @@ export async function openVideo(src, opts = {}) {
               true) — nothing is dithered while nobody is looking
      respectReducedMotion  under `prefers-reduced-motion`, paint one frame and
               hold it (default true)
+     poster   a still to dither until the clip's first frame — anything
+              `loadLuma` takes (a small image URL, ideally inlined). The clip
+              has to arrive, decode and be allowed to play before it shows
+              anything; the poster is what fills the box until then, and is
+              what stays if the clip never comes (autoplay refused, a failed
+              fetch). Dithered with the same options at the same size, so the
+              hand-over is the dots moving, not a picture being swapped
      onFrame  called after each paint, for a counter or a readout */
 export class DitherVideoPlayer {
   constructor(source, options = {}) {
@@ -277,6 +304,17 @@ export class DitherVideoPlayer {
     this._frame = 0;
     this._last = 0;
     this._observers = [];
+    this._poster = null;
+
+    if (options.poster) {
+      loadLuma(options.poster, { raster: options.raster }).then(
+        (plane) => {
+          this._poster = plane;
+          if (!this.clip) this.draw();
+        },
+        () => {}, // a poster is a nicety; the clip still comes
+      );
+    }
 
     /* Resolves to the player, or to null if the clip would not load — it does
        NOT reject. A texture is decoration: a missing or unplayable file should
@@ -374,12 +412,15 @@ export class DitherVideoPlayer {
   /* One frame, now. Safe to call at any time — it is what the loop calls,
      and what a resize or a theme change calls. */
   draw() {
-    if (!this.clip || this.destroyed) return;
+    if (this.destroyed) return;
+    // The clip once it is here, the poster until then.
+    const source = this.clip ? this.clip.grab() : this._poster;
+    if (!source) return;
     const width = this.width;
     const height = this.height;
     if (!width || !height) return;
 
-    const spec = imageSpec(this.clip.grab(), { ...this.options, width, height });
+    const spec = imageSpec(source, { ...this.options, width, height });
     const img = renderImageData({
       width: spec.width,
       height: spec.height,

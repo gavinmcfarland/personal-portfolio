@@ -1,5 +1,15 @@
 import DitherVideo from "./DitherVideo";
 import clipUrl from "../assets/avatar.mp4";
+/* The clip's first frame, grey, 120px, ~1.7KB — under Vite's inline limit, so
+   it arrives inside the bundle rather than as a request of its own. It is what
+   the box shows until the clip can play, and what it keeps showing where the
+   clip never can (iOS in Low Power Mode refuses autoplay outright). Frame 0, so
+   the hand-over to the clip is seamless. Regenerate alongside the clip:
+
+     ffmpeg -i src/assets/avatar.mp4 -frames:v 1 \
+       -vf "scale=120:120:flags=lanczos,format=gray" -q:v 6 \
+       src/assets/avatar-poster.jpg */
+import posterUrl from "../assets/avatar-poster.jpg";
 
 /* The clip, already downloading before this module existed — vite-plugin-clip-
    warmup puts a <video> pointed at it in <head>, so the fetch runs alongside
@@ -53,6 +63,7 @@ const Intro = () => (
     >
       <DitherVideo
         src={clip}
+        poster={posterUrl}
         className="size-[100px] shrink-0 -scale-x-100"
         cell={2}
         method="floyd"
