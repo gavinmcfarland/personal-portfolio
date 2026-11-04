@@ -239,12 +239,122 @@ export async function openVideo(src, opts = {}) {
   return {
     video,
     grab: () => toLuma(video, { raster }),
+    grabAsync: () => grabFrameAsync(video, raster),
     stop() {
       video.pause();
       if (video.dataset.objectUrl) URL.revokeObjectURL(video.dataset.objectUrl);
       if (video !== src) video.removeAttribute('src');
     },
   };
+}
+
+/* ── Reading a frame without waiting for the GPU ─────────────────────
+   `grab()` goes through a canvas: drawImage(video) into a CPU-backed canvas
+   and getImageData back out. A decoded frame lives on the GPU, so that
+   drawImage is a synchronous readback — the main thread sits and waits for
+   the GPU process to hand the pixels over. On a page that is already asking
+   a lot of the GPU, that wait was measured at 100–380ms a frame, every one
+   of them a frozen page, for a grab that costs ~1ms when the GPU is idle.
+
+   `VideoFrame.copyTo()` is the same readback, asynchronous: it resolves
+   when the pixels arrive and the page carries on meanwhile. And the frame
+   is usually YUV, whose first plane IS luma — the one thing the dither
+   reads — so for those formats only that plane is copied and there is no
+   colour conversion at all.
+
+   Resolves to a luminance plane; to null when there is no frame to read
+   just now; to false where this route is not available at all (no
+   WebCodecs, a format it does not read), and the caller falls back to
+   `grab()`. */
+const YUV = /^(I420|I420A|I422|I422A|I444|I444A|NV12|NV12A)$/;
+const RGB = /^(RGBA|RGBX|BGRA|BGRX)$/;
+const canVideoFrame = typeof VideoFrame === 'function';
+
+async function grabFrameAsync(video, raster) {
+  if (!canVideoFrame) return false;
+  if (video.readyState < 2) return null;
+  let frame;
+  try {
+    frame = new VideoFrame(video);
+  } catch {
+    return null;
+  }
+  try {
+    const rect = frame.visibleRect;
+    const sw = rect.width;
+    const sh = rect.height;
+    // Output at the display size, capped at `raster` on the long edge — the
+    // same plane `grab()` would have produced.
+    const dw = frame.displayWidth || sw;
+    const dh = frame.displayHeight || sh;
+    const k = Math.min(1, raster / Math.max(dw, dh));
+    const W = Math.max(1, Math.round(dw * k));
+    const H = Math.max(1, Math.round(dh * k));
+    const n = W * H;
+    const data = new Float32Array(n);
+    const alpha = new Float32Array(n).fill(1);
+
+    let format = frame.format;
+    let buf;
+    let layout;
+    if (format && YUV.test(format)) {
+      buf = new Uint8Array(frame.allocationSize({ rect }));
+      layout = await frame.copyTo(buf, { rect });
+    } else {
+      // An opaque GPU frame (format null) or anything else: ask for RGBA.
+      // Older engines ignore or reject the option; either way, give up.
+      const opts = { rect, format: 'RGBA' };
+      try {
+        buf = new Uint8Array(frame.allocationSize(opts));
+        layout = await frame.copyTo(buf, opts);
+      } catch {
+        return false;
+      }
+      if (buf.length !== sw * sh * 4) return false;
+      format = 'RGBA';
+    }
+
+    if (YUV.test(format)) {
+      // Limited range (16–235) unless the stream says otherwise.
+      const full = frame.colorSpace && frame.colorSpace.fullRange;
+      const lo = full ? 0 : 16;
+      const span = full ? 255 : 219;
+      const y = layout[0];
+      // The alpha plane, where there is one, is the last.
+      const a = format.endsWith('A') ? layout[layout.length - 1] : null;
+      for (let j = 0; j < H; j++) {
+        const sy = Math.min(sh - 1, Math.floor(((j + 0.5) * sh) / H));
+        for (let i = 0; i < W; i++) {
+          const sx = Math.min(sw - 1, Math.floor(((i + 0.5) * sw) / W));
+          const o = j * W + i;
+          const v = (buf[y.offset + sy * y.stride + sx] - lo) / span;
+          data[o] = v < 0 ? 0 : v > 1 ? 1 : v;
+          if (a) alpha[o] = buf[a.offset + sy * a.stride + sx] / 255;
+        }
+      }
+    } else if (RGB.test(format)) {
+      const p = layout[0];
+      const bgr = format.startsWith('B');
+      const hasAlpha = format.endsWith('A');
+      for (let j = 0; j < H; j++) {
+        const sy = Math.min(sh - 1, Math.floor(((j + 0.5) * sh) / H));
+        for (let i = 0; i < W; i++) {
+          const sx = Math.min(sw - 1, Math.floor(((i + 0.5) * sw) / W));
+          const q = p.offset + sy * p.stride + sx * 4;
+          const r = buf[bgr ? q + 2 : q];
+          const b = buf[bgr ? q : q + 2];
+          const o = j * W + i;
+          data[o] = (0.2126 * r + 0.7152 * buf[q + 1] + 0.0722 * b) / 255;
+          if (hasAlpha) alpha[o] = buf[q + 3] / 255;
+        }
+      }
+    } else {
+      return false;
+    }
+    return { width: W, height: H, data, alpha };
+  } finally {
+    frame.close();
+  }
 }
 
 /* ── The player ───────────────────────────────────────────────────────
@@ -305,6 +415,9 @@ export class DitherVideoPlayer {
     this._last = 0;
     this._observers = [];
     this._poster = null;
+    // The last frame read from the clip, and whether a read is in flight.
+    this._plane = null;
+    this._pulling = false;
 
     if (options.poster) {
       loadLuma(options.poster, { raster: options.raster }).then(
@@ -413,8 +526,10 @@ export class DitherVideoPlayer {
      and what a resize or a theme change calls. */
   draw() {
     if (this.destroyed) return;
-    // The clip once it is here, the poster until then.
-    const source = this.clip ? this.clip.grab() : this._poster;
+    // The last frame read, the clip read now if there is none yet, the
+    // poster until the clip is here. A resize or a theme flip repaints the
+    // frame already in hand rather than reading the GPU again.
+    const source = this._plane || (this.clip ? this.clip.grab() : this._poster);
     if (!source) return;
     const width = this.width;
     const height = this.height;
@@ -457,11 +572,44 @@ export class DitherVideoPlayer {
       const t = now || performance.now();
       if (t - this._last >= interval - 1) {
         this._last = t;
-        this.draw();
+        this._pull();
       }
       this._frame = request(tick);
     };
     this._frame = request(tick);
+  }
+
+  /* Read the clip's current frame without blocking the page, then paint it.
+     A read still in flight means the GPU is behind; this frame is dropped
+     rather than queued, so a busy GPU costs frame rate, never responsiveness.
+     Where the async route is unavailable it is the old synchronous grab. */
+  _pull() {
+    if (this._pulling) return;
+    if (this._async === false) {
+      this._plane = this.clip.grab();
+      this.draw();
+      return;
+    }
+    this._pulling = true;
+    this.clip.grabAsync().then(
+      (plane) => {
+        this._pulling = false;
+        if (this.destroyed) return;
+        // False: this browser cannot take the route, so stop asking. Null:
+        // no frame for a moment (a seek, a stall) — skip this one.
+        if (plane === false) {
+          this._async = false;
+          this._pull();
+          return;
+        }
+        if (!plane) return;
+        this._plane = plane;
+        this.draw();
+      },
+      () => {
+        this._pulling = false;
+      },
+    );
   }
 
   _sizeToHost() {
