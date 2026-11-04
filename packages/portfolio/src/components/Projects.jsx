@@ -40,15 +40,14 @@ function KindTag({ kind }) {
 }
 
 /* The go-there mark at the right edge of a row. Faint until the row is pointed
-   at, then vermilion and nudged one step right — the same hover register the
-   title takes, so the whole row reacts as one target rather than two. Square
+   at, then ink — no movement, and it snaps like the row's wash. Square
    caps and a mitred vertex keep it in the flat-square family the kind swatch
    and the plates belong to.
 
    Touch widths only (`lg:hidden` — phone and tablet, the same breakpoint the
    plate grid uses to go side by side). On a pointer device the row already
-   announces itself as a target by lighting the title and filling its background
-   on hover; the chevron is there for touch, where there is no hover to say so. */
+   announces itself as a target by filling its background on hover; the
+   chevron is there for touch, where there is no hover to say so. */
 function Chevron() {
   return (
     <svg
@@ -57,7 +56,7 @@ function Chevron() {
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="square"
-      className="h-4 w-4 flex-none text-faint transition duration-150 group-hover:translate-x-1 group-hover:text-accent lg:hidden"
+      className="h-4 w-4 flex-none text-faint group-hover:text-ink lg:hidden"
       aria-hidden="true"
     >
       <path d="m9 5 7 7-7 7" />
@@ -85,7 +84,7 @@ export const ProjectList = () => (
               the entry's right edge — the chevron rides the row below it rather
               than sitting beside the chip and insetting it. */}
         <p className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <span className="font-bold text-ink group-hover:text-accent">
+          <span className="font-bold text-ink">
             {p.title}
           </span>
           <span className="flex items-baseline gap-3">
