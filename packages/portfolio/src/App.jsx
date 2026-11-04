@@ -57,7 +57,8 @@ const Backup = lazy(() => import("./pages/Backup"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 /* Resolve the :id param to a project, or render the 404 page. Draft projects
-   are excluded from `visibleProjects`, so their URLs return Not Found too. */
+   are excluded from `visibleProjects` outside dev, so their URLs return Not
+   Found on the deployed site and open normally in dev. */
 function ProjectRoute() {
   const { id } = useParams();
   const project = visibleProjects.find((p) => p.id === id);

@@ -10,9 +10,10 @@
    (`tagline`, `description`, `highlights`, `role`, `year`, …) drive the
    dedicated project page at /projects/:id.
 
-   Set `draft: true` to hide a project everywhere — it's kept out of the home
-   list and its /projects/:id page returns Not Found. Use `visibleProjects`
-   (below) anywhere you want only the published set. */
+   Set `draft: true` to hide a project on the built site — it's kept out of the
+   home list and its /projects/:id page returns Not Found. Under `pnpm dev`
+   drafts stay listed, marked with a Draft tag, the same as draft posts. Use
+   `visibleProjects` (below) anywhere you want the set the current build shows. */
 export const projects = [
 	{
 		id: 'health',
@@ -167,6 +168,8 @@ export const projects = [
 	},
 ];
 
-/* The published set — everything not marked `draft`. This is what the home
-   list and the numbered count should use. */
-export const visibleProjects = projects.filter((p) => !p.draft);
+/* The published set — everything not marked `draft`, plus the drafts while
+   developing. This is what the home list and the numbered count should use. */
+export const visibleProjects = import.meta.env.DEV
+  ? projects
+  : projects.filter((p) => !p.draft);

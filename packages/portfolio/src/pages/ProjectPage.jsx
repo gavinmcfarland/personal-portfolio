@@ -101,6 +101,7 @@ export default function ProjectPage({ project }) {
               in @layer utilities.) */}
           <div className="mt-(--sp-2) flex flex-wrap items-baseline gap-x-3 lg:mt-(--sp-8) lg:flex-col lg:items-start">
             <h1 className="wordmark wordmark--narrow">{project.title}</h1>
+            {project.draft && <span className="draft-tag">Draft</span>}
             <span className="tnum font-sans text-3 text-faint">
               {project.tech.join(" · ")}
             </span>

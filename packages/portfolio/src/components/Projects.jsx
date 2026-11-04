@@ -84,7 +84,10 @@ export const ProjectList = () => (
           <span className="font-bold text-ink transition-colors duration-150 group-hover:text-accent">
             {p.title}
           </span>
-          <KindTag kind={p.kind} />
+          <span className="flex items-baseline gap-3">
+            {p.draft && <span className="draft-tag">Draft</span>}
+            <KindTag kind={p.kind} />
+          </span>
         </p>
         {/* Plate left, description right — the entry shape from the Dither
               sheet: a 30rem × 13rem plate, stacking above the text on narrow
