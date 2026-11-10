@@ -3933,6 +3933,21 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Page reorder drag: the whole group (page + its sections) moves together. */
+.canvas-root .cv-page-menu-btn[data-reorderable] {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.canvas-root .cv-page-group[data-dragging] {
+  opacity: 0.5;
+}
+.canvas-root .cv-page-group[data-drop-before] {
+  box-shadow: 0 -2px 0 -0.5px var(--cv-accent);
+}
+.canvas-root .cv-page-group[data-drop-after] {
+  box-shadow: 0 2px 0 -0.5px var(--cv-accent);
+}
 /* Archived pages: still listed while editing, but quieter, with a tag. */
 .canvas-root .cv-page-menu-item[data-archived]:not([data-active]) .cv-page-menu-name {
   color: var(--cv-muted);

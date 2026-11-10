@@ -383,9 +383,15 @@ function buildFromSaved(base, raw, homeId, managedTypes, editable) {
   const rawPages = live.length ? live : allPages.slice(0, 1);
   const pagesMeta = [];
   const pagesData = {};
+  // Pages keep the ids they were saved with, so a reordered board doesn't hand
+  // the home id to whichever page now leads. Legacy snapshots (no ids) and
+  // boards whose home page is gone fall back to treating the first as home.
+  const hasHome = rawPages.some((rp) => rp.id === homeId);
   rawPages.forEach((rp, i) => {
-    const id = i === 0 ? homeId : rp.id || `pg${i}`;
-    const p = normalizePage(rp, base, i === 0, managedTypes);
+    let id = rp.id || (i === 0 && !hasHome ? homeId : `pg${i}`);
+    while (pagesData[id]) id = `${id}-${i}`; // hand-edited duplicates
+    const isHome = hasHome ? id === homeId : i === 0;
+    const p = normalizePage(rp, base, isHome, managedTypes);
     pagesMeta.push(rp.archived ? { id, name: p.name, archived: true } : { id, name: p.name });
     pagesData[id] = { nodes: p.nodes, shapes: p.shapes, view: p.view };
   });
@@ -2507,6 +2513,24 @@ export function CanvasProvider({
       delete pageData[id];
       setPages((ps) => ps.filter((p) => p.id !== id));
     }
+    /* Page order as shown in the page menu (and the presenter's running order).
+       When managed types are in play the home board stays first. */
+    function canReorderPages() {
+      return EDITABLE && S.pages.length > 1;
+    }
+    /* The home board when it has to stay first (managed types live there). */
+    function isPagePinned(id) {
+      return !!managedTypes.length && id === HOME_ID && S.pages[0] && S.pages[0].id === HOME_ID;
+    }
+    function reorderPages(ids) {
+      if (!canReorderPages()) return;
+      const known = new Set(S.pages.map((p) => p.id));
+      // Ignore a stale list (a page added or deleted mid-drag).
+      if (ids.length !== S.pages.length || new Set(ids).size !== ids.length || ids.some((id) => !known.has(id))) return;
+      if (managedTypes.length && known.has(HOME_ID) && ids[0] !== HOME_ID) return;
+      const byId = Object.fromEntries(S.pages.map((p) => [p.id, p]));
+      setPages(ids.map((id) => byId[id]));
+    }
     /* Archived pages stay on the board while editing but are left out when it
        loads non-editable (production). Same home-board rule as deleting, and
        production must keep at least one page to open on. */
@@ -3620,7 +3644,7 @@ export function CanvasProvider({
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, setNodeScale, deleteSelected, deleteTarget,
       copySelected, cutSelected, cutTarget, paste, pasteAt, pasteFromMenu, hasClipboard, systemClipIsMine, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, setCanvasBgStrength, toggleGrid, fitAll, flyTo, fitViewFor, sectionInView, goToSection, stepSection, clearSectionFocus, reorderSections, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
-      switchPage, addPage, renamePage, removePage, canRemovePage, canArchivePage, setPageArchived,
+      switchPage, addPage, renamePage, removePage, canRemovePage, canArchivePage, setPageArchived, canReorderPages, reorderPages, isPagePinned,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
       isHtmlFile, addHtmlFromFile, setHtmlActive, setHtmlPassThrough, toggleHtmlInert, openHtml, captureHtmlPage, clearHtmlPage, restartHtml, markHtmlMoved,

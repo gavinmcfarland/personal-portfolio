@@ -2211,6 +2211,12 @@
   min-width: 0;
   overflow: hidden;
 }
+/* Page reorder drag: the whole group (page + its sections) moves together. */
+.canvas-root .cv-page-menu-btn[data-reorderable] {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
 /* Archived pages: still listed while editing, but quieter, with a tag. */
 .canvas-root .cv-page-archived-tag {
   flex: none;
