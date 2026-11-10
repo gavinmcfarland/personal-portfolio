@@ -1037,7 +1037,133 @@ const SCROLL_HOLD = `<script data-cv-scroll="1">(() => {
   });
 })()</` + 'script>';
 
-/* The five halves, each stamped with the version of the script it carries. Bump
+/* Fixed-position hold, the sixth half. Same family as backdrop-filter above:
+   something in the document that gets its own compositor layer and so never
+   re-rasterizes at the board's scale.
+
+   WebKit composites `position: fixed` elements. Once any element in a subframe
+   is composited, WebKit composites the subframe's whole document too — so on
+   Safari a single fixed toolbar leaves the ENTIRE embed soft past 100%, not
+   just the toolbar. Chrome makes a different call and stays crisp, which is
+   why this only ever shows up in Safari. It shipped on two published boards
+   (layer-styles' plugin footer, icon-preview's #actionbar and resize grip);
+   rewriting `fixed` to `absolute` in those exports fixed both.
+
+   In an embed the two are usually the same thing. The iframe is the viewport,
+   the board owns every gesture, and the root scroller sits at 0,0 — so a fixed
+   element and an absolute one anchored to the initial containing block land
+   on the same pixels. "Usually" is not "by construction", though, so each
+   element is converted only after it is MEASURED to be the same:
+
+     - its border box must not move or resize (catches a positioned ancestor
+       that would become the absolute containing block — a relative <body>
+       shorter than the viewport, say);
+     - the root's scrollable extent must not grow (a fixed element hanging off
+       the edge, such as an off-canvas drawer, adds no overflow; an absolute
+       one does, and would hand the document scrollbars).
+
+   Both measurements happen in one synchronous pass with no paint in between,
+   so a failed test is never seen. A hidden element (no boxes) is skipped and
+   picked up by the rescan when it appears. Anything that fails stays fixed —
+   soft on Safari, but in the right place.
+
+   If the root itself scrolls the equivalence is gone (absolute scrolls with
+   the page, fixed does not), so every held element is let go the moment
+   scrollX/scrollY leaves 0 and taken back when it returns. Re-checked on
+   resize (a node resized in edit mode), on load, when fonts settle, and on DOM
+   changes, with the same debounce and hover-class filter as the scroll half.
+   Its own writes are discarded from the observer with takeRecords(). */
+const FIXED_HOLD = `<script data-cv-fixed="1">(() => {
+  if (window.parent === window) return;
+  var HOVER_CLASS = 'cv-hv';
+  var root = document.documentElement;
+  var held = [];   // [{ el, prev }] — prev is the inline [value, priority] to put back
+  var off = false; // the root is scrolled: fixed and absolute no longer agree
+  var timer = 0;
+  var mo = null;
+  var put = function (el, prev) {
+    if (prev[0]) el.style.setProperty('position', prev[0], prev[1]);
+    else el.style.removeProperty('position');
+  };
+  var box = function (el) {
+    var r = el.getBoundingClientRect();
+    return [r.left, r.top, r.width, r.height];
+  };
+  var same = function (a, b) {
+    for (var i = 0; i < 4; i++) if (Math.abs(a[i] - b[i]) > 0.5) return false;
+    return true;
+  };
+  // Leaves el absolute and returns true only if that changed nothing measurable.
+  var check = function (el, prev) {
+    put(el, prev);
+    if (getComputedStyle(el).position !== 'fixed' || !el.getClientRects().length) return false;
+    var w = root.scrollWidth, h = root.scrollHeight, before = box(el);
+    el.style.setProperty('position', 'absolute', 'important');
+    if (same(before, box(el)) && root.scrollWidth <= w + 0.5 && root.scrollHeight <= h + 0.5) return true;
+    put(el, prev);
+    return false;
+  };
+  var release = function () {
+    held.forEach(function (h) { if (h.el.isConnected) put(h.el, h.prev); });
+    held = [];
+    if (mo) mo.takeRecords();
+  };
+  var pass = function () {
+    timer = 0;
+    if (off || !document.body) return;
+    var next = [];
+    held.forEach(function (h) {
+      if (!h.el.isConnected) return;
+      var st = h.el.style;
+      // The document's own script rewrote position since: what it wrote now is
+      // the value to honour and restore.
+      if (st.getPropertyValue('position') !== 'absolute' || st.getPropertyPriority('position') !== 'important') {
+        h.prev = [st.getPropertyValue('position'), st.getPropertyPriority('position')];
+      }
+      if (check(h.el, h.prev)) next.push(h);
+    });
+    held = next;
+    var all = document.body.getElementsByTagName('*');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (getComputedStyle(el).position !== 'fixed') continue;
+      var prev = [el.style.getPropertyValue('position'), el.style.getPropertyPriority('position')];
+      if (check(el, prev)) held.push({ el: el, prev: prev });
+    }
+    if (mo) mo.takeRecords();
+  };
+  var schedule = function () { if (!off && !timer) timer = setTimeout(pass, 150); };
+  var strip = function (c) { return (' ' + (c || '') + ' ').split(' ' + HOVER_CLASS + ' ').join(' ').trim(); };
+  mo = new MutationObserver(function (list) {
+    for (var i = 0; i < list.length; i++) {
+      var m = list[i];
+      if (m.type === 'attributes' && m.attributeName === 'class'
+        && strip(m.oldValue) === strip(m.target.getAttribute('class'))) continue;
+      return schedule();
+    }
+  });
+  var start = function () {
+    off = !!(scrollX || scrollY);
+    pass();
+    mo.observe(root, {
+      childList: true, subtree: true,
+      attributes: true, attributeFilter: ['class', 'style'], attributeOldValue: true,
+    });
+  };
+  if (document.readyState === 'loading') addEventListener('DOMContentLoaded', start);
+  else start();
+  addEventListener('load', schedule);
+  addEventListener('resize', schedule);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+  addEventListener('scroll', function () {
+    var now = !!(scrollX || scrollY);
+    if (now === off) return;
+    off = now;
+    if (off) { clearTimeout(timer); timer = 0; release(); } else schedule();
+  }, { passive: true });
+})()</` + 'script>';
+
+/* The six halves, each stamped with the version of the script it carries. Bump
    a version whenever its script changes: ingest replaces any older copy it
    finds rather than leaving it in place, so a document that already passed
    through an earlier build of the canvas — an asset re-dropped onto the board,
@@ -1055,6 +1181,7 @@ export const BRIDGE = [
   { marker: 'data-cv-input', version: '3', script: INPUT_BRIDGE },
   { marker: 'data-cv-page', version: '2', script: PAGE_BRIDGE },
   { marker: 'data-cv-scroll', version: '1', script: SCROLL_HOLD },
+  { marker: 'data-cv-fixed', version: '1', script: FIXED_HOLD },
 ];
 
 /* ── Does this document actually follow the theme? ──

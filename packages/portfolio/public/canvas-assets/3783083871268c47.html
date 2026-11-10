@@ -980,6 +980,94 @@
     live = !!d.live;
     if (live) release(); else hold();
   });
+})()</script><script data-cv-fixed="1">(() => {
+  if (window.parent === window) return;
+  var HOVER_CLASS = 'cv-hv';
+  var root = document.documentElement;
+  var held = [];   // [{ el, prev }] — prev is the inline [value, priority] to put back
+  var off = false; // the root is scrolled: fixed and absolute no longer agree
+  var timer = 0;
+  var mo = null;
+  var put = function (el, prev) {
+    if (prev[0]) el.style.setProperty('position', prev[0], prev[1]);
+    else el.style.removeProperty('position');
+  };
+  var box = function (el) {
+    var r = el.getBoundingClientRect();
+    return [r.left, r.top, r.width, r.height];
+  };
+  var same = function (a, b) {
+    for (var i = 0; i < 4; i++) if (Math.abs(a[i] - b[i]) > 0.5) return false;
+    return true;
+  };
+  // Leaves el absolute and returns true only if that changed nothing measurable.
+  var check = function (el, prev) {
+    put(el, prev);
+    if (getComputedStyle(el).position !== 'fixed' || !el.getClientRects().length) return false;
+    var w = root.scrollWidth, h = root.scrollHeight, before = box(el);
+    el.style.setProperty('position', 'absolute', 'important');
+    if (same(before, box(el)) && root.scrollWidth <= w + 0.5 && root.scrollHeight <= h + 0.5) return true;
+    put(el, prev);
+    return false;
+  };
+  var release = function () {
+    held.forEach(function (h) { if (h.el.isConnected) put(h.el, h.prev); });
+    held = [];
+    if (mo) mo.takeRecords();
+  };
+  var pass = function () {
+    timer = 0;
+    if (off || !document.body) return;
+    var next = [];
+    held.forEach(function (h) {
+      if (!h.el.isConnected) return;
+      var st = h.el.style;
+      // The document's own script rewrote position since: what it wrote now is
+      // the value to honour and restore.
+      if (st.getPropertyValue('position') !== 'absolute' || st.getPropertyPriority('position') !== 'important') {
+        h.prev = [st.getPropertyValue('position'), st.getPropertyPriority('position')];
+      }
+      if (check(h.el, h.prev)) next.push(h);
+    });
+    held = next;
+    var all = document.body.getElementsByTagName('*');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (getComputedStyle(el).position !== 'fixed') continue;
+      var prev = [el.style.getPropertyValue('position'), el.style.getPropertyPriority('position')];
+      if (check(el, prev)) held.push({ el: el, prev: prev });
+    }
+    if (mo) mo.takeRecords();
+  };
+  var schedule = function () { if (!off && !timer) timer = setTimeout(pass, 150); };
+  var strip = function (c) { return (' ' + (c || '') + ' ').split(' ' + HOVER_CLASS + ' ').join(' ').trim(); };
+  mo = new MutationObserver(function (list) {
+    for (var i = 0; i < list.length; i++) {
+      var m = list[i];
+      if (m.type === 'attributes' && m.attributeName === 'class'
+        && strip(m.oldValue) === strip(m.target.getAttribute('class'))) continue;
+      return schedule();
+    }
+  });
+  var start = function () {
+    off = !!(scrollX || scrollY);
+    pass();
+    mo.observe(root, {
+      childList: true, subtree: true,
+      attributes: true, attributeFilter: ['class', 'style'], attributeOldValue: true,
+    });
+  };
+  if (document.readyState === 'loading') addEventListener('DOMContentLoaded', start);
+  else start();
+  addEventListener('load', schedule);
+  addEventListener('resize', schedule);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+  addEventListener('scroll', function () {
+    var now = !!(scrollX || scrollY);
+    if (now === off) return;
+    off = now;
+    if (off) { clearTimeout(timer); timer = 0; release(); } else schedule();
+  }, { passive: true });
 })()</script></head><body style="background-color: rgb(244, 241, 234); border-block-color: currentcolor; border-color: currentcolor; border-inline-color: currentcolor; box-sizing: border-box; caret-color: rgb(17, 17, 17); color: rgb(17, 17, 17); rule-color: currentcolor; cursor: none; display: flex; flex-direction: column; font-family: Inter, system-ui, sans-serif; margin-block: 0px; margin: 0px; margin-inline: 0px; min-block-size: 900px; min-height: 100vh; outline-color: currentcolor; overflow-block: auto; overflow-inline: hidden; overflow: hidden auto; position: relative; text-decoration-color: currentcolor; text-emphasis-color: currentcolor; -webkit-font-smoothing: antialiased; -webkit-locale: &quot;en&quot;; -webkit-text-fill-color: currentcolor; -webkit-text-stroke-color: currentcolor;" data-h="0">
 <div style="animation-duration:24s;animation-iteration-count:infinite;animation-name:drift;background-image:linear-gradient(120deg, rgb(247, 244, 237), rgb(239, 233, 220), rgb(243, 236, 221), rgb(240, 235, 224));background-position:1.8411% 50%;background-size:300% 300%;border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;bottom:0px;box-sizing:border-box;column-rule-color:currentcolor;inset-block-end:0px;inset-block-start:0px;inset-inline-end:0px;inset-inline-start:0px;left:0px;outline-color:currentcolor;pointer-events:none;position:fixed;right:0px;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;top:0px;z-index:0;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;" data-h="2"></div>
 <div style="animation-duration: 26s; animation-iteration-count: infinite; animation-name: floatA; animation-timing-function: ease-in-out; background-image: radial-gradient(circle, rgba(217, 154, 78, 0.34), rgba(0, 0, 0, 0) 68%); block-size: 777.6px; border-block-color: currentcolor; border-color: currentcolor; border-radius: 50%; border-end-end-radius: 50%; border-end-start-radius: 50%; border-inline-color: currentcolor; border-start-end-radius: 50%; border-start-start-radius: 50%; box-sizing: border-box; rule-color: currentcolor; filter: blur(72px); inline-size: 777.6px; inset-block-start: -16%; inset-inline-start: -12%; left: -12%; mix-blend-mode: multiply; opacity: 0.7; outline-color: currentcolor; pointer-events: none; position: fixed; text-decoration-color: currentcolor; text-emphasis-color: currentcolor; top: -16%; transform: translate(0.461843px, 0.216489px) scale(1.00048, 1.00048); width: 54vw; will-change: transform; z-index: 0; -webkit-font-smoothing: antialiased; -webkit-locale: &quot;en&quot;; -webkit-text-fill-color: currentcolor; -webkit-text-stroke-color: currentcolor; height: 54vw;" data-h="3"></div>

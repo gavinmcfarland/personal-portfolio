@@ -920,6 +920,94 @@
     live = !!d.live;
     if (live) release(); else hold();
   });
+})()</script><script data-cv-fixed="1">(() => {
+  if (window.parent === window) return;
+  var HOVER_CLASS = 'cv-hv';
+  var root = document.documentElement;
+  var held = [];   // [{ el, prev }] — prev is the inline [value, priority] to put back
+  var off = false; // the root is scrolled: fixed and absolute no longer agree
+  var timer = 0;
+  var mo = null;
+  var put = function (el, prev) {
+    if (prev[0]) el.style.setProperty('position', prev[0], prev[1]);
+    else el.style.removeProperty('position');
+  };
+  var box = function (el) {
+    var r = el.getBoundingClientRect();
+    return [r.left, r.top, r.width, r.height];
+  };
+  var same = function (a, b) {
+    for (var i = 0; i < 4; i++) if (Math.abs(a[i] - b[i]) > 0.5) return false;
+    return true;
+  };
+  // Leaves el absolute and returns true only if that changed nothing measurable.
+  var check = function (el, prev) {
+    put(el, prev);
+    if (getComputedStyle(el).position !== 'fixed' || !el.getClientRects().length) return false;
+    var w = root.scrollWidth, h = root.scrollHeight, before = box(el);
+    el.style.setProperty('position', 'absolute', 'important');
+    if (same(before, box(el)) && root.scrollWidth <= w + 0.5 && root.scrollHeight <= h + 0.5) return true;
+    put(el, prev);
+    return false;
+  };
+  var release = function () {
+    held.forEach(function (h) { if (h.el.isConnected) put(h.el, h.prev); });
+    held = [];
+    if (mo) mo.takeRecords();
+  };
+  var pass = function () {
+    timer = 0;
+    if (off || !document.body) return;
+    var next = [];
+    held.forEach(function (h) {
+      if (!h.el.isConnected) return;
+      var st = h.el.style;
+      // The document's own script rewrote position since: what it wrote now is
+      // the value to honour and restore.
+      if (st.getPropertyValue('position') !== 'absolute' || st.getPropertyPriority('position') !== 'important') {
+        h.prev = [st.getPropertyValue('position'), st.getPropertyPriority('position')];
+      }
+      if (check(h.el, h.prev)) next.push(h);
+    });
+    held = next;
+    var all = document.body.getElementsByTagName('*');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (getComputedStyle(el).position !== 'fixed') continue;
+      var prev = [el.style.getPropertyValue('position'), el.style.getPropertyPriority('position')];
+      if (check(el, prev)) held.push({ el: el, prev: prev });
+    }
+    if (mo) mo.takeRecords();
+  };
+  var schedule = function () { if (!off && !timer) timer = setTimeout(pass, 150); };
+  var strip = function (c) { return (' ' + (c || '') + ' ').split(' ' + HOVER_CLASS + ' ').join(' ').trim(); };
+  mo = new MutationObserver(function (list) {
+    for (var i = 0; i < list.length; i++) {
+      var m = list[i];
+      if (m.type === 'attributes' && m.attributeName === 'class'
+        && strip(m.oldValue) === strip(m.target.getAttribute('class'))) continue;
+      return schedule();
+    }
+  });
+  var start = function () {
+    off = !!(scrollX || scrollY);
+    pass();
+    mo.observe(root, {
+      childList: true, subtree: true,
+      attributes: true, attributeFilter: ['class', 'style'], attributeOldValue: true,
+    });
+  };
+  if (document.readyState === 'loading') addEventListener('DOMContentLoaded', start);
+  else start();
+  addEventListener('load', schedule);
+  addEventListener('resize', schedule);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+  addEventListener('scroll', function () {
+    var now = !!(scrollX || scrollY);
+    if (now === off) return;
+    off = now;
+    if (off) { clearTimeout(timer); timer = 0; release(); } else schedule();
+  }, { passive: true });
 })()</script></head><body style="background-color:rgb(14, 13, 11);border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;box-sizing:border-box;caret-color:rgb(246, 243, 238);color:rgb(246, 243, 238);column-rule-color:currentcolor;font-family:Inter, system-ui, sans-serif;font-weight:300;margin-block-end:0px;margin-block-start:0px;margin-bottom:0px;margin-inline-end:0px;margin-inline-start:0px;margin-left:0px;margin-right:0px;margin-top:0px;outline-color:currentcolor;overflow-block:auto;overflow-inline:hidden;overflow-x:hidden;overflow-y:auto;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;" data-h="16">
 <div id="loader" style="align-items:center;background-color:rgb(14, 13, 11);border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;bottom:0px;box-sizing:border-box;column-rule-color:currentcolor;display:grid;inset-block-end:0px;inset-block-start:0px;inset-inline-end:0px;inset-inline-start:0px;justify-items:center;left:0px;opacity:0;outline-color:currentcolor;pointer-events:none;position:fixed;right:0px;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;top:0px;transition-duration:0.8s;transition-property:opacity;transition-timing-function:cubic-bezier(0.16, 1, 0.3, 1);z-index:100;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;"><div style="border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;box-sizing:border-box;column-rule-color:currentcolor;outline-color:currentcolor;row-rule-color:currentcolor;text-align:center;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;"><p style="border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;box-sizing:border-box;caret-color:rgb(184, 178, 166);color:rgb(184, 178, 166);column-rule-color:currentcolor;font-size:11.52px;letter-spacing:3.456px;margin-block-end:19.2px;margin-block-start:0px;margin-bottom:19.2px;margin-top:0px;outline-color:currentcolor;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;text-transform:uppercase;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;">Preparing the walkthrough</p><div style="background-color:rgba(246, 243, 238, 0.18);block-size:2px;border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-bottom-left-radius:2px;border-bottom-right-radius:2px;border-end-end-radius:2px;border-end-start-radius:2px;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-start-end-radius:2px;border-start-start-radius:2px;border-top-color:currentcolor;border-top-left-radius:2px;border-top-right-radius:2px;box-sizing:border-box;column-rule-color:currentcolor;height:2px;inline-size:180px;outline-color:currentcolor;overflow-block:hidden;overflow-inline:hidden;overflow-x:hidden;overflow-y:hidden;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;width:180px;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;"><i id="lbar" style="background-color:rgb(176, 154, 106);block-size:100%;border-block-end-color:currentcolor;border-block-start-color:currentcolor;border-bottom-color:currentcolor;border-inline-end-color:currentcolor;border-inline-start-color:currentcolor;border-left-color:currentcolor;border-right-color:currentcolor;border-top-color:currentcolor;box-sizing:border-box;column-rule-color:currentcolor;display:block;height:100%;inline-size:100%;outline-color:currentcolor;row-rule-color:currentcolor;text-decoration-color:currentcolor;text-emphasis-color:currentcolor;transition-duration:0.2s;transition-property:width;transition-timing-function:linear;width:100%;-webkit-font-smoothing:antialiased;-webkit-locale:&quot;en&quot;;-webkit-text-fill-color:currentcolor;-webkit-text-stroke-color:currentcolor;"></i></div></div></div>
 <section id="scene" style="block-size: 4320px; border-block-color: currentcolor; border-color: currentcolor; border-inline-color: currentcolor; box-sizing: border-box; rule-color: currentcolor; height: 480vh; outline-color: currentcolor; position: relative; text-decoration-color: currentcolor; text-emphasis-color: currentcolor; -webkit-font-smoothing: antialiased; -webkit-locale: &quot;en&quot;; -webkit-text-fill-color: currentcolor; -webkit-text-stroke-color: currentcolor;" data-h="13">

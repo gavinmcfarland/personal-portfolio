@@ -33,7 +33,7 @@ budget everything below is about.
 
 ## What the canvas injects into your document
 
-At ingest the canvas rewrites the document to add four `<script>` blocks at the
+At ingest the canvas rewrites the document to add a set of `<script>` blocks at the
 end of `<head>`. Each is stamped with a version; on re-ingest an older copy is
 stripped and replaced (`injectBridge` in `src/html-bridge.js`).
 
@@ -42,6 +42,7 @@ stripped and replaced (`injectBridge` in `src/html-bridge.js`).
 | `data-cv-theme-sync="2"` | Applies the host's light/dark theme. Rewrites the document's `prefers-color-scheme` media rules, sets `color-scheme`, toggles a `dark` class on `<html>`, and patches `matchMedia` so prefers-color-scheme queries answer with the host theme (see below). Boot theme arrives in the URL hash (`#cv-theme=dark`) so the first paint is already correct; later flips arrive as `postMessage`. |
 | `data-cv-zoom-opts="5"` | Listens for `{ type: 'canvas-zoom', active, scale }` and sets one class on `<html>`: `cv-flat`, while zoomed in past 1:1 or mid-gesture (disables `backdrop-filter` — see below). Nothing else about the document's paint changes during a gesture: v4 and earlier also stripped `box-shadow` / `text-shadow` for the duration, which was visible as shadows blinking off mid-zoom, and no longer happens. |
 | `data-cv-input="3"` | Keeps the document interactive while the board owns every gesture. In view mode the iframe is `pointer-events: none` behind a shield, so nothing reaches the document directly; this replays the cursor's position and any press that turned out to be a tap as real DOM events, mirrors the document's `:hover` rules onto a class so hover states still show, and reports the cursor the document would be showing back out for the board to put on the shield. See `INTERACTIVE-IFRAMES.md`. |
+| `data-cv-fixed="1"` | Rewrites visible `position: fixed` elements to `position: absolute !important`, but only for each element *measured* to land on exactly the same box without growing the root's scrollable area. Lets go of them while the root scroller is off 0,0, where the two stop agreeing. Exists because WebKit composites fixed elements, and one composited element composites the whole subframe — see "nothing composited can re-rasterize" below. |
 | `data-cv-page="1"` | Remembers which screen the document is on, so a board opens on the one its author chose. Answers `{ type: 'canvas-page-get' }` with a description of the current page and walks the document back to one handed over as `{ type: 'canvas-page-restore', page }`. Hides the document from its first paint when the boot hash carries `cv-page=1`, so a restore is never seen happening, and tells the board when a reader has moved the document off that screen. See below. |
 
 **If your generator emits a block carrying the current marker and version
@@ -359,6 +360,26 @@ to inspect detail — which is exactly when sharpness beats decoration.
 
 If the generator can avoid emitting `backdrop-filter` at all, the document keeps
 full control of its own appearance at every zoom level.
+
+### `position: fixed` on Safari: the whole document, not one element
+
+WebKit gives fixed-position elements their own compositor layer, and once any
+element in a subframe is composited it composites the subframe's entire
+document. So in Safari, one fixed toolbar left the **whole embed** soft past
+100%. Chrome stays crisp, so this is invisible unless you test in Safari. It
+shipped on two boards: the Layer Styles plugin's footer bar, and Icon Preview's
+`#actionbar` and resize grip. All three were inline `position:fixed` written
+out by a computed-style export.
+
+Inside an embed, `fixed` and `absolute` usually land on the same pixels: the
+iframe is the viewport and the root doesn't scroll. The `data-cv-fixed` script
+relies on that, but checks it for each element rather than assuming it (see
+the table above). An element that fails the check stays fixed. It stays soft on
+Safari, but in the right place.
+
+**The generator should own this:** emit `absolute` instead of `fixed` for
+anything anchored to the viewport of a non-scrolling document. Then there's
+nothing for the bridge to do.
 
 Other properties that create a render surface and will behave the same way:
 `filter`, `opacity` below 1, `mix-blend-mode`, `will-change: transform`, and 3D
