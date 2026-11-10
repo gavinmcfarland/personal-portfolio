@@ -404,13 +404,14 @@ function HtmlNode({ node }) {
               src={srcFor(f) || undefined}
               sandbox="allow-scripts"
               title={node.name || 'HTML'}
-              /* Lazy only for the frame the node mounts with. A reload's
-                 replacement must be eager: the frame sits in the scaled world,
-                 where the browser's lazy heuristic cannot see it as visible, and
-                 a load asked for there is deferred until something unrelated
-                 nudges the page — measured at 217 seconds against 314ms with
-                 lazy off, which is a reload that never appears to happen. */
-              loading={f.key === 0 ? 'lazy' : 'eager'}
+              /* Always eager, including the frame the node mounts with. Every
+                 frame sits in the scaled world, where the browser's lazy
+                 heuristic cannot see it as visible, and a load asked for there
+                 is deferred until something unrelated nudges the page —
+                 measured at 217 seconds against 314ms with lazy off. On a board
+                 made mostly of embeds that left the page blank until the reader
+                 happened to move the pointer or resize the window. */
+              loading="eager"
               onLoad={onLoad}
               style={{ colorScheme: f.theme }}
             />
