@@ -53,9 +53,9 @@ const CV = () => {
       <header className="pt-(--sp-4)">
         <Link
           to="/"
-          className="group inline-flex w-fit items-center gap-2 font-sans text-4 font-medium text-muted transition-colors duration-200 hover:text-ink hover:duration-0"
+          className="group inline-flex w-fit items-center gap-2 font-sans text-4 font-normal text-muted hover:text-ink"
         >
-          <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
+          <ArrowLeft className="h-4 w-4" />
           Back
         </Link>
 

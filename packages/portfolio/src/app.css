@@ -3,15 +3,16 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Manual — the whole document is set in one monospace, the way a man page is.
-     Chivo is retired from prose (kept only as a token alias so any stray
-     `font-sans`/`font-serif` still resolves to the mono face rather than a
-     browser default). Spline Sans Mono carries everything now. */
+  /* The whole document is set in one proportional face, IBM Plex Sans.
+     `--font-serif` is kept only as an alias so a stray `font-serif` still
+     resolves to it rather than a browser default. `--font-mono` is a system
+     stack, left for anything that genuinely needs fixed-width glyphs. */
+  --font-sans:
+    "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: var(--font-sans);
   --font-mono:
-    "Spline Sans Mono", ui-monospace, SFMono-Regular, Menlo, "Courier New",
-    monospace;
-  --font-sans: var(--font-mono);
-  --font-serif: var(--font-mono);
+    ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
 
   /* The one deliberate exception to the all-mono rule. The remote's speaker
      notes are read off a phone held at your waist, mid-sentence, in a dim
@@ -60,14 +61,14 @@
      a document page gets the full column and takes 7/8, while a project page's
      sidebar is ~256px of content and would wrap a 36px mono title after nine
      characters — so it takes 6 and stays there. Two widths, two cuts, stated. */
-  --text-1: 0.6875rem; /* 11px — chips, release tags, lettermark */
-  --text-2: 0.75rem; /* 12px — footnotes, meta, captions, table heads */
-  --text-3: 0.8125rem; /* 13px — section labels, sub-labels, index entries */
-  --text-4: 0.875rem; /* 14px — body: running text, panels, transcripts */
-  --text-5: 0.9375rem; /* 15px — the one emphatic step (list-row token) */
-  --text-6: 1.375rem; /* 22px — page title in a narrow column */
-  --text-7: 1.75rem; /* 28px — page title */
-  --text-8: 2.25rem; /* 36px — page title, sm and up */
+  --text-1: 0.75rem; /* 12px — chips, release tags, lettermark */
+  --text-2: 0.8125rem; /* 13px — footnotes, meta, captions, table heads */
+  --text-3: 0.875rem; /* 14px — section labels, sub-labels, index entries */
+  --text-4: 0.9375rem; /* 15px — body: running text, panels, transcripts */
+  --text-5: 1rem; /* 16px — the one emphatic step (list-row token) */
+  --text-6: 1.5rem; /* 24px — page title in a narrow column */
+  --text-7: 1.875rem; /* 30px — page title */
+  --text-8: 2.375rem; /* 38px — page title, sm and up */
 
   /* ── Tracking ────────────────────────────────────────────────
      Two tracked registers, not five. The section label is the wide one; every
@@ -236,19 +237,19 @@
    and because Tailwind's numeric spacing scale already owns `pt-8`. In markup
    they read as `pt-(--sp-8)`. */
 :root {
-  --leading: 1.7; /* body line-height, and the only one prose ever takes */
-  --lh: calc(var(--text-4) * var(--leading)); /* one line — 23.8px */
+  --leading: 1.6; /* body line-height, and the only one prose ever takes */
+  --lh: calc(var(--text-4) * var(--leading)); /* one line — 24px */
 
-  --sp-1: calc(var(--lh) / 4); /*  5.95px — list gaps, stacked pairs */
-  --sp-2: calc(var(--lh) / 2); /* 11.9px  — dense groups, label → list */
-  --sp-3: calc(var(--lh) * 0.75); /* 17.85px — the paragraph step */
-  --sp-4: var(--lh); /* 23.8px  — heading → body, block step */
-  --sp-6: calc(var(--lh) * 1.5); /* 35.7px  — between blocks in a section */
-  --sp-8: calc(var(--lh) * 2); /* 47.6px  — sub-label top, back-link → title */
-  --sp-12: calc(var(--lh) * 3); /* 71.4px  — section head top */
+  --sp-1: calc(var(--lh) / 4); /*  6px    — list gaps, stacked pairs */
+  --sp-2: calc(var(--lh) / 2); /* 12px    — dense groups, label → list */
+  --sp-3: calc(var(--lh) * 0.75); /* 18px    — the paragraph step */
+  --sp-4: var(--lh); /* 24px    — heading → body, block step */
+  --sp-6: calc(var(--lh) * 1.5); /* 36px    — between blocks in a section */
+  --sp-8: calc(var(--lh) * 2); /* 48px    — sub-label top, back-link → title */
+  --sp-12: calc(var(--lh) * 3); /* 72px    — section head top */
   --sp-16: calc(
     var(--lh) * 4
-  ); /* 95.2px  — section head top (sm+), page edges */
+  ); /* 96px    — section head top (sm+), page edges */
 
   /* The one paragraph step — now three-quarters of a line rather than a round
      0.9rem. The old value was *narrower* than the leading, which meant a
@@ -299,8 +300,8 @@ html {
 
 body {
   margin: 0;
-  font-family: var(--font-mono);
-  /* Man-page density: a slightly smaller body and a steady line so long mono
+  font-family: var(--font-sans);
+  /* Man-page density: a slightly smaller body and a steady line so long
      prose stays readable without sprawling. This is the only line-height prose
      ever takes — the display exceptions (.wordmark, .synopsis) are the only
      rules allowed to name another. */
@@ -515,8 +516,10 @@ p + .footnotes {
    would win over any utility and that override would silently do nothing. */
 @layer components {
   .section-label {
-    font-family: var(--font-mono);
-    font-size: var(--text-3);
+    font-family: var(--font-sans);
+    /* One step under the sub-label: set in tracked capitals it still reads as
+       the larger, higher-ranking head, and at text-3 it shouted. */
+    font-size: var(--text-2);
     font-weight: 700;
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
@@ -554,7 +557,7 @@ p + .footnotes {
      genuinely pointing at something (the prompt, a footnote reference, a link
      under the cursor), which is what keeps it legible as an accent at all. */
   .sub-label {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: var(--text-3);
     font-weight: 700;
     letter-spacing: var(--tracking-sub);
@@ -590,7 +593,7 @@ p + .footnotes {
   }
 }
 
-/* The wordmark, set as a command name — heavy mono, tight, flush left. The one
+/* The wordmark, set as a command name — heavy, tight, flush left. The one
    step that breaks the flat-type ceiling, and the *size* now lives here too:
    every call site used to repeat `text-[1.75rem] sm:text-[2.25rem]`, except the
    ones that quietly disagreed (2/2.5rem on /backup, 1.75/2rem on the CV,
@@ -598,7 +601,7 @@ p + .footnotes {
    for one role. The gap below it lives here for the same reason: its own
    line-height is 1.05, so without it the following gloss sits on the baseline. */
 .wordmark {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--text-7);
   font-weight: 700;
   letter-spacing: var(--tracking-tight);
@@ -1260,7 +1263,7 @@ p + .footnotes {
   background: var(--surface);
   border: 1px solid var(--line);
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--text-1);
   font-weight: 500;
   letter-spacing: var(--tracking-micro);

@@ -73,7 +73,7 @@ const ENAMELS = [
 ];
 
 /* ── Type ──────────────────────────────────────────────────────────
-   Spline Sans Mono is loaded at exactly these four cuts (index.html); anything
+   IBM Plex Sans is loaded at exactly these four cuts (index.html); anything
    else on this page would be a browser-synthesised fake. */
 const CUTS = [
   { label: "400 · regular", style: { fontWeight: 400 } },
@@ -86,14 +86,14 @@ const CUTS = [
    row's `cls` is the live Tailwind utility that sets it — `text-4` really is the
    class the body uses. */
 const SCALE = [
-  { size: "0.6875rem", px: "11px", role: "chips, release tags, lettermark", cls: "text-1" },
-  { size: "0.75rem", px: "12px", role: "footnotes, meta, captions, table heads", cls: "text-2" },
-  { size: "0.8125rem", px: "13px", role: "section labels, sub-labels, index entries", cls: "text-3" },
-  { size: "0.875rem", px: "14px", role: "body — running text, panels, transcripts", cls: "text-4" },
-  { size: "0.9375rem", px: "15px", role: "the one emphatic step (list-row token)", cls: "text-5" },
-  { size: "1.375rem", px: "22px", role: "page title in a narrow column", cls: "text-6" },
-  { size: "1.75rem", px: "28px", role: "page title", cls: "text-7" },
-  { size: "2.25rem", px: "36px", role: "page title, sm and up", cls: "text-8" },
+  { size: "0.75rem", px: "12px", role: "chips, release tags, lettermark", cls: "text-1" },
+  { size: "0.8125rem", px: "13px", role: "footnotes, meta, captions, table heads", cls: "text-2" },
+  { size: "0.875rem", px: "14px", role: "section labels, sub-labels, index entries", cls: "text-3" },
+  { size: "0.9375rem", px: "15px", role: "body — running text, panels, transcripts", cls: "text-4" },
+  { size: "1rem", px: "16px", role: "the one emphatic step (list-row token)", cls: "text-5" },
+  { size: "1.5rem", px: "24px", role: "page title in a narrow column", cls: "text-6" },
+  { size: "1.875rem", px: "30px", role: "page title", cls: "text-7" },
+  { size: "2.375rem", px: "38px", role: "page title, sm and up", cls: "text-8" },
 ];
 
 /* The vertical rhythm, in the order it steps. Every value is a fraction or
@@ -189,7 +189,7 @@ export default function Specimen() {
             collapse to the larger of the two — which means naming 1½ lines
             outright is what lands on the same 35.7px. */}
         <p className="man-body mt-(--sp-6) text-muted">
-          One monospace face at one size, flat fills, hairline edges and a
+          One typeface at one size, flat fills, hairline edges and a
           single working accent. <span className="text-ink">Enamel</span> is
           vitreous enamel on steel: it cannot round a corner or cast a shadow,
           so nothing here does. Every sample on this page is drawn with the live
@@ -310,13 +310,12 @@ export default function Specimen() {
         Type
       </h2>
         <p className="lede indent reveal man-body text-muted">
-          One family carries prose, headings and code alike:{" "}
-          <span className="text-ink">Spline Sans Mono</span>, loaded at four
-          cuts. There is no serif and no grotesque beside it —{" "}
-          <span className="text-ink">--font-sans</span> and{" "}
-          <span className="text-ink">--font-serif</span> are kept only as
-          aliases pointing back at the mono face, so a stray{" "}
-          <span className="text-ink">font-sans</span> in the markup can never
+          One family carries prose, headings and labels alike:{" "}
+          <span className="text-ink">IBM Plex Sans</span>, loaded at four
+          cuts. There is no serif beside it —{" "}
+          <span className="text-ink">--font-serif</span> is kept only as an
+          alias pointing back at the sans, so a stray{" "}
+          <span className="text-ink">font-serif</span> in the markup can never
           summon a second typeface.
         </p>
         {/* Shown at body size, not blown up: the point of a flat-type sheet is
@@ -381,7 +380,7 @@ export default function Specimen() {
         <SpecRow tag="--lh" value="1.4875rem · 23.8px">
           one line — <span className="text-muted">--text-4 × --leading</span>
         </SpecRow>
-        <SpecRow tag="--leading" value="1.7">
+        <SpecRow tag="--leading" value="1.6">
           set on <span className="text-muted">body</span>; the only line-height
           prose takes, and the display exceptions (
           <span className="text-muted">.wordmark</span>,{" "}
@@ -599,13 +598,13 @@ export default function Specimen() {
         <div className="indent reveal flex flex-wrap gap-2">
           <button
             type="button"
-            className="flex items-center justify-center border border-line px-3 font-sans text-4 font-medium text-muted transition-colors duration-150 hover:bg-hover hover:text-ink h-[38px]"
+            className="flex items-center justify-center border border-line px-3 font-sans text-4 font-normal text-muted transition-colors duration-150 hover:bg-hover hover:text-ink h-[38px]"
           >
             Visit
           </button>
           <button
             type="button"
-            className="flex items-center justify-center border border-line bg-surface px-3 font-sans text-4 font-medium text-ink h-[38px]"
+            className="flex items-center justify-center border border-line bg-surface px-3 font-sans text-4 font-normal text-ink h-[38px]"
           >
             On surface
           </button>
