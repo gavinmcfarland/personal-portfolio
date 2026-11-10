@@ -5,6 +5,11 @@ fullscreen, into a section of a page, or anywhere a component can go. Users can
 pan, zoom, drop sticky notes / text / markdown / images, draw, and organise the
 board across multiple pages.
 
+While editing, right-click a page in the page menu to rename, archive or delete
+it. An archived page stays on the board (tagged *Archived*) while `editable` is
+true, and is saved with an `archived: true` flag. A non-editable board leaves it
+out, so it never reaches production. At least one page always stays unarchived.
+
 > Extracted from the canvas portfolio. The reusable engine lives here; anything
 > portfolio-specific (the `card` node, the profile data, the dev publish endpoint)
 > is supplied by the consumer as props.
@@ -53,7 +58,7 @@ All are optional.
 | `initialState` | serialized snapshot | `null` | Committed board to load (the shape produced by `serialize()`). |
 | `editable` | `boolean` | `false` | Enables the toolbar, editing, and localStorage autosave. |
 | `storageKey` | `string` | `embed-canvas-v1` | localStorage key for the editable autosave. Unique per instance. |
-| `homeId` | `string` | `home` | Id of the first (permanent) page. |
+| `homeId` | `string` | `home` | Id of the first page. It can be deleted like any other unless `managedTypes` is set, since managed nodes live there. |
 | `fit` | `'contain' \| 'fullscreen'` | `'contain'` | `contain` fills the parent box; `fullscreen` covers the browser viewport. |
 | `fullscreenButton` | `boolean \| 'native' \| 'document'` | `false` | Show a button next to the zoom controls that expands the canvas. `true` / `'native'` uses the browser Fullscreen API (covers the whole screen, escapes the page); `'document'` toggles a full-bleed overlay that covers the document's viewport but stays inside the page (Esc exits). |
 | `theme` | `{ mode, toggle }` | `null` | Renders a theme-cycle button in the top bar when provided. Dark mode also activates from a `.dark` ancestor. |

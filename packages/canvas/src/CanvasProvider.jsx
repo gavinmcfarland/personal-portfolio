@@ -371,17 +371,22 @@ function normalizePage(raw, base, isHome, managedTypes) {
 }
 
 /* Accept either the legacy single-board snapshot ({view,nodes,shapes}) or the
-   multi-page shape ({activePage,pages:[…]}) and expand it into live pages. */
-function buildFromSaved(base, raw, homeId, managedTypes) {
-  const rawPages = Array.isArray(raw.pages)
+   multi-page shape ({activePage,pages:[…]}) and expand it into live pages.
+   A non-editable board (production) leaves archived pages out entirely; an
+   editable one keeps them, flagged, so they can be worked on and restored. */
+function buildFromSaved(base, raw, homeId, managedTypes, editable) {
+  const allPages = Array.isArray(raw.pages)
     ? raw.pages
     : [{ id: homeId, name: 'Page 1', view: raw.view, nodes: raw.nodes, shapes: raw.shapes }];
+  const live = editable ? allPages : allPages.filter((rp) => !rp.archived);
+  // Archiving always leaves a live page, but a hand-edited file might not.
+  const rawPages = live.length ? live : allPages.slice(0, 1);
   const pagesMeta = [];
   const pagesData = {};
   rawPages.forEach((rp, i) => {
     const id = i === 0 ? homeId : rp.id || `pg${i}`;
     const p = normalizePage(rp, base, i === 0, managedTypes);
-    pagesMeta.push({ id, name: p.name });
+    pagesMeta.push(rp.archived ? { id, name: p.name, archived: true } : { id, name: p.name });
     pagesData[id] = { nodes: p.nodes, shapes: p.shapes, view: p.view };
   });
   const activePageId = raw.activePage && pagesData[raw.activePage] ? raw.activePage : pagesMeta[0].id;
@@ -430,7 +435,7 @@ function loadInitial({ base, initialState, editable, storageKey, homeId, managed
       if (usable(saved)) {
         const committedNewer =
           usable(initialState) && (initialState.savedAt || 0) > (saved.savedAt || 0);
-        if (!committedNewer) return buildFromSaved(base, saved, homeId, managedTypes);
+        if (!committedNewer) return buildFromSaved(base, saved, homeId, managedTypes, editable);
       }
     } catch {
       /* ignore corrupt storage */
@@ -438,7 +443,7 @@ function loadInitial({ base, initialState, editable, storageKey, homeId, managed
   }
 
   // The published snapshot ships with the app and drives the live board.
-  if (usable(initialState)) return buildFromSaved(base, initialState, homeId, managedTypes);
+  if (usable(initialState)) return buildFromSaved(base, initialState, homeId, managedTypes, editable);
 
   return freshState(base, homeId);
 }
@@ -2355,6 +2360,7 @@ export function CanvasProvider({
         return {
           id: meta.id,
           name: meta.name,
+          ...(meta.archived ? { archived: true } : {}),
           view: d.view,
           nodes: d.nodes.map(serializeNode),
           shapes: d.shapes.map(serializeShape),
@@ -2484,13 +2490,42 @@ export function CanvasProvider({
       if (!v) return;
       setPages((ps) => ps.map((p) => (p.id === id ? { ...p, name: v } : p)));
     }
+    /* Any page can go as long as another is left to land on — except the home
+       board when managed types are in play, since that's where their
+       data-driven nodes live (the base re-merges onto whichever page is first). */
+    function canRemovePage(id) {
+      if (!EDITABLE || S.pages.length < 2) return false;
+      if (id === HOME_ID && managedTypes.length) return false;
+      // Production needs a live page left to open on.
+      const page = S.pages.find((p) => p.id === id);
+      return !!page && (page.archived || S.pages.some((p) => p.id !== id && !p.archived));
+    }
     function removePage(id) {
-      if (!EDITABLE || id === HOME_ID) return; // the home board (portfolio cards) is permanent
+      if (!canRemovePage(id)) return;
       const remaining = S.pages.filter((p) => p.id !== id);
-      if (!remaining.length) return;
       if (S.activePageId === id) switchPage(remaining[0].id);
       delete pageData[id];
       setPages((ps) => ps.filter((p) => p.id !== id));
+    }
+    /* Archived pages stay on the board while editing but are left out when it
+       loads non-editable (production). Same home-board rule as deleting, and
+       production must keep at least one page to open on. */
+    function canArchivePage(id) {
+      if (!EDITABLE) return false;
+      const page = S.pages.find((p) => p.id === id);
+      if (!page) return false;
+      if (page.archived) return true; // restoring is always fine
+      if (id === HOME_ID && managedTypes.length) return false;
+      return S.pages.some((p) => p.id !== id && !p.archived);
+    }
+    function setPageArchived(id, archived) {
+      if (!canArchivePage(id)) return;
+      const on = !!archived;
+      setPages((ps) => ps.map((p) => {
+        if (p.id !== id) return p;
+        const { archived: _drop, ...rest } = p;
+        return on ? { ...rest, archived: true } : rest;
+      }));
     }
 
     /* ── Dropped images ───────────────────────────────────────── */
@@ -3585,7 +3620,7 @@ export function CanvasProvider({
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, setNodeScale, deleteSelected, deleteTarget,
       copySelected, cutSelected, cutTarget, paste, pasteAt, pasteFromMenu, hasClipboard, systemClipIsMine, duplicateSelected, duplicateTarget, duplicateItemsAt,
       setTool, setMode, setCanvasBg, setCanvasBgStrength, toggleGrid, fitAll, flyTo, fitViewFor, sectionInView, goToSection, stepSection, clearSectionFocus, reorderSections, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
-      switchPage, addPage, renamePage, removePage,
+      switchPage, addPage, renamePage, removePage, canRemovePage, canArchivePage, setPageArchived,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
       isHtmlFile, addHtmlFromFile, setHtmlActive, setHtmlPassThrough, toggleHtmlInert, openHtml, captureHtmlPage, clearHtmlPage, restartHtml, markHtmlMoved,

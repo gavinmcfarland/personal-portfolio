@@ -2452,6 +2452,27 @@
   color: #fff;
   background: transparent;
 }
+.canvas-root .cv-page-menu-name {
+  text-overflow: ellipsis;
+}
+/* Archived pages: still listed while editing, but quieter, with a tag. */
+.canvas-root .cv-page-menu-item[data-archived]:not([data-active]) .cv-page-menu-name {
+  color: var(--cv-muted);
+}
+.canvas-root .cv-page-archived-tag {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 5px;
+  color: var(--cv-muted);
+  background: var(--cv-line);
+}
+.canvas-root .cv-page-menu-item[data-active] .cv-page-archived-tag {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+}
 .canvas-root .cv-page-group + .cv-page-group {
   margin-top: 4px;
 }

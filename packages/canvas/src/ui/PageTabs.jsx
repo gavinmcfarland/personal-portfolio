@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { cx, sectionNodes, sectionLabel } from '../constants';
 
 const RENAME_ICON = <Pencil />;
 const DELETE_ICON = <Trash2 />;
+const ARCHIVE_ICON = <Archive />;
+const UNARCHIVE_ICON = <ArchiveRestore />;
 
 /* Vertical travel (px) before a press on a section row becomes a reorder drag
    rather than a click that jumps to it. */
@@ -16,15 +18,16 @@ const DRAG_SLOP = 4;
    beneath it. Clicking a page switches boards; clicking a section flies to it
    (switching boards first if it lives elsewhere). In edit mode, right-clicking a
    page opens a menu to rename or delete it, and right-clicking a frame section
-   opens a menu to rename it. Sections on the active page can be dragged up and
+   opens a menu to rename it. Archived pages (hidden from production) stay
+   listed while editing, tagged so it's clear readers won't see them. Sections on the active page can be dragged up and
    down to set the order the menu lists them in — and that ↑/↓ steps through.
    New pages are added from the footer button. */
 export default function PageTabs() {
-  const { pages, activePageId, nodes, pageData, focusedSectionId, readOnly, EDITABLE, homeId: HOME_ID, eng, rootRef, classNames } = useCanvas();
+  const { pages, activePageId, nodes, pageData, focusedSectionId, readOnly, EDITABLE, eng, rootRef, classNames } = useCanvas();
   const editing = EDITABLE && !readOnly;
   const [open, setOpen] = useState(false);
   const [renaming, setRenaming] = useState(null); // {scope:'page'|'section', id}
-  const [menu, setMenu] = useState(null); // {x, y, scope:'page'|'section', id, canDelete}
+  const [menu, setMenu] = useState(null); // {x, y, scope:'page'|'section', id, canDelete, canArchive, archived}
   const [drag, setDrag] = useState(null); // {id, to} — live reorder drag; `to` is the insertion slot (0…n)
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
@@ -184,17 +187,28 @@ export default function PageTabs() {
             const secs = sectionsFor(p.id);
             return (
               <div key={p.id} className="cv-page-group">
-                <div className="cv-page-menu-item" data-active={p.id === activePageId ? '' : undefined}>
+                <div
+                  className="cv-page-menu-item"
+                  data-active={p.id === activePageId ? '' : undefined}
+                  data-archived={p.archived ? '' : undefined}
+                >
                   {renaming && renaming.scope === 'page' && renaming.id === p.id ? (
                     renameInput(p.name, 'cv-page-rename')
                   ) : (
                     <button
                       className="cv-page-menu-btn"
-                      title={editing ? 'Click to switch · right-click for options' : p.name}
+                      title={editing ? `Click to switch · right-click for options${p.archived ? ' · archived: hidden in production' : ''}` : p.name}
                       onClick={() => { eng.switchPage(p.id); setOpen(false); }}
-                      onContextMenu={editing ? (e) => openMenu(e, { scope: 'page', id: p.id, canDelete: p.id !== HOME_ID }) : undefined}
+                      onContextMenu={editing ? (e) => openMenu(e, {
+                        scope: 'page',
+                        id: p.id,
+                        canDelete: eng.canRemovePage(p.id),
+                        canArchive: eng.canArchivePage(p.id),
+                        archived: !!p.archived,
+                      }) : undefined}
                     >
-                      {p.name}
+                      <span className="cv-page-menu-name">{p.name}</span>
+                      {p.archived && <span className="cv-page-archived-tag">Archived</span>}
                     </button>
                   )}
                 </div>
@@ -263,12 +277,18 @@ export default function PageTabs() {
       {menu && createPortal(
         <div
           className="cv-panel cv-page-ctx"
-          style={{ left: Math.min(menu.x, innerWidth - 170), top: Math.min(menu.y, innerHeight - 90) }}
+          style={{ left: Math.min(menu.x, innerWidth - 170), top: Math.min(menu.y, innerHeight - 125) }}
         >
           <button onClick={() => { setRenaming({ scope: menu.scope, id: menu.id }); setMenu(null); }}>
             {RENAME_ICON}
             Rename
           </button>
+          {menu.canArchive && (
+            <button onClick={() => { eng.setPageArchived(menu.id, !menu.archived); setMenu(null); }}>
+              {menu.archived ? UNARCHIVE_ICON : ARCHIVE_ICON}
+              {menu.archived ? 'Unarchive' : 'Archive'}
+            </button>
+          )}
           {menu.canDelete && (
             <button className="cv-danger" onClick={() => { eng.removePage(menu.id); setMenu(null); }}>
               {DELETE_ICON}

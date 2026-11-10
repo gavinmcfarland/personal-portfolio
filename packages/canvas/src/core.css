@@ -2201,6 +2201,20 @@
   white-space: nowrap;
   overflow: hidden;
 }
+.canvas-root .cv-page-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.canvas-root .cv-page-menu-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+/* Archived pages: still listed while editing, but quieter, with a tag. */
+.canvas-root .cv-page-archived-tag {
+  flex: none;
+}
 .canvas-root .cv-page-group {
   display: flex;
   flex-direction: column;
