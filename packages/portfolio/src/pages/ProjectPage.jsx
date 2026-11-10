@@ -30,13 +30,13 @@ export default function ProjectPage({ project }) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={blurOnPointerClick}
-        className={`group shrink-0 items-center gap-1 font-sans text-3 font-medium text-muted transition-colors duration-200 hover:text-ink hover:duration-0 sm:text-4 ${visibility}`}
+        className={`group shrink-0 items-center gap-1 font-sans text-3 font-normal text-muted hover:text-ink sm:text-4 ${visibility}`}
       >
         {label}
         {/* Sized and coloured like the Back arrow across the row: h-4 w-4, and
             no colour of its own so it inherits the link's muted ink rather than
             sitting a step fainter than its own label. */}
-        <ArrowUpRight className="h-4 w-4 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
+        <ArrowUpRight className="h-4 w-4" />
       </a>
     );
 
@@ -55,7 +55,7 @@ export default function ProjectPage({ project }) {
         aria-label={`${isPrev ? "Previous" : "Next"} project: ${target.title}`}
         title={`${isPrev ? "Previous" : "Next"}: ${target.title}`}
         onClick={blurOnPointerClick}
-        className={`flex min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-4 font-medium text-muted transition-colors duration-150 hover:bg-hover hover:text-ink hover:duration-0 h-[38px] lg:w-[calc(50%-0.25rem)] lg:px-3 ${
+        className={`flex min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-4 font-normal text-muted transition-colors duration-150 hover:bg-hover hover:text-ink hover:duration-0 h-[38px] lg:w-[calc(50%-0.25rem)] lg:px-3 ${
           isPrev ? "lg:mr-auto lg:justify-start" : "lg:ml-auto lg:justify-end"
         }`}
       >
@@ -82,9 +82,9 @@ export default function ProjectPage({ project }) {
             <Link
               to={back}
               onClick={blurOnPointerClick}
-              className="group inline-flex items-center gap-2 font-sans text-4 font-medium text-muted transition-colors duration-200 hover:text-ink hover:duration-0"
+              className="group inline-flex items-center gap-2 font-sans text-4 font-normal text-muted hover:text-ink"
             >
-              <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
+              <ArrowLeft className="h-4 w-4" />
               Back
             </Link>
             {visitPill("inline-flex", "Visit")}
