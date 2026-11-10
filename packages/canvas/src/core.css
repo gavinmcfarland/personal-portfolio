@@ -359,6 +359,16 @@
   width: 200px;
   height: 140px;
 }
+/* A section's faint fill — in the world (under every object), sized and placed
+   like its frame node. The radius undoes the zoom and the object's scale so it
+   matches the 9px screen-space outline (.cv-frame-box). Never hit-tested. */
+.canvas-root .cv-frame-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
 /* Dropped image object */
 .canvas-root .cv-node.cv-image,
 .canvas-root .cv-node.cv-video {
@@ -1199,12 +1209,12 @@
   display: none;
   box-sizing: border-box;
 }
-/* A section's dashed outline. Screen-space like the rest of the chrome, so the
-   stroke (and the dash rhythm) stay put at any zoom instead of ballooning as
+/* A section's outline. Screen-space like the rest of the chrome, so the
+   stroke stays put at any zoom instead of ballooning as
    the board scales up. placeFrameBoxes() sits it on the frame's screen rect;
-   border-box keeps the dashes just inside the region, where the in-world border
-   they replaced used to sit. No fill in either mode: the outline is enough to
-   read the region, and a wash would tint everything inside it. */
+   border-box keeps the outline just inside the region, where the in-world border
+   it replaced used to sit. No fill here: the chrome sits above the board, so a
+   wash would tint what's inside — the fill is .cv-frame-fill, in the world. */
 .canvas-root .cv-frame-box {
   display: none;
   box-sizing: border-box;
@@ -1375,10 +1385,27 @@
   overflow: hidden;
   max-width: 210px;
 }
+.canvas-root .cv-chrome .cv-frame-rename-wrap {
+  /* The input and an invisible copy of its text (::after) share one grid
+     cell, so the cell — and the input — is exactly as wide as the text. Same
+     font and line box as the static name, so renaming doesn't resize the label.
+     The faint wash marks the field without taking up any space. */
+  display: inline-grid;
+  /* A shrinkable track: past the name's max-width the input scrolls instead of
+     overflowing the clip. */
+  grid-template-columns: minmax(0, 1fr);
+}
+.canvas-root .cv-chrome .cv-frame-rename-wrap::after {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  white-space: pre;
+  overflow: hidden;
+}
 .canvas-root .cv-chrome .cv-frame-rename {
-  height: 20px;
-  width: 150px;
-  max-width: 210px;
+  grid-area: 1 / 1;
+  width: 100%;
+  min-width: 0;
+  height: auto;
 }
 .canvas-root .cv-chrome .cv-frame-go {
   width: 19px;
@@ -1510,7 +1537,7 @@
   gap: 6px;
 }
 .canvas-root .cv-swatch-label {
-  width: 42px;
+  width: 48px;
   user-select: none;
 }
 .canvas-root .cv-swatch {
@@ -1914,8 +1941,7 @@
    shows at a glance which parts have been written and which are still bare.
    It's also the button that reopens those notes — bare until hovered, so it
    still reads as a mark on the label rather than a second → button.
-   currentColor, not the accent: the label is already accent-filled, so an
-   accent mark would be invisible against it. */
+   currentColor, so the mark follows the label's ink. */
 .canvas-root .cv-frame-label .cv-frame-notes-btn {
   width: 19px;
   height: 19px;

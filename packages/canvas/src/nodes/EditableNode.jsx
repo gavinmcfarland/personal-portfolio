@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef } from 'react';
 import { useCanvas } from '../CanvasProvider';
 import { useRegister } from './common';
+import { textPadding, themeInk } from '../constants';
 import { sanitizeRich, isRichHtml, applyListShortcut } from '../rich-text';
 
 /* Sticky notes & free text blocks — uncontrolled contentEditable so React never
@@ -132,8 +133,16 @@ function EditableNode({ node }) {
   // A text block starts width-less (single line, grows as you type); once the
   // user resizes it, the stored width fixes the box and the text wraps inside.
   let sizedStyle = node.w != null ? { ...style, width: node.w + 'px' } : style;
+  // A box drawn with the text tool keeps its drawn height as a floor; longer
+  // text still grows it rather than clipping.
+  if (!isSticky && node.h != null) sizedStyle = { ...sizedStyle, minHeight: node.h + 'px' };
   if (node.fontSize != null) sizedStyle = { ...sizedStyle, fontSize: node.fontSize + 'px' };
   if (node.align && node.align !== 'left') sizedStyle = { ...sizedStyle, textAlign: node.align };
+  if (!isSticky) {
+    if (node.pad != null) sizedStyle = { ...sizedStyle, padding: textPadding(node.pad) };
+    if (node.border) sizedStyle = { ...sizedStyle, border: `2px solid ${themeInk(node.border)}` };
+    if (node.bg) sizedStyle = { ...sizedStyle, background: themeInk(node.bg) };
+  }
 
   return (
     <div

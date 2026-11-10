@@ -75,6 +75,9 @@
   --cv-grid: #a6acb2;
   --cv-grid-strong: #a6acb2;
   --cv-surface: #d0d4d8; /* panel */
+  /* Section fill: a faint lift off the mid-grey board (a stronger white wash
+     reads as a solid panel here). */
+  --cv-frame-fill: rgba(255, 255, 255, 0.08);
   --en-ground: #c3c8cd;
   --cv-ink: #16191c;
   --cv-muted: #4a4f55;
@@ -115,6 +118,8 @@
   --cv-grid: #2c2b27;
   --cv-grid-strong: #2c2b27;
   --cv-surface: #1c1b18; /* panel */
+  /* Restated: the light rule above outranks the package's .dark default. */
+  --cv-frame-fill: rgba(242, 242, 239, 0.03);
   --en-ground: #111110;
   --cv-ink: #ebe7dc;
   --cv-muted: #97948b;

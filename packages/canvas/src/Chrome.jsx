@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageSquareText } from 'lucide-react';
 import { useCanvas } from './CanvasProvider';
 import { resolveGrid } from './nodes/common';
@@ -129,6 +129,8 @@ function FrameLabel({ node }) {
   const { frameLabelEls, readOnly, eng, actionRef, nodeEls, setCtxMenu, renameFrameId } = useCanvas();
   const renaming = renameFrameId === node.id;
   const inputRef = useRef(null);
+  // Live rename text, mirrored into the sizer so the input hugs what's typed.
+  const [draft, setDraft] = useState('');
 
   const setRef = useCallback(
     (el) => {
@@ -138,7 +140,10 @@ function FrameLabel({ node }) {
   );
 
   useEffect(() => {
-    if (renaming && inputRef.current) { inputRef.current.focus(); inputRef.current.select(); }
+    if (!renaming) return;
+    setDraft(node.name || '');
+    if (inputRef.current) { inputRef.current.focus(); inputRef.current.select(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renaming]);
 
   const commit = () => {
@@ -177,24 +182,6 @@ function FrameLabel({ node }) {
     // window-level pointermove/up handlers (see Canvas.jsx), so capture isn't needed.
   };
 
-  if (renaming) {
-    return (
-      <div ref={setRef} className="cv-frame-label" data-editing="" onPointerDown={(e) => e.stopPropagation()}>
-        <input
-          ref={inputRef}
-          className="cv-frame-rename"
-          defaultValue={node.name || ''}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') commit();
-            // Discards the edit: the input unmounts, which doesn't fire onBlur.
-            if (e.key === 'Escape') eng.stopRenameFrame();
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
     <div
       ref={setRef}
@@ -203,8 +190,9 @@ function FrameLabel({ node }) {
       // hook for bespoke skins). Only while editing — a visitor has no use for
       // the author's rehearsal state.
       data-notes={!readOnly && node.notes ? '' : undefined}
-      onPointerDown={onPointerDown}
-      onDoubleClick={(e) => { if (readOnly) return; e.stopPropagation(); eng.startRenameFrame(node.id); }}
+      data-editing={renaming ? '' : undefined}
+      onPointerDown={renaming ? (e) => e.stopPropagation() : onPointerDown}
+      onDoubleClick={(e) => { if (readOnly || renaming) return; e.stopPropagation(); eng.startRenameFrame(node.id); }}
       onContextMenu={(e) => {
         if (readOnly) return;
         e.preventDefault();
@@ -214,7 +202,28 @@ function FrameLabel({ node }) {
         setCtxMenu({ x: e.clientX, y: e.clientY, wx: w.x, wy: w.y, target: { kind: 'node', id: node.id } });
       }}
     >
-      <span className="cv-txt">{node.name || 'Section'}</span>
+      {renaming ? (
+        // Renaming swaps only the name for an input — the label keeps its
+        // padding and controls, so it doesn't jump. The input shares a grid cell
+        // with an invisible copy of its text (the ::after), which sizes it.
+        <span className="cv-txt cv-frame-rename-wrap" data-value={draft}>
+          <input
+            ref={inputRef}
+            className="cv-frame-rename"
+            size={1}
+            defaultValue={node.name || ''}
+            onInput={(e) => setDraft(e.currentTarget.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commit();
+              // Discards the edit: the input unmounts, which doesn't fire onBlur.
+              if (e.key === 'Escape') eng.stopRenameFrame();
+            }}
+          />
+        </span>
+      ) : (
+        <span className="cv-txt">{node.name || 'Section'}</span>
+      )}
       {/* The written-notes mark doubles as the way back into them: the notes for
           a section are most often wanted while looking at that section, and the
           context menu is a long way round from here. */}
@@ -330,7 +339,7 @@ export default function Chrome() {
     const scaleMode = tool === 'scale';
     actionRef.current = {
       type: 'resize', id: n.id, corner, sx: e.clientX, sy: e.clientY,
-      ox: +n.x, oy: +n.y, ow, oh: +n.h * fx, ofs, mdType: n.type, loneSvg, crop, frameBar,
+      ox: +n.x, oy: +n.y, ow, oh: +n.h * fx, ofs, mdType: n.type, boxH: n.type === 'tblock' && n.h != null, loneSvg, crop, frameBar,
       frameScale: n.frameScale || 0, fx, scaleMode,
       ...(scaleMode ? { natW: el ? el.offsetWidth : 0, natH: el ? el.offsetHeight : 0, scale0: fx } : {}),
     };

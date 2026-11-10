@@ -6,7 +6,7 @@ import {
   Bold, Italic, Underline, Strikethrough, List, ListOrdered,
 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
-import { COLORS, DEFAULT_SHAPE_STYLE, DEFAULT_TEXT_SIZE, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, SHAPE_STYLES, TEXT_SIZES, themeInk, cx } from '../constants';
+import { COLORS, DEFAULT_SHAPE_STYLE, DEFAULT_TEXT_SIZE, DRAW_TOOLS, FILLABLE_SHAPES, FONTS, SHAPE_STYLES, TEXT_SIZES, TEXT_PADS, TEXT_BGS, DEFAULT_TEXT_PAD, themeInk, cx } from '../constants';
 import { richState } from '../rich-text';
 
 /* Vector shape tools grouped behind a single dropdown button in the toolbar. */
@@ -254,6 +254,11 @@ function Swatches() {
     else setTextSize(px);
   };
   const pickAlign = (dir) => selTexts.forEach((n) => eng.updateNode(n.id, { align: dir }));
+  // Box styling for text blocks. The default values are stored as "unset" so
+  // the block falls back to the stylesheet.
+  const pickPad = (px) => selTexts.forEach((n) => eng.updateNode(n.id, { pad: px === DEFAULT_TEXT_PAD ? undefined : px }));
+  const pickBorder = (hex) => selTexts.forEach((n) => eng.updateNode(n.id, { border: hex === 'none' ? undefined : hex }));
+  const pickBg = (hex) => selTexts.forEach((n) => eng.updateNode(n.id, { bg: hex === 'none' ? undefined : hex }));
   const pickStroke = (hex) => {
     if (editingShapes) selShapes.forEach((s) => eng.updateShape(s.id, { stroke: hex }));
     else setStrokeColor(hex);
@@ -276,6 +281,9 @@ function Swatches() {
     ? commonValue(selTexts, (n) => (n.fontSize != null ? +n.fontSize : DEFAULT_TEXT_SIZE))
     : textSize ?? DEFAULT_TEXT_SIZE;
   const curAlign = commonValue(selTexts, (n) => n.align || 'left');
+  const curPad = commonValue(selTexts, (n) => (n.pad != null ? +n.pad : DEFAULT_TEXT_PAD));
+  const curBorder = commonValue(selTexts, (n) => n.border || 'none');
+  const curBg = commonValue(selTexts, (n) => n.bg || 'none');
   const curStroke = editingShapes ? commonValue(selShapes, (s) => s.stroke) : strokeColor;
   const curShapeStyle = editingShapes
     ? commonValue(selShapes, (s) => s.style || DEFAULT_SHAPE_STYLE)
@@ -384,6 +392,61 @@ function Swatches() {
               {icon}
             </button>
           ))}
+        </div>
+      )}
+      {editingTexts && (
+        <div className="cv-swatch-row">
+          <span className="cv-swatch-label">Padding</span>
+          {TEXT_PADS.map(([px, abbr, label]) => (
+            <button
+              key={px}
+              className="cv-size-btn"
+              data-active={curPad === px ? '' : undefined}
+              title={label}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => pickPad(px)}
+            >
+              {abbr}
+            </button>
+          ))}
+        </div>
+      )}
+      {editingTexts && (
+        <div className="cv-swatch-row">
+          <span className="cv-swatch-label">Border</span>
+          {[['none', 'No border'], ...COLORS.stroke].map(([hex, name]) => {
+            const none = hex === 'none';
+            return (
+              <button
+                key={hex}
+                className={`cv-swatch${none ? ' cv-swatch-none' : ''}`}
+                data-active={curBorder === hex ? '' : undefined}
+                style={none ? undefined : { background: themeInk(hex) }}
+                title={none ? name : undefined}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pickBorder(hex)}
+              />
+            );
+          })}
+        </div>
+      )}
+      {editingTexts && (
+        <div className="cv-swatch-row">
+          <span className="cv-swatch-label">Fill</span>
+          {TEXT_BGS.map(([hex, name]) => {
+            const none = hex === 'none';
+            return (
+              <button
+                key={hex}
+                className={`cv-swatch${none ? ' cv-swatch-none' : ''}`}
+                data-active={curBg === hex ? '' : undefined}
+                style={none ? undefined : { backgroundColor: '#fff', backgroundImage: `linear-gradient(${themeInk(hex)},${themeInk(hex)})` }}
+                title={none ? 'No background' : name || undefined}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pickBg(hex)}
+              />
+            );
+          })}
         </div>
       )}
       {showStroke && (

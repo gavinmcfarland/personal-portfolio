@@ -23,6 +23,9 @@
   --cv-grid: rgba(0, 0, 0, 0.075);
   --cv-grid-strong: rgba(0, 0, 0, 0.12);
   --cv-surface: #ffffff;
+  /* A section's faint fill (.cv-frame-fill): a white wash that lifts the region
+     off the paper in light mode; a faint ink tint in dark mode. */
+  --cv-frame-fill: rgba(255, 255, 255, 0.3);
   --cv-ink: #141417;
   /* Translucent "black" shape fill — flips to translucent white in dark mode so
      ink-filled shapes stay legible on a dark board (see themeInk in Shape.jsx). */
@@ -120,6 +123,7 @@
   --cv-grid: rgba(255, 255, 255, 0.07);
   --cv-grid-strong: rgba(255, 255, 255, 0.1);
   --cv-surface: #161619;
+  --cv-frame-fill: rgba(242, 242, 239, 0.03);
   --cv-ink: #f2f2ef;
   --cv-ink-fill: #f2f2ef4d;
   --cv-muted: #b4b4b9;
@@ -454,6 +458,13 @@
 /* Frame / anchor region — an invisible box in the world that carries the
    region's geometry and takes the drags. Its outline and label are both drawn
    in the chrome layer (see .cv-frame-box / .cv-frame-label). */
+/* A section's faint fill — in the world (under every object), sized and placed
+   like its frame node. The radius undoes the zoom and the object's scale so it
+   matches the 9px screen-space outline (.cv-frame-box). Never hit-tested. */
+.canvas-root .cv-frame-fill {
+  background: var(--cv-frame-fill);
+  border-radius: calc(9px * var(--cv-inv-zoom, 1) / var(--cv-frame-sc, 1));
+}
 /* Dropped image object */
 .canvas-root .cv-node.cv-image,
 .canvas-root .cv-node.cv-video {
@@ -1321,14 +1332,14 @@
 .canvas-root .cv-sel {
   border: 2px solid var(--cv-accent);
 }
-/* A section's dashed outline. Screen-space like the rest of the chrome, so the
-   stroke (and the dash rhythm) stay put at any zoom instead of ballooning as
+/* A section's outline. Screen-space like the rest of the chrome, so the
+   stroke stays put at any zoom instead of ballooning as
    the board scales up. placeFrameBoxes() sits it on the frame's screen rect;
-   border-box keeps the dashes just inside the region, where the in-world border
-   they replaced used to sit. No fill in either mode: the outline is enough to
-   read the region, and a wash would tint everything inside it. */
+   border-box keeps the outline just inside the region, where the in-world border
+   it replaced used to sit. No fill here: the chrome sits above the board, so a
+   wash would tint what's inside — the fill is .cv-frame-fill, in the world. */
 .canvas-root .cv-frame-box {
-  border: 1.6px dashed color-mix(in srgb, var(--cv-accent) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cv-ink) 14%, transparent);
   border-radius: 9px;
   background: transparent;
 }
@@ -1410,8 +1421,11 @@
   /* The inset the controls sit in — also the spacing between them, so the
      cluster is evenly bounded on every side (see .cv-frame-notes-btn below). */
   --cv-frame-label-pad: 0.22rem;
-  background: var(--cv-accent);
-  color: #fff;
+  /* Neutral, not the accent: a section label is a quiet tag on the board, and
+     an accent fill on every section shouted over the content. */
+  background: var(--cv-surface);
+  color: var(--cv-muted);
+  border: 1px solid var(--cv-line);
   border-radius: 8px 8px 8px 2px;
   padding: var(--cv-frame-label-pad) var(--cv-frame-label-pad) var(--cv-frame-label-pad) 0.55rem;
   font-family: var(--cv-sans);
@@ -1419,34 +1433,40 @@
   font-weight: 600;
   box-shadow: var(--cv-shadow);
 }
-.canvas-root .cv-chrome .cv-frame-label[data-editing] {
-  padding: 0.16rem;
-}
 .canvas-root .cv-chrome .cv-frame-label .cv-txt {
   outline: none;
   text-overflow: ellipsis;
 }
+.canvas-root .cv-chrome .cv-frame-rename-wrap {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--cv-ink) 6%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cv-ink) 6%, transparent);
+}
+.canvas-root .cv-chrome .cv-frame-rename-wrap::after {
+  /* Trailing space leaves room for the caret at the end of the text. */
+  content: attr(data-value) " ";
+}
 .canvas-root .cv-chrome .cv-frame-rename {
-  padding: 0 6px;
+  margin: 0;
+  padding: 0;
   border: 0;
-  border-radius: 6px;
-  background: var(--cv-surface);
-  color: var(--cv-ink);
-  font-family: var(--cv-sans);
-  font-size: 0.72rem;
-  font-weight: 600;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
   outline: none;
 }
 .canvas-root .cv-chrome .cv-frame-go {
   border: 0;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.22);
-  color: #fff;
+  background: color-mix(in srgb, var(--cv-ink) 7%, transparent);
+  color: inherit;
   font-size: 12px;
   line-height: 1;
 }
 .canvas-root .cv-chrome .cv-frame-go:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: color-mix(in srgb, var(--cv-ink) 14%, transparent);
 }
 /* ── UI chrome ────────────────────────────────────────────────── */
 .canvas-root .cv-panel {
@@ -2131,8 +2151,7 @@
    shows at a glance which parts have been written and which are still bare.
    It's also the button that reopens those notes — bare until hovered, so it
    still reads as a mark on the label rather than a second → button.
-   currentColor, not the accent: the label is already accent-filled, so an
-   accent mark would be invisible against it. */
+   currentColor, so the mark follows the label's ink. */
 .canvas-root .cv-frame-label .cv-frame-notes-btn {
   padding: 0;
   border: 0;
@@ -2148,7 +2167,7 @@
   margin-left: calc(var(--cv-frame-label-pad) - 0.5rem);
 }
 .canvas-root .cv-frame-label .cv-frame-notes-btn:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: color-mix(in srgb, var(--cv-ink) 14%, transparent);
 }
 .canvas-root .cv-frame-label .cv-frame-notes-btn:hover .cv-frame-notes {
   opacity: 1;

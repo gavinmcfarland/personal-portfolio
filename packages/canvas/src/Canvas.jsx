@@ -1,7 +1,11 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCanvas } from './CanvasProvider';
-import { ZOOM, PAN, DRAW_TOOLS, FILLABLE_SHAPES, cx } from './constants';
+import { ZOOM, PAN, DRAW_TOOLS, FILLABLE_SHAPES, DEFAULT_TEXT_PAD, cx } from './constants';
+
+/* Screen px the text tool's press must travel before it draws a box rather than
+   dropping an auto-sizing block at the click. */
+const TEXT_DRAW_MIN = 6;
 import World from './World';
 import Chrome from './Chrome';
 import { drawShapeGeom, scaleShape } from './Shape';
@@ -309,10 +313,11 @@ export default function Canvas() {
       eng.setTool('select'); eng.selectNode(n.id); eng.startEditing(n.id); return;
     }
     if (tool === 'text') {
-      // A size preset picked with the text tool active seeds the next block; left
-      // unset the block takes the stylesheet's size and stays free of a fontSize.
-      const n = eng.addNode({ id: eng.newId('tblock'), type: 'tblock', x: w.x, y: w.y - 18, text: '', font: S.textFont, ...(S.textSize != null ? { fontSize: S.textSize } : null) });
-      eng.setTool('select'); eng.selectNode(n.id); eng.startEditing(n.id); return;
+      // The block is placed on release: a click drops an auto-sizing block at
+      // the press point, a drag draws a fixed-size box (see onUp).
+      actionRef.current = { type: 'textDraw', sx: e.clientX, sy: e.clientY, ox: w.x, oy: w.y, drawn: false };
+      capture(vp, e.pointerId);
+      return;
     }
     if (tool === 'md') {
       const n = eng.addNode({ id: eng.newId('md'), type: 'md', x: w.x, y: w.y, w: 340, text: '' });
@@ -535,6 +540,21 @@ export default function Canvas() {
         );
         return;
       }
+      if (a.type === 'textDraw') {
+        // Past a small threshold the press becomes a drag that draws the box,
+        // previewed with the marquee outline.
+        if (!a.drawn && Math.hypot(e.clientX - a.sx, e.clientY - a.sy) < TEXT_DRAW_MIN) return;
+        a.drawn = true;
+        const r = viewportRef.current.getBoundingClientRect();
+        eng.placeMarquee(
+          Math.min(a.sx, e.clientX) - r.left, Math.min(a.sy, e.clientY) - r.top,
+          Math.abs(e.clientX - a.sx), Math.abs(e.clientY - a.sy)
+        );
+        const w = eng.screenToWorld(e.clientX, e.clientY);
+        a.x = Math.min(a.ox, w.x); a.y = Math.min(a.oy, w.y);
+        a.w = Math.abs(w.x - a.ox); a.h = Math.abs(w.y - a.oy);
+        return;
+      }
       if (a.type === 'draw') {
         const w = eng.screenToWorld(e.clientX, e.clientY), s = a.s;
         if (s.type === 'pen') s.points.push([w.x, w.y]); else { s.x2 = w.x; s.y2 = w.y; }
@@ -725,7 +745,7 @@ export default function Canvas() {
             // a Shift-locked non-media box scales on its dominant axis only; a side
             // handle only snaps the axis it actually drags (activeX/activeY).
             let freeX = activeX, freeY = activeY;
-            if (a.mdType === 'md' || a.mdType === 'tblock' || a.mdType === 'code' || a.mdType === 'link') freeY = false;
+            if (a.mdType === 'md' || (a.mdType === 'tblock' && !a.boxH) || a.mdType === 'code' || a.mdType === 'link') freeY = false;
             else if (e.shiftKey && a.mdType !== 'image' && a.mdType !== 'video') {
               if (Math.abs(dx) >= Math.abs(dy)) freeY = false; else freeX = false;
             }
@@ -759,7 +779,11 @@ export default function Canvas() {
           h = free
             ? Math.max(40, hRaw)
             : bar + Math.max(1, Math.round(w * ((a.oh - bar) / a.ow)));
-        } else if (a.mdType !== 'md' && a.mdType !== 'tblock' && a.mdType !== 'code' && a.mdType !== 'link') {
+        } else if (a.mdType === 'tblock') {
+          // A drawn text box has a height (a floor — text past it still grows the
+          // box); an auto-height block keeps only its width.
+          if (a.boxH) h = Math.max(20, hRaw);
+        } else if (a.mdType !== 'md' && a.mdType !== 'code' && a.mdType !== 'link') {
           if (e.shiftKey) {
             // Shift locks the box aspect, following the dominant drag axis.
             const k = Math.abs(dx) >= Math.abs(dy) ? wRaw / a.ow : hRaw / a.oh;
@@ -774,7 +798,7 @@ export default function Canvas() {
         // The transform re-applies scale(fx) to reach the footprint on screen.
         const wN = w / a.fx, hN = h != null ? h / a.fx : null;
         el.style.width = wN + 'px'; el.dataset.w = wN; a.w = wN;
-        if (hN != null) { el.style.height = hN + 'px'; el.dataset.h = hN; a.h = hN; }
+        if (hN != null) { el.style[a.mdType === 'tblock' ? 'minHeight' : 'height'] = hN + 'px'; el.dataset.h = hN; a.h = hN; }
         // Scale-mode frame: grow the chrome bar (and thus the whole chrome + the
         // node's corner radius, which derive from --cv-df-bar on the node) live
         // with the box — React only recomputes it on release.
@@ -842,6 +866,22 @@ export default function Canvas() {
         }
       }
       if (a.type === 'marquee') eng.hideMarquee();
+      if (a.type === 'textDraw') {
+        // A size preset picked with the text tool active seeds the next block; left
+        // unset the block takes the stylesheet's size and stays free of a fontSize.
+        const base = { id: eng.newId('tblock'), type: 'tblock', text: '', font: S.textFont, ...(S.textSize != null ? { fontSize: S.textSize } : null) };
+        let n;
+        if (a.drawn) {
+          eng.hideMarquee();
+          // The drawn rect is the block's outer box; w/h are its content size
+          // (the block is content-box), so take the default padding back out.
+          const padX = 2 * DEFAULT_TEXT_PAD, padY = 1.5 * DEFAULT_TEXT_PAD;
+          n = eng.addNode({ ...base, x: a.x, y: a.y, w: Math.max(120, a.w - padX), h: Math.max(20, a.h - padY) });
+        } else {
+          n = eng.addNode({ ...base, x: a.ox, y: a.oy - 18 });
+        }
+        eng.setTool('select'); eng.selectNode(n.id); eng.startEditing(n.id);
+      }
       if (a.type === 'draw') {
         const s = a.s;
         const tiny = (s.type === 'pen' && s.points.length < 2) ||
@@ -1088,7 +1128,7 @@ export default function Canvas() {
         // on screen (looks like a stray pixel after a two-finger pan).
         const prev = actionRef.current;
         actionRef.current = null;
-        if (prev && prev.type === 'marquee') eng.hideMarquee();
+        if (prev && (prev.type === 'marquee' || prev.type === 'textDraw')) eng.hideMarquee();
         if (prev && prev.type === 'draw') setDraft(null);
         rootState('panning', false);
         eng.freezeView();

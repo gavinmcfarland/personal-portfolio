@@ -165,6 +165,18 @@ export const TEXT_SIZES = [
 ];
 export const DEFAULT_TEXT_SIZE = 24;
 
+/* Padding presets (horizontal px) for text blocks; vertical padding is ¾ of it.
+   Small matches the stylesheet's 6px 8px default, so an unpadded block reads as
+   Small in the picker. */
+export const TEXT_PADS = [
+	[0, '0', 'No padding'],
+	[8, 'S', 'Small'],
+	[16, 'M', 'Medium'],
+	[32, 'L', 'Large'],
+];
+export const DEFAULT_TEXT_PAD = 8;
+export const textPadding = (px) => `${px * 0.75}px ${px}px`;
+
 export const COLORS = {
 	note: [
 		['#FFE27A', 'yellow'],
@@ -196,6 +208,15 @@ export const COLORS = {
 		['#F5A5244D', ''], // orange
 	],
 };
+
+/* Background fills offered for text blocks: the shape fills, with the first
+   colour swapped for the board's UI panel colour (stored as the var() reference
+   itself, so it follows the skin and the light/dark theme). */
+export const TEXT_BGS = [
+	COLORS.fill[0],
+	['var(--cv-ui-bg)', 'UI panel'],
+	...COLORS.fill.slice(2),
+];
 
 /* Preset board background tints offered by the edit-mode picker. These are
    saturated hues (paired with the stroke/fill palette), not pale paper colours:

@@ -334,8 +334,12 @@ function normalizeSaved(n) {
   // Formatted text keeps its markup alongside the plain mirror; unformatted
   // blocks (and every block saved before rich text) carry `text` alone.
   const rt = n.html ? { html: String(n.html) } : null;
-  if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs, ...ff, ...al, ...rt }; // resized tblock wraps at its width
-  return { ...base, text: n.text || '', ...fs, ...ff, ...al, ...rt }; // tblock
+  // Box styling: padding preset (px), border colour and background fill.
+  const bx = { ...(n.pad != null && Number.isFinite(+n.pad) ? { pad: +n.pad } : {}), ...(n.border ? { border: String(n.border) } : {}), ...(n.bg ? { bg: String(n.bg) } : {}) };
+  // A box drawn with the text tool also carries a height (a min-height floor).
+  const bh = n.w != null && n.h != null ? { h: n.h } : null;
+  if (n.w != null) return { ...base, w: n.w, text: n.text || '', ...fs, ...ff, ...al, ...rt, ...bx, ...bh }; // resized tblock wraps at its width
+  return { ...base, text: n.text || '', ...fs, ...ff, ...al, ...rt, ...bx }; // tblock
 }
 
 /* Merge a saved node list over the data-derived base for the home page. Nodes of
@@ -1174,7 +1178,7 @@ export function CanvasProvider({
         chrome.rz.style.display = 'block';
         chrome.rz.style.left = ox + 'px'; chrome.rz.style.top = oy + 'px';
         chrome.rz.style.width = ow + 'px'; chrome.rz.style.height = oh + 'px';
-        chrome.rz.dataset.mode = shapeSel ? 'xy' : scaling ? 'scale' : (type === 'md' || type === 'code' || type === 'tblock' || type === 'link' ? 'ew' : 'xy');
+        chrome.rz.dataset.mode = shapeSel ? 'xy' : scaling ? 'scale' : (type === 'md' || type === 'code' || type === 'link' || (type === 'tblock' && !nodeEl.dataset.h) ? 'ew' : 'xy');
       } else chrome.rz.style.display = 'none';
     }
     /* Faint hover outline for the node under the cursor (edit mode only). Drawn
@@ -1256,9 +1260,22 @@ export function CanvasProvider({
        Each box tracks its frame's on-screen rect. */
     function placeFrameBoxes() {
       const s = viewRef.scale;
+      // Section fills live in the zoomed world; this lets their corner radius
+      // cancel the zoom so it matches the screen-space outline.
+      if (worldRef.current) worldRef.current.style.setProperty('--cv-inv-zoom', String(1 / s));
       frameBoxEls.forEach((box, id) => {
         const f = nodeEls.get(id);
         if (!f) { box.style.display = 'none'; return; }
+        // The section's in-world fill (rendered just before the frame node, see
+        // Frame.jsx) tracks the frame's live geometry: move / resize / draw
+        // gestures write it to the node imperatively, ahead of React.
+        const fill = f.previousElementSibling;
+        if (fill && fill.classList.contains('cv-frame-fill')) {
+          fill.style.transform = f.style.transform;
+          fill.style.width = f.style.width;
+          fill.style.height = f.style.height;
+          fill.style.setProperty('--cv-frame-sc', f.dataset.scale || 1);
+        }
         // Prefer the authored w/h (a frame always has them, and a resize keeps
         // the dataset live) over offsetWidth: that's an integer, and zoom
         // multiplies the rounding into a visible gap between the outline and the
@@ -1278,7 +1295,7 @@ export function CanvasProvider({
       frameLabelEls.forEach((label, id) => {
         const f = nodeEls.get(id); if (!f) return;
         label.style.left = (viewRef.x + +f.dataset.x * s) + 'px';
-        label.style.top = (viewRef.y + +f.dataset.y * s - 28) + 'px';
+        label.style.top = (viewRef.y + +f.dataset.y * s - 27) + 'px';
       });
       placeFrameBoxes();
       placeHover();
@@ -2250,7 +2267,7 @@ export function CanvasProvider({
       // A per-object scale multiplier (K tool / right-click). Omitted at 1×.
       if (n.scale && n.scale !== 1) o.scale = Math.round(n.scale * 10000) / 10000;
       if (n.type === 'sticky') { o.color = n.color; o.text = n.text; }
-      else if (n.type === 'tblock') { o.text = n.text; if (n.html) o.html = n.html; if (n.w != null) o.w = n.w; if (n.fontSize != null) o.fontSize = n.fontSize; if (n.font) o.font = n.font; if (n.align && n.align !== 'left') o.align = n.align; }
+      else if (n.type === 'tblock') { o.text = n.text; if (n.html) o.html = n.html; if (n.w != null) o.w = n.w; if (n.h != null) o.h = n.h; if (n.fontSize != null) o.fontSize = n.fontSize; if (n.font) o.font = n.font; if (n.align && n.align !== 'left') o.align = n.align; if (n.pad != null) o.pad = n.pad; if (n.border) o.border = n.border; if (n.bg) o.bg = n.bg; }
       else if (n.type === 'frame') { o.w = n.w; o.h = n.h; o.text = n.name; if (n.notes) o.notes = n.notes; }
       else if (n.type === 'md') { o.w = n.w; o.text = n.text; }
       else if (n.type === 'code') { o.w = n.w; o.text = n.text; o.lang = n.lang; if (n.wrap != null) o.wrap = n.wrap ? 1 : 0; }
