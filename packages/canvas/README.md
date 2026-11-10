@@ -70,6 +70,8 @@ All are optional.
 | `onUploadVideo` | `(file, dataUrl) => Promise<url>` | IndexedDB | Resolve a `src` for dropped videos. |
 | `onUploadAudio` | `(file, dataUrl) => Promise<url>` | inline / IndexedDB | Resolve a `src` for dropped / pasted / recorded sound clips. |
 | `onChange` | `(snapshot) => void` | `null` | Fires after every autosave. |
+| `page` | `string` | `null` | Open on this page: its id, or its name as a slug (`"Plugma Notes"` → `plugma-notes`). Changing it later switches pages. Unknown or archived pages are ignored. Pairs with `onPageChange` for page URLs. |
+| `onPageChange` | `({ id, name, slug, index }) => void` | `null` | Fires on mount and whenever the active page or its name changes, so a host can mirror it in the URL. |
 | `collide` | `boolean` | `false` | Reposition objects so they don't overlap when the container is too narrow to fit their authored layout. View-mode only; positions are derived, never persisted. |
 | `collideStrategy` | `'organic' \| 'push-down' \| 'pack'` | `'organic'` | `organic` (default) keeps every object at its authored position and moves only what overlaps / falls out of view, flowing the overflow downward — nothing moves if it already fits; `push-down` pins each object's x to the band's left edge and stacks overlaps into a reading-order column; `pack` recomputes all positions into a balanced grid centred in the visible box. |
 | `collideSeparate` | `boolean` | `false` | (`organic` strategy) also prise apart *intentional* overlaps when reflowing. Default `false`: authored-overlapping objects form a rigid group that reflows as one unit — it routes around other objects but its members never shift relative to each other, so the overlap is kept exactly. Set `true` to separate every overlap. |

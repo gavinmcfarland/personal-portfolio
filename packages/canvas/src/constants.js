@@ -24,6 +24,28 @@ export const GRID = 28;
 
 export const clampScale = (s) => Math.min(ZOOM.max, Math.max(ZOOM.min, s));
 
+/* URL-friendly name for a page ("Plugma Notes" → "plugma-notes"), falling back
+   to its id when the name has nothing sluggable in it. */
+export const pageSlug = (page) => {
+	const s = String((page && page.name) || '')
+		.normalize('NFKD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+	return s || (page ? String(page.id) : '');
+};
+
+/* The page a key refers to: its id first, then its slug (first match wins when
+   two pages share a name). Case-insensitive; null when nothing matches. */
+export const findPage = (pages, key) => {
+	if (key == null || key === '') return null;
+	const k = String(key).toLowerCase();
+	return pages.find((p) => String(p.id).toLowerCase() === k)
+		|| pages.find((p) => pageSlug(p) === k)
+		|| null;
+};
+
 /* On-board height of a section — its stored height at whatever scale it carries. */
 const sectionH = (n) => (+n.h > 0 ? +n.h : 0) * (+n.scale > 0 ? +n.scale : 1);
 

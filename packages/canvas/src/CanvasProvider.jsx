@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, useRef, useState, useEffect, useLayoutEffect, useSyncExternalStore } from 'react';
-import { ZOOM, PAN, GRID, DEFAULT_SHAPE_STYLE, frameBarH, clampScale, sectionNodes, sectionLabel } from './constants';
+import { ZOOM, PAN, GRID, DEFAULT_SHAPE_STYLE, frameBarH, clampScale, sectionNodes, sectionLabel, pageSlug, findPage } from './constants';
 import { hasIDB, putMedia, getMedia, listMediaKeys, deleteMedia } from './media-store';
 import { RICH_COMMANDS, sanitizeRich, isRichHtml } from './rich-text';
 import { injectBridge, auditHtml } from './html-bridge';
@@ -525,6 +525,8 @@ export function CanvasProvider({
   onUploadHtml = null,
   onUnfurl = null, // optional (url) => { url, title, description, image, siteName, favicon } for pasted-link cards
   onChange = null,
+  page = null, // open on this page (its id or name slug, e.g. from the URL); changing it later switches pages. Unknown / archived keys are ignored.
+  onPageChange = null, // ({ id, name, slug, index }) => void — fires on mount and whenever the active page (or its name) changes, so a host can mirror it in the URL
   presentRelay = null, // optional transport that lets a second device drive the board while presenting: { publish({room,deck,index}), subscribe(room, onCmd) => unsubscribe, link(room) => Promise<{url}> }. Absent = present mode still works, just without a remote.
   theme = null, // optional { mode, toggle } — renders a theme button in the top bar
   accent = null, // theme/accent colour: a single CSS colour, or { light, dark } per theme (default: purple)
@@ -555,7 +557,14 @@ export function CanvasProvider({
   const canPublish = editable && typeof onPublish === 'function';
 
   const init = useMemo(
-    () => loadInitial({ base, initialState, editable, storageKey, homeId, managedTypes }),
+    () => {
+      const st = loadInitial({ base, initialState, editable, storageKey, homeId, managedTypes });
+      // A requested page wins over the saved one, so a deep link opens straight
+      // on it with no flash of another board.
+      const want = findPage(st.pagesMeta, page);
+      if (want) st.activePageId = want.id;
+      return st;
+    },
     // Config is captured once; changing it requires remounting the provider.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -3733,6 +3742,30 @@ export function CanvasProvider({
 
   /* ── Keep chrome + persistence in sync with the model ───────── */
   useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, bgStrength, gridHidden, eng]);
+
+  /* ── Host-driven page (deep links) ─────────────────────────────
+     `page` picks the board on mount (see init); a later change — the host's
+     URL moving on back/forward — switches to it. `onPageChange` reports the
+     active page back so the host can keep its URL in step. */
+  const pageMounted = useRef(false);
+  useEffect(() => {
+    if (!pageMounted.current) { pageMounted.current = true; return; }
+    const want = findPage(pages, page);
+    if (want && want.id !== activePageId) eng.switchPage(want.id);
+    // Only a change of the requested page should move the board, not the
+    // board moving on its own.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+  const onPageChangeRef = useRef(onPageChange);
+  onPageChangeRef.current = onPageChange;
+  const activeIndex = pages.findIndex((p) => p.id === activePageId);
+  const activeMeta = pages[activeIndex];
+  const activeSlug = activeMeta ? pageSlug(activeMeta) : '';
+  useEffect(() => {
+    if (!activeMeta || !onPageChangeRef.current) return;
+    onPageChangeRef.current({ id: activeMeta.id, name: activeMeta.name, slug: activeSlug, index: activeIndex });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePageId, activeSlug, activeIndex]);
 
   /* Reflow is a display-only overlay (derived positions, never persisted): keep
      the screen-space chrome aligned to it, but don't schedule a save/publish. */

@@ -143,6 +143,7 @@ function App() {
         <Suspense fallback={null}>
           <Routes>
             <Route path="/private/:id" element={<PrivatePage />} />
+            <Route path="/private/:id/:page" element={<PrivatePage />} />
           </Routes>
         </Suspense>
       </ThemeProvider>

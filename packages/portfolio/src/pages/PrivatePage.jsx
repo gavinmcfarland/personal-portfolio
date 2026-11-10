@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Canvas } from "@gavinmcfarland/canvas";
 import ThemeToggle from "../components/ThemeToggle";
 import Seo from "../components/Seo";
@@ -17,7 +17,12 @@ import { decryptBoard, encryptBoard } from "../lib/privateCrypto";
    unlocks the page with the password, edits, and each save re-encrypts the board
    client-side with that in-memory password and writes it back to the static file
    via the dev `/__private/save` endpoint — the password never touches disk.
-   Commit the updated file and deploy to publish the content. */
+   Commit the updated file and deploy to publish the content.
+
+   Each board page has its own URL, /private/<id>/<page-slug>, so a link can
+   open straight on one page. The URL follows the page switcher (and back /
+   forward switches pages); a bare /private/<id> opens the saved page and
+   gains its slug. */
 
 const STATUS = { loading: "loading", locked: "locked", missing: "missing", unlocked: "unlocked" };
 
@@ -41,7 +46,21 @@ function makeSaver(slug, getPassword) {
 }
 
 export default function PrivatePage() {
-  const { id } = useParams();
+  const { id, page } = useParams();
+  const navigate = useNavigate();
+  // The first report comes from the board opening; it corrects the URL in place
+  // (a bare or unknown slug) rather than adding a history entry.
+  const reportedPage = useRef(false);
+  const onPageChange = useCallback(
+    ({ slug }) => {
+      const target = `/private/${id}/${slug}`;
+      const first = !reportedPage.current;
+      reportedPage.current = true;
+      if (window.location.pathname === target) return;
+      navigate(`${target}${window.location.search}${window.location.hash}`, { replace: first });
+    },
+    [id, navigate],
+  );
   const [status, setStatus] = useState(STATUS.loading);
   const [record, setRecord] = useState(null);
   const [board, setBoard] = useState(null);
@@ -110,6 +129,8 @@ export default function PrivatePage() {
           base={emptyBase}
           initialState={board ?? undefined}
           storageKey={`private-${id}`}
+          page={page}
+          onPageChange={onPageChange}
           onPublish={makeSaver(id, () => passwordRef.current)}
           onUploadImage={uploadMedia}
           onUploadVideo={uploadMedia}
