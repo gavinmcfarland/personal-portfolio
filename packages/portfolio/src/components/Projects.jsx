@@ -39,7 +39,7 @@ function KindTag({ kind }) {
   );
 }
 
-/* The go-there mark at the right edge of a row. Faint until the row is pointed
+/* The go-there mark, set just after the project's title. Faint until the row is pointed
    at, then ink — no movement, and it snaps like the row's wash. Square
    caps and a mitred vertex keep it in the flat-square family the kind swatch
    and the plates belong to.
@@ -81,11 +81,12 @@ export const ProjectList = () => (
         onClick={blurOnPointerClick}
       >
         {/* Title row spans the full width, so the kind chip stays hard against
-              the entry's right edge — the chevron rides the row below it rather
-              than sitting beside the chip and insetting it. */}
+              the entry's right edge. The chevron follows the title itself rather
+              than the row, so it reads as part of the name it points to. */}
         <p className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <span className="font-bold text-ink">
+          <span className="inline-flex items-center gap-2 font-bold text-ink">
             {p.title}
+            <Chevron />
           </span>
           <span className="flex items-baseline gap-3">
             {p.draft && <span className="draft-tag">Draft</span>}
@@ -101,10 +102,9 @@ export const ProjectList = () => (
         {/* Hangs at `--stop`, the same three-character step the section body
               takes off its flush <h2> — so an entry's summary sits under its
               title exactly as a section's body sits under its heading. */}
-        <div className="mt-(--sp-1) flex items-center justify-between gap-4 pl-(--stop)">
+        <div className="mt-(--sp-1) pl-(--stop)">
           {/* <ProjectPlate id={p.id} className="h-[10rem] lg:h-[13rem]" /> */}
           <p className="min-w-0 max-w-measure text-muted">{p.summary}</p>
-          <Chevron />
         </div>
       </Link>
     ))}
