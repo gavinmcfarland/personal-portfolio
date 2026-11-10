@@ -12,7 +12,7 @@ const BUILD = [
   { level: 2, mark: "b", body: "Vite — build and dev server" },
   { level: 2, mark: "c", body: "Tailwind CSS on a small set of design tokens" },
   { level: 1, mark: "2", term: "Type" },
-  { level: 2, mark: "a", body: "Spline Sans Mono — the whole document, man-page style" },
+  { level: 2, mark: "a", body: "IBM Plex Sans — the whole document, one face" },
   { level: 1, mark: "3", term: "Canvas" },
   { level: 2, mark: "a", body: "A custom embeddable canvas engine (the Scratch board)" },
   { level: 1, mark: "4", term: "Hosting" },
@@ -20,8 +20,8 @@ const BUILD = [
 ];
 
 const SPEC = [
-  { t: "TYPEFACE", d: "Spline Sans Mono — one face for prose, code and headings" },
-  { t: "MEASURE", d: "~64 characters; 1.7 line height" },
+  { t: "TYPEFACE", d: "IBM Plex Sans — one face for prose, labels and headings" },
+  { t: "MEASURE", d: "~64 characters; 1.6 line height" },
   { t: "ACCENT", d: "Vermilion #c8341a (light) / #e0563c (dark)" },
   { t: "GROUND", d: "Cool steel (light) / warm graphite (dark)" },
 ];
@@ -41,7 +41,7 @@ export default function Colophon() {
         <p className="indent wordmark">Colophon</p>
         <p className="indent max-w-measure text-muted">
           What this site is made of. The whole thing is set as a manual: one
-          monospace face, flat fills, hairline rules, and a single working
+          typeface, flat fills, hairline rules, and a single working
           accent. The system is called <span className="text-ink">Enamel</span>
           <sup className="fn-ref">3</sup> &mdash; vitreous enamel on steel.
         </p>
@@ -77,7 +77,7 @@ export default function Colophon() {
       <div className="indent reveal footnotes max-w-measure">
         <div className="footnotes__rule" aria-hidden="true" />
         <p className="footnote">
-          <sup>1</sup> <span className="text-ink">Spline Sans Mono</span> — SIL
+          <sup>1</sup> <span className="text-ink">IBM Plex Sans</span> — SIL
           Open Font License.
         </p>
         <p className="footnote">

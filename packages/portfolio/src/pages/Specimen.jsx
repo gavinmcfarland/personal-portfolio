@@ -73,7 +73,7 @@ const ENAMELS = [
 ];
 
 /* ── Type ──────────────────────────────────────────────────────────
-   Spline Sans Mono is loaded at exactly these four cuts (index.html); anything
+   IBM Plex Sans is loaded at exactly these four cuts (index.html); anything
    else on this page would be a browser-synthesised fake. */
 const CUTS = [
   { label: "400 · regular", style: { fontWeight: 400 } },
@@ -86,27 +86,27 @@ const CUTS = [
    row's `cls` is the live Tailwind utility that sets it — `text-4` really is the
    class the body uses. */
 const SCALE = [
-  { size: "0.625rem", px: "10px", role: "chips, release tags, lettermark", cls: "text-1" },
-  { size: "0.6875rem", px: "11px", role: "footnotes, meta, captions, table heads", cls: "text-2" },
-  { size: "0.75rem", px: "12px", role: "section labels, sub-labels, index entries", cls: "text-3" },
-  { size: "0.8125rem", px: "13px", role: "body — running text, panels, transcripts", cls: "text-4" },
-  { size: "0.875rem", px: "14px", role: "the one emphatic step (list-row token)", cls: "text-5" },
-  { size: "1.3125rem", px: "21px", role: "page title in a narrow column", cls: "text-6" },
-  { size: "1.6875rem", px: "27px", role: "page title", cls: "text-7" },
-  { size: "2.1875rem", px: "35px", role: "page title, sm and up", cls: "text-8" },
+  { size: "0.75rem", px: "12px", role: "chips, release tags, lettermark", cls: "text-1" },
+  { size: "0.8125rem", px: "13px", role: "footnotes, meta, captions, table heads", cls: "text-2" },
+  { size: "0.875rem", px: "14px", role: "section labels, sub-labels, index entries", cls: "text-3" },
+  { size: "0.9375rem", px: "15px", role: "body — running text, panels, transcripts", cls: "text-4" },
+  { size: "1rem", px: "16px", role: "the one emphatic step (list-row token)", cls: "text-5" },
+  { size: "1.5rem", px: "24px", role: "page title in a narrow column", cls: "text-6" },
+  { size: "1.875rem", px: "30px", role: "page title", cls: "text-7" },
+  { size: "2.375rem", px: "38px", role: "page title, sm and up", cls: "text-8" },
 ];
 
 /* The vertical rhythm, in the order it steps. Every value is a fraction or
    multiple of one line of body text (--lh), which is what makes them relate. */
 const RHYTHM = [
-  { token: "--sp-1", val: "¼ line · 5.2px", role: "list gaps, stacked pairs" },
-  { token: "--sp-2", val: "½ line · 10.4px", role: "dense groups, label → list" },
-  { token: "--sp-3", val: "¾ line · 15.6px", role: "the paragraph step (--para)" },
-  { token: "--sp-4", val: "1 line · 20.8px", role: "heading → body, block step" },
-  { token: "--sp-6", val: "1½ lines · 31.2px", role: "sub-head top, between blocks" },
-  { token: "--sp-8", val: "2 lines · 41.6px", role: "section head top, back-link → title" },
-  { token: "--sp-12", val: "3 lines · 62.4px", role: "section head top (sm+)" },
-  { token: "--sp-16", val: "4 lines · 83.2px", role: "page edges" },
+  { token: "--sp-1", val: "¼ line · 6px", role: "list gaps, stacked pairs" },
+  { token: "--sp-2", val: "½ line · 12px", role: "dense groups, label → list" },
+  { token: "--sp-3", val: "¾ line · 18px", role: "the paragraph step (--para)" },
+  { token: "--sp-4", val: "1 line · 24px", role: "heading → body, block step" },
+  { token: "--sp-6", val: "1½ lines · 36px", role: "sub-head top, between blocks" },
+  { token: "--sp-8", val: "2 lines · 48px", role: "section head top, back-link → title" },
+  { token: "--sp-12", val: "3 lines · 72px", role: "section head top (sm+)" },
+  { token: "--sp-16", val: "4 lines · 96px", role: "page edges" },
 ];
 
 /* ── Small page-local primitives ───────────────────────────────────
@@ -183,13 +183,13 @@ export default function Specimen() {
 
             `mt-(--sp-6)` is the title gap, and it has to be the *whole* gap
             rather than the project page's `--sp-2` top-up. There, the title is a
-            flex item, so its own 20.8px bottom margin cannot collapse with the
-            text below and the two add up to 31.2px. Here the title and this
+            flex item, so its own 24px bottom margin cannot collapse with the
+            text below and the two add up to 36px. Here the title and this
             paragraph are adjacent siblings in normal flow, so their margins
             collapse to the larger of the two — which means naming 1½ lines
-            outright is what lands on the same 31.2px. */}
+            outright is what lands on the same 36px. */}
         <p className="man-body mt-(--sp-6) text-muted">
-          One monospace face at one size, flat fills, hairline edges and a
+          One typeface at one size, flat fills, hairline edges and a
           single working accent. <span className="text-ink">Enamel</span> is
           vitreous enamel on steel: it cannot round a corner or cast a shadow,
           so nothing here does. Every sample on this page is drawn with the live
@@ -310,13 +310,12 @@ export default function Specimen() {
         Type
       </h2>
         <p className="lede indent reveal man-body text-muted">
-          One family carries prose, headings and code alike:{" "}
-          <span className="text-ink">Spline Sans Mono</span>, loaded at four
-          cuts. There is no serif and no grotesque beside it —{" "}
-          <span className="text-ink">--font-sans</span> and{" "}
-          <span className="text-ink">--font-serif</span> are kept only as
-          aliases pointing back at the mono face, so a stray{" "}
-          <span className="text-ink">font-sans</span> in the markup can never
+          One family carries prose, headings and labels alike:{" "}
+          <span className="text-ink">IBM Plex Sans</span>, loaded at four
+          cuts. There is no serif beside it —{" "}
+          <span className="text-ink">--font-serif</span> is kept only as an
+          alias pointing back at the sans, so a stray{" "}
+          <span className="text-ink">font-serif</span> in the markup can never
           summon a second typeface.
         </p>
         {/* Shown at body size, not blown up: the point of a flat-type sheet is
@@ -332,11 +331,11 @@ export default function Specimen() {
         Type scale
       </h2>
         <p className="lede indent reveal man-body text-muted">
-          <span className="text-ink">Flat type.</span> Body is 13px and headings
-          are the same 13px given weight, tracking and uppercase — never a
+          <span className="text-ink">Flat type.</span> Body is 15px and headings
+          are the same 15px given weight, tracking and uppercase — never a
           bigger number. Only the page title breaks the ceiling, and it does so
           at three cuts because the site has two column widths: a document page
-          takes 27/35px, a project page&rsquo;s ~256px sidebar stays at 21px
+          takes 30/38px, a project page&rsquo;s ~256px sidebar stays at 24px
           rather than wrapping a mono title after nine characters.
         </p>
         <p className="lede indent reveal man-body text-muted">
@@ -378,7 +377,7 @@ export default function Specimen() {
           <span className="text-muted">.footnotes</span> block would hang three
           characters of <em>its own</em> smaller size and miss the stop
         </SpecRow>
-        <SpecRow tag="--lh" value="1.3rem · 20.8px">
+        <SpecRow tag="--lh" value="1.5rem · 24px">
           one line — <span className="text-muted">--text-4 × --leading</span>
         </SpecRow>
         <SpecRow tag="--leading" value="1.6">
@@ -405,7 +404,7 @@ export default function Specimen() {
             {r.role}
           </SpecRow>
         ))}
-        <SpecRow tag="--para" value="¾ line · 15.6px">
+        <SpecRow tag="--para" value="¾ line · 18px">
           the paragraph step, aliased to{" "}
           <span className="text-muted">--sp-3</span> —{" "}
           <span className="text-muted">.indent &gt; p + p</span>
@@ -599,13 +598,13 @@ export default function Specimen() {
         <div className="indent reveal flex flex-wrap gap-2">
           <button
             type="button"
-            className="flex items-center justify-center border border-line px-3 font-sans text-4 font-medium text-muted transition-colors duration-150 hover:bg-hover hover:text-ink h-[38px]"
+            className="flex items-center justify-center border border-line px-3 font-sans text-4 font-normal text-muted transition-colors duration-150 hover:bg-hover hover:text-ink h-[38px]"
           >
             Visit
           </button>
           <button
             type="button"
-            className="flex items-center justify-center border border-line bg-surface px-3 font-sans text-4 font-medium text-ink h-[38px]"
+            className="flex items-center justify-center border border-line bg-surface px-3 font-sans text-4 font-normal text-ink h-[38px]"
           >
             On surface
           </button>
