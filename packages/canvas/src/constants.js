@@ -5,7 +5,7 @@
 export const cx = (...parts) => parts.filter(Boolean).join(' ');
 
 export const ZOOM = {
-	min: 0.08,
+	min: 0.02,
 	max: 8,
 	sensitivity: 0.015,
 	deltaClamp: 24,

@@ -819,7 +819,10 @@ export function CanvasProvider({
         framedRef.current = { w: lastVpSize.current.w, h: lastVpSize.current.h, x: viewRef.x, y: viewRef.y, scale: viewRef.scale };
       }
       w.style.transform = `translate(${viewRef.x}px,${viewRef.y}px) scale(${viewRef.scale})`;
-      const step = GRID * viewRef.scale;
+      // Past 8% the dots would crowd into a grey wash, so the grid doubles its
+      // spacing as you zoom out further, never getting denser than it is at 8%.
+      let step = GRID * viewRef.scale;
+      while (step < GRID * 0.08) step *= 2;
       vp.style.setProperty('--cv-gx', (viewRef.x % step) + 'px');
       vp.style.setProperty('--cv-gy', (viewRef.y % step) + 'px');
       vp.style.backgroundSize = step + 'px ' + step + 'px';
