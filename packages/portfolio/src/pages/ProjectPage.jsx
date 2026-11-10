@@ -30,7 +30,7 @@ export default function ProjectPage({ project }) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={blurOnPointerClick}
-        className={`group shrink-0 items-center gap-1 font-sans text-3 font-normal text-muted hover:text-ink sm:text-4 ${visibility}`}
+        className={`group shrink-0 items-center gap-2 font-sans text-3 font-normal text-muted hover:text-ink sm:text-4 ${visibility}`}
       >
         {label}
         {/* Sized and coloured like the Back arrow across the row: h-4 w-4, and
