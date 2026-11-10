@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { useMediaSrc } from '../nodes/common';
+import { analyzeImage } from '../image-tone';
 
 /* Full-screen viewer for a media node's assets. Opened via double-click / tap or
    the node context menu; dismissed by clicking the backdrop, the close button, or
@@ -25,6 +26,9 @@ export default function Lightbox() {
   const src = useMediaSrc(asset ? asset.src : null);
   const srcDark = useMediaSrc(asset ? asset.srcDark : null);
   const vidRef = useRef(null);
+  // Which asset (by mediaKey) decoded as dark ink on transparency. The backdrop
+  // is always dark, so that art is inverted here in either theme (see .cv-ink).
+  const [inkKey, setInkKey] = useState(null);
 
   /* Hand the current full-screen position back to the inline cell, then close. */
   const close = useCallback(() => {
@@ -111,9 +115,11 @@ export default function Lightbox() {
       ) : (
         <img
           key={mediaKey}
+          className={(asset.invertDark ?? inkKey === mediaKey) ? 'cv-ink' : undefined}
           src={src || undefined}
           alt={asset.alt || ''}
           draggable={false}
+          onLoad={(e) => { if (analyzeImage(e.currentTarget).ink) setInkKey(mediaKey); }}
           onPointerDown={(e) => e.stopPropagation()}
         />
       )}

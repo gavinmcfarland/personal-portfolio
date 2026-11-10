@@ -2310,6 +2310,11 @@
   img.cv-dark {
   display: block;
 }
+/* Dark ink on transparency (a black line drawing, a signature, a monochrome
+   logo — detected on load, see image-tone.js) vanishes on a dark board. Invert
+   it there. The hue-rotate puts any faint tint back where it was, so only the
+   lightness flips. The lightbox backdrop is dark in both themes, so its ink
+   image is always inverted. */
 .canvas-root [data-cv-part="lightbox"] .cv-lb-close {
   position: absolute;
   top: 18px;

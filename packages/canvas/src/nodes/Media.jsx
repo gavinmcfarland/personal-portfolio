@@ -3,6 +3,7 @@ import { useRegister, useMediaSrc, resolveGrid } from './common';
 import { frameBarH } from '../constants';
 import VideoPlayer from './VideoPlayer';
 import DeviceFrame from './DeviceFrame';
+import { analyzeImage } from '../image-tone';
 
 /* One media node holds an `assets` array — a grid of images, gifs and videos.
    A lone asset renders exactly as before (a plain image, a vector SVG, or a
@@ -13,42 +14,10 @@ import DeviceFrame from './DeviceFrame';
    the chrome layer, see Chrome.jsx) resize the tracks. Files dropped onto the
    node append to its grid (see addMediaFiles). */
 
-/* A raster with an alpha channel needs the same treatment as an SVG — no card
-   behind it, or the surface shows through wherever the image is transparent.
-   The format alone can't say (a PNG is usually opaque), so sample the decoded
-   pixels once per src: draw it small and look for any non-opaque alpha. The
-   downscale is deliberate — a transparent halo survives it, and 48×48 is a
-   trivial read next to a full-size decode. */
-const alphaCache = new Map();
-const OPAQUE_FORMAT = /^data:image\/jpe?g|\.jpe?g($|\?)/i; // JPEG has no alpha to find
-
-function detectAlpha(img) {
-  const key = img.currentSrc || img.src;
-  if (!key || OPAQUE_FORMAT.test(key)) return false;
-  if (alphaCache.has(key)) return alphaCache.get(key);
-  let found = false;
-  try {
-    const S = 48;
-    const c = document.createElement('canvas');
-    c.width = S;
-    c.height = S;
-    const ctx = c.getContext('2d', { willReadFrequently: true });
-    ctx.drawImage(img, 0, 0, S, S);
-    const { data } = ctx.getImageData(0, 0, S, S);
-    // Not a strict 255: the downscale can leave an opaque edge a hair short.
-    for (let i = 3; i < data.length; i += 4) { if (data[i] < 250) { found = true; break; } }
-  } catch {
-    // A cross-origin image taints the canvas and getImageData throws. Unknown,
-    // so keep the card — that's the pre-detection look.
-    found = false;
-  }
-  alphaCache.set(key, found);
-  return found;
-}
-
 /* Resolve one asset's stored src and render it (image or a playing video).
    `mediaStyle` carries the crop sizing (see MediaNode) onto the img/video.
-   `onAlpha` reports back whether the decoded image turned out to be see-through. */
+   `onAlpha` reports back what the decoded image turned out to be: see-through
+   (`alpha`) and/or dark ink on transparency (`ink`). See image-tone.js. */
 function MediaContent({ nodeId, asset, index, bare, mediaStyle, onAlpha }) {
   const src = useMediaSrc(asset.src);
   const srcDark = useMediaSrc(asset.srcDark);
@@ -60,7 +29,7 @@ function MediaContent({ nodeId, asset, index, bare, mediaStyle, onAlpha }) {
   // instantly with no re-render or refetch — same mechanism as themeInk.
   // Either variant being see-through is enough to drop the card: it would show
   // through in that theme, and the two are the same artwork either way.
-  const onLoad = onAlpha ? (e) => onAlpha(detectAlpha(e.currentTarget)) : undefined;
+  const onLoad = onAlpha ? (e) => onAlpha(analyzeImage(e.currentTarget)) : undefined;
   if (asset.srcDark) {
     return (
       <>
@@ -74,9 +43,18 @@ function MediaContent({ nodeId, asset, index, bare, mediaStyle, onAlpha }) {
 
 function MediaNode({ node }) {
   const { setRef, dataProps, style } = useRegister(node);
-  // Which assets decoded as see-through, by index (see detectAlpha).
+  // Which assets decoded as see-through (and which of those are dark ink), by
+  // index (see analyzeImage).
   const [alpha, setAlpha] = useState({});
-  const markAlpha = (i) => (v) => { if (v) setAlpha((m) => (m[i] ? m : { ...m, [i]: true })); };
+  const [ink, setInk] = useState({});
+  const markAlpha = (i) => (v) => {
+    if (v.alpha) setAlpha((m) => (m[i] ? m : { ...m, [i]: true }));
+    if (v.ink) setInk((m) => (m[i] ? m : { ...m, [i]: true }));
+  };
+  // Dark ink is inverted in dark mode, unless the asset has its own dark
+  // variant (that variant is the authored answer), or opts out with
+  // `invertDark: false`. `invertDark: true` forces it for art the sampling misses.
+  const inverts = (a, i) => a.kind !== 'video' && !a.srcDark && (a.invertDark ?? !!ink[i]);
   // Legacy nodes that predate `assets` still carry a single top-level src.
   const assets = node.assets && node.assets.length
     ? node.assets
@@ -125,7 +103,7 @@ function MediaNode({ node }) {
     return (
       <div
         ref={setRef}
-        className={`${framed ? `${cls} cv-framed` : cls}${alpha[0] ? ' cv-alpha' : ''}`}
+        className={`${framed ? `${cls} cv-framed` : cls}${alpha[0] ? ' cv-alpha' : ''}${inverts(a, 0) ? ' cv-ink' : ''}`}
         {...dataProps}
         style={{ ...style, width: w, height: h, ...barStyle }}
       >
@@ -152,7 +130,7 @@ function MediaNode({ node }) {
       {assets.map((a, i) => (
         <div
           key={i}
-          className={`${a.svg ? 'cv-media-cell cv-svg' : 'cv-media-cell'}${alpha[i] ? ' cv-alpha' : ''}`}
+          className={`${a.svg ? 'cv-media-cell cv-svg' : 'cv-media-cell'}${alpha[i] ? ' cv-alpha' : ''}${inverts(a, i) ? ' cv-ink' : ''}`}
           data-media-idx={i}
         >
           <MediaContent
