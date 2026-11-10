@@ -6,26 +6,15 @@
       "id": "home",
       "name": "Page 1",
       "view": {
-        "x": 415.0117466397517,
-        "y": -467.9746890639176,
-        "scale": 0.7541675412260522
+        "x": 454.22400264865445,
+        "y": -433.6988689904533,
+        "scale": 0.6795281931568844
       },
       "nodes": [
         {
-          "id": "n37-tblock",
-          "type": "tblock",
-          "x": 3283.2588503637135,
-          "y": 1564.7691322501664,
-          "z": 79,
-          "text": "Tutorials",
-          "w": 127.265780022443,
-          "font": "sans",
-          "align": "center"
-        },
-        {
           "id": "n46-html",
           "type": "html",
-          "x": -309.52428399307064,
+          "x": -521.2647415773796,
           "y": 893.8618429664109,
           "z": 88,
           "w": 600,
@@ -37,12 +26,12 @@
         {
           "id": "n49-html",
           "type": "html",
-          "x": 176.5122383545318,
-          "y": 1270.8702865057232,
+          "x": 16.200044282657814,
+          "y": 1136.8618429664111,
           "z": 91,
           "scale": 0.75,
-          "w": 285.2151843111482,
-          "h": 486.00000000000006,
+          "w": 380,
+          "h": 648,
           "src": "/canvas-assets/9f8f144481d1a28e.html",
           "name": "home-20260717-150255-263.html",
           "frame": "plugin",
@@ -97,21 +86,10 @@
           "frame": "plugin"
         },
         {
-          "id": "n58-tblock",
-          "type": "tblock",
-          "x": 1088.0814310788116,
-          "y": 1564.7691322501664,
-          "z": 102,
-          "text": "New figlet",
-          "w": 190.07498463039872,
-          "font": "sans",
-          "align": "center"
-        },
-        {
           "id": "n59-html",
           "type": "html",
-          "x": 2842.8917618155474,
-          "y": 893.8618429664109,
+          "x": 2819.502000631984,
+          "y": 870.763434493316,
           "z": 103,
           "w": 284.9999999999998,
           "h": 486.00000000000017,
@@ -122,8 +100,8 @@
         {
           "id": "n60-html",
           "type": "html",
-          "x": 3046.7588503637135,
-          "y": 1046.737219050283,
+          "x": 3023.3690891801502,
+          "y": 1023.6388105771882,
           "z": 104,
           "w": 600.0000000000002,
           "h": 485.9999999999999,
@@ -132,24 +110,54 @@
           "frame": "plugin"
         },
         {
-          "id": "n61-tblock",
+          "id": "n63-tblock",
           "type": "tblock",
-          "x": 2177.18782404218,
-          "y": 1564.7691322501664,
-          "z": 105,
-          "text": "Community",
-          "w": 190.07498463039872,
+          "x": 863.197790393508,
+          "y": 1587.809412080345,
+          "z": 106,
+          "text": "Users have access to a beautifully designed code editor that supports code completion and syntax highlighting. User's can download their code as a full Figma plugin which they can run locally.",
+          "w": 600,
+          "h": 144.47426606050203,
+          "fontSize": 16,
           "font": "sans",
-          "align": "center"
+          "pad": 16,
+          "bg": "var(--cv-ui-bg)"
+        },
+        {
+          "id": "n64-tblock",
+          "type": "tblock",
+          "x": 1972.3917159749997,
+          "y": 1587.809412080345,
+          "z": 107,
+          "text": "Once user's have gotten comfortable with the Figma developer API they can publish their creations to the Figlet community. From here user's can star other user's figlets and use them in their own files. ",
+          "w": 600,
+          "h": 144.47426606050203,
+          "fontSize": 16,
+          "font": "sans",
+          "pad": 16,
+          "bg": "var(--cv-ui-bg)"
+        },
+        {
+          "id": "n65-tblock",
+          "type": "tblock",
+          "x": 3023.3690891801502,
+          "y": 1564.7110036072502,
+          "z": 108,
+          "text": "Figlet includes an interactive tutorial where it shows user's example scenarios for them to complete and encourages them to practice solving the problems. User's can click the \"Sow me\" button to see the finished solution.",
+          "w": 600,
+          "h": 144.47426606050203,
+          "fontSize": 16,
+          "font": "sans",
+          "pad": 16,
+          "bg": "var(--cv-ui-bg)"
         }
       ],
       "shapes": []
     }
   ],
-  "gridHidden": true,
   "viewport": {
     "w": 761,
     "h": 795
   },
-  "savedAt": 1794345822116
+  "savedAt": 1794347778179
 }
