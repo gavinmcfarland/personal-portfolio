@@ -615,7 +615,7 @@ const INPUT_BRIDGE = `<script data-cv-input="3">(() => {
    off until it arrives — so a restored board paints the saved page rather than
    flicking through the path to it. A watchdog lifts the veil whatever happens:
    a document that fails to restore is still a document to show. */
-const PAGE_BRIDGE = `<script data-cv-page="2">(() => {
+const PAGE_BRIDGE = `<script data-cv-page="3">(() => {
   if (window.parent === window) return;
   var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
 
@@ -636,6 +636,11 @@ const PAGE_BRIDGE = `<script data-cv-page="2">(() => {
      are skipped, since the trail they would duplicate is already loaded. */
   var MAX = 60;   // a path this long is a session, not a destination
   var trail = [];
+  /* Where in the trail the hash last changed. A hash route is a destination in
+     its own right, so the clicks that got there needn't be kept — but the ones
+     AFTER it must be: a route that opens on a screen and then has a sheet or a
+     disclosure opened by hand is the hash plus those taps, not the hash alone. */
+  var hashMark = 0;
   var restoring = false;
 
   /* A selector for the element a click landed on. Stops at the first id —
@@ -655,7 +660,7 @@ const PAGE_BRIDGE = `<script data-cv-page="2">(() => {
     if (restoring) return;
     var el = e.target;
     if (!el || el.nodeType !== 1) return;
-    if (trail.length >= MAX) trail.shift();
+    if (trail.length >= MAX) { trail.shift(); if (hashMark > 0) hashMark--; }
     trail.push({ p: pathOf(el), x: Math.round(e.clientX), y: Math.round(e.clientY) });
     checkMoved();
   }, true);
@@ -749,7 +754,12 @@ const PAGE_BRIDGE = `<script data-cv-page="2">(() => {
   };
   /* A hash router has already moved by the time this fires, so there is nothing
      to compare against — the change IS the event. */
-  addEventListener('hashchange', function () { announce(); });
+  addEventListener('hashchange', function () {
+    // The click that navigated has already been recorded (capture phase, before
+    // the router ran), so everything up to here is the way TO this route.
+    if (!restoring) hashMark = trail.length;
+    announce();
+  });
 
   // ── Describing the page ───────────────────────────────────────────────────
   var capture = function () {
@@ -760,7 +770,10 @@ const PAGE_BRIDGE = `<script data-cv-page="2">(() => {
       }
     } catch (err) { /* the document's own hook threw; fall through */ }
     var h = docHash();
-    if (h !== BOOT_HASH) return { v: 1, hash: h };
+    if (h !== BOOT_HASH) {
+      var after = trail.slice(hashMark);
+      return after.length ? { v: 1, hash: h, taps: after } : { v: 1, hash: h };
+    }
     if (trail.length) return { v: 1, taps: trail.slice() };
     return null; // nothing happened here worth remembering
   };
@@ -890,7 +903,14 @@ const PAGE_BRIDGE = `<script data-cv-page="2">(() => {
       }
       if (page.hash != null) {
         if (('#' + page.hash) !== location.hash) location.hash = page.hash;
-        return void settle(finish);
+        var after = page.taps && page.taps.length ? page.taps : null;
+        /* The route first, then whatever was opened on it by hand. The trail
+           restarts at the route, so a later capture describes it the same way. */
+        trail = after ? after.slice() : [];
+        hashMark = 0;
+        return void settle(function () {
+          if (after) replayTrail(after, finish); else finish();
+        });
       }
       if (page.taps && page.taps.length) {
         /* The restored path becomes this document's own trail, so a capture
@@ -1179,7 +1199,7 @@ export const BRIDGE = [
   { marker: 'data-cv-theme-sync', version: '2', script: THEME_SYNC },
   { marker: 'data-cv-zoom-opts', version: '5', script: ZOOM_OPTS },
   { marker: 'data-cv-input', version: '3', script: INPUT_BRIDGE },
-  { marker: 'data-cv-page', version: '2', script: PAGE_BRIDGE },
+  { marker: 'data-cv-page', version: '3', script: PAGE_BRIDGE },
   { marker: 'data-cv-scroll', version: '1', script: SCROLL_HOLD },
   { marker: 'data-cv-fixed', version: '1', script: FIXED_HOLD },
 ];
