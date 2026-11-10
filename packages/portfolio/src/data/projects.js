@@ -21,7 +21,7 @@ export const projects = [
 		kind: 'app',
 		summary: 'Manage medication, habits and health checks in one place, with reminders and a clear record over time.',
 		tagline:
-			'A single place to manage day-to-day care between appointments, from medication and daily habits to blood pressure readings and eye tests. The app brings schedules, reminders, progress and health records together, making it easier to stay on top of what needs doing and build a clearer picture over time.',
+			"Tracking your health and medication becomes difficult when you have to manage multiple medications and health issues. Health was designed with people's different situations and schedules in mind. It uses a timeline which lets you see what's due, no matter what time of day it is and lets you record not just when you take your medication but also related events like blood pressure and weight.",
 		tech: ['Kotlin', 'Android'],
 		role: 'Creator',
 		year: '2026',
@@ -37,7 +37,8 @@ export const projects = [
 		title: 'Figlet',
 		kind: 'tool',
 		summary: 'A browser-based IDE for Figma plugins, write and run plugin code instantly, no local setup. Like CodePen for Figma.',
-		tagline: 'An in-browser editor for Figma plugin code, with a console, type hints for the plugin API, and a library of shared snippets.',
+		tagline:
+			'A code sandbox that teaches you how to use the Figma developer platform. Funded using a grant awarded by Figma, Figlet lets you create code snippets that you can run inside Figma and publish with the community. Figlet supports a code editor, with a console, type hints for the plugin API, and a library of community figlets.',
 		tech: ['JavaScript', 'Figma API', 'Svelte', 'Supabase'],
 		role: 'Creator',
 		year: '2023',
@@ -83,7 +84,8 @@ export const projects = [
 		title: 'Askeroo',
 		kind: 'library',
 		summary: 'A modern CLI prompt library with stateful back-navigation, conditional fields and task runners. Built on React and Ink.',
-		tagline: 'A prompt library for command-line flows. Answers are held in state, and the flow is replayed when someone steps back to change one.',
+		tagline:
+			"A prompt wizard for command-line flows. The first of its kind that lets you change your answers. Askeroo was developed with a modular and flexible format in mind to support complex bootstrapping needs. You can see it used in the Plugma developer toolkit.",
 		tech: ['TypeScript', 'React', 'Ink'],
 		role: 'Creator & maintainer',
 		year: '2024',
