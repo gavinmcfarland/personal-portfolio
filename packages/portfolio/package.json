@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "private:new": "node scripts/new-private-page.mjs",
+    "private:list": "node scripts/list-private-pages.mjs",
     "canvas:audit": "node scripts/audit-canvas-html.mjs"
   },
   "dependencies": {

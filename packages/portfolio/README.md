@@ -132,6 +132,13 @@ random unguessable URL and a strong password. Flags:
 
 The password is **never** stored or committed — save it when it's printed.
 
+To see every private page — URL, last saved, size, and whether it's committed
+yet:
+
+```bash
+pnpm --filter portfolio private:list   # --base-url <url> for full URLs, --json for machine output
+```
+
 ### 2. Author the canvas (local only)
 
 The new page starts blank. Editing is a local, owner-only capability —
