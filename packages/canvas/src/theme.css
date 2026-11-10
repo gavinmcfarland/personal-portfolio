@@ -2455,6 +2455,25 @@
 .canvas-root .cv-page-menu-name {
   text-overflow: ellipsis;
 }
+/* Fold toggle for a page's sections. Pages without sections get an empty
+   slot of the same width so every page name lines up. */
+.canvas-root .cv-page-toggle {
+  margin-right: -6px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--cv-muted);
+}
+.canvas-root button.cv-page-toggle:hover {
+  color: var(--cv-ink);
+}
+.canvas-root .cv-page-toggle svg {
+  transition: transform 0.15s ease;
+}
+.canvas-root .cv-page-menu-item[data-active] .cv-page-toggle,
+.canvas-root .cv-page-menu-item[data-active] button.cv-page-toggle:hover {
+  color: #fff;
+}
 /* Page reorder drag: the whole group (page + its sections) moves together. */
 .canvas-root .cv-page-group[data-dragging] {
   opacity: 0.5;

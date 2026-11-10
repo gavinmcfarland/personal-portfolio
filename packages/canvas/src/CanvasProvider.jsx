@@ -4007,7 +4007,7 @@ export function CanvasProvider({
     nodes, shapes, draft, tool, selected, readOnly, editingId, noteColor, textFont, textSize, strokeColor, fillColor, shapeStyle, ctxMenu,
     isPrimaryCanvas,
     publishState, recording, fullscreen, gridEditId, renameFrameId, notesEditId, htmlActiveId, htmlMoved, focusedSectionId, presenting, presentRoom, presentRelay, pages, activePageId, pageData, bgColor, bgStrength, gridHidden, reflow, collide: COLLIDE,
-    brand: init.brand, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls, minimap: MINIMAP.on, MINIMAP, minimapEls,
+    brand: init.brand, storageKey, EDITABLE, COOP, CLICK_TO_INTERACT, engaged, homeId: HOME_ID, canPublish, nodeTypes, classNames, components, highlightCode, formatCode, formatOnType, setFormatOnType, theme, accent, fit, ui, fullscreenButton, fullBleed, setFullBleed, nativeFullscreen, maximized, maximizedRef, saveStatus, SCROLLBARS, scrollEls, minimap: MINIMAP.on, MINIMAP, minimapEls,
     // setters used by UI
     setDraft, setNoteColor, setTextFont, setTextSize, setStrokeColor, setFillColor, setShapeStyle, setCtxMenu, setSelectedState, setEngaged,
     // refs

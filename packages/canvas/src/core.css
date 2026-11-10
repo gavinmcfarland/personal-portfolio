@@ -2211,6 +2211,24 @@
   min-width: 0;
   overflow: hidden;
 }
+/* Fold toggle for a page's sections. Pages without sections get an empty
+   slot of the same width so every page name lines up. */
+.canvas-root .cv-page-toggle {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 28px;
+  cursor: default;
+}
+.canvas-root .cv-page-toggle svg {
+  width: 13px;
+  height: 13px;
+}
+.canvas-root .cv-page-toggle[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
 /* Page reorder drag: the whole group (page + its sections) moves together. */
 .canvas-root .cv-page-menu-btn[data-reorderable] {
   user-select: none;

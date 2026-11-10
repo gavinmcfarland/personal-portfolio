@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Archive, ArchiveRestore, ChevronDown, Pencil, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, ChevronDown, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { cx, sectionNodes, sectionLabel } from '../constants';
 
@@ -13,22 +13,37 @@ const UNARCHIVE_ICON = <ArchiveRestore />;
    reorder drag rather than a click that navigates. */
 const DRAG_SLOP = 4;
 
+/* Which pages have their sections folded away is a per-viewer convenience,
+   remembered per board in this browser only (never saved with the board). */
+const collapsedKey = (storageKey) => `${storageKey}-collapsed-pages`;
+function readCollapsed(storageKey) {
+  try {
+    const v = JSON.parse(localStorage.getItem(collapsedKey(storageKey)) || '[]');
+    return new Set(Array.isArray(v) ? v : []);
+  } catch { return new Set(); }
+}
+function writeCollapsed(storageKey, set) {
+  try { localStorage.setItem(collapsedKey(storageKey), JSON.stringify([...set])); } catch { /* storage unavailable */ }
+}
+
 /* Page + section navigator rendered as a dropdown inside the top bar. The trigger
    shows the active page; the menu lists every page with its sections nested
    beneath it. Clicking a page switches boards; clicking a section flies to it
    (switching boards first if it lives elsewhere). In edit mode, right-clicking a
    page opens a menu to rename or delete it, and right-clicking a frame section
    opens a menu to rename it. Pages can be dragged to reorder them too (each
-   carries its sections along). Archived pages (hidden from production) stay
+   carries its sections along), and a page's sections fold away behind the
+   chevron beside it. Archived pages (hidden from production) stay
    listed while editing, tagged so it's clear readers won't see them. Sections on the active page can be dragged up and
    down to set the order the menu lists them in — and that ↑/↓ steps through.
    New pages are added from the footer button. */
 export default function PageTabs() {
-  const { pages, activePageId, nodes, pageData, focusedSectionId, readOnly, EDITABLE, eng, rootRef, classNames } = useCanvas();
+  const { pages, activePageId, nodes, pageData, focusedSectionId, readOnly, EDITABLE, eng, rootRef, classNames, storageKey } = useCanvas();
   const editing = EDITABLE && !readOnly;
   const [open, setOpen] = useState(false);
   const [renaming, setRenaming] = useState(null); // {scope:'page'|'section', id}
   const [menu, setMenu] = useState(null); // {x, y, scope:'page'|'section', id, canDelete, canArchive, archived}
+  const [collapsed, setCollapsed] = useState(() => readCollapsed(storageKey)); // page ids whose sections are folded
   const [drag, setDrag] = useState(null); // {kind:'page'|'section', id, to} — live reorder drag; `to` is the insertion slot (0…n)
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
@@ -172,6 +187,15 @@ export default function PageTabs() {
     />
   );
 
+  const toggleCollapsed = (id) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      writeCollapsed(storageKey, next);
+      return next;
+    });
+  };
+
   const rowRef = (kind, id) => (el) => {
     const key = `${kind}:${id}`;
     if (el) rowEls.set(key, el); else rowEls.delete(key);
@@ -198,6 +222,7 @@ export default function PageTabs() {
           {pages.map((p, pi) => {
             const secs = sectionsFor(p.id);
             const canMovePage = pagesReorderable && !eng.isPagePinned(p.id);
+            const folded = secs.length > 0 && collapsed.has(p.id);
             const pageHints = ['Click to switch'];
             if (canMovePage) pageHints.push('drag to reorder');
             pageHints.push('right-click for options');
@@ -216,6 +241,19 @@ export default function PageTabs() {
                   data-active={p.id === activePageId ? '' : undefined}
                   data-archived={p.archived ? '' : undefined}
                 >
+                  {secs.length > 0 ? (
+                    <button
+                      className="cv-page-toggle"
+                      aria-expanded={!folded}
+                      aria-label={folded ? `Show sections of ${p.name}` : `Hide sections of ${p.name}`}
+                      title={folded ? 'Show sections' : 'Hide sections'}
+                      onClick={() => toggleCollapsed(p.id)}
+                    >
+                      <ChevronRight />
+                    </button>
+                  ) : (
+                    <span className="cv-page-toggle" aria-hidden="true" />
+                  )}
                   {renaming && renaming.scope === 'page' && renaming.id === p.id ? (
                     renameInput(p.name, 'cv-page-rename')
                   ) : (
@@ -244,7 +282,7 @@ export default function PageTabs() {
                   )}
                 </div>
 
-                {secs.map((n, i) => {
+                {!folded && secs.map((n, i) => {
                   // Renaming and reordering only work on the active page
                   // (updateNode / reorderSections both target it).
                   const onActive = editing && p.id === activePageId;
