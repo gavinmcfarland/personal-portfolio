@@ -13,17 +13,18 @@ const UNARCHIVE_ICON = <ArchiveRestore />;
    reorder drag rather than a click that navigates. */
 const DRAG_SLOP = 4;
 
-/* Which pages have their sections folded away is a per-viewer convenience,
-   remembered per board in this browser only (never saved with the board). */
-const collapsedKey = (storageKey) => `${storageKey}-collapsed-pages`;
-function readCollapsed(storageKey) {
+/* Pages start with their sections folded away. Which ones a viewer has opened
+   is a per-viewer convenience, remembered per board in this browser only
+   (never saved with the board). */
+const expandedKey = (storageKey) => `${storageKey}-expanded-pages`;
+function readExpanded(storageKey) {
   try {
-    const v = JSON.parse(localStorage.getItem(collapsedKey(storageKey)) || '[]');
+    const v = JSON.parse(localStorage.getItem(expandedKey(storageKey)) || '[]');
     return new Set(Array.isArray(v) ? v : []);
   } catch { return new Set(); }
 }
-function writeCollapsed(storageKey, set) {
-  try { localStorage.setItem(collapsedKey(storageKey), JSON.stringify([...set])); } catch { /* storage unavailable */ }
+function writeExpanded(storageKey, set) {
+  try { localStorage.setItem(expandedKey(storageKey), JSON.stringify([...set])); } catch { /* storage unavailable */ }
 }
 
 /* Page + section navigator rendered as a dropdown inside the top bar. The trigger
@@ -32,8 +33,8 @@ function writeCollapsed(storageKey, set) {
    (switching boards first if it lives elsewhere). In edit mode, right-clicking a
    page opens a menu to rename or delete it, and right-clicking a frame section
    opens a menu to rename it. Pages can be dragged to reorder them too (each
-   carries its sections along), and a page's sections fold away behind the
-   chevron beside it. Archived pages (hidden from production) stay
+   carries its sections along). A page's sections start folded away behind
+   the chevron beside it. Archived pages (hidden from production) stay
    listed while editing, tagged so it's clear readers won't see them. Sections on the active page can be dragged up and
    down to set the order the menu lists them in — and that ↑/↓ steps through.
    New pages are added from the footer button. */
@@ -43,7 +44,7 @@ export default function PageTabs() {
   const [open, setOpen] = useState(false);
   const [renaming, setRenaming] = useState(null); // {scope:'page'|'section', id}
   const [menu, setMenu] = useState(null); // {x, y, scope:'page'|'section', id, canDelete, canArchive, archived}
-  const [collapsed, setCollapsed] = useState(() => readCollapsed(storageKey)); // page ids whose sections are folded
+  const [expanded, setExpanded] = useState(() => readExpanded(storageKey)); // page ids whose sections are shown
   const [drag, setDrag] = useState(null); // {kind:'page'|'section', id, to} — live reorder drag; `to` is the insertion slot (0…n)
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
@@ -187,11 +188,11 @@ export default function PageTabs() {
     />
   );
 
-  const toggleCollapsed = (id) => {
-    setCollapsed((prev) => {
+  const toggleExpanded = (id) => {
+    setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
-      writeCollapsed(storageKey, next);
+      writeExpanded(storageKey, next);
       return next;
     });
   };
@@ -222,7 +223,7 @@ export default function PageTabs() {
           {pages.map((p, pi) => {
             const secs = sectionsFor(p.id);
             const canMovePage = pagesReorderable && !eng.isPagePinned(p.id);
-            const folded = secs.length > 0 && collapsed.has(p.id);
+            const folded = secs.length > 0 && !expanded.has(p.id);
             const pageHints = ['Click to switch'];
             if (canMovePage) pageHints.push('drag to reorder');
             pageHints.push('right-click for options');
@@ -247,7 +248,7 @@ export default function PageTabs() {
                       aria-expanded={!folded}
                       aria-label={folded ? `Show sections of ${p.name}` : `Hide sections of ${p.name}`}
                       title={folded ? 'Show sections' : 'Hide sections'}
-                      onClick={() => toggleCollapsed(p.id)}
+                      onClick={() => toggleExpanded(p.id)}
                     >
                       <ChevronRight />
                     </button>

@@ -7,8 +7,8 @@ board across multiple pages.
 
 While editing, drag a page in the page menu to reorder it (its sections move
 with it), or right-click it to rename, archive or delete it.
-The chevron beside a page folds its sections away; which pages are folded is
-remembered per board in that browser only. An archived page stays on the board (tagged *Archived*) while `editable` is
+Pages start collapsed; the chevron beside a page shows its sections. Which
+pages are open is remembered per board in that browser only. An archived page stays on the board (tagged *Archived*) while `editable` is
 true, and is saved with an `archived: true` flag. A non-editable board leaves it
 out, so it never reaches production. At least one page always stays unarchived.
 
