@@ -77,7 +77,7 @@ export default function WritingIndex() {
                   key={post.slug}
                   to={`/writing/${post.slug}`}
                   onClick={blurOnPointerClick}
-                  className="group -mx-4 block px-4 py-(--sp-2) hover:bg-surface"
+                  className="hover-row group -mx-4 block px-4 py-(--sp-2) hover:bg-surface"
                 >
                   <span className="leader max-w-measure">
                     <span className="text-ink group-hover:text-accent">

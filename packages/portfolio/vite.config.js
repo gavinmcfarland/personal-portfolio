@@ -9,6 +9,7 @@ import { canvasNotes } from "./vite-plugin-canvas-notes.js";
 import { present } from "./vite-plugin-present.js";
 import { clipWarmup } from "./vite-plugin-clip-warmup.js";
 import { writingIndex } from "./vite-plugin-writing-index.js";
+import { tweaks } from "./vite-plugin-tweaks.js";
 
 // The masthead clip, named here so its fetch can start with the CSS instead
 // of after the bundle. Keep in step with the import in Intro.jsx.
@@ -47,6 +48,7 @@ export default defineConfig(({ command }) => ({
 		present(),
 		clipWarmup({ file: MASTHEAD_CLIP, globalName: MASTHEAD_CLIP_GLOBAL }),
 		writingIndex(),
+		tweaks(),
 	],
 	// Listen on every interface so the phone remote can reach the dev server
 	// over the LAN. Vite prints the Network URL on boot, and /__present/link

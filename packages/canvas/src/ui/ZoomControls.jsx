@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Expand, Maximize, Minus, Plus, Shrink } from 'lucide-react';
+import { Maximize, Maximize2, Minimize2, Minus, Plus } from 'lucide-react';
 import { useCanvas } from '../CanvasProvider';
 import { cx } from '../constants';
 
@@ -66,7 +66,7 @@ export default function ZoomControls() {
             aria-label={isFull ? 'Exit fullscreen' : 'Open fullscreen'}
             onClick={toggleFullscreen}
           >
-            {isFull ? <Shrink /> : <Expand />}
+            {isFull ? <Minimize2 /> : <Maximize2 />}
           </button>
           <span className="cv-zoom-sep" />
         </>

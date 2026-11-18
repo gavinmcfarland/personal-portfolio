@@ -55,7 +55,8 @@ export default function ProjectPage({ project }) {
         aria-label={`${isPrev ? "Previous" : "Next"} project: ${target.title}`}
         title={`${isPrev ? "Previous" : "Next"}: ${target.title}`}
         onClick={blurOnPointerClick}
-        className={`flex min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-4 font-normal text-muted transition-colors duration-150 hover:bg-hover hover:text-ink hover:duration-0 h-[38px] lg:w-[calc(50%-0.25rem)] lg:px-3 ${
+        data-icon={isPrev ? "start" : "end"}
+        className={`icon-label-btn flex min-w-0 items-center justify-center gap-1.5 rounded-[8px] border border-line px-2 font-sans text-4 font-normal text-muted transition-colors duration-150 hover:bg-hover hover:text-ink hover:duration-0 h-[38px] lg:w-[calc(50%-0.25rem)] lg:px-3 ${
           isPrev ? "lg:mr-auto lg:justify-start" : "lg:ml-auto lg:justify-end"
         }`}
       >

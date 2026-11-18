@@ -3692,7 +3692,11 @@
   cursor: grabbing;
 }
 .canvas-root .cv-zoomval {
-  min-width: 52px;
+  /* Room for four tabular characters ("100%"–"999%") plus 2px a side, so the
+     readout hugs its number instead of sitting in a 52px slot; in `ch`, so it
+     follows the skin's font. Only past 999% (zoom tops out at 2000%) does it
+     grow — a min-width, not a width — and that is rare enough not to matter. */
+  min-width: calc(4ch + 4px);
   text-align: center;
   font-size: 0.75rem;
   font-weight: 600;
@@ -3857,8 +3861,16 @@
   display: flex;
   align-items: center;
 }
+/* The page menu trigger sits inside the top-bar panel, so it is drawn as a
+   panel button like the zoom controls: no border of its own (the panel already
+   draws one), a fill on hover instead. */
 .canvas-root .cv-page-nav-trigger {
   max-width: 200px;
+  border-color: transparent;
+}
+.canvas-root .cv-page-nav-trigger:hover {
+  border-color: transparent;
+  background: var(--cv-accent-soft);
 }
 .canvas-root .cv-page-nav-current {
   white-space: nowrap;

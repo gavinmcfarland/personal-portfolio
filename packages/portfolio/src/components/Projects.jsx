@@ -77,7 +77,7 @@ export const ProjectList = () => (
            stacked edge to edge, so a fade-out leaves each row the pointer has
            just crossed still lit as the next one comes on — a trail of washes
            down the list. A fade-in reads as lag. It snaps on and off. */
-        className="group -mx-4 block px-4 py-3 hover:bg-surface"
+        className="hover-row group -mx-4 block px-4 py-3 hover:bg-surface"
         onClick={blurOnPointerClick}
       >
         {/* Title row spans the full width, so the kind chip stays hard against

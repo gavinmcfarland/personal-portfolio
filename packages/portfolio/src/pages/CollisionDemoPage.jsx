@@ -41,7 +41,7 @@ export default function CollisionDemoPage() {
           Back
         </Link>
         <div className="min-w-0">
-          <h1 className="truncate font-sans text-5 font-bold text-ink">
+          <h1 className="truncate font-heading text-5 font-bold text-ink">
             Responsive collisions
           </h1>
           <p className="truncate text-3 text-faint">

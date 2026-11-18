@@ -5,7 +5,7 @@ import { useTheme } from '../contexts/ThemeContext';
    fills with grey on hover. Positioning (which corner, which stacking context) is
    passed in via `className` so the same toggle can be scoped to a page or to the
    sliding overlay panel — see App.jsx. */
-const PANEL = 'flex items-center justify-center border border-line bg-surface p-1';
+const PANEL = 'button-panel flex items-center justify-center border border-line bg-surface p-1';
 const BUTTON =
   'flex h-7 w-7 items-center justify-center rounded-[8px] bg-transparent text-muted transition-colors duration-150 hover:bg-hover hover:text-ink hover:duration-0';
 

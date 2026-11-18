@@ -320,7 +320,7 @@ export default function RemotePage() {
           {deck.map((s, i) => (
             <li key={s.id}>
               {multiPage && i === 0 && (
-                <h2 className="sticky top-0 border-b border-line bg-base px-4 py-2 font-sans text-2 font-bold uppercase tracking-label text-faint">
+                <h2 className="sticky top-0 border-b border-line bg-base px-4 py-2 font-heading text-2 font-bold uppercase tracking-label text-faint">
                   {pageName || "Untitled page"}
                 </h2>
               )}
@@ -348,7 +348,7 @@ export default function RemotePage() {
           {/* The section title is confirmation, not content — the presenter can
               already see the section on the screen behind them. It sits above
               the notes as a label, and the notes get the room. */}
-          <h1 className="mb-5 font-sans text-2 font-bold uppercase tracking-label text-faint">
+          <h1 className="mb-5 font-heading text-2 font-bold uppercase tracking-label text-faint">
             {here ? here.label : STATUS[status]}
           </h1>
           {here && <Notes text={here.notes} />}

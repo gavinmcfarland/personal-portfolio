@@ -17,6 +17,13 @@ import Home from "./pages/Home";
 import { visibleProjects } from "./data/projects";
 import { findPost } from "./data/writing";
 
+/* The dev-only type trial (typeface + tweaks). Imported only in dev, so a
+   production build never pulls in its font list, settings or styles code —
+   `import.meta.env.DEV` is false there and the whole branch is dropped. */
+const TypeTrial = import.meta.env.DEV
+  ? lazy(() => import("./components/TypeTrial"))
+  : () => null;
+
 /* Home is the only page that loads with the app. Everything below renders in
    the sliding panel (or, for a private page, replaces the document), and none
    of it is mounted until a route asks for it — so none of it needs to be in
@@ -190,6 +197,12 @@ function App() {
         {/* A toggle that appears only while a canvas is maximised (playground
             or a project board), floated above its full-viewport overlay. */}
         <CanvasMaximizeToggle />
+
+        {/* Dev-only type trial (typeface + body text), beside the corner
+            theme toggle. Renders nothing in production. */}
+        <Suspense fallback={null}>
+          <TypeTrial />
+        </Suspense>
 
         {/* Non-home routes: a panel that slides in from the right and leaves a
             strip of Home peeking on the left. */}

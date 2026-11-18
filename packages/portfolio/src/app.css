@@ -3,16 +3,25 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* The whole document is set in one proportional face, IBM Plex Sans.
+  /* One face, Figtree, for body text and headings alike. They are still two
+     tokens — `--font-sans` (body; every `font-sans` utility and the body rule
+     read it) and `--font-heading` (section and sub-labels, the wordmark, and
+     the `font-heading` utility) — so either can be changed on its own.
      `--font-serif` is kept only as an alias so a stray `font-serif` still
-     resolves to it rather than a browser default. `--font-mono` is a system
-     stack, left for anything that genuinely needs fixed-width glyphs. */
+     resolves to the body face rather than a browser default. `--font-mono` is
+     for anything that genuinely needs fixed-width glyphs: the platform's own
+     monospace where it is a good one (SF Mono in Safari, Menlo in other Mac
+     browsers), with JetBrains Mono as the backup everywhere else. A browser
+     only downloads it when no family before it is installed. */
   --font-sans:
-    "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
+    "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-heading:
+    "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
   --font-serif: var(--font-sans);
   --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+    ui-monospace, SFMono-Regular, Menlo, "JetBrains Mono", monospace;
 
   /* The one deliberate exception to the all-mono rule. The remote's speaker
      notes are read off a phone held at your waist, mid-sentence, in a dim
@@ -61,14 +70,14 @@
      a document page gets the full column and takes 7/8, while a project page's
      sidebar is ~256px of content and would wrap a 36px mono title after nine
      characters — so it takes 6 and stays there. Two widths, two cuts, stated. */
-  --text-1: 0.75rem; /* 12px — chips, release tags, lettermark */
-  --text-2: 0.8125rem; /* 13px — footnotes, meta, captions, table heads */
-  --text-3: 0.875rem; /* 14px — section labels, sub-labels, index entries */
-  --text-4: 0.9375rem; /* 15px — body: running text, panels, transcripts */
-  --text-5: 1rem; /* 16px — the one emphatic step (list-row token) */
-  --text-6: 1.5rem; /* 24px — page title in a narrow column */
-  --text-7: 1.875rem; /* 30px — page title */
-  --text-8: 2.375rem; /* 38px — page title, sm and up */
+  --text-1: 0.6875rem; /* 11px — chips, release tags, lettermark */
+  --text-2: 0.75rem; /* 12px — footnotes, meta, captions, table heads */
+  --text-3: 0.8125rem; /* 13px — section labels, sub-labels, index entries */
+  --text-4: 0.875rem; /* 14px — body: running text, panels, transcripts */
+  --text-5: 0.9375rem; /* 15px — the one emphatic step (list-row token) */
+  --text-6: 1.4375rem; /* 23px — page title in a narrow column */
+  --text-7: 1.8125rem; /* 29px — page title */
+  --text-8: 2.3125rem; /* 37px — page title, sm and up */
 
   /* ── Tracking ────────────────────────────────────────────────
      Two tracked registers, not five. The section label is the wide one; every
@@ -145,7 +154,8 @@
   --surface: var(--steel-100); /* panel — hover / raised fill */
   --hover: var(--steel-200); /* icon-button hover fill (zoom-control grey) */
   --ink: var(--steel-950); /* primary text */
-  --muted: var(--steel-600); /* secondary prose (--mid) */
+  /* Secondary prose (--mid): steel-600 lifted 20% toward the ground. */
+  --muted: color-mix(in oklab, var(--steel-600), var(--steel-200) 20%);
   --faint: var(--steel-500); /* meta / captions */
   --line: var(--steel-300); /* hairline edge */
   --line-strong: var(
@@ -200,7 +210,7 @@
   --surface: var(--galley-panel); /* panel */
   --hover: var(--galley-hair); /* icon-button hover fill (matches --line) */
   --ink: var(--galley-ink); /* bone ink */
-  --muted: var(--galley-mid);
+  --muted: color-mix(in oklab, var(--galley-mid), var(--galley-ground) 20%);
   --faint: var(--galley-faint);
   --line: var(--galley-hair);
   --line-strong: var(--galley-edge);
@@ -238,18 +248,18 @@
    they read as `pt-(--sp-8)`. */
 :root {
   --leading: 1.6; /* body line-height, and the only one prose ever takes */
-  --lh: calc(var(--text-4) * var(--leading)); /* one line — 24px */
+  --lh: calc(var(--text-4) * var(--leading)); /* one line — 20.8px */
 
-  --sp-1: calc(var(--lh) / 4); /*  6px    — list gaps, stacked pairs */
-  --sp-2: calc(var(--lh) / 2); /* 12px    — dense groups, label → list */
-  --sp-3: calc(var(--lh) * 0.75); /* 18px    — the paragraph step */
-  --sp-4: var(--lh); /* 24px    — heading → body, block step */
-  --sp-6: calc(var(--lh) * 1.5); /* 36px    — between blocks in a section */
-  --sp-8: calc(var(--lh) * 2); /* 48px    — sub-label top, back-link → title */
-  --sp-12: calc(var(--lh) * 3); /* 72px    — section head top */
+  --sp-1: calc(var(--lh) / 4); /*  5.2px  — list gaps, stacked pairs */
+  --sp-2: calc(var(--lh) / 2); /* 10.4px  — dense groups, label → list */
+  --sp-3: calc(var(--lh) * 0.75); /* 15.6px  — the paragraph step */
+  --sp-4: var(--lh); /* 20.8px  — heading → body, block step */
+  --sp-6: calc(var(--lh) * 1.5); /* 31.2px  — between blocks in a section */
+  --sp-8: calc(var(--lh) * 2); /* 41.6px  — sub-label top, back-link → title */
+  --sp-12: calc(var(--lh) * 3); /* 62.4px  — section head top */
   --sp-16: calc(
     var(--lh) * 4
-  ); /* 96px    — section head top (sm+), page edges */
+  ); /* 83.2px  — section head top (sm+), page edges */
 
   /* The one paragraph step — now three-quarters of a line rather than a round
      0.9rem. The old value was *narrower* than the leading, which meant a
@@ -309,8 +319,10 @@ body {
   line-height: var(--leading);
   background: var(--bg);
   color: var(--ink);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Left at the platform default rather than `antialiased`: on macOS that
+     thinned the system mono to a hairline at 14px. */
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
   text-rendering: optimizeLegibility;
 
   /* Declared here, not in :root — `--stop` is a registered <length>, so it
@@ -516,7 +528,7 @@ p + .footnotes {
    would win over any utility and that override would silently do nothing. */
 @layer components {
   .section-label {
-    font-family: var(--font-sans);
+    font-family: var(--font-heading);
     /* One step under the sub-label: set in tracked capitals it still reads as
        the larger, higher-ranking head, and at text-3 it shouted. */
     font-size: var(--text-2);
@@ -557,7 +569,7 @@ p + .footnotes {
      genuinely pointing at something (the prompt, a footnote reference, a link
      under the cursor), which is what keeps it legible as an accent at all. */
   .sub-label {
-    font-family: var(--font-sans);
+    font-family: var(--font-heading);
     font-size: var(--text-3);
     font-weight: 700;
     letter-spacing: var(--tracking-sub);
@@ -601,7 +613,7 @@ p + .footnotes {
    for one role. The gap below it lives here for the same reason: its own
    line-height is 1.05, so without it the following gloss sits on the baseline. */
 .wordmark {
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
   font-size: var(--text-7);
   font-weight: 700;
   letter-spacing: var(--tracking-tight);
@@ -1463,17 +1475,51 @@ p + .footnotes {
    toggle (fixed, top-right) sits exactly where the canvas zoom cluster defaults
    to — nudge the cluster left so the two sit side by side instead of overlapping.
    Extra specificity (.canvas-root) beats the package's own
-   `.canvas-root [data-cv-part="zoom"]` regardless of load order. */
+   `.canvas-root [data-cv-part="zoom"]` regardless of load order.
+
+   The toggle is 22px in from the edge and --btn-h wide (38px unless the
+   Tweaks panel's Button size says otherwise), so the cluster sits 8px from it
+   — the same gap as between the toggle and the dev tools below it — at any
+   button size. */
 .project-canvas .canvas-root [data-cv-part="zoom"],
 .private-canvas .canvas-root [data-cv-part="zoom"] {
-  right: 72px;
+  right: calc(22px + var(--btn-h, 38px) + 8px);
+}
+
+/* ── Icon + label buttons: the icon end ─────────────────────────────
+   Where a boxed button pairs an icon with a label, the icon sits centred in a
+   square at its end of the button: the padding on that side equals the space
+   above and below the icon, so the icon has the same room on three sides
+   (less the button's own 1px border, which counts toward the height but sits
+   outside the padding). The label side keeps its own padding. Worked from --btn-h (the Tweaks panel's
+   Button size, 38px by default), so it holds at every size.
+
+   - the project page's prev/next (16px arrows, the full button height); below
+     lg the label is hidden and the arrow centres in the button anyway
+   - the canvas Edit button (14px icon) and page menu (12px chevron), each
+     inside a 4px-padded, 1px-bordered frame, so their height is --btn-h − 10px.
+   Doubled selectors beat the canvas package's own rules, which load after this
+   file. */
+@media (min-width: 1024px) {
+  .icon-label-btn[data-icon="start"] {
+    padding-left: calc((var(--btn-h, 38px) - 16px) / 2 - 1px);
+  }
+  .icon-label-btn[data-icon="end"] {
+    padding-right: calc((var(--btn-h, 38px) - 16px) / 2 - 1px);
+  }
+}
+.cv-edit-fab.cv-edit-fab button {
+  padding-left: calc((var(--btn-h, 38px) - 10px - 14px) / 2 - 1px);
+}
+.canvas-root .cv-page-nav-trigger.cv-page-nav-trigger {
+  padding-right: calc((var(--btn-h, 38px) - 10px - 12px) / 2 - 1px);
 }
 
 /* Same collision when a canvas maximises: its full-bleed overlay
    puts the zoom cluster in the viewport corner, under the floated theme toggle
    (see CanvasMaximizeToggle). Nudge it left to sit beside the toggle. */
 .canvas-root[data-cv-fullbleed] [data-cv-part="zoom"] {
-  right: 72px;
+  right: calc(22px + var(--btn-h, 38px) + 8px);
 }
 
 /* Reposition the two body-portaled canvas controls along the bottom edge:
@@ -1609,3 +1655,290 @@ p + .footnotes {
     animation: none;
   }
 }
+
+/* ── The type trial (dev only; src/components/TypeTrial.jsx) ─────────
+   The typeface list and the tweaks panel, stacked in a column under the corner
+   theme toggle and drawn the same way: flat enamel panels (surface fill,
+   hairline edge) round icon-sized buttons that fill grey on hover. Under it
+   rather than beside it because a project page's canvas puts its own toolbar
+   in the row to the toggle's left. Mounted at the app root above the route
+   panel (z 20), so they stay put across pages. The toggle's panel is 38px
+   tall; this column starts 8px below it, and its popovers open to the left. */
+.type-trial {
+  position: fixed;
+  /* --btn-h is the shared control height (38px unless the tweaks panel's
+     Button size row overrides it), so the column stays 8px under the toggle.
+     The popovers compensate for that move — see below. */
+  top: calc(max(22px, calc(env(safe-area-inset-top) + 12px)) + var(--btn-h, 38px) + 8px);
+  right: 22px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.type-trial-panel {
+  /* Static, so the popovers inside position against the column, not this. */
+  position: static;
+  display: flex;
+  padding: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.type-trial-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.75rem;
+  min-width: 1.75rem;
+  padding: 0 0.375rem;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: var(--text-3);
+  font-weight: 500;
+  color: var(--muted);
+  transition: color 150ms, background-color 150ms;
+}
+.type-trial-trigger:hover,
+.type-trial-trigger[aria-expanded="true"] {
+  background: var(--hover);
+  color: var(--ink);
+  transition-duration: 0s;
+}
+/* Marks the tuner when something differs from the stylesheet. */
+.type-trial-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+}
+
+/* Both popovers open to the left of their own panel, top-aligned with it. Their type is pinned
+   to fixed px so the tuner's controls don't jump about while previewing the
+   very sizes they set. */
+.font-picker-pop,
+.text-tuner {
+  /* Pinned to the column, not to their own button, and offset so neither
+     resizing the buttons (Button size, previewed on hover from inside this
+     very popover) nor the column following the toggle can move them: the
+     column's right edge is fixed, so 38px + 8px clears the default button
+     width; and the column top moves down by (--btn-h − 38px), so the popover
+     moves up by the same. */
+  position: absolute;
+  top: calc(38px - var(--btn-h, 38px));
+  right: calc(38px + 8px);
+  margin: 0;
+  padding: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+.font-picker-pop {
+  min-width: 15rem;
+}
+.font-picker-list {
+  max-height: min(65vh, 30rem);
+  overflow-y: auto;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+/* Body / Headings: the tuner's segmented control, each tab carrying the face
+   it currently holds. Pinned type, like the tuner, so previews don't move it. */
+.font-picker-tabs {
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.font-picker-tabs button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.3rem 0.25rem;
+}
+.font-picker-tabs button span {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.font-picker-list [role="option"] {
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+}
+/* Rows take no transition, per the stacked-list rule above `.bar nav a:hover`. */
+.font-picker-list [role="option"]:hover,
+.font-picker-list [role="option"]:focus-visible {
+  background: var(--hover);
+  color: var(--ink);
+}
+.font-picker-list [role="option"][aria-selected="true"] {
+  color: var(--ink);
+}
+/* Group heads (Sans serif / Mono) and the "original" tag: pinned UI type, so
+   they read as the panel's labels rather than as more specimens. */
+.font-picker-group {
+  padding: 0.6rem 0.5rem 0.2rem;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.font-picker-group:first-child {
+  padding-top: 0.2rem;
+}
+.font-picker-tag {
+  margin-left: 0.5rem;
+  padding: 0 0.3rem;
+  border: 1px solid var(--line-strong);
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+  color: var(--muted);
+}
+.font-picker-list [role="option"][aria-selected="true"]::after {
+  content: "✓";
+  float: right;
+  margin-left: 1rem;
+  color: var(--accent);
+}
+
+.text-tuner {
+  width: 17rem;
+  padding: 0.5rem;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.text-tuner-row + .text-tuner-row {
+  margin-top: 0.625rem;
+}
+.text-tuner-label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+.text-tuner-label span {
+  font-weight: 400;
+  color: var(--faint);
+}
+.text-tuner-options {
+  display: flex;
+  border: 1px solid var(--line);
+}
+.text-tuner-options button {
+  flex: 1;
+  padding: 0.3rem 0;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  cursor: pointer;
+}
+.text-tuner-options button + button {
+  border-left: 1px solid var(--line);
+}
+.text-tuner-options button:hover,
+.text-tuner-options button:focus-visible {
+  background: var(--hover);
+  color: var(--ink);
+  outline: none;
+}
+.text-tuner-options button[aria-checked="true"],
+.font-picker-tabs button[aria-selected="true"] {
+  background: var(--ink);
+  color: var(--surface);
+}
+.text-tuner-reset {
+  margin-top: 0.75rem;
+  font: inherit;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.text-tuner-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.text-tuner-actions .text-tuner-reset {
+  margin-top: 0;
+}
+.text-tuner-reset:disabled {
+  color: var(--faint);
+  text-decoration: none;
+  cursor: default;
+}
+.text-tuner-commit {
+  padding: 0.3rem 0.6rem;
+  font: inherit;
+  font-weight: 600;
+  background: var(--ink);
+  color: var(--surface);
+  cursor: pointer;
+}
+.text-tuner-commit:disabled {
+  background: transparent;
+  color: var(--faint);
+  border: 1px solid var(--line);
+  cursor: default;
+}
+.text-tuner-status {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+}
+
+/* tweaks:start — written by the dev Tweaks panel's "Save as defaults"
+   (vite-plugin-tweaks.js). Button size and corners, built by the same code
+   the panel previews with (src/lib/typeTrial.js). Edit them from the panel,
+   not by hand: the next save replaces this whole block. */
+:root:root { --btn-h: 32px; }
+
+body :is(.button-panel, .cv-edit-fab, [data-cv-part="zoom"], [data-cv-part="topbar"]) {
+  box-sizing: border-box !important;
+  height: 32px !important;
+}
+
+body :is(.button-panel, .cv-edit-fab, [data-cv-part="zoom"], [data-cv-part="topbar"]) button:not(.text-tuner *, .font-picker-pop *) {
+  box-sizing: border-box !important;
+  height: calc(32px - 10px) !important;
+}
+
+body :is(.button-panel, .cv-edit-fab, [data-cv-part="zoom"], [data-cv-part="topbar"]) button:is(.type-trial-trigger, :has(> svg:only-child)):not(.text-tuner *, .font-picker-pop *) {
+  width: calc(32px - 10px) !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+}
+
+body :is(a, button).border:not(:is(.button-panel, .cv-edit-fab, [data-cv-part="zoom"], [data-cv-part="topbar"], [data-cv-part="node"], .text-tuner, .font-picker-pop) *) {
+  box-sizing: border-box !important;
+  height: 32px !important;
+}
+
+body :is(button, [role="button"], a.border, .cv-chip):not([data-cv-part="node"] *, .text-tuner *, .font-picker-pop *) {
+  border-radius: 2px !important;
+}
+
+body :is(.button-panel, .cv-panel, .cv-ui, .cv-edit-fab, .hover-row):not([data-cv-part="node"], [data-cv-part="node"] *) {
+  border-radius: 2px !important;
+}
+
+body :is(.button-panel, .cv-panel, .cv-ui, .cv-edit-fab):not([data-cv-part="node"] *) :is(button, [role="button"], .cv-chip):not([data-cv-part="node"] *, .text-tuner *, .font-picker-pop *) {
+  border-radius: max(0px, 2px - 4px) !important;
+}
+/* tweaks:end */

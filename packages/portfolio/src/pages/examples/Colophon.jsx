@@ -12,7 +12,7 @@ const BUILD = [
   { level: 2, mark: "b", body: "Vite — build and dev server" },
   { level: 2, mark: "c", body: "Tailwind CSS on a small set of design tokens" },
   { level: 1, mark: "2", term: "Type" },
-  { level: 2, mark: "a", body: "IBM Plex Sans — the whole document, one face" },
+  { level: 2, mark: "a", body: "Figtree — the whole document, one face" },
   { level: 1, mark: "3", term: "Canvas" },
   { level: 2, mark: "a", body: "A custom embeddable canvas engine (the Scratch board)" },
   { level: 1, mark: "4", term: "Hosting" },
@@ -20,7 +20,7 @@ const BUILD = [
 ];
 
 const SPEC = [
-  { t: "TYPEFACE", d: "IBM Plex Sans — one face for prose, labels and headings" },
+  { t: "TYPEFACE", d: "Figtree — one face for prose, labels and headings" },
   { t: "MEASURE", d: "~64 characters; 1.6 line height" },
   { t: "ACCENT", d: "Vermilion #c8341a (light) / #e0563c (dark)" },
   { t: "GROUND", d: "Cool steel (light) / warm graphite (dark)" },
@@ -77,8 +77,8 @@ export default function Colophon() {
       <div className="indent reveal footnotes max-w-measure">
         <div className="footnotes__rule" aria-hidden="true" />
         <p className="footnote">
-          <sup>1</sup> <span className="text-ink">IBM Plex Sans</span> — SIL
-          Open Font License.
+          <sup>1</sup> <span className="text-ink">Figtree</span> — SIL Open Font
+          License.
         </p>
         <p className="footnote">
           <sup>2</sup> <span className="text-ink">Canvas engine</span> — the same

@@ -31,18 +31,18 @@ const DEFAULT_TITLE = "Gavin McFarland";
 const DEFAULT_SUBTITLE =
   "Design engineer building tools and web applications.";
 
-// Load a Google font as raw bytes so the card uses the site's typeface (IBM
-// Plex Sans) rather than Satori's fallback. Subset to the glyphs we actually
+// Load a Google font as raw bytes so the card uses the site's typeface
+// (Geist) rather than Satori's fallback. Subset to the glyphs we actually
 // draw so the download stays tiny.
 async function loadFont(weight, text) {
-  const url = `https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@${weight}&text=${encodeURIComponent(
+  const url = `https://fonts.googleapis.com/css2?family=Geist:wght@${weight}&text=${encodeURIComponent(
     text,
   )}`;
   const css = await (await fetch(url, {
     headers: { "User-Agent": "Mozilla/5.0" },
   })).text();
   const src = css.match(/src: url\((.+?)\) format/);
-  if (!src) throw new Error("IBM Plex Sans font URL not found");
+  if (!src) throw new Error("Geist font URL not found");
   return await (await fetch(src[1])).arrayBuffer();
 }
 
@@ -68,8 +68,8 @@ export default async function handler(request) {
       loadFont(700, title),
     ]);
     fonts = [
-      { name: "IBM Plex Sans", data: regular, weight: 400, style: "normal" },
-      { name: "IBM Plex Sans", data: bold, weight: 700, style: "normal" },
+      { name: "Geist", data: regular, weight: 400, style: "normal" },
+      { name: "Geist", data: bold, weight: 700, style: "normal" },
     ];
   } catch {
     // Font fetch failed (e.g. offline build/preview) — fall back to Satori's
@@ -88,7 +88,7 @@ export default async function handler(request) {
           justifyContent: "space-between",
           backgroundColor: INK,
           padding: "80px",
-          fontFamily: "IBM Plex Sans",
+          fontFamily: "Geist",
         }}
       >
         {/* Mark, top-left */}
