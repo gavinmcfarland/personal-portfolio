@@ -44,13 +44,25 @@ export function neighbours(slug) {
 export function loadPost(post) {
   const load = bodies[post.slug];
   if (!load) return Promise.resolve(null);
-  return load().then(({ default: { text, assets } }) => ({
+  return load().then(({ default: { text, assets } }) => {
     // The raw file still carries its frontmatter, which the manifest already
     // holds — strip it here rather than leaving the renderer to meet a `---`
     // rule and a run of `key: value` paragraphs it would set as prose.
-    text: parseFrontmatter(text).body,
-    resolveAsset: assetResolver(assets),
-  }));
+    //
+    // A post saved from the in-page editor this session supersedes the module
+    // the browser already holds: the save suppresses the reload it would
+    // otherwise cause (see vite-plugin-writing-index.js), so coming back to the
+    // post would otherwise show the text from before the edit.
+    const raw = (import.meta.env.DEV && savedRaw.get(post.slug)) || text;
+    const { data, body } = parseFrontmatter(raw);
+    return { raw, data, text: body, resolveAsset: assetResolver(assets) };
+  });
+}
+
+/* Dev only: the last source the editor wrote for each post, by slug. */
+const savedRaw = new Map();
+export function rememberSaved(slug, raw) {
+  savedRaw.set(slug, raw);
 }
 
 /* Resolve a relative image path written in a post — `./diagram.svg` — to the

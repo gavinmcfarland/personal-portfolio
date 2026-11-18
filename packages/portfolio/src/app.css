@@ -1182,6 +1182,110 @@ p + .footnotes {
   font-variant-numeric: tabular-nums;
 }
 
+/* ── The in-page editor (dev only; src/components/ArticleEditor.jsx) ──
+   The page is edited in its own register: a field takes the type of the block
+   it replaced, and the only new marks are a hairline round what's being
+   edited and a dashed one round what could be. */
+.reveal.in.instant {
+  transition: none;
+}
+.writing-editing [data-block],
+.writing-editing [data-note] {
+  cursor: text;
+}
+/* Outlines, never borders or padding: they take no space, so marking what can
+   be edited moves nothing on the page. */
+.writing-editing [data-block]:hover,
+.writing-editing [data-note]:hover,
+.writing-editing [contenteditable]:not(:focus):hover {
+  outline: 1px dashed var(--line-strong);
+  outline-offset: 4px;
+}
+.writing-editing [contenteditable]:focus {
+  outline: 1px solid var(--accent);
+  outline-offset: 4px;
+}
+.writing-editing [contenteditable]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--faint);
+}
+.writing-edit-field {
+  display: block;
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  /* A heading's source is `## Words` — set it as typed, not as the uppercase
+     label it renders to, or the field shows text that isn't in the file. */
+  text-transform: none;
+}
+.writing-edit-field:focus {
+  outline: 1px solid var(--accent);
+  outline-offset: 4px;
+}
+.writing-edit-field::placeholder {
+  color: var(--faint);
+}
+.writing-edit-field--mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-4); /* the code panel's own size */
+}
+.wb-field {
+  position: relative;
+}
+.wb-source {
+  font-family: var(--font-mono);
+  font-size: var(--text-1);
+  color: var(--faint);
+  white-space: pre-wrap;
+}
+.wb-tools {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  display: flex;
+  gap: 2px;
+  font-size: var(--text-1);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+.wb-tools button {
+  padding: 0 0.45em;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+}
+.wb-tools button:hover:not(:disabled) {
+  color: var(--ink);
+}
+.wb-tools button:disabled {
+  opacity: 0.4;
+}
+.wb-add-wrap {
+  position: relative;
+  height: 0;
+}
+.wb-add-wrap .wb-add {
+  position: absolute;
+  top: var(--sp-2);
+}
+.wb-add,
+.wb-link {
+  color: var(--faint);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.wb-add:hover,
+.wb-link:hover {
+  color: var(--ink);
+}
+
 /* An unpublished entry, listed only while developing. Vermilion because it is
    pointing at something — the same job the footnote marker and the shell prompt
    give the accent. */

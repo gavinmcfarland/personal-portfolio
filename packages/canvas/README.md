@@ -80,6 +80,33 @@ All are optional.
 | `collideOrigin` | `'content' \| number` | `'content'` | (`push-down` only) the band's left edge: `content` = the left-most object, or an explicit world x. |
 | `scrollbars` | `false \| 'auto' \| 'x' \| 'y'` | `false` | Show a scrollbar on an axis only while content extends past the viewport on that axis (it auto-hides when everything fits). `'auto'` = both axes; `'x'` / `'y'` = that axis only. The board is a transform pan/zoom surface, not a native scroller, so each bar is a thin screen-space overlay whose thumb is draggable to pan that axis. |
 
+### Sharing the Edit button with the rest of the page
+
+Edit mode is page-wide: one Edit button switches every editable canvas at once.
+A host can put its own content under the same button:
+
+```jsx
+import { EditDock } from '@gavinmcfarland/canvas';
+import { useEditMode } from '@gavinmcfarland/canvas/edit-surface';
+
+function Article() {
+  const ref = useRef(null);
+  const [readOnly] = useEditMode();          // shared with every canvas
+  return (
+    <article ref={ref}>
+      <EditDock rootRef={ref} label="this page" />
+      {readOnly ? <View /> : <Editor />}
+    </article>
+  );
+}
+```
+
+`EditDock` and canvases share one election: whichever was mounted or clicked
+last paints the single button (a canvas adds its tools beside it), and the `E`
+shortcut is bound once. With no `EditDock` on the page a canvas behaves exactly
+as before. `useEditMode` and `useEditSurface` are also exported from the main
+entry; the `./edit-surface` subpath has them without the canvas engine.
+
 ### Responsive collision resolution
 
 With `collide`, the canvas measures its container and, when the authored layout no

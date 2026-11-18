@@ -205,8 +205,15 @@ function fenceTitle(attrs) {
   return m ? m[1] ?? m[2] ?? m[3] : "";
 }
 
-/* Render a post body. Returns the elements and the `##` headings, which the post
-   page turns into its contents list. */
+/* Render a post body. Returns the elements, the `##` headings (which the post
+   page turns into its contents list), and the blocks: one entry per block of
+   source, `{ start, end, kind, node }`, where `start`/`end` are the line range
+   it was read from (end exclusive) in the normalised `lines`. The blocks are
+   what the dev-only editor edits — a block's source is
+   `lines.slice(start, end)`, so a change to one block is a splice of the
+   source, never a re-serialisation of the whole document. A footnote
+   definition is a block with a null `node`: it is set at the foot, not where
+   it is written. */
 export function renderMarkdown(source, { resolveAsset = (s) => s } = {}) {
   const lines = String(source).replace(/\r\n?/g, "\n").split("\n");
   const ctx = { resolveAsset, notes: numberNotes(lines) };
@@ -214,18 +221,13 @@ export function renderMarkdown(source, { resolveAsset = (s) => s } = {}) {
   const headings = [];
   const definitions = {}; // footnote id → its text
   const nodes = [];
+  const blocks = [];
   let i = 0;
   let key = 0;
 
-  const push = (node) => nodes.push(node);
-
-  while (i < lines.length) {
+  /* One block from line `i`, advancing `i` past it. Returns its kind and node. */
+  const step = () => {
     const line = lines[i];
-
-    if (!line.trim()) {
-      i++;
-      continue;
-    }
 
     // ── Fenced code ──
     const fence = FENCE.exec(line);
@@ -235,16 +237,15 @@ export function renderMarkdown(source, { resolveAsset = (s) => s } = {}) {
       i++;
       while (i < lines.length && !closer.test(lines[i])) body.push(lines[i++]);
       i++; // the closing fence (or the end of the file, if it was left open)
-      push(
+      return { kind: "code", node: (
         <CodeBlock
           key={key++}
           className="indent reveal max-w-measure-wide"
           code={body.join("\n").replace(/\n+$/, "")}
           lang={fence[1] || "text"}
           title={fenceTitle(fence[2])}
-        />,
-      );
-      continue;
+        />
+      ) };
     }
 
     // ── Headings ──
@@ -257,31 +258,28 @@ export function renderMarkdown(source, { resolveAsset = (s) => s } = {}) {
       // beneath it. A document set in one size at one weight has exactly two
       // ranks available before rank stops being legible as rank; inventing a
       // third here would only be a fourth near-identical bold line.
+      i++;
       if (depth <= 2) {
         const plain = plainText(text);
         const id = headingId(plain, seenIds);
         headings.push({ id, text: plain });
-        push(
+        return { kind: "heading", node: (
           <h2 key={key++} id={id} className="section-label reveal">
             {inline(text, ctx, `h${key}-`)}
-          </h2>,
-        );
-      } else {
-        push(
-          <h3 key={key++} className="sub-label indent">
-            {inline(text, ctx, `h${key}-`)}
-          </h3>,
-        );
+          </h2>
+        ) };
       }
-      i++;
-      continue;
+      return { kind: "subheading", node: (
+        <h3 key={key++} className="sub-label indent">
+          {inline(text, ctx, `h${key}-`)}
+        </h3>
+      ) };
     }
 
     // ── Thematic break ──
     if (RULE.test(line)) {
-      push(<hr key={key++} className="prose-rule indent max-w-measure" />);
       i++;
-      continue;
+      return { kind: "rule", node: <hr key={key++} className="prose-rule indent max-w-measure" /> };
     }
 
     // ── Footnote definition ──
@@ -292,14 +290,14 @@ export function renderMarkdown(source, { resolveAsset = (s) => s } = {}) {
       // A definition continues while the following lines are indented under it.
       while (i < lines.length && /^\s{2,}\S/.test(lines[i])) body.push(lines[i++].trim());
       definitions[note[1]] = body.join(" ").trim();
-      continue;
+      return { kind: "footnote", node: null, note: ctx.notes[note[1]] };
     }
 
     // ── Blockquote ──
     if (QUOTE.test(line)) {
       const body = [];
       while (i < lines.length && QUOTE.test(lines[i])) body.push(lines[i++].replace(QUOTE, ""));
-      push(
+      return { kind: "quote", node: (
         <blockquote key={key++} className="aside indent reveal max-w-measure">
           {body
             .join("\n")
@@ -307,9 +305,8 @@ export function renderMarkdown(source, { resolveAsset = (s) => s } = {}) {
             .map((para, n) => (
               <p key={n}>{inline(para.replace(/\n/g, " "), ctx, `q${key}-${n}-`)}</p>
             ))}
-        </blockquote>,
-      );
-      continue;
+        </blockquote>
+      ) };
     }
 
     // ── Lists ──
@@ -329,7 +326,7 @@ export function renderMarkdown(source, { resolveAsset = (s) => s } = {}) {
         items.push(item.join(" "));
       }
       const List = ordered ? "ol" : "ul";
-      push(
+      return { kind: "list", node: (
         <List
           key={key++}
           /* The markers are drawn by CSS (see .prose-list), which means
@@ -341,9 +338,8 @@ export function renderMarkdown(source, { resolveAsset = (s) => s } = {}) {
           {items.map((item, n) => (
             <li key={n}>{inline(item, ctx, `l${key}-${n}-`)}</li>
           ))}
-        </List>,
-      );
-      continue;
+        </List>
+      ) };
     }
 
     // ── Paragraph, or a figure ──
@@ -369,30 +365,41 @@ export function renderMarkdown(source, { resolveAsset = (s) => s } = {}) {
     // by the CSS counter in app.css.
     const image = ONLY_IMAGE.exec(text);
     if (image) {
-      push(
+      return { kind: "figure", node: (
         <figure key={key++} className="fig indent reveal max-w-measure-wide">
           <img src={resolveAsset(image[2])} alt={image[1]} loading="lazy" decoding="async" />
           {image[3] && <figcaption>{inline(image[3], ctx, `f${key}-`)}</figcaption>}
-        </figure>,
-      );
-      continue;
+        </figure>
+      ) };
     }
 
-    push(
+    return { kind: "paragraph", node: (
       <p key={key++} className="indent max-w-measure text-pretty text-muted">
         {inline(text.replace(/\n/g, " "), ctx, `p${key}-`)}
-      </p>,
-    );
+      </p>
+    ) };
+  };
+
+  while (i < lines.length) {
+    if (!lines[i].trim()) {
+      i++;
+      continue;
+    }
+    const start = i;
+    const { kind, node, note } = step();
+    // An unclosed fence runs to the end of the file, one past it by its count.
+    blocks.push({ start, end: Math.min(i, lines.length), kind, node, note });
+    if (node) nodes.push(node);
   }
 
   // ── Footnotes, at the foot of the document ──
   const cited = Object.entries(ctx.notes).sort((a, b) => a[1] - b[1]);
   if (cited.length) {
-    push(
+    nodes.push(
       <div key="footnotes" className="footnotes indent reveal max-w-measure">
         <div className="footnotes__rule" aria-hidden="true" />
         {cited.map(([id, n]) => (
-          <p key={id} id={`fn-${n}`} className="footnote">
+          <p key={id} id={`fn-${n}`} className="footnote" data-note={n}>
             <sup>{n}</sup>
             {inline(definitions[id] || "", ctx, `fn${n}-`)}
           </p>
@@ -401,5 +408,8 @@ export function renderMarkdown(source, { resolveAsset = (s) => s } = {}) {
     );
   }
 
-  return { nodes, headings };
+  // The footnotes are set as one block at the foot rather than where each is
+  // defined, so the editor needs them separately from the blocks.
+  const footnotes = cited.length ? nodes[nodes.length - 1] : null;
+  return { nodes, headings, blocks, lines, footnotes };
 }

@@ -17,7 +17,7 @@ import { codeHighlight, codeLangLabel } from "@gavinmcfarland/canvas/code";
  * an HTML string), and it is safe here for the reason it is safe in the canvas:
  * the source is escaped before a single tag is added. Nothing in a post reaches
  * the DOM unescaped. */
-export default function CodeBlock({ code, lang, title, className = "" }) {
+export default function CodeBlock({ code, lang, title, className = "", ...rest }) {
   const [copied, setCopied] = useState(false);
   const timer = useRef(0);
 
@@ -35,7 +35,7 @@ export default function CodeBlock({ code, lang, title, className = "" }) {
   };
 
   return (
-    <div className={`codeblock ${className}`}>
+    <div {...rest} className={`codeblock ${className}`}>
       <div className="codeblock__head">
         {/* A sample is labelled by where it comes from when the post says so,
             and by what it is written in otherwise — never both, since the

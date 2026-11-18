@@ -1,9 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useEditMode } from "@gavinmcfarland/canvas/edit-surface";
 import Seo from "../components/Seo";
 import DocShell from "../components/DocShell";
+import ArticleView from "../components/ArticleView";
 import { renderMarkdown } from "../lib/markdown";
-import { formatDate, loadPost, neighbours } from "../data/writing";
+import { loadPost, neighbours } from "../data/writing";
+
+/* The in-page editor — dev only. `import.meta.env.DEV` is a build-time
+   constant, so in a build this is null and the import is dead code: neither the
+   editor nor the canvas engine its Edit button comes from reaches the bundle.
+   See src/components/ArticleEditor.jsx. */
+const loadEditor = import.meta.env.DEV ? () => import("../components/ArticleEditor") : null;
 
 /* A post, set as a man page.
  *
@@ -19,19 +27,38 @@ import { formatDate, loadPost, neighbours } from "../data/writing";
  * before it could finish appearing — the same reasoning as the empty Suspense
  * fallback in App.jsx. */
 export default function WritingPost({ post }) {
-  const [loaded, setLoaded] = useState(null); // { text, resolveAsset }
+  const [loaded, setLoaded] = useState(null); // { raw, data, text, resolveAsset }
   const [missing, setMissing] = useState(false);
+  const [editor, setEditor] = useState(null); // the editor module, dev only
+  const articleRef = useRef(null);
+
+  /* The one Edit button switches this page and every canvas together. Only a
+     dev server has an editor to switch to. */
+  const [readOnly] = useEditMode();
+  const editing = editor != null && !readOnly;
+
+  // The title and summary as the post's own source has them, which the editor
+  // may have changed since the manifest was built.
+  const title = loaded?.data.title || post.title;
+  const summary = loaded ? loaded.data.summary || "" : post.summary;
 
   /* No reset of the two states above when `post` changes: the route mounts this
      with `key={post.slug}`, so moving between posts is a remount and they start
      fresh on their own. */
   useEffect(() => {
     let live = true;
-    loadPost(post).then(
-      (result) => {
+    /* On a dev server the editor arrives with the post, not after it, so the
+       body's first paint is already the editor's tree (in view mode). Were it
+       swapped in later — or on Edit — every block would remount: a flash, the
+       reveal fade again, images fetched again. */
+    Promise.all([loadPost(post), loadEditor?.()]).then(
+      ([result, mod]) => {
         if (!live) return;
         if (result == null) setMissing(true);
-        else setLoaded(result);
+        else {
+          if (mod) setEditor(mod);
+          setLoaded(result);
+        }
       },
       () => live && setMissing(true),
     );
@@ -57,92 +84,35 @@ export default function WritingPost({ post }) {
   );
 
   const { previous, next } = neighbours(post.slug);
-  // A contents list earns its place once a post has enough sections to need
-  // one; below that it is a list of the two headings already on screen.
-  const contents = headings.length >= 3 ? headings : [];
 
   /* The body arrives after this mounts, so the shell's reveal observer has to
      scan again once it does — hence `revealKey`; see useReveal. */
+  const revealKey = loaded;
+
   return (
-    <DocShell revealKey={loaded}>
-      <Seo title={post.title} description={post.summary} type="article" />
+    <DocShell revealKey={revealKey}>
+      <Seo title={title} description={summary} type="article" />
 
-      {/* The masthead, not a section body: flush to the content column, with no
-          NAME label over it. The label would be announcing what the next line
-          already says, and hanging a title at the indent stop makes the page
-          open as though it were the body of a section that isn't there — the
-          same reasoning as the home page's own opening block (Intro.jsx). */}
-      <header className="pt-(--sp-8)">
-        <h1 className="wordmark text-pretty">{post.title}</h1>
-        {post.summary && (
-          <p className="max-w-measure text-pretty text-muted">{post.summary}</p>
+      {/* The article's own root: a pointerdown inside it makes this page — not
+          a canvas still mounted behind the overlay — the surface the Edit
+          button belongs to. */}
+      <div ref={articleRef}>
+        {editor && loaded ? (
+          <>
+            <editor.ArticleDock rootRef={articleRef} />
+            <editor.default
+              post={post}
+              loaded={loaded}
+              editing={editing}
+              onChange={(patch) => setLoaded((l) => ({ ...l, ...patch }))}
+            />
+          </>
+        ) : (
+          <ArticleView post={post} title={title} summary={summary} headings={headings} missing={missing}>
+            {nodes}
+          </ArticleView>
         )}
-        {/* The one meta line: when it was written, how long it is, and what it
-            is about. Set in the page-footer register — the quietest on the site
-            — because it is apparatus, not the document. */}
-        <p className="post-meta mt-(--sp-2)">
-          <span>{formatDate(post.date)}</span>
-          {post.updated && (
-            <>
-              <Dot />
-              <span>updated {formatDate(post.updated)}</span>
-            </>
-          )}
-          {post.words > 0 && (
-            <>
-              <Dot />
-              <span>{post.words.toLocaleString("en-GB")} words</span>
-            </>
-          )}
-          {post.tags.length > 0 && (
-            <>
-              <Dot />
-              <span>{post.tags.join(", ")}</span>
-            </>
-          )}
-          {post.draft && (
-            <>
-              <Dot />
-              <span className="text-accent">draft</span>
-            </>
-          )}
-        </p>
-      </header>
-
-      {contents.length > 0 && (
-        <>
-          <h2 className="section-label reveal">Contents</h2>
-          {/* The prose measure, not the narrow one. A contents list is a column
-              of the same headings that appear in the body below it, so setting
-              it narrower puts its right margin — and the leaders running out to
-              it — on an edge nothing else in the document shares. */}
-          <ul className="indent reveal leaders max-w-measure">
-            {contents.map((h, n) => (
-              <li key={h.id} className="leader">
-                <a href={`#${h.id}`} className="xref">
-                  {h.text}
-                </a>
-                <span className="leader__dots" aria-hidden="true" />
-                <span className="leader__pg">
-                  <span className="sec">§</span>
-                  {n + 1}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      {missing ? (
-        <>
-          <h2 className="section-label">Description</h2>
-          <p className="indent max-w-measure text-muted">
-            This entry&rsquo;s source could not be loaded.
-          </p>
-        </>
-      ) : (
-        <div className="writing-body">{nodes}</div>
-      )}
+      </div>
 
       <h2 className="section-label reveal">See also</h2>
       <p className="indent reveal">
@@ -173,9 +143,3 @@ export default function WritingPost({ post }) {
     </DocShell>
   );
 }
-
-const Dot = () => (
-  <span className="px-[0.45em] text-faint" aria-hidden="true">
-    ·
-  </span>
-);

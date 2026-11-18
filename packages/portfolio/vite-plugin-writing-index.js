@@ -116,10 +116,66 @@ function findAssets(root, file) {
     .map((item) => `${dir}/${item.name}`);
 }
 
+/* ── Saving from the in-page editor (dev only) ─────────────────────────
+   The post page's editor POSTs the whole post back — title, summary, body —
+   with the source it was editing (`base`). The file is rewritten only if it is
+   still exactly that source, so an edit made in a text editor meanwhile is
+   reported as a conflict instead of being overwritten. */
+
+/* A frontmatter value in the form parseFrontmatter reads back unchanged. It has
+   no escapes, so a value is quoted with whichever mark it doesn't contain. */
+function yamlScalar(value) {
+  const v = String(value).replace(/\s*\n\s*/g, " ").trim();
+  if (!v) return '""';
+  const risky = /^[\s'"[\]{}>|*&!%@`#,?-]|: | #|^(?:true|false|null|~)$/.test(v);
+  if (!risky) return v;
+  if (!v.includes('"')) return `"${v}"`;
+  if (!v.includes("'")) return `'${v}'`;
+  return `"${v.replace(/"/g, "\u201D")}"`;
+}
+
+/* Set `key` in a frontmatter block's lines, in place if it's there, otherwise
+   after `after` (or at the end). */
+function setField(lines, key, value, after) {
+  const line = `${key}: ${yamlScalar(value)}`;
+  const at = lines.findIndex((l) => new RegExp(`^${key}\\s*:`).test(l));
+  if (at !== -1) lines[at] = line;
+  else {
+    const anchor = lines.findIndex((l) => new RegExp(`^${after}\\s*:`).test(l));
+    lines.splice(anchor === -1 ? lines.length : anchor + 1, 0, line);
+  }
+}
+
+/* The post's new source: its frontmatter with title/summary updated (and every
+   other line left exactly as written), then the new body. A field whose value
+   didn't change keeps its original line, quoting and all. */
+export function rewritePost(raw, { title, summary, body }) {
+  const text = String(raw).replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
+  const match = /^---\n([\s\S]*?)\n---\n?/.exec(text);
+  const { data } = parseFrontmatter(text);
+  const lines = match ? match[1].split("\n") : [];
+  if (typeof title === "string" && title !== (data.title || "")) setField(lines, "title", title, "");
+  if (typeof summary === "string" && summary !== (data.summary || "")) setField(lines, "summary", summary, "date");
+  const head = lines.length ? `---\n${lines.join("\n")}\n---\n` : "";
+  const tail = String(body).replace(/\s*$/, "\n");
+  return head + tail;
+}
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", () => resolve(body));
+    req.on("error", reject);
+  });
+}
+
 export function writingIndex({ dir = "src/content/writing" } = {}) {
   let root = process.cwd();
   let isBuild = false;
   const contentDir = () => path.resolve(root, dir);
+  /* Files the editor just wrote, and what it wrote — see handleHotUpdate. */
+  const selfWrites = new Map();
 
   /* Paths are written root-relative (`/src/content/…`) rather than as absolute
      filesystem paths: that is the one form Vite resolves the same way in the dev
@@ -211,23 +267,77 @@ export function writingIndex({ dir = "src/content/writing" } = {}) {
       ].join("\n");
     },
 
+    /* A save from the in-page editor must not reload the page it was made
+       on — the reload would throw away the cursor, and the page already shows
+       the text. Vite would hot-update the post's `?raw` import on its own, so
+       that is stopped here; the full reload below is stopped in `touched`. */
+    handleHotUpdate({ file, read }) {
+      if (!selfWrites.has(file)) return undefined;
+      return read().then((text) => (text === selfWrites.get(file) ? [] : undefined));
+    },
+
     /* Editing a post's frontmatter has to rebuild the manifest, and the manifest
        is a virtual module with no file of its own for the watcher to notice.
        Invalidate it by hand when anything in the content directory moves, then
        reload — the archive list, Home's recent entries and a post's own meta all
-       read from it, so a partial update would leave them disagreeing. */
+       read from it, so a partial update would leave them disagreeing.
+
+       The exception is a file the editor just wrote: the manifest is still
+       invalidated (the next load picks the new title up), but the page isn't
+       reloaded. Home's list stays as it was until the next reload. */
     configureServer(server) {
       const base = contentDir();
       const touched = (file) => {
         if (!file.startsWith(base)) return;
         const mod = server.moduleGraph.getModuleById(RESOLVED_ID);
         if (mod) server.moduleGraph.invalidateModule(mod);
+        if (selfWrites.has(file)) {
+          let current = null;
+          try { current = fs.readFileSync(file, "utf8"); } catch { /* unlinked */ }
+          if (current === selfWrites.get(file)) return;
+          selfWrites.delete(file);
+        }
         server.ws.send({ type: "full-reload" });
       };
       server.watcher.add(base);
       server.watcher.on("add", touched);
       server.watcher.on("unlink", touched);
       server.watcher.on("change", touched);
+
+      /* POST { slug, base, title, summary, body, force? } → { ok, raw } or
+         409 { ok: false, conflict: true } when the file is no longer `base`. */
+      server.middlewares.use("/__writing/save", (req, res, next) => {
+        if (req.method !== "POST") return next();
+        res.setHeader("content-type", "application/json");
+        const reply = (status, payload) => {
+          res.statusCode = status;
+          res.end(JSON.stringify(payload));
+        };
+        readBody(req).then((text) => {
+          try {
+            const { slug, base: expected, title, summary, body, force } = JSON.parse(text);
+            if (typeof body !== "string") throw new Error("expected a `body` string");
+            // The slug is looked up among the posts that exist, never joined
+            // onto a path, so it can only ever name a post.
+            const file = findPosts(base).find(
+              (f) => (path.basename(f) === "index.md" ? path.dirname(f) : f.replace(/\.md$/, "")) === slug,
+            );
+            if (!file) return reply(404, { ok: false, error: `no post "${slug}"` });
+            const target = path.join(base, file);
+            const current = fs.readFileSync(target, "utf8");
+            if (!force && current !== expected) return reply(409, { ok: false, conflict: true });
+            const next = rewritePost(current, { title, summary, body });
+            if (next !== current) {
+              selfWrites.set(target, next);
+              fs.writeFileSync(target, next);
+              server.config.logger.info(`  writing saved → ${path.relative(root, target)}`);
+            }
+            reply(200, { ok: true, raw: next });
+          } catch (err) {
+            reply(400, { ok: false, error: String((err && err.message) || err) });
+          }
+        });
+      });
     },
   };
 }

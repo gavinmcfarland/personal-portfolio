@@ -70,6 +70,32 @@ sample syntax — is in
 [`src/content/writing/_README.md`](src/content/writing/_README.md), next to the
 posts.
 
+### Editing a post in place (dev only)
+
+Under `pnpm dev`, the page-wide **Edit** button (the same one that switches the
+canvases) also makes the open post editable. The title and summary become
+fields; click any block of the body to edit its markdown where it sits. Changes
+save back to the post's `.md` file about half a second after you make them,
+through a dev-only `/__writing/save` endpoint, without reloading the page.
+
+| Key | Does |
+| --- | --- |
+| Esc / click away | commit the block |
+| Enter | split the block at the caret; at the end, start a new block below |
+| Shift+Enter | a line break inside the block |
+| ⌘/Ctrl+Enter | new block below (the way out of a list or code sample) |
+| Backspace at the start | delete an empty block, or join a paragraph onto the one above |
+| ↑ / ↓ at an edge | move to the block above / below |
+| Alt+↑ / Alt+↓ | move the block (also the ↑ ↓ buttons over it) |
+| ⌘/Ctrl+Z, outside a field | undo a committed change |
+
+Edits are splices of the source lines, so every line you didn't touch stays
+byte-for-byte as written; title and summary are rewritten only if changed. If
+the file changed on disk since the page loaded, the save is refused and the page
+offers to reload or overwrite. Home's writing list picks up a new title on the
+next reload. None of this is in a build — see
+[`ArticleEditor.jsx`](src/components/ArticleEditor.jsx).
+
 ### How it is set
 
 A post opens with its title flush to the content column — a masthead, like the
