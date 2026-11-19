@@ -133,27 +133,58 @@ function useFrameMessages(frameRef, shieldRef, active, eng) {
   }, [frameRef, active, eng]);
 }
 
+/* WHEN THE DOCUMENT IS LOADED AT ALL. Each of these is a whole document with
+   its own DOM, style engine and scripts, a board can hold a dozen, and every
+   one of them shares the page's memory budget — which on a phone is small
+   enough that a board of embeds can take the tab down. So the iframe is only
+   mounted once the node is on screen or about to be: a node nobody pans to
+   never costs anything.
+
+   NEAR is that "about to be", as a fraction of the viewport added on every
+   side (the engine does the geometry — see htmlInView). It is the lead a pan
+   gets, so a document is normally up before its node arrives.
+
+   Unloading is the other half and only happens where memory is the constraint:
+   a touch device. There a node that has been further than FAR from the
+   viewport for RECLAIM_MS gives its document back, and loads it again on the
+   way back in. A pointer device keeps what it has loaded — it has the memory,
+   and a reload there would be a flash with nothing bought by it. FAR sits well
+   outside NEAR so a node at the edge doesn't load and unload as the view
+   drifts, and the delay means a quick look elsewhere costs nothing.
+
+   Two documents are never unloaded: one that is live in edit mode, and one the
+   reader has driven somewhere (it said so — canvas-page-moved). Reloading
+   either would throw away exactly the state someone put there. */
+const NEAR = 0.5;
+const FAR = 1.5;
+const RECLAIM_MS = 4000;
+const RECLAIM = typeof matchMedia !== 'undefined'
+  && matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+function hostTheme() {
+  return document.documentElement.classList.contains('dark')
+    || (document.body && document.body.classList.contains('dark')) ? 'dark' : 'light';
+}
+
 function HtmlNode({ node }) {
   const { htmlActiveId, readOnly, eng } = useCanvas();
-  /* Is a restore coming on this load? Captured once, at mount, for the same
-     reason the boot theme is: it decides the frame's URL, and re-deciding it
-     later would reload the document. Setting a start page mid-session therefore
-     doesn't re-flag the frame — nor should it, since nothing reloads. */
-  const bootPage = useRef(null);
-  if (bootPage.current === null) bootPage.current = !!node.page;
-  // Boot theme, carried in the URL hash so the injected sync script can apply
-  // it before the document's first paint — the message path only lands after
-  // onLoad, which would flash the OS theme first. Captured once: rewriting the
-  // src on later theme flips would reload the iframe (the message handles
-  // those). data: URLs are left alone (a hash would corrupt the document).
-  const bootTheme = useRef(null);
-  if (bootTheme.current === null) {
-    bootTheme.current = document.documentElement.classList.contains('dark')
-      || (document.body && document.body.classList.contains('dark')) ? 'dark' : 'light';
-  }
+  /* Each frame is created with two things decided for good, because both go
+     into its URL and re-deciding either later would reload the document:
+
+     - whether a restore is coming on this load (`page`). Setting a start page
+       mid-session therefore doesn't re-flag the frame — nor should it, since
+       nothing reloads.
+     - the boot theme, carried in the URL hash so the injected sync script can
+       apply it before the document's first paint — the message path only lands
+       after onLoad, which would flash the OS theme first. Later theme flips go
+       by message. data: URLs are left alone (a hash would corrupt the
+       document).
+
+     Both are read when the frame is created rather than when the node mounts:
+     the two used to be the same moment, and no longer are (see NEAR above). */
   // Whether to paint the loading indicator: true until the document says it has
   // arrived (canvas-page-ready), and only ever true where a restore is due.
-  const [booting, setBooting] = useState(bootPage.current);
+  const [booting, setBooting] = useState(false);
 
   /* THE FRAMES. Normally one — the document on screen. A reload (the reader's
      Reset, "Clear start page", eng.reloadHtmlFrame) adds a SECOND, and for as
@@ -178,11 +209,11 @@ function HtmlNode({ node }) {
      with, so the outgoing frame keeps the src it loaded (any change to it is a
      navigation) while the incoming one gets today's. */
   const nextKey = useRef(0);
-  const [frames, setFrames] = useState(() => [
-    { key: 0, theme: bootTheme.current, page: bootPage.current },
-  ]);
+  /* Empty until the node is near the viewport, and again once it has been
+     unloaded — the in-view effect below is what fills and empties it. */
+  const [frames, setFrames] = useState([]);
 
-  const { setRef, dataProps, style } = useRegister(node);
+  const { setRef, dataProps, style, x, y } = useRegister(node);
   const src = useMediaSrc(node.src);
   // Activation is an edit-mode idea only: in view mode the shield stays up and
   // the demo is kept interactive from the inside, so there is nothing to
@@ -210,16 +241,74 @@ function HtmlNode({ node }) {
 
   useThemeSync(framesOf);
   useFrameMessages(frameRef, shieldRef, readOnly, eng);
-  /* Going live (or back) drops or raises the shield, and with it whether the
-     document can be scrolled — so it lets go of, or retakes, its scroll
-     containers. Inert too: it decides whether Shift reaches this node. Read off
-     the DOM after commit, where the classes those depend on have landed. */
-  useEffect(() => { framesOf().forEach(postScrollState); }, [live, node.inert, framesOf]);
   /* The page this node was saved on (see captureHtmlPage), read through a ref
      so a later capture never re-runs the seed — the document is already up by
      then, and re-posting the restore would walk it through the trail again. */
   const pageRef = useRef(node.page);
   pageRef.current = node.page;
+
+  /* Loading the document when the node comes near the viewport, and — on a
+     touch device — giving it back once the node has been well away from it for
+     a while. NEAR, FAR and RECLAIM above say why; this is the mechanism.
+
+     Everything it decides from is read through refs, so the subscription is
+     made once: the node's box (which a reflow or a resize moves), whether it is
+     live, and whether the reader has driven it. */
+  const box = useRef(null);
+  box.current = {
+    x, y,
+    w: (node.w || 800) * (node.scale || 1),
+    h: (node.h || 500) * (node.scale || 1),
+  };
+  const liveRef = useRef(live);
+  liveRef.current = live;
+  const movedRef = useRef(false);
+  const loadedRef = useRef(false);
+  useEffect(() => {
+    let timer = 0;
+    const within = (pad) => {
+      const b = box.current;
+      return eng.htmlInView(b.x, b.y, b.w, b.h, pad);
+    };
+    const load = () => {
+      if (loadedRef.current) return;
+      loadedRef.current = true;
+      nextKey.current += 1;
+      setBooting(!!pageRef.current);
+      setFrames([{ key: nextKey.current, theme: hostTheme(), page: !!pageRef.current }]);
+    };
+    const unload = () => {
+      timer = 0;
+      // Asked again, not assumed: four seconds is long enough for the node to
+      // have come back, gone live, or been driven by a tap that was in flight.
+      if (!loadedRef.current || liveRef.current || movedRef.current || within(FAR)) return;
+      loadedRef.current = false;
+      setBooting(false);
+      setFrames([]);
+    };
+    const check = () => {
+      if (within(NEAR)) {
+        clearTimeout(timer); timer = 0;
+        load();
+      } else if (RECLAIM && loadedRef.current && !timer && !within(FAR)) {
+        timer = setTimeout(unload, RECLAIM_MS);
+      }
+    };
+    /* Asked once now — the board applies its opening view in a layout effect,
+       so by the time this runs the view is the one the reader will see — and
+       from then on whenever the view moves. */
+    check();
+    const off = eng.watchHtmlView(check);
+    return () => { off(); clearTimeout(timer); };
+  }, [eng]);
+  // The view moving is not the only way in or out of it: a reflow or a resize
+  // moves the node instead.
+  useEffect(() => { eng.syncHtmlView(); }, [x, y, node.w, node.h, node.scale, eng]);
+  /* Going live (or back) drops or raises the shield, and with it whether the
+     document can be scrolled — so it lets go of, or retakes, its scroll
+     containers. Inert too: it decides whether Shift reaches this node. Read off
+     the DOM after commit, where the classes those depend on have landed. */
+  useEffect(() => { framesOf().forEach(postScrollState); }, [live, node.inert, framesOf]);
   /* On load, hand the document both pieces of host state it can't infer: the
      theme, and the board's current zoom (which decides whether its
      backdrop-filters render — see ZOOM_OPTS). The zoom broadcast only fires on
@@ -260,14 +349,15 @@ function HtmlNode({ node }) {
       const front = framesOf()[0];
       if (!front || !front.src || front.src === 'about:blank') return;
       e.preventDefault();
+      // The replacement opens where the board put it, so there is nothing of
+      // the reader's left in it to protect from an unload.
+      movedRef.current = false;
       setFrames((fs) => {
         // One at a time: a second Reset while a replacement is still loading
         // would leave a document on screen that nothing is waiting on.
         if (fs.length > 1) return fs;
         nextKey.current += 1;
-        const dark = document.documentElement.classList.contains('dark')
-          || (document.body && document.body.classList.contains('dark'));
-        return [...fs, { key: nextKey.current, theme: dark ? 'dark' : 'light', page: !!pageRef.current }];
+        return [...fs, { key: nextKey.current, theme: hostTheme(), page: !!pageRef.current }];
       });
     };
     el.addEventListener('cv-html-reload', onReload);
@@ -354,7 +444,7 @@ function HtmlNode({ node }) {
     const onMessage = (e) => {
       const f = frameRef.current;
       if (!f || !f.contentWindow || e.source !== f.contentWindow || !e.data) return;
-      if (e.data.type === 'canvas-page-moved') eng.markHtmlMoved(node.id, true);
+      if (e.data.type === 'canvas-page-moved') { movedRef.current = true; eng.markHtmlMoved(node.id, true); }
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
@@ -404,7 +494,9 @@ function HtmlNode({ node }) {
               src={srcFor(f) || undefined}
               sandbox="allow-scripts"
               title={node.name || 'HTML'}
-              /* Always eager, including the frame the node mounts with. Every
+              /* Always eager. Whether the document should be loaded at all is
+                 decided above, from the board's own geometry, by not rendering
+                 the frame — and once it is rendered it has to load now. Every
                  frame sits in the scaled world, where the browser's lazy
                  heuristic cannot see it as visible, and a load asked for there
                  is deferred until something unrelated nudges the page —

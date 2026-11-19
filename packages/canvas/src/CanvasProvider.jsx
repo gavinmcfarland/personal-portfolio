@@ -735,6 +735,10 @@ export function CanvasProvider({
   const minimapRAF = useRef(0); // debounces content redraws to one run per frame
   const reflowRAF = useRef(0); // debounces reflowObjects to one run per frame
   const lastVpSize = useRef(null); // latest measured container size {w,h}
+  // The html nodes asking whether they are in view, and the timer that asks
+  // them (see htmlInView).
+  const htmlViewSubs = useRef(new Set()).current;
+  const htmlViewTimer = useRef(0);
   const reframing = useRef(false); // true while reframeOnResize applies, so applyView doesn't re-capture the reference
   // The CANONICAL reference {w,h,x,y,scale}: the container size + view of the
   // last deliberate framing (edit-mode pan/zoom/fit, or the loaded snapshot).
@@ -858,6 +862,7 @@ export function CanvasProvider({
       syncChrome();
       syncScrollbars();
       syncMinimap();
+      syncHtmlView();
       // View-mode pan/zoom is transient (snapshotActive keeps the saved view),
       // so only edit-mode view changes need to hit the autosave. Also commit the
       // new framing to the published snapshot in the background — but not on the
@@ -1085,6 +1090,49 @@ export function CanvasProvider({
         { type: 'canvas-zoom', active: !!(last && last.active), scale: viewRef.scale },
         '*'
       );
+    }
+
+    /* Which embedded documents are worth having loaded.
+
+       An html node is a whole document — its own DOM, style engine and scripts
+       — and a board can carry a dozen. So a node only mounts its iframe once it
+       is on screen or about to be, and asks here to find out (see Html.jsx,
+       which owns the decision and the unloading that goes with it).
+
+       Worked out from the node's world box and the view, not left to the
+       browser: `loading="lazy"` and IntersectionObserver both judge visibility
+       through the world's transform and get it wrong there (Html.jsx has the
+       measurement). `pad` widens the viewport by that fraction of its own size
+       on every side, which is the lead a pan gets before the node arrives.
+
+       The glide's destination counts as well as where the view is now, so a
+       fly-to or a zoom starts loading what it is heading for while it travels.
+       An unmeasured viewport answers yes: a board that hasn't been laid out
+       must not be the reason a document never loads. */
+    function htmlInView(x, y, w, h, pad) {
+      const W = vpW(), H = vpH();
+      if (!W || !H) return true;
+      const mx = W * pad, my = H * pad;
+      const hit = (v) => {
+        const l = v.x + x * v.scale, t = v.y + y * v.scale;
+        return l + w * v.scale > -mx && l < W + mx && t + h * v.scale > -my && t < H + my;
+      };
+      return hit(viewRef) || hit(targetRef);
+    }
+    function watchHtmlView(fn) {
+      htmlViewSubs.add(fn);
+      return () => { htmlViewSubs.delete(fn); };
+    }
+    /* Called on every view change, which during a pan is every frame — so the
+       nodes are asked on a trailing timer instead. Often enough that a document
+       is loading before a pan reaches it; rare enough that nothing is decided
+       per frame, and that a document's parse doesn't land mid-flick. */
+    function syncHtmlView() {
+      if (htmlViewTimer.current || !htmlViewSubs.size) return;
+      htmlViewTimer.current = setTimeout(() => {
+        htmlViewTimer.current = 0;
+        htmlViewSubs.forEach((fn) => fn());
+      }, 120);
     }
 
     /* smooth zoom glide */
@@ -3682,7 +3730,7 @@ export function CanvasProvider({
       switchPage, addPage, renamePage, removePage, canRemovePage, canArchivePage, setPageArchived, canReorderPages, reorderPages, isPagePinned,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
-      isHtmlFile, addHtmlFromFile, setHtmlActive, setHtmlPassThrough, toggleHtmlInert, openHtml, captureHtmlPage, clearHtmlPage, restartHtml, markHtmlMoved,
+      isHtmlFile, addHtmlFromFile, htmlInView, watchHtmlView, syncHtmlView, setHtmlActive, setHtmlPassThrough, toggleHtmlInert, openHtml, captureHtmlPage, clearHtmlPage, restartHtml, markHtmlMoved,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startRenameFrame, stopRenameFrame, startEditing, stopEditing, formatText, setChrome,
       openSectionNotes, closeSectionNotes, setSectionNotes, deck, setFrameAspect,

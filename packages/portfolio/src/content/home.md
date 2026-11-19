@@ -8,8 +8,7 @@
 
 <!-- @description -->
 
-Design engineer building tools and web applications.
-Background in product design and user research.
+Design engineer interested in exploring technology through building. I enjoy working on developer tools, code generation, automation and infrastructure that make designing and building software easier.
 
 Currently building [Awenate](https://awenate.com). Previously, at [Lovable](https://lovable.dev).
 

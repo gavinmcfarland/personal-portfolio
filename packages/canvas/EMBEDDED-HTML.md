@@ -31,6 +31,25 @@ frame — including the full render tree of every embedded document.
 So: **during a zoom, your document is repainted ~60×/second.** That is the
 budget everything below is about.
 
+## When a document is loaded at all
+
+An `html` node only mounts its iframe once the node is on screen or within half
+a viewport of it, so a document on a part of the board nobody pans to is never
+fetched, parsed or run. Visibility is worked out from the node's box and the
+board's view (`htmlInView` in `src/CanvasProvider.jsx`), because the browser's
+own lazy loading misjudges anything inside the scaled world.
+
+On a touch device the reverse also happens: a node that has been more than a
+viewport and a half away for four seconds unloads its document, and loads it
+again from its start page when it comes back. Two documents are exempt — one
+that is live in edit mode, and one the reader has clicked somewhere. A pointer
+device never unloads.
+
+What this means for a document: **it can be loaded more than once in a visit,
+and it should not assume it starts running when the board opens.** State that
+has to survive belongs in the start page (see below), not in the running
+document.
+
 ## What the canvas injects into your document
 
 At ingest the canvas rewrites the document to add a set of `<script>` blocks at the
