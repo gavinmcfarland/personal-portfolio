@@ -1,4 +1,5 @@
 import DitherVideo from "./DitherVideo";
+import HomeProse from "./HomeProse";
 import clipUrl from "../assets/avatar.mp4";
 /* The clip's first frame, grey, 120px, ~1.7KB — under Vite's inline limit, so
    it arrives inside the bundle rather than as a request of its own. It is what
@@ -81,33 +82,9 @@ const Intro = () => (
       DESCRIPTION
     </h2>
     {/* Both paragraphs carry the same `rise d1` delay, so they still come up as
-        one movement without a wrapper to group them; the step between them is
-        `p.indent + p.indent`. */}
-    <p className="indent rise d1 max-w-measure text-muted">
-      Design engineer building tools and web applications.
-      Background in product design and user research.
-    </p>
-    <p className="indent rise d1 max-w-measure text-muted">
-      Currently building{" "}
-      <a
-        href="https://awenate.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="xref"
-      >
-        Awenate
-      </a>
-      . Previously, at{" "}
-      <a
-        href="https://lovable.dev"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="xref"
-      >
-        Lovable
-      </a>
-      .
-    </p>
+        one movement; the text is the `description` region of
+        src/content/home.md. */}
+    <HomeProse name="description" />
   </header>
 );
 

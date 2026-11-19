@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import DeferredCanvas from "../components/DeferredCanvas";
 import {
   boardSaver,
@@ -12,7 +13,15 @@ import Intro from "../components/Intro";
 import Projects from "../components/Projects";
 import Writing from "../components/Writing";
 import Connect from "../components/Connect";
+import HomeProse from "../components/HomeProse";
+import { HomeProseContext } from "../lib/homeProseContext";
 import { useReveal } from "../hooks/useReveal";
+
+/* The in-page editor for the prose — dev only. `import.meta.env.DEV` is a
+   build-time constant, so in a build this is null and neither the editor nor
+   the canvas engine its Edit button comes from reaches the bundle. See
+   src/components/HomeEditor.jsx. */
+const loadEditor = import.meta.env.DEV ? () => import("../components/HomeEditor") : null;
 
 /* A self-contained board for the canvas playground. It sticks to the canvas's
    built-in nodes (markdown, sticky, arrow) and follows the page's light/dark mode
@@ -66,9 +75,21 @@ const playgroundBoard = {
 const Home = () => {
   // One observer for the whole page. It used to live on each <section>; with the
   // sections flattened away, <main> is the only root left that spans them all.
-  const ref = useReveal();
+  //
+  // The editor arrives a moment after the page; swapping it in remounts the
+  // prose, so the observer scans again once it has (see useReveal).
+  const [editor, setEditor] = useState(null);
+  useEffect(() => {
+    let live = true;
+    loadEditor?.().then((mod) => live && setEditor(mod));
+    return () => {
+      live = false;
+    };
+  }, []);
+  const ref = useReveal(editor);
   return (
-    <>
+    <HomeProseContext.Provider value={editor?.renderRegion ?? null}>
+      {editor && <editor.HomeEditorChrome rootRef={ref} />}
       {/* Home keeps the site defaults — a generic OG card with the site name. */}
       <Seo
         title=""
@@ -96,12 +117,7 @@ const Home = () => {
         <h2 id="playground" className="section-label reveal">
           Staging
         </h2>
-        <p className="lede indent reveal max-w-measure text-muted">
-          These are things I&rsquo;m currently working on. New ideas,
-          experiments, tools, and features often appear here long before they
-          become polished projects. It&rsquo;s a snapshot of what has my
-          attention right now.
-        </p>
+        <HomeProse name="staging" />
         <div
           className="indent reveal overflow-hidden rounded-2xl border border-line"
           style={{ height: "min(70vh, 520px)" }}
@@ -130,22 +146,7 @@ const Home = () => {
         <h2 id="background" className="section-label reveal">
           Background
         </h2>
-        <p className="indent reveal max-w-measure text-muted">
-          I&rsquo;ve spent over 12 years helping organisations across the public
-          and private sectors solve problems through product design, user
-          research, and engineering. Along the way, I&rsquo;ve worked with
-          clients including Amazon, American Express, NatWest, and Lovable. You
-          can read my full professional history on{" "}
-          <a
-            href="https://www.linkedin.com/in/gavinmcfarland"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="xref"
-          >
-            LinkedIn
-          </a>
-          .
-        </p>
+        <HomeProse name="background" />
 
         <Connect />
 
@@ -156,7 +157,7 @@ const Home = () => {
           © {new Date().getFullYear()} Gavin McFarland
         </p>
       </main>
-    </>
+    </HomeProseContext.Provider>
   );
 };
 

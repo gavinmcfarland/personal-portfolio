@@ -9,6 +9,7 @@ import { canvasNotes } from "./vite-plugin-canvas-notes.js";
 import { present } from "./vite-plugin-present.js";
 import { clipWarmup } from "./vite-plugin-clip-warmup.js";
 import { writingIndex } from "./vite-plugin-writing-index.js";
+import { homeContent } from "./vite-plugin-home-content.js";
 import { tweaks } from "./vite-plugin-tweaks.js";
 
 // The masthead clip, named here so its fetch can start with the CSS instead
@@ -48,6 +49,7 @@ export default defineConfig(({ command }) => ({
 		present(),
 		clipWarmup({ file: MASTHEAD_CLIP, globalName: MASTHEAD_CLIP_GLOBAL }),
 		writingIndex(),
+		homeContent(),
 		tweaks(),
 	],
 	// Listen on every interface so the phone remote can reach the dev server

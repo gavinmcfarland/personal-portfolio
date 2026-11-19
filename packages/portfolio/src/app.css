@@ -2078,3 +2078,14 @@ body :is(.button-panel, .cv-panel, .cv-ui, .cv-edit-fab):not([data-cv-part="node
   border-radius: max(0px, 4px - 4px) !important;
 }
 /* tweaks:end */
+
+/* The home editor's save state (HomeEditor.jsx) — the meta line a post shows
+   it in has no counterpart on the home page, so it sits in the corner opposite
+   the Edit button. */
+.home-save-status {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 50;
+  margin: 0;
+}
