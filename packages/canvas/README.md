@@ -240,6 +240,7 @@ every accent-derived surface (selection, active tool, frames, hover, edit caret,
 | `--cv-radius` / `--cv-ui-radius` | object / panel corners | `--cv-ui-blur` | panel frost |
 | `--cv-sans` / `--cv-serif` / `--cv-mono` / `--cv-hand` / `--cv-cursive` | font families (`--cv-hand` = sticky notes, `--cv-cursive` = the text block's Cursive option) | `--cv-snap-guide` | snap guides |
 | `--cv-note-<hue>` / `--cv-note-<hue>-ink` | sticky-note paper + ink (`yellow` `pink` `blue` `green` `purple` `orange`) | `--cv-code-<tok>` | code syntax highlight (`comment` `keyword` `string` `number` `function` `tag` `punctuation`) |
+| `--cv-inset` | distance of the chrome (top bar, zoom, toolbar, minimap…) from the board's edges, default `22px` | | |
 
 The default skin names webfonts it does not bundle — Inter, Tinos, JetBrains Mono
 and Caveat. Each falls back to a system face, so nothing breaks if you load none

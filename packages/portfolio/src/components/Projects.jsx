@@ -54,9 +54,9 @@ function Chevron() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="2.25"
       strokeLinecap="square"
-      className="h-4 w-4 flex-none text-faint group-hover:text-ink lg:hidden"
+      className="h-3.5 w-3.5 flex-none text-faint group-hover:text-ink lg:hidden"
       aria-hidden="true"
     >
       <path d="m9 5 7 7-7 7" />

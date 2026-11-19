@@ -52,7 +52,7 @@ const clip =
    other. */
 
 const Intro = () => (
-  <header className="pt-(--sp-12) sm:pt-(--sp-16)">
+  <header className="pt-(--sp-8) sm:pt-(--sp-16)">
     {/* No NAME label, and flush to the content column rather than hung at the
         indent stop — the clip and the name are the masthead, not a section
         body. The `id` moves here off the deleted heading so CONTENTS' §1 link

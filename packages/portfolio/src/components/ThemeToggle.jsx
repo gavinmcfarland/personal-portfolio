@@ -15,7 +15,7 @@ const BUTTON =
    surface — the bar. The panel is there to lift the button off whatever it is
    floating over; inside the bar there is nothing to lift it off. */
 const ThemeToggle = ({
-  className = 'fixed right-[22px] top-[max(22px,calc(env(safe-area-inset-top)+12px))] z-50',
+  className = 'fixed right-(--edge-r) top-[max(var(--edge-r),calc(env(safe-area-inset-top)+12px))] z-50',
   panel = true,
 }) => {
   const { mode, toggleTheme } = useTheme();

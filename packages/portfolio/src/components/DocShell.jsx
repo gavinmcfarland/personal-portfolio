@@ -23,7 +23,7 @@ export default function DocShell({ children, revealKey }) {
   return (
     <main
       ref={ref}
-      className="mr-auto w-full max-w-3xl pb-(--sp-16) pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24"
+      className="mr-auto w-full max-w-3xl pb-(--sp-16) pl-5 pr-4 sm:pl-14 sm:pr-6 lg:pl-24"
     >
       <div className="pt-(--sp-4)">
         <Link

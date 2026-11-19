@@ -9,7 +9,7 @@ import { NAV_ITEMS, sectionFor } from "../data/nav";
    both Home and the sliding route panel, which is why the toggle no longer has
    to be floated separately over each of them.
 
-   Its padding matches the content column's (pl-8 sm:pl-14 lg:pl-24 / pr-5
+   Its padding matches the content column's (pl-5 sm:pl-14 lg:pl-24 / pr-4
    sm:pr-6) so the first link's text sets on the same left edge as the page's
    flush headings, and the toggle's right edge lines up with the text below it.
    See `.bar` in app.css for the rest.
@@ -23,7 +23,7 @@ const SiteBar = () => {
   const current = sectionFor(pathname);
 
   return (
-    <header className="bar pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24">
+    <header className="bar pl-5 pr-4 sm:pl-14 sm:pr-6 lg:pl-24">
       <nav aria-label="Primary">
         {NAV_ITEMS.map((item) => (
           <Link

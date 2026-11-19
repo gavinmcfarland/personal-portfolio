@@ -199,8 +199,8 @@
    click-through except the button, so the label never blocks the board. */
 .canvas-root .cv-lock {
   position: absolute;
-  left: 22px;
-  bottom: 22px;
+  left: var(--cv-inset, 22px);
+  bottom: var(--cv-inset, 22px);
   z-index: 40;
   /* Sized to the button only; the message is positioned out of flow (below) so
      showing/hiding it never resizes this box and shifts the button. */
@@ -2418,7 +2418,7 @@
 /* Toolbar */
 .canvas-root [data-cv-part="toolbar"] {
   left: 50%;
-  bottom: 22px;
+  bottom: var(--cv-inset, 22px);
   transform: translateX(-50%);
   display: flex;
   align-items: center;
@@ -2540,7 +2540,7 @@
 /* Floating recorder panel (mic capture in progress) */
 .canvas-root [data-cv-part="recorder"] {
   left: 50%;
-  top: 22px;
+  top: var(--cv-inset, 22px);
   transform: translateX(-50%);
   display: flex;
   align-items: center;
@@ -2607,8 +2607,8 @@
 
 /* Properties panel — docked bottom-right; drag its header to move it */
 .canvas-root [data-cv-part="properties"] {
-  right: 22px;
-  bottom: 22px;
+  right: var(--cv-inset, 22px);
+  bottom: var(--cv-inset, 22px);
   display: none;
   flex-direction: column;
   gap: 6px;
@@ -2828,8 +2828,8 @@
 
 /* Top bar */
 .canvas-root [data-cv-part="topbar"] {
-  left: 22px;
-  top: 22px;
+  left: var(--cv-inset, 22px);
+  top: var(--cv-inset, 22px);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -2888,8 +2888,8 @@
    it to the viewport so the page's transformed panels don't re-anchor it. */
 .cv-dock {
   position: fixed;
-  left: 22px;
-  bottom: 22px;
+  left: var(--cv-inset, 22px);
+  bottom: var(--cv-inset, 22px);
   z-index: 2147483000;
   display: flex;
   align-items: center;
@@ -3043,8 +3043,8 @@
    board, and outlives the board that started it. */
 .cv-nowplaying {
   position: fixed;
-  right: 22px;
-  bottom: 22px;
+  right: var(--cv-inset, 22px);
+  bottom: var(--cv-inset, 22px);
   z-index: 2147483000;
   display: flex;
   align-items: center;
@@ -3118,8 +3118,8 @@
 /* Passive background-save status, pinned to the bottom-right of the canvas.
    Auto-saves as the user edits, so this is an indicator, not a button. */
 .canvas-root .cv-save-status {
-  right: 22px;
-  bottom: 22px;
+  right: var(--cv-inset, 22px);
+  bottom: var(--cv-inset, 22px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3311,8 +3311,8 @@
 
 /* Zoom cluster */
 .canvas-root [data-cv-part="zoom"] {
-  right: 22px;
-  top: 22px;
+  right: var(--cv-inset, 22px);
+  top: var(--cv-inset, 22px);
   display: flex;
   align-items: center;
   gap: 2px;
@@ -3360,7 +3360,7 @@
    Never visible in view mode, and never on the board — only the presenter and
    their phone ever read these. */
 .canvas-root [data-cv-part="notes-drawer"] {
-  right: 22px;
+  right: var(--cv-inset, 22px);
   top: 76px;
   width: min(360px, calc(100% - 44px));
   display: flex;
@@ -3493,7 +3493,7 @@
 .canvas-root .cv-present {
   position: absolute;
   left: 50%;
-  bottom: 22px;
+  bottom: var(--cv-inset, 22px);
   transform: translateX(-50%);
   z-index: 120;
   display: flex;
@@ -3665,8 +3665,8 @@
    filling the panel; the viewport rectangle is an absolutely-positioned outline
    that the engine moves imperatively. */
 .canvas-root [data-cv-part="minimap"] {
-  right: 22px;
-  bottom: 22px;
+  right: var(--cv-inset, 22px);
+  bottom: var(--cv-inset, 22px);
   padding: 0;
   overflow: hidden;
   border-radius: 10px;

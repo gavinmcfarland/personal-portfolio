@@ -73,7 +73,7 @@
   --text-1: 0.6875rem; /* 11px — chips, release tags, lettermark */
   --text-2: 0.75rem; /* 12px — footnotes, meta, captions, table heads */
   --text-3: 0.8125rem; /* 13px — section labels, sub-labels, index entries */
-  --text-4: 0.875rem; /* 14px — body: running text, panels, transcripts */
+  --text-4: 0.9375rem; /* 15px — body: running text, panels, transcripts */
   --text-5: 0.9375rem; /* 15px — the one emphatic step (list-row token) */
   --text-6: 1.4375rem; /* 23px — page title in a narrow column */
   --text-7: 1.8125rem; /* 29px — page title */
@@ -112,10 +112,10 @@
 :root {
   /* Primitives — steel/graphite neutral ramp, lightest → darkest */
   --white: #ffffff;
-  --steel-50: #e7eaed;
-  --steel-100: #d0d4d8;
-  --steel-200: #c3c8cd;
-  --steel-300: #a6acb2;
+  --steel-50: #eef0f2;
+  --steel-100: #dde0e3;
+  --steel-200: #d2d6da;
+  --steel-300: #b5babf;
   --steel-400: #9aa1a9;
   --steel-500: #767c83;
   --steel-550: #6b727a;
@@ -140,11 +140,12 @@
      lightest → darkest. Warmer and deeper than the cool --steel ramp so the
      dark theme's greys sit on the #111110 ground instead of reading blue.
      Used only by the .dark semantic tokens below. */
-  --galley-ink: #ebe7dc; /* primary text */
-  --galley-mid: #97948b; /* secondary prose */
-  --galley-faint: #63615a; /* meta / captions */
-  --galley-edge: #45433d; /* stronger hairline */
-  --galley-hair: #2c2b27; /* hairline edge */
+  --galley-ink: #dcd8cd; /* primary text */
+  --galley-mid: #aaa79d; /* secondary prose */
+  --galley-faint: #7f7d75; /* meta / captions */
+  --galley-edge: #57544d; /* stronger hairline */
+  --galley-line: #3c3a35; /* hairline border */
+  --galley-hair: #353430; /* hover fill / scrim */
   --galley-panel: #1c1b18; /* raised panel / hover fill */
   --galley-ground: #111110; /* ground */
   --galley-vermilion: #e0563c; /* lifted vermilion accent */
@@ -153,7 +154,7 @@
   --bg: var(--steel-200); /* ground */
   --surface: var(--steel-100); /* panel — hover / raised fill */
   --hover: var(--steel-200); /* icon-button hover fill (zoom-control grey) */
-  --ink: var(--steel-950); /* primary text */
+  --ink: var(--steel-900); /* primary text */
   /* Secondary prose (--mid): steel-600 lifted 20% toward the ground. */
   --muted: color-mix(in oklab, var(--steel-600), var(--steel-200) 20%);
   --faint: var(--steel-500); /* meta / captions */
@@ -161,7 +162,7 @@
   --line-strong: var(
     --steel-500
   ); /* stronger hairline (link underline at rest) */
-  --rule: var(--steel-950); /* the drawn line — section header rule */
+  --rule: var(--steel-900); /* the drawn line — section header rule */
   --accent: var(--vermilion-500); /* vermilion */
   --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
   --on-accent: var(
@@ -179,6 +180,14 @@
      by the route panel's top inset (both in App.jsx), so the bar's height is
      only ever measured in one place. */
   --bar: 3.25rem;
+
+  /* Inset of the fixed corner controls (theme toggle, type-trial column, the
+     canvas zoom cluster / now-playing pill) from the viewport's side
+     edges. Below `sm` it follows the content column's gutter (pl-5 / pr-4) so
+     the controls line up with the text; from `sm` up the controls keep their
+     own 22px corner inset. */
+  --edge-l: 22px;
+  --edge-r: 22px;
 
   /* The four enamels as flat swatches / tags (e.g. the Work table's Kind
      column). Paired with the graphite/steel ground. */
@@ -203,16 +212,30 @@
   --code-punctuation: var(--steel-600);
 }
 
+/* Corner-control inset below `sm`: follow the content gutter (pl-5 / pr-4).
+   `--cv-inset` is the canvas package's own chrome inset (22px by default);
+   tightening it here pulls every canvas's controls — embedded boards in a
+   page as well as the full-screen ones — closer to their container's edge,
+   and gives the top-right controls the same distance from the top as from
+   the right. */
+@media (max-width: 639.98px) {
+  :root {
+    --edge-l: 1.25rem;
+    --edge-r: 1rem;
+    --cv-inset: var(--edge-r);
+  }
+}
+
 /* Semantic tokens — Dark (graphite). Only the aliases flip; primitives above
    are inherited unchanged. */
 .dark {
   --bg: var(--galley-ground); /* graphite ground (galley paper) */
   --surface: var(--galley-panel); /* panel */
-  --hover: var(--galley-hair); /* icon-button hover fill (matches --line) */
+  --hover: var(--galley-hair); /* icon-button hover fill */
   --ink: var(--galley-ink); /* bone ink */
   --muted: color-mix(in oklab, var(--galley-mid), var(--galley-ground) 20%);
   --faint: var(--galley-faint);
-  --line: var(--galley-hair);
+  --line: var(--galley-line);
   --line-strong: var(--galley-edge);
   --rule: var(--galley-ink);
   --accent: var(--galley-vermilion); /* lifted vermilion */
@@ -1485,13 +1508,13 @@ body .kind-tag.kind-tag {
    Extra specificity (.canvas-root) beats the package's own
    `.canvas-root [data-cv-part="zoom"]` regardless of load order.
 
-   The toggle is 22px in from the edge and --btn-h wide (38px unless the
+   The toggle is --edge-r in from the edge and --btn-h wide (38px unless the
    Tweaks panel's Button size says otherwise), so the cluster sits 8px from it
    — the same gap as between the toggle and the dev tools below it — at any
    button size. */
 .project-canvas .canvas-root [data-cv-part="zoom"],
 .private-canvas .canvas-root [data-cv-part="zoom"] {
-  right: calc(22px + var(--btn-h, 38px) + 8px);
+  right: calc(var(--edge-r) + var(--btn-h, 38px) + 8px);
 }
 
 /* ── Icon + label buttons: the icon end ─────────────────────────────
@@ -1527,7 +1550,7 @@ body .kind-tag.kind-tag {
    puts the zoom cluster in the viewport corner, under the floated theme toggle
    (see CanvasMaximizeToggle). Nudge it left to sit beside the toggle. */
 .canvas-root[data-cv-fullbleed] [data-cv-part="zoom"] {
-  right: calc(22px + var(--btn-h, 38px) + 8px);
+  right: calc(var(--edge-r) + var(--btn-h, 38px) + 8px);
 }
 
 /* Reposition the two body-portaled canvas controls along the bottom edge:
@@ -1536,7 +1559,7 @@ body .kind-tag.kind-tag {
    rules (core.css, imported after this file) without !important. */
 .cv-nowplaying.cv-nowplaying {
   right: auto;
-  left: 22px;
+  left: var(--edge-l);
 }
 .cv-dock.cv-dock {
   /* Distance from the viewport bottom. `--dock-b` also anchors the grounding
@@ -1773,8 +1796,8 @@ body .site-tooltip.site-tooltip {
   /* --btn-h is the shared control height (38px unless the tweaks panel's
      Button size row overrides it), so the column stays 8px under the toggle.
      The popovers compensate for that move — see below. */
-  top: calc(max(22px, calc(env(safe-area-inset-top) + 12px)) + var(--btn-h, 38px) + 8px);
-  right: 22px;
+  top: calc(max(var(--edge-r), calc(env(safe-area-inset-top) + 12px)) + var(--btn-h, 38px) + 8px);
+  right: var(--edge-r);
   z-index: 30;
   display: flex;
   flex-direction: column;
@@ -2006,6 +2029,15 @@ body .site-tooltip.site-tooltip {
   margin: 0.4rem 0 0;
   color: var(--muted);
 }
+/* Icons inside buttons, a step smaller than the size each one is drawn at.
+   One rule rather than resizing every icon at its source (Tailwind h-/w- in
+   the JSX, fixed px in the canvas package's CSS): `scale` shrinks the drawing
+   about its centre without changing its layout box, so every icon stays centred
+   where its button's padding already puts it, and the icon-end padding maths
+   above still holds. Board content (canvas nodes) is left alone. */
+body :is(button, [role="button"], a.border, .cv-chip) svg:not(svg svg, [data-cv-part="node"] *) {
+  scale: var(--btn-icon-scale, 0.875);
+}
 
 /* tweaks:start — written by the dev Tweaks panel's "Save as defaults"
    (vite-plugin-tweaks.js). Button size and corners, built by the same code
@@ -2035,14 +2067,14 @@ body :is(a, button).border:not(:is(.button-panel, .cv-edit-fab, [data-cv-part="z
 }
 
 body :is(button, [role="button"], a.border, .cv-chip):not([data-cv-part="node"] *, .text-tuner *, .font-picker-pop *) {
-  border-radius: 2px !important;
+  border-radius: 4px !important;
 }
 
 body :is(.button-panel, .cv-panel, .cv-ui, .cv-edit-fab, .hover-row):not([data-cv-part="node"], [data-cv-part="node"] *) {
-  border-radius: 2px !important;
+  border-radius: 4px !important;
 }
 
 body :is(.button-panel, .cv-panel, .cv-ui, .cv-edit-fab):not([data-cv-part="node"] *) :is(button, [role="button"], .cv-chip):not([data-cv-part="node"] *, .text-tuner *, .font-picker-pop *) {
-  border-radius: max(0px, 2px - 4px) !important;
+  border-radius: max(0px, 4px - 4px) !important;
 }
 /* tweaks:end */

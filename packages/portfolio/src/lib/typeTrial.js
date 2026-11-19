@@ -137,7 +137,7 @@ export const SETTINGS = [
     css: (v) => {
       const faint = v.startsWith("-");
       const pct = faint ? v.slice(1) : v;
-      const light = faint ? "var(--steel-200)" : "var(--steel-950)"; // --bg / --ink
+      const light = faint ? "var(--steel-200)" : "var(--steel-900)"; // --bg / --ink
       const dark = faint ? "var(--galley-ground)" : "var(--galley-ink)";
       return `:root:root { --muted: color-mix(in oklab, var(--steel-600), ${light} ${pct}); }
        .dark.dark { --muted: color-mix(in oklab, var(--galley-mid), ${dark} ${pct}); }`;

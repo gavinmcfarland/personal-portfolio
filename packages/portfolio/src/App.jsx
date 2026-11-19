@@ -246,7 +246,7 @@ function App() {
                   viewport), so it slides in and out with the page — and it
                   stays pinned to the corner while the panel's content scrolls.
                   (BAR: with the bar on, drop this one too.) */}
-              <ThemeToggle className="fixed right-[22px] top-[max(22px,calc(env(safe-area-inset-top)+12px))] z-50" />
+              <ThemeToggle className="fixed right-(--edge-r) top-[max(var(--edge-r),calc(env(safe-area-inset-top)+12px))] z-50" />
               {/* The panel is what the reader is watching arrive, so an empty
                   one for the frames a chunk takes reads as the slide, not as a
                   gap. A spinner here would announce a wait that is usually

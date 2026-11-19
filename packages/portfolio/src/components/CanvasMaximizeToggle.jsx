@@ -67,7 +67,7 @@ export default function CanvasMaximizeToggle() {
     <div
       ref={hostRef}
       popover="manual"
-      className="fixed right-[22px] top-[22px] bottom-auto left-auto z-[2147483001] m-0 block border-0 bg-transparent p-0"
+      className="fixed right-(--edge-r) top-(--edge-r) bottom-auto left-auto z-[2147483001] m-0 block border-0 bg-transparent p-0"
     >
       <ThemeToggle className="" />
     </div>,

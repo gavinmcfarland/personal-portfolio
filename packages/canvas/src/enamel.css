@@ -71,24 +71,24 @@
 /* Light surface — cool steel (system light; the default). `--en-ground` is a
    private var for the code note's ground fill (the engine ignores non --cv-*). */
 .canvas-root.enamel {
-  --cv-bg-base: #b0b6bc; /* sunk board */
-  --cv-grid: #a6acb2;
-  --cv-grid-strong: #a6acb2;
-  --cv-surface: #d0d4d8; /* panel */
+  --cv-bg-base: #c0c5ca; /* sunk board */
+  --cv-grid: #b5babf;
+  --cv-grid-strong: #b5babf;
+  --cv-surface: #dde0e3; /* panel */
   /* Section fill: a faint lift off the mid-grey board (a stronger white wash
      reads as a solid panel here). */
   --cv-frame-fill: rgba(255, 255, 255, 0.08);
-  --en-ground: #c3c8cd;
-  --cv-ink: #16191c;
+  --en-ground: #d2d6da;
+  --cv-ink: #24282d;
   --cv-muted: #4a4f55;
   --cv-faint: #767c83;
-  --cv-line: #a6acb2;
-  --cv-line-strong: #16191c;
+  --cv-line: #b5babf;
+  --cv-line-strong: #24282d;
   --cv-scrollbar: #767c83; /* flat steel thumb on the sunk board */
   --cv-scrollbar-hover: #4a4f55;
   --cv-accent: #c8341a; /* vermilion (light) */
-  --cv-ui-bg: #d0d4d8;
-  --cv-ui-border: #a6acb2;
+  --cv-ui-bg: #dde0e3;
+  --cv-ui-border: #b5babf;
   --cv-note-green: #a8cc1f;
   --cv-note-green-ink: #161c00; /* lime      */
   --cv-note-yellow: #a8cc1f;
@@ -100,7 +100,7 @@
   --cv-note-orange: #c8341a;
   --cv-note-orange-ink: #fff1ee; /* vermilion */
   --cv-note-pink: #16191c;
-  --cv-note-pink-ink: #c3c8cd; /* ink       */
+  --cv-note-pink-ink: #d2d6da; /* ink       */
   --cv-code-comment: #767c83;
   --cv-code-keyword: #c8341a;
   --cv-code-string: #12897f;
@@ -121,16 +121,16 @@
   /* Restated: the light rule above outranks the package's .dark default. */
   --cv-frame-fill: rgba(242, 242, 239, 0.03);
   --en-ground: #111110;
-  --cv-ink: #ebe7dc;
+  --cv-ink: #dcd8cd;
   --cv-muted: #97948b;
   --cv-faint: #63615a;
-  --cv-line: #2c2b27; /* --hair hairline */
-  --cv-line-strong: #ebe7dc;
+  --cv-line: #3c3a35; /* --line hairline */
+  --cv-line-strong: #dcd8cd;
   --cv-scrollbar: #63615a; /* flat warm thumb on the graphite ground */
   --cv-scrollbar-hover: #97948b;
   --cv-accent: #e0563c; /* vermilion (dark) */
   --cv-ui-bg: #1c1b18;
-  --cv-ui-border: #2c2b27;
+  --cv-ui-border: #3c3a35;
   --cv-note-green: #c9f23a;
   --cv-note-green-ink: #1a2200; /* lime      */
   --cv-note-yellow: #c9f23a;

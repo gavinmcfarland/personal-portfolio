@@ -20,17 +20,17 @@ import { ListRow, Sep } from "../components/ui";
    swatches (so they flip with the theme toggle) plus the pair of primitives
    each one resolves to. */
 const SEMANTIC = [
-  { token: "--bg", role: "ground", light: "#c3c8cd", dark: "#111110" },
-  { token: "--surface", role: "panel / raised fill", light: "#d0d4d8", dark: "#1c1b18" },
-  { token: "--hover", role: "icon-button hover fill", light: "#c3c8cd", dark: "#2c2b27" },
-  { token: "--ink", role: "primary text", light: "#16191c", dark: "#ebe7dc" },
-  { token: "--muted", role: "secondary prose", light: "#4a4f55", dark: "#97948b" },
-  { token: "--faint", role: "meta / captions", light: "#767c83", dark: "#63615a" },
-  { token: "--line", role: "hairline edge", light: "#a6acb2", dark: "#2c2b27" },
-  { token: "--line-strong", role: "link underline at rest", light: "#767c83", dark: "#45433d" },
-  { token: "--rule", role: "the drawn line", light: "#16191c", dark: "#ebe7dc" },
+  { token: "--bg", role: "ground", light: "#d2d6da", dark: "#111110" },
+  { token: "--surface", role: "panel / raised fill", light: "#dde0e3", dark: "#1c1b18" },
+  { token: "--hover", role: "icon-button hover fill", light: "#d2d6da", dark: "#353430" },
+  { token: "--ink", role: "primary text", light: "#24282d", dark: "#dcd8cd" },
+  { token: "--muted", role: "secondary prose", light: "#4a4f55", dark: "#aaa79d" },
+  { token: "--faint", role: "meta / captions", light: "#767c83", dark: "#7f7d75" },
+  { token: "--line", role: "hairline edge", light: "#b5babf", dark: "#3c3a35" },
+  { token: "--line-strong", role: "link underline at rest", light: "#767c83", dark: "#57544d" },
+  { token: "--rule", role: "the drawn line", light: "#24282d", dark: "#dcd8cd" },
   { token: "--accent", role: "the one accent", light: "#c8341a", dark: "#e0563c" },
-  { token: "--scrim", role: "dims Home behind the panel", light: "#a6acb2", dark: "#2c2b27" },
+  { token: "--scrim", role: "dims Home behind the panel", light: "#b5babf", dark: "#353430" },
 ];
 
 /* ── Primitive ramps ───────────────────────────────────────────────
@@ -38,10 +38,10 @@ const SEMANTIC = [
    pulls its greys from the cool steel ramp; dark pulls from the warm galley
    ramp, so the graphite ground never reads blue. */
 const STEEL = [
-  ["50", "#e7eaed"],
-  ["100", "#d0d4d8"],
-  ["200", "#c3c8cd"],
-  ["300", "#a6acb2"],
+  ["50", "#eef0f2"],
+  ["100", "#dde0e3"],
+  ["200", "#d2d6da"],
+  ["300", "#b5babf"],
   ["400", "#9aa1a9"],
   ["500", "#767c83"],
   ["550", "#6b727a"],
@@ -53,11 +53,12 @@ const STEEL = [
 ];
 
 const GALLEY = [
-  ["ink", "#ebe7dc"],
-  ["mid", "#97948b"],
-  ["faint", "#63615a"],
-  ["edge", "#45433d"],
-  ["hair", "#2c2b27"],
+  ["ink", "#dcd8cd"],
+  ["mid", "#aaa79d"],
+  ["faint", "#7f7d75"],
+  ["edge", "#57544d"],
+  ["line", "#3c3a35"],
+  ["hair", "#353430"],
   ["panel", "#1c1b18"],
   ["ground", "#111110"],
   ["vermilion", "#e0563c"],

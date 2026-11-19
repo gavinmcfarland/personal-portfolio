@@ -16,7 +16,7 @@
    video textures — so a texture cannot drift from a plate beside it. */
 export const DITHER_PALETTES = {
   light: {
-    bg: "#c3c8cd",
+    bg: "#d2d6da",
     tx: "rgba(22, 25, 28, 0.22)",
     "tx-strong": "rgba(22, 25, 28, 0.38)",
     "tx-ground": "rgba(22, 25, 28, 0.10)",
