@@ -753,6 +753,10 @@ The rest is by eye. To confirm a document behaves:
 - `src/nodes/Html.jsx` — the iframe node, sandboxing, theme messaging.
 - `packages/portfolio/scripts/inject-canvas-bridge.mjs` — upgrades the bridge in
   already-committed assets.
+- `packages/portfolio/scripts/optimize-canvas-html.mjs` — merges per-element
+  rules that carry identical declarations into one rule with a selector list, in
+  already-committed assets. A repair for exports that exist; a new export
+  arrives unmerged until the generator does this itself.
 - `packages/portfolio/scripts/audit-canvas-html.mjs` — runs `auditHtml` over the
   committed assets (`pnpm canvas:audit`); exits non-zero on a warning.
 - `visual-code-editor/CANVAS_ZOOM_RASTERIZATION.md` — the prior art this
