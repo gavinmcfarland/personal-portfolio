@@ -16,23 +16,6 @@
    `visibleProjects` (below) anywhere you want the set the current build shows. */
 export const projects = [
 	{
-		id: 'health',
-		title: 'Health',
-		kind: 'app',
-		summary: 'Manage medication, habits and health checks in one place, with reminders and a clear record over time.',
-		tagline:
-			"Tracking your health and medication becomes difficult when you have to manage multiple medications and health issues. Health was designed with people's different situations and schedules in mind. It uses a timeline which lets you see what's due, no matter what time of day it is and lets you record not just when you take your medication but also related events like blood pressure and weight.",
-		tech: ['Kotlin', 'Android'],
-		role: 'Creator',
-		year: '2026',
-		highlights: [
-			'Medication doses logged day by day',
-			'Habits tracked on the same daily record',
-			'Blood pressure readings kept in order over time',
-			'Eye tests stored with their prescriptions',
-		],
-	},
-	{
 		id: 'figlet',
 		title: 'Figlet',
 		kind: 'tool',
@@ -53,6 +36,23 @@ export const projects = [
 			'Runs code against the open Figma document',
 			'Snippet library for publishing and reuse',
 			'Tutorials covering the plugin API',
+		],
+	},
+	{
+		id: 'health',
+		title: 'Health',
+		kind: 'app',
+		summary: 'Manage medication, habits and health checks in one place, with reminders and a clear record over time.',
+		tagline:
+			"Tracking your health and medication becomes difficult when you have to manage multiple medications and health issues. Health was designed with people's different situations and schedules in mind. It uses a timeline which lets you see what's due, no matter what time of day it is and lets you record not just when you take your medication but also related events like blood pressure and weight.",
+		tech: ['Kotlin', 'Android'],
+		role: 'Creator',
+		year: '2026',
+		highlights: [
+			'Medication doses logged day by day',
+			'Habits tracked on the same daily record',
+			'Blood pressure readings kept in order over time',
+			'Eye tests stored with their prescriptions',
 		],
 	},
 	{
