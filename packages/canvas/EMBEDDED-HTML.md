@@ -37,10 +37,13 @@ An `html` node only mounts its iframe once the node is on screen or within half
 a viewport of it, so a document on a part of the board nobody pans to is never
 fetched, parsed or run. Visibility is worked out from the node's box and the
 board's view (`htmlInView` in `src/CanvasProvider.jsx`), because the browser's
-own lazy loading misjudges anything inside the scaled world.
+own lazy loading misjudges anything inside the scaled world. The board itself
+has to be in sight too: while it is scrolled more than half a screen off the
+page, or its tab is in the background, nothing on it counts as in view.
 
 On a touch device the reverse also happens: a node that has been more than a
-viewport and a half away for four seconds unloads its document, and loads it
+viewport and a half away for four seconds — or whose board has been out of
+sight that long — unloads its document, and loads it
 again from its start page when it comes back. Two documents are exempt — one
 that is live in edit mode, and one the reader has clicked somewhere. A pointer
 device never unloads.

@@ -144,10 +144,15 @@ function useFrameMessages(frameRef, shieldRef, active, eng) {
    side (the engine does the geometry — see htmlInView). It is the lead a pan
    gets, so a document is normally up before its node arrives.
 
+   "On screen" means the reader's screen, not just the board's: a board that
+   is scrolled off the page, or sitting in a background tab, has nothing in
+   view however its nodes are placed, so its documents wait for it to come
+   back (the engine tracks that too).
+
    Unloading is the other half and only happens where memory is the constraint:
    a touch device. There a node that has been further than FAR from the
-   viewport for RECLAIM_MS gives its document back, and loads it again on the
-   way back in. A pointer device keeps what it has loaded — it has the memory,
+   viewport for RECLAIM_MS — or on a board that has been out of sight that
+   long — gives its document back, and loads it again on the way back in. A pointer device keeps what it has loaded — it has the memory,
    and a reload there would be a flash with nothing bought by it. FAR sits well
    outside NEAR so a node at the edge doesn't load and unload as the view
    drifts, and the delay means a quick look elsewhere costs nothing.

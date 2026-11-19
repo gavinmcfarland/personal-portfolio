@@ -739,6 +739,10 @@ export function CanvasProvider({
   // them (see htmlInView).
   const htmlViewSubs = useRef(new Set()).current;
   const htmlViewTimer = useRef(0);
+  // Whether the board itself is somewhere a reader could see it: near the page's
+  // own viewport, in a tab that is showing. False until the observer below has
+  // looked, where there is one to look.
+  const boardShown = useRef(typeof IntersectionObserver === 'undefined');
   const reframing = useRef(false); // true while reframeOnResize applies, so applyView doesn't re-capture the reference
   // The CANONICAL reference {w,h,x,y,scale}: the container size + view of the
   // last deliberate framing (edit-mode pan/zoom/fit, or the loaded snapshot).
@@ -1108,8 +1112,15 @@ export function CanvasProvider({
        The glide's destination counts as well as where the view is now, so a
        fly-to or a zoom starts loading what it is heading for while it travels.
        An unmeasured viewport answers yes: a board that hasn't been laid out
-       must not be the reason a document never loads. */
+       must not be the reason a document never loads.
+
+       And none of it counts while the board itself is out of sight — scrolled
+       off the page, or in a tab nobody is looking at. A node can sit in the
+       middle of the board's view and still be several screens from anything a
+       reader can see, so that is asked first (see the effect that keeps
+       `boardShown`). */
     function htmlInView(x, y, w, h, pad) {
+      if (!boardShown.current) return false;
       const W = vpW(), H = vpH();
       if (!W || !H) return true;
       const mx = W * pad, my = H * pad;
@@ -1127,12 +1138,27 @@ export function CanvasProvider({
        nodes are asked on a trailing timer instead. Often enough that a document
        is loading before a pan reaches it; rare enough that nothing is decided
        per frame, and that a document's parse doesn't land mid-flick. */
-    function syncHtmlView() {
-      if (htmlViewTimer.current || !htmlViewSubs.size) return;
+    function syncHtmlView(now) {
+      if (!htmlViewSubs.size) return;
+      // `now` is for a change that is a single event rather than a stream of
+      // them — the board coming on screen — where the wait buys nothing and is
+      // a blank embed for its length.
+      if (now) {
+        clearTimeout(htmlViewTimer.current);
+        htmlViewTimer.current = 0;
+        htmlViewSubs.forEach((fn) => fn());
+        return;
+      }
+      if (htmlViewTimer.current) return;
       htmlViewTimer.current = setTimeout(() => {
         htmlViewTimer.current = 0;
         htmlViewSubs.forEach((fn) => fn());
       }, 120);
+    }
+    function setBoardShown(on) {
+      if (boardShown.current === on) return;
+      boardShown.current = on;
+      syncHtmlView(true);
     }
 
     /* smooth zoom glide */
@@ -3730,7 +3756,7 @@ export function CanvasProvider({
       switchPage, addPage, renamePage, removePage, canRemovePage, canArchivePage, setPageArchived, canReorderPages, reorderPages, isPagePinned,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
-      isHtmlFile, addHtmlFromFile, htmlInView, watchHtmlView, syncHtmlView, setHtmlActive, setHtmlPassThrough, toggleHtmlInert, openHtml, captureHtmlPage, clearHtmlPage, restartHtml, markHtmlMoved,
+      isHtmlFile, addHtmlFromFile, htmlInView, watchHtmlView, syncHtmlView, setBoardShown, setHtmlActive, setHtmlPassThrough, toggleHtmlInert, openHtml, captureHtmlPage, clearHtmlPage, restartHtml, markHtmlMoved,
       recordingSupported, startRecording, stopRecording, cancelRecording,
       openFullscreen, closeFullscreen, stepFullscreen, enterGridEdit, exitGridEdit, startRenameFrame, stopRenameFrame, startEditing, stopEditing, formatText, setChrome,
       openSectionNotes, closeSectionNotes, setSectionNotes, deck, setFrameAspect,
@@ -4006,6 +4032,26 @@ export function CanvasProvider({
       mq?.removeEventListener?.('change', repaint);
     };
   }, [MINIMAP.on, eng]);
+
+  /* Whether the board is somewhere a reader could see it, which is what its
+     embedded documents load and unload by (htmlInView). Two things decide it:
+     the board being within half a screen of the page's viewport — a lead, so a
+     reader scrolling towards it arrives to documents that are already up — and
+     the tab being the one on show.
+
+     IntersectionObserver is the right tool HERE, where it is the wrong one for
+     the nodes: this watches the board's own box in the page, which no world
+     transform sits above. Without one the board counts as shown for good. */
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') { eng.setBoardShown(true); return undefined; }
+    let onPage = false;
+    const sync = () => eng.setBoardShown(onPage && !document.hidden);
+    const io = new IntersectionObserver(([entry]) => { onPage = entry.isIntersecting; sync(); }, { rootMargin: '50% 0px' });
+    io.observe(el);
+    document.addEventListener('visibilitychange', sync);
+    return () => { io.disconnect(); document.removeEventListener('visibilitychange', sync); };
+  }, [eng]);
 
   /* Reframe (per `resizeAnchor`) and re-sync chrome whenever the container
      resizes (section reflow, window resize, sidebar toggles, …) — measured on
