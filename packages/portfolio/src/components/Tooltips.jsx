@@ -28,9 +28,9 @@ import { useEffect } from "react";
 
 const SHOW_DELAY = 400;
 const GROUP_WINDOW = 300; // ms after hiding during which the next one is instant
-const GAP = 6; // target ↔ tooltip
+const GAP = 8; // target ↔ tooltip body (the arrow tip stands ~6px into it)
 const EDGE = 8; // tooltip ↔ window edge
-const ARROW = 5;
+const ARROW = 6; // half the arrow's diagonal, rounded up — kept off the corners
 
 function migrate(el) {
   const title = el.getAttribute("title");
