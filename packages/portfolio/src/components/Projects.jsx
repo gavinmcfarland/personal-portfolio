@@ -28,7 +28,7 @@ const TONE_VAR = {
 function KindTag({ kind }) {
   const k = KINDS[kind] || { label: kind, tone: "teal" };
   return (
-    <span className="inline-flex items-center gap-[0.4rem] border border-line px-[0.45rem] py-[0.1rem] text-1 uppercase tracking-micro text-muted">
+    <span className="kind-tag inline-flex items-center gap-[0.4rem] border border-line px-[0.45rem] py-[0.1rem] text-1 uppercase tracking-micro text-muted">
       <span
         className="h-2 w-2 flex-none"
         style={{ background: TONE_VAR[k.tone] }}

@@ -1304,6 +1304,14 @@ p + .footnotes {
 /* An unpublished entry, listed only while developing. Vermilion because it is
    pointing at something — the same job the footnote marker and the shell prompt
    give the accent. */
+/* The project kind badge (Projects.jsx's KindTag): a 1px corner, just enough
+   to soften the hairline box. It has to be !important and out-rank the enamel
+   doctrine's `body :not(…) { border-radius: 0 !important }` sweep above,
+   hence the doubled class. */
+body .kind-tag.kind-tag {
+  border-radius: 1px !important;
+}
+
 .draft-tag {
   flex: none;
   font-size: var(--text-1);
@@ -1624,6 +1632,71 @@ p + .footnotes {
   animation: rise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ── Tooltips (src/components/Tooltips.jsx) ──────────────────────────
+   One shared element for every `title` on the page: black, white text, an
+   arrow on whichever side faces its target. Placed by script (left/top inline,
+   side in data-side); shown as a manual popover so it sits in the top layer.
+   The popover UA styles (inset: 0, margin: auto, a border, a canvas-coloured
+   fill) are undone here. Square, like everything else under the enamel sweep. */
+.site-tooltip {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  z-index: 2147483646; /* only matters where popovers aren't supported */
+  max-width: 240px;
+  padding: 5px 8px;
+  border: 0;
+  overflow: visible;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: normal;
+  pointer-events: none;
+  -webkit-font-smoothing: antialiased;
+}
+.site-tooltip:not(.is-open) {
+  display: none;
+}
+.site-tooltip.is-open {
+  animation: fade 0.12s ease-out both;
+}
+/* On the graphite ground a black box needs an edge to read as a box. */
+.dark .site-tooltip,
+:root.dark .site-tooltip {
+  outline: 1px solid rgb(255 255 255 / 0.16);
+}
+.site-tooltip__arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+}
+.site-tooltip[data-side="bottom"] .site-tooltip__arrow {
+  top: -10px;
+  border-bottom-color: #000;
+  transform: translateX(-50%);
+}
+.site-tooltip[data-side="top"] .site-tooltip__arrow {
+  bottom: -10px;
+  border-top-color: #000;
+  transform: translateX(-50%);
+}
+.site-tooltip[data-side="right"] .site-tooltip__arrow {
+  left: -10px;
+  border-right-color: #000;
+  transform: translateY(-50%);
+}
+.site-tooltip[data-side="left"] .site-tooltip__arrow {
+  right: -10px;
+  border-left-color: #000;
+  transform: translateY(-50%);
+}
+
 /* ── Description tooltip (Projects list) ─────────────────────────
    A single shared popover that follows the hovered row. Only opacity fades in
    (position is transform-driven for the above/below flip), so it can glide
@@ -1651,7 +1724,8 @@ p + .footnotes {
   .canvas-preview {
     animation: none;
   }
-  .tip-in {
+  .tip-in,
+  .site-tooltip.is-open {
     animation: none;
   }
 }

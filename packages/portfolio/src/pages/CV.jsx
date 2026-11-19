@@ -46,7 +46,7 @@ const CV = () => {
   <>
     <main
       ref={ref}
-      className="mr-auto w-full max-w-5xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24"
+      className="mr-auto w-full max-w-3xl pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24"
     >
       {/* The same top rail as every other page in the route panel (DocShell's),
           so the Back link sits level with the theme toggle instead of 96px down. */}
@@ -129,7 +129,7 @@ const CV = () => {
       </p>
     </main>
 
-    <footer className="mr-auto w-full max-w-5xl pb-(--sp-16) pl-8 pr-5 pt-(--sp-16) sm:pl-14 sm:pr-6 lg:pl-24">
+    <footer className="mr-auto w-full max-w-3xl pb-(--sp-16) pl-8 pr-5 pt-(--sp-16) sm:pl-14 sm:pr-6 lg:pl-24">
       <p className="text-2 text-faint">© 2026 Gavin McFarland</p>
     </footer>
   </>

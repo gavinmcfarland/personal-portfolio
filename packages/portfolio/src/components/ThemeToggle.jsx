@@ -20,10 +20,15 @@ const ThemeToggle = ({
 }) => {
   const { mode, toggleTheme } = useTheme();
 
+  // System is a contrast mark (lucide's "contrast": a circle with its half
+  // drawn in), not a monitor — it reads as "follows light/dark" rather than
+  // "a screen". Same 24-unit box and stroke as the sun and moon beside it.
   const icon = {
     system: (
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      <g strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 18a6 6 0 0 0 0-12v12z" />
+      </g>
     ),
     light: (
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}

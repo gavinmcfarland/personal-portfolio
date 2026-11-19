@@ -78,7 +78,7 @@ const Home = () => {
         hung at the indent stop beside it — no wrapper between them. */}
       <main
         ref={ref}
-        className="mr-auto w-full max-w-5xl pb-(--sp-16) pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24"
+        className="mr-auto w-full max-w-3xl pb-(--sp-16) pl-8 pr-5 sm:pl-14 sm:pr-6 lg:pl-24"
       >
         {/* CONTENTS, CAPABILITIES, ENVIRONMENT and INDEX were removed from Home;
           copies of all four live on the unlisted /backup page. */}

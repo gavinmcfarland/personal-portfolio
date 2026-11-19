@@ -12,6 +12,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
    the two floating <ThemeToggle>s the bar replaces (it carries the toggle). */
 // import SiteBar from "./components/SiteBar";
 import ThemeToggle from "./components/ThemeToggle";
+import Tooltips from "./components/Tooltips";
 import CanvasMaximizeToggle from "./components/CanvasMaximizeToggle";
 import Home from "./pages/Home";
 import { visibleProjects } from "./data/projects";
@@ -197,6 +198,9 @@ function App() {
         {/* A toggle that appears only while a canvas is maximised (playground
             or a project board), floated above its full-viewport overlay. */}
         <CanvasMaximizeToggle />
+
+        {/* Custom tooltips for every `title` on the page (see Tooltips.jsx). */}
+        <Tooltips />
 
         {/* Dev-only type trial (typeface + body text), beside the corner
             theme toggle. Renders nothing in production. */}

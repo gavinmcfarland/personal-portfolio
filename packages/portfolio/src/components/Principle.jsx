@@ -11,7 +11,7 @@ const Principle = () => {
       ref={ref}
       className="reveal w-screen -ml-8 border-t border-line sm:-ml-14 lg:-ml-24"
     >
-      <div className="mr-auto w-full max-w-5xl pl-8 pr-5 pt-10 sm:pl-14 sm:pr-6 sm:pt-16 lg:pl-24">
+      <div className="mr-auto w-full max-w-3xl pl-8 pr-5 pt-10 sm:pl-14 sm:pr-6 sm:pt-16 lg:pl-24">
         <div className="sheet sheet--tall sheet--split">
           <span className="sheet__mark">space-between</span>
 
