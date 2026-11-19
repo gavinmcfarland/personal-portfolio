@@ -752,6 +752,18 @@ export function CanvasProvider({
       ? { w: init.savedViewport.w, h: init.savedViewport.h, x: active0.view.x, y: active0.view.y, scale: active0.view.scale }
       : null
   );
+  // The AUTHORED default view {w,h,x,y,scale}: what gets persisted. Kept apart
+  // from framedRef because framedRef also tracks transient framings — a
+  // reader's view-mode pan/zoom, or a presentational initialView='fit' — so a
+  // later save would otherwise persist the wrong view, or pair the stale saved
+  // view with a different container size, and the board would open shifted
+  // next time. Only genuine edit-mode framings update this (see applyView).
+  // w/h are 0 when the snapshot predates recording the viewport size.
+  const authoredRef = useRef(
+    init.hadSaved
+      ? { w: init.savedViewport ? init.savedViewport.w : 0, h: init.savedViewport ? init.savedViewport.h : 0, x: active0.view.x, y: active0.view.y, scale: active0.view.scale }
+      : null
+  );
   const actionRef = useRef(null);
   const zoomRAF = useRef(0);
   const waTimer = useRef(0);
@@ -826,6 +838,8 @@ export function CanvasProvider({
       // Uses the cached size, so no layout read on the pan path.
       if (!reframing.current && lastVpSize.current) {
         framedRef.current = { w: lastVpSize.current.w, h: lastVpSize.current.h, x: viewRef.x, y: viewRef.y, scale: viewRef.scale };
+        // Only an edit-mode framing after boot redefines the persisted default.
+        if (!S.readOnly && booted.current) authoredRef.current = { ...framedRef.current };
       }
       w.style.transform = `translate(${viewRef.x}px,${viewRef.y}px) scale(${viewRef.scale})`;
       // Past 8% the dots would crowd into a grey wash, so the grid doubles its
@@ -902,7 +916,12 @@ export function CanvasProvider({
       if (!W || !H) return; // not laid out yet — wait for a real measurement
       lastVpSize.current = { w: W, h: H };
       const base = framedRef.current;
-      if (!base) { framedRef.current = { w: W, h: H, x: viewRef.x, y: viewRef.y, scale: viewRef.scale }; return; }
+      if (!base) {
+        framedRef.current = { w: W, h: H, x: viewRef.x, y: viewRef.y, scale: viewRef.scale };
+        // A fresh board's first fit is its default; a saved board keeps its own.
+        if (!authoredRef.current) authoredRef.current = { ...framedRef.current };
+        return;
+      }
       // While maximised (native fullscreen, or the full-bleed overlay) the board
       // owns the whole screen, so the configured resize anchor no longer applies:
       // pivot about the centre instead, so whatever was framed in the embedded
@@ -2358,14 +2377,14 @@ export function CanvasProvider({
        started panning/zooming. */
     function snapshotActive() {
       const prev = pageData[S.activePageId];
-      // Persist the CANONICAL framing (framedRef), not the reframed display — so
-      // the saved view is always paired with the size it was framed at (see
-      // serialize's viewport) and a load reframes it correctly. View mode keeps
-      // the stale edit-mode view (reader pan/zoom is transient); fall back to the
-      // live view only before the reference exists (fresh board, edit mode).
-      const fr = framedRef.current;
-      const view = S.readOnly && prev ? prev.view
-        : fr ? { x: fr.x, y: fr.y, scale: fr.scale }
+      // Persist the AUTHORED framing (authoredRef), not the reframed display nor
+      // a reader's pan / a forced fit — so the saved view is always paired with
+      // the size it was framed at (see serialize's viewport) and a load reframes
+      // it correctly. Fall back to the stale page view (view mode) or the live
+      // view (edit mode) only before the reference exists (fresh board).
+      const ar = authoredRef.current;
+      const view = ar ? { x: ar.x, y: ar.y, scale: ar.scale }
+        : S.readOnly && prev ? prev.view
         : { x: viewRef.x, y: viewRef.y, scale: viewRef.scale };
       pageData[S.activePageId] = { nodes: S.nodes, shapes: S.shapes, view };
     }
@@ -2392,12 +2411,12 @@ export function CanvasProvider({
       if (S.gridHidden) snap.gridHidden = true;
       // Record the container size these views were framed at, so a later load
       // can reframe the pan/zoom relative to whatever size the board opens at.
-      // This is the canonical reference's size (framedRef) — it always matches
+      // This is the authored reference's size (authoredRef) — it always matches
       // the view snapshotActive persisted. Fall back to the live size only
       // before the reference exists (fresh board, edit mode).
-      const fr = framedRef.current;
-      let fv = fr && fr.w > 0 && fr.h > 0 ? { w: fr.w, h: fr.h } : null;
-      if (!fv && !S.readOnly) { const vw = vpW(), vh = vpH(); if (vw && vh) fv = { w: vw, h: vh }; }
+      const ar = authoredRef.current;
+      let fv = ar && ar.w > 0 && ar.h > 0 ? { w: ar.w, h: ar.h } : null;
+      if (!fv && !ar && !S.readOnly) { const vw = vpW(), vh = vpH(); if (vw && vh) fv = { w: vw, h: vh }; }
       if (fv) snap.viewport = fv;
       // Stamp when this snapshot was produced so loadInitial can tell an
       // in-code edit of the committed file apart from a stale localStorage
@@ -2488,6 +2507,10 @@ export function CanvasProvider({
       setNodes(t.nodes); setShapes(t.shapes);
       viewRef.x = t.view.x; viewRef.y = t.view.y; viewRef.scale = t.view.scale;
       targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = viewRef.scale;
+      // The authored default now belongs to the incoming page: its stored view,
+      // taken as framed at the current size (pages don't record their own size).
+      const sz = lastVpSize.current;
+      authoredRef.current = { w: sz ? sz.w : 0, h: sz ? sz.h : 0, x: t.view.x, y: t.view.y, scale: t.view.scale };
       setActivePageId(id);
       reseedZ(t);
       applyView();
