@@ -162,6 +162,33 @@
 .enamel * {
   border-radius: 0 !important;
 }
+/* The one exception: a device frame (browser, plugin, terminal, iOS, Android)
+   around an image, video or embedded document takes the 3px corner the
+   portfolio's badges use. Stated off the chrome-bar height (36px → 3px) so a
+   frame set to scale with its object keeps the same proportion. The node clips
+   its bar and screen, so they follow the corner without a radius of their own. */
+.enamel .cv-node.cv-framed {
+  border-radius: calc(var(--cv-df-bar, 36px) / 12) !important;
+  overflow: hidden;
+}
+/* Every other card-like object takes the same 3px corner: sticky notes,
+   markdown panels, code objects, voice notes, link cards, and photos and
+   videos shown as a card (a lone SVG has no card, so it is left alone). Media
+   clips to the corner; the rest paint nothing outside their own box. */
+.enamel [data-cv-part="node"][data-type="sticky"],
+.enamel [data-cv-part="node"][data-type="md"],
+.enamel [data-cv-part="node"][data-type="code"],
+.enamel [data-cv-part="node"][data-type="sound"],
+.enamel [data-cv-part="node"][data-type="link"],
+.enamel [data-cv-part="node"][data-type="image"]:not(.cv-svg, .cv-framed),
+.enamel [data-cv-part="node"][data-type="video"]:not(.cv-framed) {
+  border-radius: 3px !important;
+}
+.enamel [data-cv-part="node"][data-type="link"],
+.enamel [data-cv-part="node"][data-type="image"]:not(.cv-svg, .cv-framed),
+.enamel [data-cv-part="node"][data-type="video"]:not(.cv-framed) {
+  overflow: hidden;
+}
 
 /* ── Sticky note → enamel fill ─────────────────────────────────────────
    A saturated flat panel with its paired ink; mono, small, tight, no shadow. */

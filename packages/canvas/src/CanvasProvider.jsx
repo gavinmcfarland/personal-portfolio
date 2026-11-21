@@ -780,6 +780,8 @@ export function CanvasProvider({
   const geomCache = useRef(null);
   const zoomPaintMode = useRef(null); // last { active, scale } posted to the HTML nodes' documents
   const saveT = useRef(0);
+  const lastSaveAt = useRef(0); // savedAt of the newest snapshot this instance wrote or adopted
+  const adopting = useRef(false); // the commit in flight is another tab's board being taken on, not an edit
   const lastHoverScale = useRef(active0.view.scale || 1); // scale at the last applyView, to tell pan from zoom
   const panKey = useRef(false);
 
@@ -2521,6 +2523,7 @@ export function CanvasProvider({
     function saveNow() {
       if (!EDITABLE) return;
       const snap = serialize();
+      lastSaveAt.current = snap.savedAt;
       try {
         localStorage.setItem(STORE, JSON.stringify(snap));
       } catch (err) {
@@ -2558,6 +2561,49 @@ export function CanvasProvider({
       publishDirty.current = true;
       clearTimeout(autoPublishT.current);
       autoPublishT.current = setTimeout(publish, 900);
+    }
+    /* Take on a board another tab (or an editor's iframe of this same page)
+       just autosaved under this key. Each open copy holds the whole board in
+       memory and writes the whole board back, so a copy that never heard about
+       an edit made elsewhere undid it the next time it saved — and it saves on
+       mount, on a view change, and when its page goes away, none of which look
+       like editing. The newest write is the board; the view on screen stays put.
+       Nothing is written or published in response (see `adopting`), or two
+       copies would hand the board back and forth forever. */
+    function adoptSnapshot(raw) {
+      if (!EDITABLE || !raw || !(Array.isArray(raw.pages) || Array.isArray(raw.nodes))) return;
+      if ((raw.savedAt || 0) <= lastSaveAt.current) return;
+      // Mid-drag or mid-typing the model can't be swapped out from under the
+      // gesture; this copy's own save follows and the two settle on it.
+      if (actionRef.current || S.editingId) return;
+      const mine = serialize();
+      lastSaveAt.current = raw.savedAt || 0;
+      const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+      if (same(mine.pages, raw.pages) && same([mine.bgColor, mine.bgStrength, mine.gridHidden], [raw.bgColor, raw.bgStrength, raw.gridHidden])) return;
+      const st = buildFromSaved(base, raw, HOME_ID, managedTypes, EDITABLE);
+      const keep = st.pagesData[S.activePageId] ? S.activePageId : st.activePageId;
+      Object.keys(pageData).forEach((k) => { delete pageData[k]; });
+      Object.assign(pageData, st.pagesData);
+      const t = pageData[keep];
+      clearTimeout(saveT.current); // whatever was pending is now older than the board
+      adopting.current = true;
+      history.byPage = {}; history.restoring = true; // not an undo step
+      setPages(st.pagesMeta); setBgColor(st.bgColor); setBgStrength(st.bgStrength); setGridHidden(st.gridHidden);
+      setNodes(t.nodes); setShapes(t.shapes);
+      setCtxMenu(null); setGridEditId(null); setRenameFrameId(null);
+      const alive = new Set([...t.nodes, ...t.shapes].map((o) => o.id));
+      setSelectedState((sel) => (sel.every((x) => alive.has(x.id)) ? sel : sel.filter((x) => alive.has(x.id))));
+      reseedZ(t);
+      if (keep !== S.activePageId) {
+        viewRef.x = t.view.x; viewRef.y = t.view.y; viewRef.scale = t.view.scale;
+        targetRef.x = viewRef.x; targetRef.y = viewRef.y; targetRef.scale = viewRef.scale;
+        setActivePageId(keep);
+        applyView();
+      }
+      // The framing that gets saved is the other copy's too, so this one's next
+      // save doesn't put an older default view back.
+      const sv = st.savedViewport;
+      if (sv) authoredRef.current = { w: sv.w, h: sv.h, x: t.view.x, y: t.view.y, scale: t.view.scale };
     }
     function resetBoard() {
       if (!EDITABLE) return;
@@ -3752,7 +3798,7 @@ export function CanvasProvider({
       newId, newShapeId, addNode, updateNode, removeNode, addShape, updateShape, removeShape, patchMany,
       bringFront, sendBack, toggleAnchor, toggleFrame, toggleFrameScale, setNodeScale, deleteSelected, deleteTarget,
       copySelected, cutSelected, cutTarget, paste, pasteAt, pasteFromMenu, hasClipboard, systemClipIsMine, duplicateSelected, duplicateTarget, duplicateItemsAt,
-      setTool, setMode, setCanvasBg, setCanvasBgStrength, toggleGrid, fitAll, flyTo, fitViewFor, sectionInView, goToSection, stepSection, clearSectionFocus, reorderSections, scheduleSave, saveNow, serialize, publish, schedulePublish, resetBoard,
+      setTool, setMode, setCanvasBg, setCanvasBgStrength, toggleGrid, fitAll, flyTo, fitViewFor, sectionInView, goToSection, stepSection, clearSectionFocus, reorderSections, scheduleSave, saveNow, serialize, publish, schedulePublish, adoptSnapshot, resetBoard,
       switchPage, addPage, renamePage, removePage, canRemovePage, canArchivePage, setPageArchived, canReorderPages, reorderPages, isPagePinned,
       isImageFile, isVideoFile, isAudioFile, addImageFromFile, addVideoFromFile, addAudioFromFile, addMediaFiles, appendAssetsToNode, resetMediaSize, addMediaFromUrl, pasteMedia, resolveMediaSrc, parseIdbRef, pickThemeImage, removeDarkImage,
       addLinkFromUrl, pasteLink, openLink,
@@ -3838,7 +3884,21 @@ export function CanvasProvider({
   }, []);
 
   /* ── Keep chrome + persistence in sync with the model ───────── */
-  useEffect(() => { eng.syncChrome(); eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, bgStrength, gridHidden, eng]);
+  useEffect(() => { eng.syncChrome(); if (!adopting.current) eng.scheduleSave(); }, [nodes, shapes, selected, editingId, pages, activePageId, bgColor, bgStrength, gridHidden, eng]);
+
+  /* ── Follow the same board open somewhere else ────────────────
+     `storage` fires in every other document on this origin when one of them
+     autosaves — a second tab, or an editor showing this page in an iframe. */
+  useEffect(() => {
+    if (!EDITABLE) return undefined;
+    const onStorage = (e) => {
+      if (e.key !== STORE || !e.newValue) return;
+      try { eng.adoptSnapshot(JSON.parse(e.newValue)); } catch { /* not a board */ }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ── Host-driven page (deep links) ─────────────────────────────
      `page` picks the board on mount (see init); a later change — the host's
@@ -3951,8 +4011,12 @@ export function CanvasProvider({
   useEffect(() => () => { didAutoPublishMount.current = false; }, []);
   useEffect(() => {
     if (!didAutoPublishMount.current) { didAutoPublishMount.current = true; return; }
+    if (adopting.current) return; // another tab's edit, already published by it
     eng.schedulePublish();
   }, [nodes, shapes, pages, activePageId, bgColor, bgStrength, gridHidden, eng]);
+  /* Every commit, after the save and publish effects above have had their look:
+     the adoption they were told to ignore has now been rendered. */
+  useEffect(() => { adopting.current = false; });
 
   /* ── Boot: apply the initial view (fit if nothing was saved, or if the
      embedder asked for a framed overview via initialView='fit') ──

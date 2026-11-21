@@ -117,9 +117,11 @@ export default function ProjectPage({ project }) {
               )}
             </div>
             {project.draft && <span className="draft-tag">Draft</span>}
-            <span className="tnum font-sans text-3 text-faint">
-              {project.tech.join(" · ")}
-            </span>
+            {project.tech.length > 0 && (
+              <span className="tnum font-sans text-3 text-faint">
+                {project.tech.join(" · ")}
+              </span>
+            )}
           </div>
 
           {project.tagline && (

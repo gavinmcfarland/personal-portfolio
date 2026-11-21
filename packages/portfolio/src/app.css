@@ -1327,12 +1327,13 @@ p + .footnotes {
 /* An unpublished entry, listed only while developing. Vermilion because it is
    pointing at something — the same job the footnote marker and the shell prompt
    give the accent. */
-/* The project kind badge (Projects.jsx's KindTag): a 1px corner, just enough
-   to soften the hairline box. It has to be !important and out-rank the enamel
-   doctrine's `body :not(…) { border-radius: 0 !important }` sweep above,
-   hence the doubled class. */
+/* The project kind badge (Projects.jsx's KindTag): the same 3px corner as the
+   WIP badge below, so the two read as one family of badge. It has to be
+   !important and out-rank the enamel doctrine's
+   `body :not(…) { border-radius: 0 !important }` sweep above, hence the
+   doubled class. */
 body .kind-tag.kind-tag {
-  border-radius: 1px !important;
+  border-radius: 3px !important;
 }
 
 /* The work-in-progress badge beside a project page's title. Doubled class for

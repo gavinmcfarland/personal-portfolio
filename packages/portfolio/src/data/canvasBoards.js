@@ -11,7 +11,17 @@
    with no published file just resolves to undefined. */
 const files = import.meta.glob('./canvas/*.json', { eager: true });
 
+/* What this tab has saved since it loaded, keyed by storageKey. The glob above
+   is read once, when the page loads, and a save deliberately sends no HMR
+   update — so on its own it keeps answering with the board as it was at load.
+   Leaving a project and coming back remounts its canvas without a page load,
+   and a canvas whose browser autosave is missing or failed to write (quota,
+   blocked storage) then opened that stale copy, dropping every edit made since.
+   The file on disk was right; the tab just never looked at it again. */
+const saved = new Map();
+
 export function publishedBoard(key) {
+  if (saved.has(key)) return saved.get(key);
   const mod = files[`./canvas/${key}.json`];
   return mod ? mod.default : undefined;
 }
@@ -28,6 +38,7 @@ export function boardSaver(key) {
     });
     const out = await res.json().catch(() => ({}));
     if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+    saved.set(key, snapshot);
   };
 }
 

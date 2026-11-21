@@ -21,13 +21,13 @@ export const projects = [
 	{
 		id: 'awenate',
 		title: 'Awenate',
-		kind: 'tool',
+		kind: 'app',
 		draft: true,
 		wip: true,
 		summary: 'A visual editor that lives inside your codebase. Edit any element on the live page and the change is written straight to the source file.',
 		tagline:
-			'Design tools and code drift apart the moment a design is handed over, and the last details are the ones that get lost. Awenate is a visual editor that runs against your real project instead of a copy of it. Select any element on the live page, adjust it, and the source file is rewritten to match, so the details can be finished where they actually ship.',
-		tech: ['TypeScript'],
+			'A design tool that allows you to edit and interact with your product directly, allowing you to explore and refine interfaces in their functional state.',
+		tech: [],
 		role: 'Founder',
 		year: '2026',
 		link: 'https://awenate.com',
