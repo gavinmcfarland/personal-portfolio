@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- . ../../pnpm-lock.yaml ../../pnpm-workspace.yaml",
+  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA^{commit}\" 2>/dev/null && git diff \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD --quiet -- . ../canvas ../dither ../../package.json ../../pnpm-lock.yaml ../../pnpm-workspace.yaml",
   "rewrites": [
     {
       "source": "/((?!api/|assets/|.*\\.[a-zA-Z0-9]+$).*)",
