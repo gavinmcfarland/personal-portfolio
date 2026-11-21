@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "activePage": "home",
+  "pages": [
+    {
+      "id": "home",
+      "name": "Page 1",
+      "view": {
+        "x": 430.17836651566955,
+        "y": 414.6871679671012,
+        "scale": 1.0201314105363726
+      },
+      "nodes": [
+        {
+          "id": "n1-html",
+          "type": "html",
+          "x": -312.16501240694794,
+          "y": -239.1160049627792,
+          "z": 21,
+          "w": 1214.081037390784,
+          "h": 858,
+          "src": "/canvas-assets/50abf0ca781b72f5.html",
+          "name": "export-sample.html",
+          "frame": "browser"
+        }
+      ],
+      "shapes": []
+    }
+  ],
+  "gridHidden": true,
+  "viewport": {
+    "w": 516,
+    "h": 583
+  },
+  "savedAt": 1795285516080
+}

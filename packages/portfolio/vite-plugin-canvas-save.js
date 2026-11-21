@@ -10,6 +10,8 @@ import { auditHtml } from '../canvas/src/html-bridge.js';
 
 const BOARD_DIR = path.resolve(process.cwd(), 'src/data/canvas');
 const ASSET_DIR = path.resolve(process.cwd(), 'public/canvas-assets');
+/* The module whose import.meta.glob turns BOARD_DIR into the app's boards. */
+const BOARDS_MODULE = path.resolve(process.cwd(), 'src/data/canvasBoards.js');
 const PRIVATE_DIR = path.resolve(process.cwd(), 'public/private');
 
 /* Where pruned assets go instead of being deleted outright. A prune is a guess
@@ -497,6 +499,19 @@ export function canvasSave() {
             const prev = fs.existsSync(target) ? readBoard(target) : null;
             fs.writeFileSync(target, JSON.stringify(snapshot, null, 2) + '\n');
             server.config.logger.info(`  canvas saved → ${path.relative(process.cwd(), target)}`);
+            /* The board dir is watch-ignored so a save never pushes an HMR
+               update at the board being edited — which also means Vite never
+               learns the file changed, or that a new one exists: the glob in
+               canvasBoards.js kept serving the boards as they were when the
+               server started, and a board first saved since then did not exist
+               at all, so any browser without its own autosave opened the seed
+               layout instead. Dropping the cached transforms (no HMR message
+               goes out) is what makes the next full load read the disk. */
+            for (const file of [target, BOARDS_MODULE]) {
+              for (const mod of server.moduleGraph.getModulesByFile(file) || []) {
+                server.moduleGraph.invalidateModule(mod);
+              }
+            }
             /* Restore before pruning: this snapshot's own references decide
                what comes back, and they also protect it from the prune. */
             const refs = assetRefs(snapshot);

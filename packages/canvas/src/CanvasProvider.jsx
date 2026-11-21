@@ -3945,6 +3945,10 @@ export function CanvasProvider({
      content only (not selection/editing focus) so clicking around doesn't
      trigger writes. The first (mount) fire is skipped so simply loading a board
      doesn't rewrite its published snapshot. */
+  /* Declared first so its cleanup re-arms the skip before the effect below
+     re-runs: StrictMode's second mount pass is still a mount, not an edit (see
+     the boot effect). */
+  useEffect(() => () => { didAutoPublishMount.current = false; }, []);
   useEffect(() => {
     if (!didAutoPublishMount.current) { didAutoPublishMount.current = true; return; }
     eng.schedulePublish();
@@ -3957,6 +3961,14 @@ export function CanvasProvider({
      (objects in the wrong place) before jumping to the saved/fitted view.
      Node ref callbacks fire at commit, so elements are already measurable. */
   useLayoutEffect(() => {
+    /* Not booted until this has run — every time it runs. StrictMode mounts
+       each effect twice in dev, and a ref outlives the pass between: left true,
+       the second pass's own applyView counted as a user-driven view change and
+       published. Dev is the only place publishing exists, so every board was
+       rewritten from whatever had been loaded, two seconds after opening — and a
+       browser holding an older copy overwrote the committed one just by looking
+       at it. */
+    booted.current = false;
     if (initialView === 'fit' || !init.hadSaved) {
       eng.fitAll(false);
       // Only persist the fitted view when it's the first-ever view of the

@@ -16,6 +16,30 @@
    `visibleProjects` (below) anywhere you want the set the current build shows. */
 export const projects = [
 	{
+		id: 'awenate',
+		title: 'Awenate',
+		kind: 'tool',
+		draft: true,
+		summary: 'A visual editor that lives inside your codebase. Edit any element on the live page and the change is written straight to the source file.',
+		tagline:
+			'Design tools and code drift apart the moment a design is handed over, and the last details are the ones that get lost. Awenate is a visual editor that runs against your real project instead of a copy of it. Select any element on the live page, adjust it, and the source file is rewritten to match, so the details can be finished where they actually ship.',
+		tech: ['TypeScript'],
+		role: 'Founder',
+		year: '2026',
+		link: 'https://awenate.com',
+		linkLabel: 'awenate.com',
+		description: [
+			'Refining an interface usually means a loop: change a value in the editor, wait for the page, look, and go again. Small visual decisions such as spacing, type and colour are slow to make this way, so they tend to be settled in a design file and then approximated in code.',
+			'Awenate removes the gap by putting the editing controls on the running page. It works inside an existing codebase, alongside the dev server, and every change is written directly to the source file it came from. There is no export step and nothing to hand over, because the code is the thing being edited.',
+		],
+		highlights: [
+			'Edit any element directly on the live page',
+			'Every change is written to the source file',
+			'Runs inside an existing codebase, next to the dev server',
+			'No export or handoff step between design and code',
+		],
+	},
+	{
 		id: 'figlet',
 		title: 'Figlet',
 		kind: 'tool',

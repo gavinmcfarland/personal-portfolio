@@ -25,7 +25,7 @@
    demo docs.
 
    v2 adds the JS half: `matchMedia`. See the note beside the patch. */
-const THEME_SYNC = `<script data-cv-theme-sync="2">(() => {
+const THEME_SYNC = `<script data-cv-theme-sync="3">(() => {
   const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
   const walk = (rules, dark) => {
     for (const r of rules) {
@@ -122,10 +122,28 @@ const THEME_SYNC = `<script data-cv-theme-sync="2">(() => {
   // a body script reading matchMedia gets the board's answer on its first read
   // rather than the OS's. The message path only lands after load.
   // Re-applied at DOMContentLoaded for any stylesheets later in the body.
-  const boot = /cv-theme=(dark|light)/.exec(location.hash || '');
+  const hash = (location.hash || '').replace(/^#/, '');
+  const boot = /cv-theme=(dark|light)/.exec(hash);
   if (boot) {
     apply(boot[1] === 'dark');
     addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
+  }
+  // v3: then take the host's parameters back out of the URL, before any of the
+  // document's own scripts run. A document that routes by its hash reads
+  // "cv-theme=light" as a route it has never heard of, and one that answers an
+  // unknown route with an empty screen paints its markup once and goes blank.
+  // The page half's boot flag rides in the same hash and may not have been read
+  // yet (the halves are injected, and upgraded, independently), so it is kept
+  // on the window for it. replaceState, not an assignment: no hashchange, no
+  // history entry. Only the fragment changes, which a sandboxed document is
+  // still allowed to do; if it is refused the hash simply stays, as before.
+  const parts = hash.split('&');
+  const own = parts.filter((s) => s !== 'cv-page=1' && !/^cv-theme=(dark|light)$/.test(s));
+  if (own.length !== parts.length) {
+    if (parts.includes('cv-page=1')) window.__cvBootPage = true;
+    try {
+      history.replaceState(history.state, '', location.href.split('#')[0] + (own.length ? '#' + own.join('&') : ''));
+    } catch { /* not allowed here */ }
   }
 })()</` + 'script>';
 
@@ -615,7 +633,7 @@ const INPUT_BRIDGE = `<script data-cv-input="3">(() => {
    off until it arrives — so a restored board paints the saved page rather than
    flicking through the path to it. A watchdog lifts the veil whatever happens:
    a document that fails to restore is still a document to show. */
-const PAGE_BRIDGE = `<script data-cv-page="3">(() => {
+const PAGE_BRIDGE = `<script data-cv-page="4">(() => {
   if (window.parent === window) return;
   var send = function (m) { try { parent.postMessage(m, '*'); } catch (err) { /* host gone */ } };
 
@@ -835,7 +853,9 @@ const PAGE_BRIDGE = `<script data-cv-page="3">(() => {
      never comes — would leave the document invisible for good. */
   var bootTimer = 0;
   var ready = function () { send({ type: 'canvas-page-ready' }); };
-  if (/(^|#|&)cv-page=1(&|$)/.test(location.hash || '')) {
+  // Or on the window, when the theme half ran first and already took the flag
+  // out of the URL (v4).
+  if (window.__cvBootPage || /(^|#|&)cv-page=1(&|$)/.test(location.hash || '')) {
     hide();
     bootTimer = setTimeout(function () { if (!restoring) { reveal(); ready(); } }, 3000);
   }
@@ -1196,10 +1216,10 @@ const FIXED_HOLD = `<script data-cv-fixed="1">(() => {
    The version here must match the one in the script's own opening tag — that
    is what the skip-if-current check compares against. */
 export const BRIDGE = [
-  { marker: 'data-cv-theme-sync', version: '2', script: THEME_SYNC },
+  { marker: 'data-cv-theme-sync', version: '3', script: THEME_SYNC },
   { marker: 'data-cv-zoom-opts', version: '5', script: ZOOM_OPTS },
   { marker: 'data-cv-input', version: '3', script: INPUT_BRIDGE },
-  { marker: 'data-cv-page', version: '3', script: PAGE_BRIDGE },
+  { marker: 'data-cv-page', version: '4', script: PAGE_BRIDGE },
   { marker: 'data-cv-scroll', version: '1', script: SCROLL_HOLD },
   { marker: 'data-cv-fixed', version: '1', script: FIXED_HOLD },
 ];
