@@ -1254,7 +1254,11 @@ export const BRIDGE = [
    listeners on them — worth building if the text read starts crying wolf. */
 
 const Q = String.raw`matchMedia\s*\(\s*['"\`][^'"\`]*prefers-color-scheme`;
-const ON = String.raw`addEventListener\s*\(\s*['"\`]change|addListener\s*\(|onchange\s*=`;
+/* Optional chaining counts as listening: `mq.addEventListener?.('change', …)`
+   and `mq?.addEventListener(…)` are how a document guards an old Safari, and
+   reading them as silence failed the build over a document that themes
+   correctly. */
+const ON = String.raw`addEventListener\s*(?:\?\.)?\s*\(\s*['"\`]change|addListener\s*(?:\?\.)?\s*\(|onchange\s*=`;
 
 export function auditHtml(html) {
   // The bridge's own scripts query prefers-color-scheme and listen to it; left
@@ -1271,11 +1275,11 @@ export function auditHtml(html) {
   if (queries) {
     // Listening counts only on the query's own MediaQueryList — an unrelated
     // 'change' listener elsewhere in the document must not stand in for it.
-    const chained = new RegExp(`${Q}[^'"\`]*['"\`]\\s*\\)\\s*\\.\\s*(?:${ON})`, 'i').test(src);
+    const chained = new RegExp(`${Q}[^'"\`]*['"\`]\\s*\\)\\s*\\??\\.\\s*(?:${ON})`, 'i').test(src);
     const bound = [...src.matchAll(new RegExp(String.raw`(?:const|let|var)\s+([\w$]+)\s*=[^;\n]*?${Q}`, 'gi'))]
       .map((m) => m[1]);
     const listens = chained || bound.some((name) =>
-      new RegExp(String.raw`\b${name}\s*\.\s*(?:${ON})`, 'i').test(src));
+      new RegExp(String.raw`\b${name}\s*\??\.\s*(?:${ON})`, 'i').test(src));
     if (!listens) out.push({
       level: 'warn', code: 'theme-read-once',
       message: 'reads prefers-color-scheme in script but never listens for a change — '
