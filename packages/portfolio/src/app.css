@@ -1335,6 +1335,15 @@ body .kind-tag.kind-tag {
   border-radius: 1px !important;
 }
 
+/* The work-in-progress badge beside a project page's title. Doubled class for
+   the same reason as `.kind-tag`: the corner has to out-rank the enamel sweep.
+   The bottom margin mirrors `.wordmark`'s, so the badge centres on the title
+   rather than on the title plus its margin. */
+body .wip-tag.wip-tag {
+  border-radius: 3px !important;
+  margin-bottom: var(--sp-4);
+}
+
 .draft-tag {
   flex: none;
   font-size: var(--text-1);

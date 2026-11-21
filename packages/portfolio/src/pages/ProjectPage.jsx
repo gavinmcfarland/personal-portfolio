@@ -101,7 +101,21 @@ export default function ProjectPage({ project }) {
               unlayered, so it outranks any Tailwind margin utility, which live
               in @layer utilities.) */}
           <div className="mt-(--sp-2) flex flex-wrap items-baseline gap-x-3 lg:mt-(--sp-8) lg:flex-col lg:items-start">
-            <h1 className="wordmark wordmark--narrow">{project.title}</h1>
+            {/* Title and its WIP badge share a row, so the badge stays to the
+                right of the title even where the group stacks (lg). `.wip-tag`
+                carries the corner radius and a bottom margin matching the
+                wordmark's, so centring lines it up with the title itself. */}
+            <div className="flex min-w-0 items-center gap-x-3">
+              <h1 className="wordmark wordmark--narrow">{project.title}</h1>
+              {project.wip && (
+                <abbr
+                  title="Work in progress"
+                  className="wip-tag inline-flex flex-none items-center border border-line px-[0.45rem] py-[0.1rem] font-sans text-1 uppercase tracking-micro text-muted no-underline"
+                >
+                  WIP
+                </abbr>
+              )}
+            </div>
             {project.draft && <span className="draft-tag">Draft</span>}
             <span className="tnum font-sans text-3 text-faint">
               {project.tech.join(" · ")}

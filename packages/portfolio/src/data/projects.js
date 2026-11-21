@@ -13,13 +13,17 @@
    Set `draft: true` to hide a project on the built site — it's kept out of the
    home list and its /projects/:id page returns Not Found. Under `pnpm dev`
    drafts stay listed, marked with a Draft tag, the same as draft posts. Use
-   `visibleProjects` (below) anywhere you want the set the current build shows. */
+   `visibleProjects` (below) anywhere you want the set the current build shows.
+
+   Set `wip: true` to mark a project as a work in progress — its project page
+   shows a WIP badge beside the title. Unlike `draft` it hides nothing. */
 export const projects = [
 	{
 		id: 'awenate',
 		title: 'Awenate',
 		kind: 'tool',
 		draft: true,
+		wip: true,
 		summary: 'A visual editor that lives inside your codebase. Edit any element on the live page and the change is written straight to the source file.',
 		tagline:
 			'Design tools and code drift apart the moment a design is handed over, and the last details are the ones that get lost. Awenate is a visual editor that runs against your real project instead of a copy of it. Select any element on the live page, adjust it, and the source file is rewritten to match, so the details can be finished where they actually ship.',
