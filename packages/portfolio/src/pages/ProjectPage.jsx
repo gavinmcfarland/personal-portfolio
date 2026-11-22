@@ -73,7 +73,7 @@ export default function ProjectPage({ project }) {
           the supporting text. */}
       <Seo
         title={project.title}
-        description={project.tagline || project.summary}
+        description={(project.tagline || project.summary).split(/\n{2,}/)[0]}
         type="article"
       />
       {/* ── Header (top bar below lg, left sidebar from lg up) ───────── */}
@@ -124,11 +124,18 @@ export default function ProjectPage({ project }) {
             )}
           </div>
 
-          {project.tagline && (
-            <p className="mt-(--sp-2) max-w-measure text-pretty text-4 text-muted">
-              {project.tagline}
-            </p>
-          )}
+          {/* A tagline may run to several paragraphs, separated by a blank
+              line; the first sits a half line under the title, the rest step
+              down by the paragraph step. */}
+          {project.tagline &&
+            project.tagline.split(/\n{2,}/).map((para, i) => (
+              <p
+                key={i}
+                className={`${i ? "mt-(--sp-3)" : "mt-(--sp-2)"} max-w-measure text-pretty text-4 text-muted`}
+              >
+                {para}
+              </p>
+            ))}
 
           {/* Previous / next project. Flows after the text on mobile; pinned to
               the bottom of the full-height sidebar from lg up. */}

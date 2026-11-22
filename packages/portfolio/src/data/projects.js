@@ -22,11 +22,10 @@ export const projects = [
 		id: 'awenate',
 		title: 'Awenate',
 		kind: 'app',
-		draft: true,
 		wip: true,
-		summary: 'A visual editor that lives inside your codebase. Edit any element on the live page and the change is written straight to the source file.',
+		summary: 'A design tool for exploring and refining interfaces directly within a running application.',
 		tagline:
-			'A design tool that allows you to edit and interact with your product directly, allowing you to explore and refine interfaces in their functional state.',
+			'Awenate turns your running application into an interactive design canvas, allowing you to explore and refine interfaces in their functional state.\n\nVisual edits communicate design intent to a connected AI agent, which determines how best to implement changes within the existing codebase, while straightforward changes are applied instantly through deterministic code transformations.',
 		tech: [],
 		role: 'Founder',
 		year: '2026',
