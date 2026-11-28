@@ -17,6 +17,7 @@ import CanvasMaximizeToggle from "./components/CanvasMaximizeToggle";
 import Home from "./pages/Home";
 import { visibleProjects } from "./data/projects";
 import { findPost } from "./data/writing";
+import { loadProjectPage, warmWhenIdle } from "./lib/warmProjectPage";
 
 /* The dev-only type trial (typeface + tweaks). Imported only in dev, so a
    production build never pulls in its font list, settings or styles code —
@@ -34,8 +35,12 @@ const TypeTrial = import.meta.env.DEV
 
    Imported as `lazy` rather than eagerly: the panel already mounts on a
    frame delay and slides for 340ms, so a chunk fetched on the same click
-   normally arrives while it is still moving. */
-const ProjectPage = lazy(() => import("./pages/ProjectPage"));
+   normally arrives while it is still moving.
+
+   The project page is the exception: it is warmed ahead of the click, because
+   arriving "while the panel is moving" still cost its canvas ~300ms — see
+   lib/warmProjectPage.js. */
+const ProjectPage = lazy(loadProjectPage);
 const CollisionDemoPage = lazy(() => import("./pages/CollisionDemoPage"));
 /* The writing section. Two routes and, behind the post page, one lazy chunk per
    post — see src/data/writing.js. Home carries only the archive manifest
@@ -116,6 +121,13 @@ function App() {
     const t = setTimeout(() => setOverlayLoc(null), 340);
     return () => clearTimeout(t);
   }, [location, isHome]);
+
+  /* Fetch the project page's code once the browser is idle, so opening a
+     project finds it already there. Not on the standalone documents below
+     (/private/*, /remote/*): they link to no project, and the remote in
+     particular exists to keep the canvas engine off a phone. */
+  const standalone = /^\/(private|remote)\//.test(location.pathname);
+  useEffect(() => (standalone ? undefined : warmWhenIdle()), [standalone]);
 
   /* Take over scroll restoration so the browser never fights us. */
   useEffect(() => {

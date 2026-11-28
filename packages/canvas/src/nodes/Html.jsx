@@ -220,6 +220,8 @@ function HtmlNode({ node }) {
 
   const { setRef, dataProps, style, x, y } = useRegister(node);
   const src = useMediaSrc(node.src);
+  const srcRef = useRef(src);
+  srcRef.current = src;
   // Activation is an edit-mode idea only: in view mode the shield stays up and
   // the demo is kept interactive from the inside, so there is nothing to
   // activate — and a node left live when the board flipped to view mode must not
@@ -245,6 +247,61 @@ function HtmlNode({ node }) {
   const shieldRef = useRef(null);
 
   useThemeSync(framesOf);
+
+  /* WHEN THE DOCUMENT IS REFUSED. Some clients will not let a sandboxed frame
+     make a network request at all — its origin is opaque, and to a filter that
+     keys on the requester that reads as "nobody". The Claude desktop app's
+     browser pane is one (the frame's own navigation fails with
+     ERR_BLOCKED_BY_CLIENT), and a privacy extension can be another. The node
+     then shows the browser's blank error page: a white box where the demo is.
+
+     The host page is not so restricted, so it fetches the document itself and
+     hands it over as a blob: URL — no request leaves the frame, and the sandbox
+     is exactly what it was (a blob is still loaded at an opaque origin). The
+     boot hash rides on the blob URL the same way.
+
+     A fallback, not the route: a blob has to be downloaded whole before the
+     first byte is parsed, where a navigation streams, and the document's
+     relative URLs no longer resolve. So it is only taken once the direct load
+     has demonstrably failed, which is read off the bridge — every ingested
+     document announces itself (canvas-input-hello) while it is still parsing.
+     A frame that reaches `load` having said nothing never got its document.
+     The check waits a moment after `load`, because the announcement and the
+     load event come from different processes and may land in either order,
+     and being wrong here would restart a document that was running. */
+  const heard = useRef(new WeakSet());
+  const blobs = useRef(new Map()); // frame key -> blob: URL
+  const tried = useRef(new Set()); // frame keys the fallback has been spent on
+  const [, bumpBlobs] = useState(0);
+  useEffect(() => {
+    const onMessage = (e) => { if (e.source) heard.current.add(e.source); };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+  useEffect(() => {
+    // Let go of a blob once its frame is gone (unloaded, or swapped out).
+    const keep = new Set(frames.map((f) => f.key));
+    blobs.current.forEach((url, key) => {
+      if (!keep.has(key)) { URL.revokeObjectURL(url); blobs.current.delete(key); }
+    });
+  }, [frames]);
+  useEffect(() => () => { blobs.current.forEach((url) => URL.revokeObjectURL(url)); }, []);
+  const rescue = useCallback((f, key, url) => {
+    if (tried.current.has(key) || !url || /^(blob|data):/.test(url)) return;
+    setTimeout(() => {
+      if (!f.isConnected || !f.contentWindow || heard.current.has(f.contentWindow)) return;
+      if (tried.current.has(key)) return;
+      tried.current.add(key);
+      fetch(url)
+        .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((body) => {
+          if (!f.isConnected) return;
+          blobs.current.set(key, URL.createObjectURL(new Blob([body], { type: 'text/html' })));
+          bumpBlobs((n) => n + 1);
+        })
+        .catch(() => { /* the host can't reach it either: nothing to show */ });
+    }, 300);
+  }, []);
   useFrameMessages(frameRef, shieldRef, readOnly, eng);
   /* The page this node was saved on (see captureHtmlPage), read through a ref
      so a later capture never re-runs the seed — the document is already up by
@@ -321,6 +378,7 @@ function HtmlNode({ node }) {
      never hears anything. */
   const onLoad = useCallback((e) => {
     const f = e.currentTarget;
+    rescue(f, Number(f.dataset.cvKey), srcRef.current);
     postThemeTo(f);
     eng.postZoomStateTo(f);
     // Boots held (see SCROLL_HOLD); only a frame that loads with the shield
@@ -338,7 +396,7 @@ function HtmlNode({ node }) {
     if (f.contentWindow) {
       f.contentWindow.postMessage({ type: 'canvas-page-restore', page: pageRef.current || null }, '*');
     }
-  }, [eng]);
+  }, [eng, rescue]);
 
   /* A reload, asked for by the board (reloadHtmlFrame dispatches it on the node
      element). Answering marks the event handled, so the board leaves the frame
@@ -463,9 +521,13 @@ function HtmlNode({ node }) {
      restore message only arrives after load, which is far too late to prevent
      it. A flag, not the page itself: the payload can be long, and it comes over
      postMessage a moment later anyway. */
-  const srcFor = (f) => (src && !src.startsWith('data:')
-    ? `${src}#cv-theme=${f.theme}${f.page ? '&cv-page=1' : ''}`
-    : src);
+  const srcFor = (f) => {
+    // The copy the host fetched, where the frame's own load was refused.
+    const from = blobs.current.get(f.key) || src;
+    return from && !from.startsWith('data:')
+      ? `${from}#cv-theme=${f.theme}${f.page ? '&cv-page=1' : ''}`
+      : from;
+  };
 
   const w = (node.w || 800) + 'px';
   const h = (node.h || 500) + 'px';
@@ -495,6 +557,7 @@ function HtmlNode({ node }) {
           {frames.map((f, i) => (
             <iframe
               key={f.key}
+              data-cv-key={f.key}
               className={`cv-html-frame${i > 0 ? ' cv-html-next' : ''}`}
               src={srcFor(f) || undefined}
               sandbox="allow-scripts"

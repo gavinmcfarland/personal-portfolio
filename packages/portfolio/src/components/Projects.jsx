@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { warmOnIntent } from "../lib/warmProjectPage";
 import { visibleProjects as projects } from "../data/projects";
 // import ProjectPlate from "./ProjectPlate"; // TEMP: plates commented out
 import { blurOnPointerClick } from "./ui";
@@ -79,6 +80,7 @@ export const ProjectList = () => (
            down the list. A fade-in reads as lag. It snaps on and off. */
         className="hover-row group -mx-4 block px-4 py-3 hover:bg-surface"
         onClick={blurOnPointerClick}
+        {...warmOnIntent}
       >
         {/* Title row spans the full width, so the kind chip stays hard against
               the entry's right edge. The chevron follows the title itself rather

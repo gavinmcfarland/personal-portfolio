@@ -25,7 +25,7 @@
    demo docs.
 
    v2 adds the JS half: `matchMedia`. See the note beside the patch. */
-const THEME_SYNC = `<script data-cv-theme-sync="3">(() => {
+const THEME_SYNC = `<script data-cv-theme-sync="5">(() => {
   const flipped = new WeakMap(); // media rule -> was it a dark-scheme rule?
   const walk = (rules, dark) => {
     for (const r of rules) {
@@ -126,7 +126,50 @@ const THEME_SYNC = `<script data-cv-theme-sync="3">(() => {
   const boot = /cv-theme=(dark|light)/.exec(hash);
   if (boot) {
     apply(boot[1] === 'dark');
-    addEventListener('DOMContentLoaded', () => apply(boot[1] === 'dark'));
+    /* v4: and keep the document unpainted until its own boot scripts have run.
+
+       Applying the theme here settles everything the document themes in CSS,
+       but not what it themes from script. An export that serialised its
+       running state carries the palette it was exported in as inline styles on
+       its markup, and only its body script — reading matchMedia, which answers
+       with the board — writes the right one over it. The parser paints that
+       markup while the script is still being fetched and compiled, so a
+       document baked in light and opened on a dark board showed a frame or
+       more of white first (measured on the Awenate editor export: ~40ms warm,
+       far longer on a cold load of a 1.9MB file).
+
+       Every classic, deferred and module script has run by DOMContentLoaded,
+       so that is when the veil comes off — in the same task, not a frame
+       later (v5). Waiting for a frame cost more than a frame: an app keeps
+       working after it boots, and the lift queued behind that work (measured
+       at 190ms behind DOMContentLoaded on the Awenate export, all of it with a
+       correctly themed document sitting unpainted).
+
+       Transitions are held under the veil, since a colour changed from under
+       it would otherwise still be easing across when it lifts — and that is
+       what the frame was for: the changes have to be computed while the hold
+       is still in force. Asking for a computed style does that on the spot. A
+       document with no scripts reaches DOMContentLoaded as soon as it is
+       parsed and loses nothing. The watchdog covers one that never gets
+       there, and is long on purpose: the wait is mostly the document's own
+       download, and lifting early on a slow connection is the flash again. */
+    const veil = document.createElement('style');
+    veil.setAttribute('data-cv-theme-veil', '');
+    veil.textContent = ':root{opacity:0!important}*,*::before,*::after{transition:none!important}';
+    document.head.appendChild(veil);
+    let lifted = false;
+    const lift = () => {
+      if (lifted) return;
+      lifted = true;
+      try { if (document.body) void getComputedStyle(document.body).opacity; } catch { /* nothing to settle */ }
+      veil.remove();
+    };
+    const watchdog = setTimeout(lift, 10000);
+    addEventListener('DOMContentLoaded', () => {
+      apply(boot[1] === 'dark');
+      clearTimeout(watchdog);
+      lift();
+    });
   }
   // v3: then take the host's parameters back out of the URL, before any of the
   // document's own scripts run. A document that routes by its hash reads
@@ -1216,7 +1259,7 @@ const FIXED_HOLD = `<script data-cv-fixed="1">(() => {
    The version here must match the one in the script's own opening tag — that
    is what the skip-if-current check compares against. */
 export const BRIDGE = [
-  { marker: 'data-cv-theme-sync', version: '3', script: THEME_SYNC },
+  { marker: 'data-cv-theme-sync', version: '5', script: THEME_SYNC },
   { marker: 'data-cv-zoom-opts', version: '5', script: ZOOM_OPTS },
   { marker: 'data-cv-input', version: '3', script: INPUT_BRIDGE },
   { marker: 'data-cv-page', version: '4', script: PAGE_BRIDGE },
@@ -1295,12 +1338,44 @@ export function auditHtml(html) {
   return out;
 }
 
+/* ── Font stylesheets must not hold the document up ──
+
+   An export that uses a hosted typeface links its stylesheet from <head>:
+
+     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=…">
+
+   A stylesheet blocks rendering, and it blocks every script after it — which
+   in an ingested document includes the whole bridge, injected at the end of
+   <head>, and the document's own app behind that. So nothing at all happens in
+   the embed until a third-party server has answered: 150ms of the Awenate
+   export's start on a fast connection, and with no upper bound on a slow one.
+
+   What comes back is only @font-face rules. Nothing in the document's layout
+   or colour depends on it arriving first — the text sets in its fallback and
+   swaps, which is what `display=swap` in these URLs already asks for. So the
+   link is loaded without blocking: parked on a medium that doesn't apply, and
+   switched on when it lands.
+
+   Only for hosts that serve nothing but font declarations. Any other
+   stylesheet may carry rules the first paint needs, and stays as written.
+   Idempotent: a link already carrying a media attribute is left alone. */
+const FONT_HOSTS = /^https?:\/\/(fonts\.googleapis\.com|fonts\.bunny\.net|use\.typekit\.net|api\.fontshare\.com)\//i;
+
+export function deferFontSheets(html) {
+  return html.replace(/<link\b[^>]*>/gi, (tag) => {
+    if (!/\brel=["']?stylesheet["']?/i.test(tag) || /\b(media|onload)=/i.test(tag)) return tag;
+    const href = /\bhref=["']([^"']+)["']/i.exec(tag);
+    if (!href || !FONT_HOSTS.test(href[1])) return tag;
+    return tag.replace(/\s*\/?>$/, ` media="print" onload="this.media='all'" data-cv-font-async>`);
+  });
+}
+
 /* Inject the bridge at the end of <head> — after the document's own styles (so
    the boot apply() sees them) yet before the body renders (else after the
    head/html open tag, else prepended). A half already at the current version is
    left untouched, so re-ingesting a current asset is a no-op. */
 export function injectBridge(html) {
-  let out = html;
+  let out = deferFontSheets(html);
   for (const { marker, version, script } of BRIDGE) {
     if (out.includes(`${marker}="${version}"`)) continue;
     // Any older copy goes first. The emitted script bodies contain no literal
